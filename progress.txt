@@ -37,3 +37,41 @@ Started autonomous agent loop for PRD completion
 - Testing must be explicitly enabled: `bench --site frontend set-config allow_tests true`
 - `bench new-app` requires interactive TTY or piped printf with ALL answers (6 prompts)
 
+## Iteration 1 - Thu, Feb 26, 2026 12:01:28 PM
+Completed: Write failing tests for app scaffold (ID: UT-001) in 4m
+
+## Iteration 2 — US-001: Create custom app scaffold
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_app_scaffold`
+**Result:** PASS — 7/7 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `hooks.py` — Replaced default scaffold with doc_events (Salary Slip, Expense Claim), scheduler_events (hourly, monthly), fixtures config, after_install/after_migrate hooks
+- `install.py` — Created with after_install() and after_migrate() stubs
+- `services/__init__.py` — Created package
+- `services/submission_service.py` — Stub (enqueue_salary_slip_submission, enqueue_expense_claim_submission)
+- `services/cancellation_service.py` — Stub (handle_salary_slip_cancel, handle_expense_claim_cancel)
+- `services/status_poller.py` — Stub (poll_pending_documents)
+- `services/consolidation_service.py` — Stub (run_monthly_consolidation)
+- `utils/__init__.py` — Created package
+- `fixtures/__init__.py` — Created package
+
+### Actions taken
+1. Wrote hooks.py with doc_events, scheduler_events, fixtures, install hooks
+2. Created install.py with after_install() and after_migrate() stubs
+3. Created services/, utils/, fixtures/ directories with __init__.py
+4. Created stub service modules to satisfy hook references
+5. Ran `bench --site frontend install-app lhdn_payroll_integration`
+6. Verified app appears in `bench --site frontend list-apps`
+7. All 7 tests pass (TDD GREEN confirmed)
+
+### Patterns discovered
+- `bench install-app` validates scheduler_events references — if the module doesn't exist, it logs a warning but still installs
+- Service stubs need (doc, method) signature for doc_event handlers
+- fixtures config uses list of dicts with `dt` and `filters` keys
+
+### Gotchas
+- docker cp on Windows/MINGW needs `bash -c` wrapper to avoid Git path expansion (e.g. /home gets expanded to C:/Program Files/Git/home)
+

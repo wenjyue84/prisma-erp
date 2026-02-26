@@ -68,7 +68,7 @@
         "UT-001"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "UT-002",
