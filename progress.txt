@@ -229,3 +229,32 @@ Completed: Add custom field to Salary Component DocType (ID: US-003)
 ## Iteration 7 - Wed, Feb 26, 2026
 Completed: Write failing tests for Salary Slip custom fields (ID: UT-004)
 
+## Iteration 8 — US-004: Add custom fields to Salary Slip DocType
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields`
+**Result:** PASS — 23/23 tests pass, 0 failures, 0 errors
+
+### Files modified
+- `fixtures/custom_field.json` — Added 10 Salary Slip Custom Field records
+
+### Fields added to Salary Slip
+1. custom_lhdn_section (Section Break) — "LHDN e-Invoice Status"
+2. custom_lhdn_status (Select, read_only) — Pending/Submitted/Valid/Invalid/Exempt/Cancelled
+3. custom_lhdn_uuid (Data, read_only)
+4. custom_lhdn_submission_datetime (Datetime, read_only)
+5. custom_lhdn_validated_datetime (Datetime, read_only)
+6. custom_retry_count (Int, read_only, default 0)
+7. custom_is_consolidated (Check, read_only, default 0)
+8. custom_lhdn_qr_code (HTML, read_only)
+9. custom_lhdn_qr_url (Data, read_only)
+10. custom_error_log (Text Editor, read_only)
+
+### Patterns discovered
+- Same fieldname (custom_lhdn_section) on different DocTypes works fine — Custom Field name includes DocType prefix
+- read_only: 1 in fixture JSON correctly sets the field as read-only
+
+## Iteration 8 - Wed, Feb 26, 2026
+Completed: Add custom fields to Salary Slip DocType (ID: US-004)
+

@@ -97,5 +97,117 @@
     "options": "\n022 : Others\n024 : Private retirement scheme or deferred annuity scheme\n027 : Reimbursement\n032 : Foreign income\n036 : Self-billed - Others\n037 : Self-billed - Monetary payment to agents, dealers or distributors\n040 : Voluntary contribution to approved provident fund\n044 : Vouchers, gift cards, loyalty points\n045 : Self-billed - Non-monetary payment to agents, dealers or distributors",
     "module": "LHDN Payroll Integration",
     "insert_after": "type"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_lhdn_section",
+    "dt": "Salary Slip",
+    "fieldname": "custom_lhdn_section",
+    "fieldtype": "Section Break",
+    "label": "LHDN e-Invoice Status",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "total_deduction"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_lhdn_status",
+    "dt": "Salary Slip",
+    "fieldname": "custom_lhdn_status",
+    "fieldtype": "Select",
+    "label": "LHDN Status",
+    "options": "\nPending\nSubmitted\nValid\nInvalid\nExempt\nCancelled",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_section"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_lhdn_uuid",
+    "dt": "Salary Slip",
+    "fieldname": "custom_lhdn_uuid",
+    "fieldtype": "Data",
+    "label": "LHDN UUID",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_status"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_lhdn_submission_datetime",
+    "dt": "Salary Slip",
+    "fieldname": "custom_lhdn_submission_datetime",
+    "fieldtype": "Datetime",
+    "label": "LHDN Submission Datetime",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_uuid"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_lhdn_validated_datetime",
+    "dt": "Salary Slip",
+    "fieldname": "custom_lhdn_validated_datetime",
+    "fieldtype": "Datetime",
+    "label": "LHDN Validated Datetime",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_submission_datetime"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_retry_count",
+    "dt": "Salary Slip",
+    "fieldname": "custom_retry_count",
+    "fieldtype": "Int",
+    "label": "Retry Count",
+    "default": "0",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_validated_datetime"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_is_consolidated",
+    "dt": "Salary Slip",
+    "fieldname": "custom_is_consolidated",
+    "fieldtype": "Check",
+    "label": "Is Consolidated",
+    "default": "0",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_retry_count"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_lhdn_qr_code",
+    "dt": "Salary Slip",
+    "fieldname": "custom_lhdn_qr_code",
+    "fieldtype": "HTML",
+    "label": "LHDN QR Code",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_is_consolidated"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_lhdn_qr_url",
+    "dt": "Salary Slip",
+    "fieldname": "custom_lhdn_qr_url",
+    "fieldtype": "Data",
+    "label": "LHDN QR URL",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_qr_code"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_error_log",
+    "dt": "Salary Slip",
+    "fieldname": "custom_error_log",
+    "fieldtype": "Text Editor",
+    "label": "Error Log",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_qr_url"
   }
 ]
