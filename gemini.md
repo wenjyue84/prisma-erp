@@ -1,6 +1,6 @@
-# CLAUDE.md
+# gemini.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Gemini when working with code in this repository.
 
 ## What This Repo Is
 
@@ -62,18 +62,6 @@ docker cp setup_test_data.py prisma-erp-backend-1:/home/frappe/frappe-bench/apps
 docker exec prisma-erp-backend-1 bash -c "cd /home/frappe/frappe-bench && bench --site frontend execute frappe.setup_test_data.run"
 ```
 
-### Deploy frappe_patches (login.js etc.)
-
-Frappe serves `login.js` from `templates/includes/login/`, **not** `www/`. Always copy to the correct path:
-
-```bash
-# Local
-docker cp frappe_patches/login.js prisma-erp-backend-1:/home/frappe/frappe-bench/apps/frappe/frappe/templates/includes/login/login.js
-docker compose -f pwd-myinvois.yml exec backend bench --site frontend clear-cache
-docker compose -f pwd-myinvois.yml exec backend bench --site frontend clear-website-cache
-docker compose -f pwd-myinvois.yml restart backend frontend
-```
-
 ### View logs
 
 ```bash
@@ -128,11 +116,12 @@ docker compose -f pwd-myinvois.yml restart frontend
 
 Idempotent seed script. Re-running skips already-existing records. Creates:
 
-1. **Company "Arising Packaging"** — populated with test LHDN fields (Sandbox, TIN `C12345678901`)
-2. **Tax template "SST 8% - AP"** — 10% on `GST - AP` account
-3. **Corporate customer** — Tech Solutions Sdn Bhd (TIN `C56789012345`, BRN)
-4. **Individual customer** — Ahmad bin Abdullah (TIN `IG12345678901`, NRIC)
-5. **Two draft Sales Invoices** — one per customer, with all myinvois fields set
+1. **Prisma Branding & Localization** — Adds Prisma Tech4U logo to system, setting "Prisma ERP" as the app name and enforcing Malaysian localization defaults (MYR, Asia/Kuala_Lumpur).
+2. **Company "Arising Packaging"** — populated with test LHDN fields (Sandbox, TIN `C12345678901`)
+3. **Tax template "SST 8% - AP"** — 10% on `GST - AP` account
+4. **Corporate customer** — Tech Solutions Sdn Bhd (TIN `C56789012345`, BRN)
+5. **Individual customer** — Ahmad bin Abdullah (TIN `IG12345678901`, NRIC)
+6. **Two draft Sales Invoices** — one per customer, with all myinvois fields set
 
 > ⚠️ `custom_client_id` and `custom_client_secret` on the Company are placeholder values. Replace them with real LHDN sandbox credentials before clicking "Taxpayer Login" or submitting an invoice.
 

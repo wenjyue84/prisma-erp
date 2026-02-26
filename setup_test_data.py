@@ -8,6 +8,7 @@ Do NOT submit invoices to LHDN with these credentials — they will be rejected.
 """
 import frappe
 import traceback
+import requests
 
 results = []
 
@@ -296,6 +297,64 @@ def run():
         log(f"ERR [6] Individual Sales Invoice failed: {e}")
         traceback.print_exc()
 
+    setup_prisma_branding()
+
     print("\n=== SUMMARY ===")
     for r in results:
         print(r)
+
+def setup_prisma_branding():
+    try:
+        # Read local logo
+        logo_file_path = "/tmp/prisma_logo.png"
+        import os
+        if os.path.exists(logo_file_path):
+            with open(logo_file_path, "rb") as f:
+                content = f.read()
+                
+            # Check if file already exists
+            existing_file = frappe.db.exists("File", {"file_name": "prisma_logo.png"})
+            if existing_file:
+                logo_path = frappe.db.get_value("File", existing_file, "file_url")
+            else:
+                file_doc = frappe.get_doc({
+                    "doctype": "File",
+                    "file_name": "prisma_logo.png",
+                    "content": content,
+                    "is_private": 0
+                })
+                file_doc.insert(ignore_permissions=True)
+                logo_path = file_doc.file_url
+
+            # Set System Settings
+            system_settings = frappe.get_doc("System Settings", "System Settings")
+            system_settings.app_name = "Prisma ERP"
+            system_settings.save(ignore_permissions=True)
+
+            # Set Website Settings
+            website_settings = frappe.get_doc("Website Settings", "Website Settings")
+            website_settings.app_name = "Prisma ERP"
+            website_settings.app_logo = logo_path
+            website_settings.brand_html = f"<img src='{logo_path}' style='height: 40px;'>"
+            website_settings.splash_image = logo_path
+            website_settings.save(ignore_permissions=True)
+            
+            # Set Global Defaults
+            global_defaults = frappe.get_doc("Global Defaults", "Global Defaults")
+            global_defaults.country = "Malaysia"
+            global_defaults.default_currency = "MYR"
+            global_defaults.save(ignore_permissions=True)
+            
+            # Set Navbar Settings (if ERPNext v13+)
+            if frappe.db.exists("Navbar Settings", "Navbar Settings"):
+                navbar_settings = frappe.get_doc("Navbar Settings", "Navbar Settings")
+                navbar_settings.app_logo = logo_path
+                navbar_settings.save(ignore_permissions=True)
+                
+            frappe.db.commit()
+            log("OK  [7] Prisma Branding & Localization applied (Logo, App Name, MYR, Malaysia)")
+        else:
+            log(f"ERR [7] Logo file not found at {logo_file_path}")
+    except Exception as e:
+        log(f"ERR [7] Prisma branding override failed: {e}")
+        traceback.print_exc()

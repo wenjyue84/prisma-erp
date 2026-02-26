@@ -20,3 +20,9 @@ RUN ln -sf /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/publ
     /home/frappe/frappe-bench/sites/assets/myinvois_erpgulf \
  && ln -sf /home/frappe/frappe-bench/apps/hrms/hrms/public \
     /home/frappe/frappe-bench/sites/assets/hrms
+
+# Demo login: patch login page + expose test data seed as importable module
+COPY frappe_patches/login.html apps/frappe/frappe/www/login.html
+COPY frappe_patches/login.js apps/frappe/frappe/templates/includes/login/login.js
+COPY frappe_patches/login.py apps/frappe/frappe/www/login.py
+COPY setup_test_data.py apps/frappe/frappe/setup_test_data.py
