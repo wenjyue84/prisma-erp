@@ -1690,3 +1690,27 @@ Completed: Add Malaysian state code to UBL address elements (ID: US-025)
 ### Gotchas
 - None — test file was pre-existing in tmp_lhdn/tests/, just needed docker cp and verification
 
+## Iteration 52 — US-027: Implement 7-year LHDN audit retention archival and locking
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retention`
+**Result:** PASS — 5/5 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/retention_service.py` — NEW: get_retention_date(), run_retention_archival(), check_retention_lock()
+- `lhdn_payroll_integration/hooks.py` — UPDATED: added before_amend hook for Salary Slip, yearly scheduler for retention archival
+
+### Implementation details
+- `get_retention_date(dt)`: uses dateutil.relativedelta to add 7 years to submission datetime
+- `run_retention_archival()`: queries Salary Slips with custom_lhdn_archived=0 and validated_datetime set, checks each record's retention date vs now, archives expired ones
+- `check_retention_lock(doc)`: before_amend hook that raises ValidationError if custom_lhdn_archived=1
+- hooks.py: added `before_amend` → check_retention_lock for Salary Slip, `yearly` scheduler → run_retention_archival
+
+### Patterns discovered
+- run_retention_archival does in-code date filtering (validated_datetime + 7y < now) because get_all filters use custom_lhdn_validated_datetime presence, not the retention date directly
+- check_retention_lock uses getattr with default 0 for safety
+
+### Gotchas
+- None — clean implementation, all 5 tests pass on first run
+
