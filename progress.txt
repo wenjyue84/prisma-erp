@@ -988,3 +988,33 @@ Completed: Implement exponential backoff retry service (ID: US-015) in 2m
 ### Gotchas
 - None — clean red phase, all 5 tests error as expected
 
+## Iteration 25 - Thu, Feb 26, 2026  1:50:11 PM
+Completed: Write failing tests for cancellation hook (72h window) (ID: UT-016) in 3m
+
+## Iteration 26 — US-016: Implement on_cancel hook with 72-hour window check
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation`
+**Result:** PASS — 5 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/cancellation_service.py` — Full implementation replacing stub
+
+### Implementation details
+- `_get_reference_time(doc)` — prefers `custom_lhdn_validated_datetime`, falls back to `custom_lhdn_submission_datetime`
+- `_handle_cancel(doc, method)` — shared logic for both Salary Slip and Expense Claim:
+  - If `custom_lhdn_status` not in ('Valid', 'Submitted'): returns (allows native cancel)
+  - Calculates `hours_elapsed` from reference time
+  - If <= 72h: `frappe.enqueue` with `enqueue_after_commit=True`
+  - If > 72h: `frappe.throw` with Credit Note guidance message
+- `handle_salary_slip_cancel` / `handle_expense_claim_cancel` — thin wrappers delegating to `_handle_cancel`
+- `process_lhdn_cancellation` — stub for US-017
+
+### Patterns discovered
+- Tests patch `frappe` at module level (`cancellation_service.frappe`), so the module must `import frappe` at top level
+- Shared `_handle_cancel` avoids code duplication between Salary Slip and Expense Claim handlers
+
+### Gotchas
+- None — clean green phase on first attempt
+
