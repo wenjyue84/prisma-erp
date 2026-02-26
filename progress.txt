@@ -1718,3 +1718,28 @@ Completed: Add Malaysian state code to UBL address elements (ID: US-025)
 Previous session completed US-027 implementation (5/5 tests pass) but did not update prd.json.
 Re-verified: bench tests pass, marked US-027 passes: true.
 
+## Iteration 53 — UT-028: Write failing tests for mandatory e-invoice date gating by company revenue tier
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config`
+**Result:** FAIL — ImportError: cannot import name 'get_mandatory_date' from 'lhdn_payroll_integration.utils.config'
+
+### Files modified
+- `lhdn_payroll_integration/tests/test_config.py` — Added class TestMandatoryDateGating with 7 test methods
+
+### Test methods added (7 total)
+1. test_revenue_above_100m_mandatory_from_aug_2024 — tests get_mandatory_date("Above RM100M") == date(2024, 8, 1)
+2. test_revenue_25m_to_100m_mandatory_from_jan_2025 — tests get_mandatory_date("RM25M to RM100M") == date(2025, 1, 1)
+3. test_revenue_5m_to_25m_mandatory_from_jul_2025 — tests get_mandatory_date("RM5M to RM25M") == date(2025, 7, 1)
+4. test_revenue_1m_to_5m_mandatory_from_jan_2026 — tests get_mandatory_date("RM1M to RM5M") == date(2026, 1, 1)
+5. test_below_1m_exempt_mandatory_date_is_none — tests get_mandatory_date("Below RM1M (Exempt)") is None
+6. test_production_before_mandatory_date_logs_warning — tests check_mandatory_compliance logs warning in production before mandatory date
+7. test_sandbox_mode_bypasses_mandatory_date_check — tests check_mandatory_compliance skips entirely in sandbox mode
+
+### Patterns discovered
+- Existing test_config.py already has TestEnvironmentToggle from UT-020; adding new class to same file works
+
+### Gotchas
+- None — clean red phase, ImportError on missing functions
+
