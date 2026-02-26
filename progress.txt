@@ -2230,3 +2230,28 @@ These are NOT real LHDN sandbox credentials. They were set by `setup_test_data.p
 ### EXIT REASON
 Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → document and EXIT"
 
+
+## Iteration — US-022: BLOCKED (Attempt 4) — LHDN Sandbox Credentials Still Placeholder
+
+**Type:** INTG
+**Status:** BLOCKED — No change from previous attempts
+**Date:** 2026-02-26
+
+### Verification performed
+1. Docker container: running (prisma-erp-backend-1)
+2. Company "Arising Packaging" credentials checked:
+   - custom_client_id: d2906b87-4b3e-4a9f-8c12-3f5e7a1d0b94 (placeholder)
+   - custom_client_secret: sndx-K9mP2qRvL7wXjY4tNhBcZeA3uGfD (placeholder)
+   - custom_integration_type: Sandbox
+   - custom_sandbox_url: https://preprod-api.myinvois.hasil.gov.my
+3. Token endpoint test: POST /connect/token → 400 `{"error":"invalid_client"}`
+4. Credentials are UNCHANGED from setup_test_data.py defaults
+
+### PRD status
+- US-022 is the ONLY remaining story with passes=false
+- All 42 other stories (UT-001 through US-034) have passes=true
+- All 19 dependencies of US-022 are satisfied
+
+### EXIT REASON
+Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → document and EXIT"
+No further stories can be implemented until real LHDN sandbox credentials are provided.
