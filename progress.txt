@@ -1413,3 +1413,18 @@ FAILED quality gates: Implement environment toggle (sandbox / production) (ID: U
 - Default to 'sandbox' when lhdn_environment not set (safe default)
 - URL fallback constants: SANDBOX_URL_DEFAULT, PRODUCTION_URL_DEFAULT
 
+## Iteration 37 — US-023: Implement Self-Billed Credit Note (type 12) builder and service
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_credit_note`
+**Result:** PASS — 7/7 tests pass, 0 failures, 0 errors
+
+### Files verified (already existed from prior iteration)
+- `services/credit_note_service.py` — build_credit_note_xml() fully implemented with type 12, BillingReference, negative amounts
+- `services/cancellation_service.py` — Already includes "Self-Billed Credit Note" in ValidationError message
+
+### Actions taken
+1. Verified all 7 tests pass immediately (implementation was correct from prior session)
+2. Marked US-023 passes=true
+
