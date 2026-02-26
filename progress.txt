@@ -2134,3 +2134,63 @@ Completed: US-034 green phase verified
 
 ## PRD Status: 66/67 stories complete (98.5%)
 Only remaining: US-022 (INTG) — requires real LHDN sandbox credentials
+
+
+## Iteration 37 — US-022: All 5 mandatory LHDN integration test scenarios pass in sandbox
+
+**Type:** INTG
+**TDD Phase:** N/A — BLOCKED (missing real LHDN sandbox credentials)
+**Result:** CANNOT PROCEED
+
+### Analysis
+US-022 is the final story (66/67 complete, 98.5%). It requires real LHDN sandbox API credentials:
+- T-01 (exempt employee, no API calls) — could work without credentials
+- T-02 (valid contractor submission) — REQUIRES real sandbox credentials
+- T-03 (bad TIN rejection) — REQUIRES real sandbox credentials
+- T-04 (network timeout simulation) — could work with mocked requests
+- T-05 (monthly consolidation) — REQUIRES real sandbox credentials
+
+Current Company "Arising Packaging" has placeholder credentials:
+- custom_client_id: `d2906b87-4b3e-4a9f-8c12-3f5e7a1d0b94` (UUID format but fake)
+- custom_client_secret: `sndx-K9mP2qRvL7wXjY4tNhBcZeA3uGfD` (fabricated, "sndx-" prefix)
+- custom_integration_type: Sandbox
+- custom_sandbox_url: https://preprod-api.myinvois.hasil.gov.my
+
+### Action Required
+To complete US-022, the user must:
+1. Register for LHDN MyInvois Sandbox at https://preprod-api.myinvois.hasil.gov.my
+2. Obtain real client_id and client_secret for sandbox environment
+3. Update Company "Arising Packaging" custom fields with real credentials
+4. Re-run Ralph to implement and verify all 5 integration test scenarios
+
+### Stop Condition
+INTG story with missing LHDN sandbox credentials → documented → EXIT
+
+## PRD Status: 66/67 stories complete (98.5%)
+Remaining: US-022 (INTG) — BLOCKED on real LHDN sandbox credentials
+
+## Iteration 37 — US-022: LHDN Sandbox Integration Tests (BLOCKED)
+
+**Type:** INTG
+**Status:** BLOCKED — Missing real LHDN sandbox credentials
+**Story:** US-022 - All 5 mandatory LHDN integration test scenarios pass in sandbox
+
+### Analysis
+- US-022 is the final story (66/67 complete, 98.5%)
+- All 19 dependencies are met (passes: true)
+- Company "Arising Packaging" has PLACEHOLDER credentials:
+  - custom_client_id: d2906b87-4b3e-4a9f-8c12-3f5e7a1d0b94 (NOT real)
+  - custom_client_secret: sndx-K9mP2qRvL7wXjY4tNhBcZeA3uGfD (NOT real)
+  - custom_sandbox_url: https://preprod-api.myinvois.hasil.gov.my
+  - custom_integration_type: Sandbox
+- T-02 (valid submission) and T-03 (bad TIN rejection) require real API calls to LHDN sandbox
+- T-01 (exempt employee) and unit tests could run without credentials, but the story requires ALL 5 scenarios
+
+### What's needed to unblock
+1. Register at LHDN MyInvois sandbox portal
+2. Obtain real sandbox client_id and client_secret
+3. Update Company "Arising Packaging" with real credentials
+4. Then re-run Ralph to complete US-022
+
+### EXIT REASON
+Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → document and EXIT"
