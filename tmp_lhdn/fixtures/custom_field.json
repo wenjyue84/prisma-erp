@@ -209,5 +209,106 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_lhdn_qr_url"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim-custom_lhdn_section",
+    "dt": "Expense Claim",
+    "fieldname": "custom_lhdn_section",
+    "fieldtype": "Section Break",
+    "label": "LHDN e-Invoice",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "total_claimed_amount"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim-custom_expense_category",
+    "dt": "Expense Claim",
+    "fieldname": "custom_expense_category",
+    "fieldtype": "Select",
+    "label": "Expense Category",
+    "options": "\nSelf-Billed Required\nEmployee Receipt Provided\nOverseas - Exempt",
+    "read_only": 0,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_section"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim-custom_employee_receipt_uuid",
+    "dt": "Expense Claim",
+    "fieldname": "custom_employee_receipt_uuid",
+    "fieldtype": "Data",
+    "label": "Employee Receipt UUID",
+    "read_only": 0,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_expense_category"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim-custom_employee_receipt_qr_url",
+    "dt": "Expense Claim",
+    "fieldname": "custom_employee_receipt_qr_url",
+    "fieldtype": "Data",
+    "label": "Employee Receipt QR URL",
+    "read_only": 0,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_employee_receipt_uuid"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim-custom_lhdn_status",
+    "dt": "Expense Claim",
+    "fieldname": "custom_lhdn_status",
+    "fieldtype": "Select",
+    "label": "LHDN Status",
+    "options": "\nPending\nSubmitted\nValid\nInvalid\nExempt\nCancelled",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_employee_receipt_qr_url"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim-custom_lhdn_uuid",
+    "dt": "Expense Claim",
+    "fieldname": "custom_lhdn_uuid",
+    "fieldtype": "Data",
+    "label": "LHDN UUID",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_status"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim-custom_lhdn_qr_url",
+    "dt": "Expense Claim",
+    "fieldname": "custom_lhdn_qr_url",
+    "fieldtype": "Data",
+    "label": "LHDN QR URL",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_uuid"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim-custom_error_log",
+    "dt": "Expense Claim",
+    "fieldname": "custom_error_log",
+    "fieldtype": "Text Editor",
+    "label": "Error Log",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_qr_url"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim-custom_retry_count",
+    "dt": "Expense Claim",
+    "fieldname": "custom_retry_count",
+    "fieldtype": "Int",
+    "label": "Retry Count",
+    "default": "0",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_error_log"
   }
 ]

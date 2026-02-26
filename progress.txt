@@ -278,3 +278,27 @@ Completed: Add custom fields to Salary Slip DocType (ID: US-004)
 ## Iteration 9 - Wed, Feb 26, 2026
 Completed: Write failing tests for Expense Claim custom fields (ID: UT-005)
 
+## Iteration 10 — US-005: Add custom fields to Expense Claim DocType
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields`
+**Result:** PASS — 28/28 tests pass, 0 failures, 0 errors
+
+### Files modified
+- `fixtures/custom_field.json` — Added 9 Expense Claim Custom Field records
+
+### Fields added to Expense Claim
+1. custom_lhdn_section (Section Break) — "LHDN e-Invoice"
+2. custom_expense_category (Select, editable) — Self-Billed Required / Employee Receipt Provided / Overseas - Exempt
+3. custom_employee_receipt_uuid (Data, editable)
+4. custom_employee_receipt_qr_url (Data, editable)
+5. custom_lhdn_status (Select, read_only) — Pending/Submitted/Valid/Invalid/Exempt/Cancelled
+6. custom_lhdn_uuid (Data, read_only)
+7. custom_lhdn_qr_url (Data, read_only)
+8. custom_error_log (Text Editor, read_only)
+9. custom_retry_count (Int, read_only, default 0)
+
+## Iteration 10 - Wed, Feb 26, 2026
+Completed: Add custom fields to Expense Claim DocType (ID: US-005)
+
