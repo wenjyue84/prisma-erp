@@ -1,0 +1,39 @@
+## Codebase Patterns
+
+- `bench new-app` is interactive: needs App Title, Description, Publisher, Email, License, GitHub Workflow (N), Branch Name
+- Use `printf '...\n' | bench new-app ...` with all answers including branch name and workflow=N
+- Must enable testing: `bench --site frontend set-config allow_tests true` before running tests
+- `bench new-app` creates modules.txt with default module name automatically
+- Test file goes in `apps/<app>/<app>/tests/test_*.py`
+- FrappeTestCase import: `from frappe.tests.utils import FrappeTestCase`
+
+---
+
+# Ralph Progress Log - Thu, Feb 26, 2026 11:56:20 AM
+Started autonomous agent loop for PRD completion
+
+## Iteration 1 — UT-001: Write failing tests for app scaffold
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_app_scaffold`
+**Result:** FAIL — 6 failures, 1 pass (test_modules_txt_exists passes because bench new-app creates it)
+
+### Files created/modified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/` — Created via `bench new-app`
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/__init__.py`
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_app_scaffold.py`
+
+### Test methods (7 total)
+1. test_app_is_installed — FAIL (app not installed on site yet)
+2. test_hooks_doc_events_salary_slip — FAIL (no doc_events in default hooks.py)
+3. test_hooks_doc_events_expense_claim — FAIL (no doc_events)
+4. test_hooks_scheduler_events — FAIL (no scheduler_events)
+5. test_modules_txt_exists — PASS (bench new-app creates this)
+6. test_install_py_stubs_exist — FAIL (no install.py)
+7. test_directory_structure — FAIL (no services/, utils/, fixtures/ dirs)
+
+### Gotchas
+- Testing must be explicitly enabled: `bench --site frontend set-config allow_tests true`
+- `bench new-app` requires interactive TTY or piped printf with ALL answers (6 prompts)
+
