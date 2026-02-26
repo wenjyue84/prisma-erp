@@ -1569,3 +1569,98 @@ warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the nex
 [2m[5:51][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
 [2m[5:56][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
 [2m[6:02][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[6:09][0m [37m**US-012 complete.** Here's the summary:  ## Iteration 25 — US-012: Implement input validation and s...[0m
+
+[32m[1m✓ Claude finished[0m [2m(49 tool calls in 6:09)[0m
+
+[2mStream ended (49 tool calls, 6:11 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 6m
+
+  [done] Story completed: Implement input validation and sanitization utilities
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... 
+  │     Module: lhdn_payroll_integration.tests.test_validation
+  │     Type:   IMPL
+  │     Result: ✓ PASS (green phase confirmed)
+  └────────────────────────────────────────────┘
+  ✓ All quality gates passed!
+warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the next time Git touches it
+[feature/lhdn-payroll-integration 95c285d] feat: US-012 - Implement input validation and sanitization utilities
+ 1 file changed, 105 insertions(+)
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 19/60
+  Progress: [████████████████░░░░░░░░░░░░░░] 24/43 (55%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       UT-013
+  │ Title:    Write failing tests for status polling scheduler
+  │ Priority: 25
+  │ Deps:     US-011
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for UT-013...
+  ─────── Claude Output Start ──────────
+[2m[0:36][0m [37mI'll start by reading the current state of the project.[0m
+[2m[0:37][0m 💻 [36mBash[0m [2mhead -60 /c/Users/Jyue/Documents/1-projects/Projects/prisma-...[0m
+[2m[0:38][0m 💻 [36mBash[0m [2mcat /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/p...[0m
+[2m[0:52][0m [37mLet me get the full list of incomplete stories and check the current state more carefully.[0m
+[2m[0:53][0m 💻 [36mBash[0m [2mcat /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/p...[0m
+[2m[0:54][0m 💻 [36mBash[0m [2mcat /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/p...[0m
+[2m[0:59][0m [37mUS-011 is complete. The next eligible stories are **UT-013** (priority 25, depends on US-011 which i...[0m
+[2m[1:00][0m 💻 [36mBash[0m [2mcat /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/p...[0m
+[2m[1:01][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
+[2m[1:06][0m [37mDocker is running. Now let me check the paired US-013 story to understand what acceptance criteria t...[0m
+[2m[1:07][0m 💻 [36mBash[0m [2mcat /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/p...[0m
+
+  ╔══════════════════════════════════════════╗
+  ║   📊 15-MIN PROGRESS REPORT — 13:26  ║
+  ╠══════════════════════════════════════════╣
+  ║  Completed:  24 / 43 stories
+  ║  Remaining:  19 stories
+  ║
+  ║  Recently done:
+  ║    ✓ [US-011] Implement submission service: HTTP POST to LHDN and response writer
+  ║    ✓ [UT-012] Write failing tests for validation + decimal + date utils
+  ║    ✓ [US-012] Implement input validation and sanitization utilities
+  ║
+  ║  Up next:
+  ║    → [UT-013] Write failing tests for status polling scheduler
+  ║    → [US-013] Implement hourly status polling scheduler
+  ║    → [UT-014] Write failing tests for Status 3 error log parser
+  ╚══════════════════════════════════════════╝
+
+[2m[1:08][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 cat /home/frappe/frappe-ben...[0m
+[2m[1:12][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 cat /home/frappe/frappe-ben...[0m
+[2m[1:13][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 cat /home/frappe/frappe-ben...[0m
+[2m[1:16][0m [37mThe path is being mangled by Git Bash on Windows. Let me use a different approach.[0m
+[2m[1:17][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 ls /home/frappe/frappe-benc...[0m
+[2m[1:21][0m [37mGit Bash is converting `/home/` to a Windows path. I need to use `MSYS_NO_PATHCONV`.[0m
+[2m[1:22][0m 💻 [36mBash[0m [2mMSYS_NO_PATHCONV=1 docker exec prisma-erp-backend-1 ls /home...[0m
+[2m[1:23][0m 💻 [36mBash[0m [2mMSYS_NO_PATHCONV=1 docker exec prisma-erp-backend-1 ls /home...[0m
+[2m[1:28][0m [37mGood — the services directory exists and has `status_poller.py`. Let me check what's in the current ...[0m
+[2m[1:29][0m 💻 [36mBash[0m [2mMSYS_NO_PATHCONV=1 docker exec prisma-erp-backend-1 cat /hom...[0m
+[2m[1:30][0m 💻 [36mBash[0m [2mMSYS_NO_PATHCONV=1 docker exec prisma-erp-backend-1 cat /hom...[0m
+[2m[1:37][0m [37mNow I have a clear picture. I need to write `test_status_poller.py` with 7 test methods that import ...[0m
+[2m[1:38][0m 💻 [36mBash[0m [2mMSYS_NO_PATHCONV=1 docker exec prisma-erp-backend-1 cat /hom...[0m
+[2m[1:46][0m [37mNow I have all the context I need. Let me write the test file. The tests need to:  1. **Import** `po...[0m
+[2m[2:33][0m ✏️ [36mWrite[0m [2mtest_status_poller.py[0m
+[2m[2:37][0m [37mNow copy the test file to the container and run tests.[0m
+[2m[2:38][0m 💻 [36mBash[0m [2mMSYS_NO_PATHCONV=1 docker cp "C:/Users/Jyue/Documents/1-proj...[0m
+[2m[2:45][0m 💻 [36mBash[0m [2mMSYS_NO_PATHCONV=1 docker exec prisma-erp-backend-1 bash -c ...[0m
+[2m[2:54][0m [37mAll 7 tests failed with `AttributeError` — the stub `status_poller.py` doesn't import `frappe`, `req...[0m
+[2m[2:57][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:01][0m 📖 [36mRead[0m [2mprogress.txt[0m
+[2m[3:05][0m [37mNow let me append the progress entry and commit.[0m
+[2m[3:14][0m 🔧 [36mEdit[0m [2mprogress.txt[0m
+[2m[3:17][0m [37mNow let me verify the prd.json update took effect and commit.[0m
+[2m[3:19][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:23][0m [37mGood. Now commit.[0m
+[2m[3:23][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:31][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
