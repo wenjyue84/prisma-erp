@@ -2531,3 +2531,58 @@ values from setup_test_data.py. Real sandbox credentials from LHDN developer por
 ### EXIT REASON
 Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → document and EXIT"
 
+
+
+## Iteration — RBAC Regression Fix (US-021 permlevel regression)
+
+**Type:** Regression Fix (not a PRD story)
+**Date:** Thu, Feb 26, 2026 8:39 PM
+**Status:** FIXED — 224/224 tests pass
+
+### Root cause
+- `bench migrate` resets Custom Field permlevel to whatever is in the fixture JSON
+- `fixtures/custom_field.json` had `permlevel: 0` for two RBAC-protected fields:
+  1. `Employee-custom_requires_self_billed_invoice`
+  2. `Salary Slip-custom_lhdn_uuid`
+- Every `bench migrate` reset these to 0, breaking test_rbac assertions
+
+### Fix applied
+- Updated `fixtures/custom_field.json` to set `permlevel: 1` for both fields
+- Ran `bench migrate` to apply
+- All 3 RBAC tests now pass (3/3)
+- Full test suite: 224/224 pass
+
+### Gotcha learned
+- Fixture JSON is the source of truth — DB settings are overwritten on every migrate
+- Any field requiring elevated permlevel MUST have `permlevel: 1` in the fixture JSON, not just set in the DB
+
+---
+
+## Iteration — US-022: BLOCKED (Attempt 7) — LHDN Sandbox Credentials Still Placeholder
+
+**Type:** INTG
+**Status:** BLOCKED — No change from previous attempts
+**Date:** Thu, Feb 26, 2026 8:39 PM
+
+### PRD Status
+75/76 stories complete (98.7%). Only US-022 (INTG) remains.
+Full test suite: 224/224 pass (0 failures).
+
+### Verification performed
+1. Docker container: running (prisma-erp-backend-1)
+2. Company "Arising Packaging" credentials checked:
+   - custom_client_id: d2906b87-4b3e-4a9f-8c12-3f5e7a1d0b94 (placeholder)
+   - custom_client_secret: sndx-K9mP2qRvL7wXjY4tNhBcZeA3uGfD (placeholder)
+   - custom_integration_type: Sandbox
+   - custom_sandbox_url: https://preprod-api.myinvois.hasil.gov.my
+3. Token endpoint: POST /connect/token → 400 invalid_client (confirmed placeholder)
+4. RBAC regression fixed (permlevel fixture updated, 224/224 tests green)
+
+### Action Required
+1. Register at https://preprod-api.myinvois.hasil.gov.my/home
+2. Obtain real sandbox client_id + client_secret
+3. Update Company "Arising Packaging" custom_client_id + custom_client_secret
+4. Re-run Ralph to complete US-022
+
+### EXIT REASON
+Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → document and EXIT"

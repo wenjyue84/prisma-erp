@@ -18,7 +18,8 @@
     "label": "Requires Self-Billed Invoice",
     "default": "0",
     "module": "LHDN Payroll Integration",
-    "insert_after": "custom_lhdn_section"
+    "insert_after": "custom_lhdn_section",
+    "permlevel": 1
   },
   {
     "doctype": "Custom Field",
@@ -129,7 +130,8 @@
     "label": "LHDN UUID",
     "read_only": 1,
     "module": "LHDN Payroll Integration",
-    "insert_after": "custom_lhdn_status"
+    "insert_after": "custom_lhdn_status",
+    "permlevel": 1
   },
   {
     "doctype": "Custom Field",
