@@ -1578,3 +1578,30 @@ Incomplete: All 5 mandatory LHDN integration test scenarios pass in sandbox (ID:
 - Permission issue on docker cp: existing files owned by root need -u root for overwrite
 - Consolidated buyer always uses '17' (Not Applicable) — different from individual invoices
 
+## Iteration 5 - Thu, Feb 26, 2026  2:54:35 PM
+Incomplete: All 5 mandatory LHDN integration test scenarios pass in sandbox (ID: US-022) — attempt 2/3
+
+## Iteration — US-025: Add Malaysian state code (CountrySubentityCode) to UBL address elements
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 29/29 tests pass, 0 failures, 0 errors
+
+### Summary
+All implementation was already in place from previous iterations:
+- `custom_state_code` Select fields on Employee and Company in `fixtures/custom_field.json`
+- `_resolve_state_code()`, `_resolve_company_state_code()`, `_add_postal_address()` in `payload_builder.py`
+- All 6 TestStateCodeInUBL tests pass (supplier, buyer, Johor, consolidated '17', missing validation, foreign worker)
+
+### Actions taken
+1. Verified Docker container running
+2. Ran `bench --site frontend migrate` to ensure fixtures applied
+3. Ran full test suite — 29/29 pass including all 6 state code tests
+4. Marked US-025 as passes:true
+
+### Notes
+- US-022 (INTG) was skipped — highest priority but requires real LHDN sandbox credentials (placeholder values only)
+
+Completed: Add Malaysian state code to UBL address elements (ID: US-025)
+
