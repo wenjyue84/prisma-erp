@@ -258,3 +258,23 @@ Completed: Write failing tests for Salary Slip custom fields (ID: UT-004)
 ## Iteration 8 - Wed, Feb 26, 2026
 Completed: Add custom fields to Salary Slip DocType (ID: US-004)
 
+## Iteration 9 — UT-005: Write failing tests for Expense Claim custom fields
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields`
+**Result:** FAIL — 5 new Expense Claim tests fail, 23 existing tests pass
+
+### Files modified
+- `tests/test_custom_fields.py` — Added class TestExpenseClaimCustomFields
+
+### Test methods added (5 total)
+1. test_lhdn_section_exists — FAIL
+2. test_expense_category_options — FAIL
+3. test_receipt_fields_are_editable — FAIL
+4. test_status_fields_are_read_only — FAIL
+5. test_retry_count_default — FAIL
+
+## Iteration 9 - Wed, Feb 26, 2026
+Completed: Write failing tests for Expense Claim custom fields (ID: UT-005)
+

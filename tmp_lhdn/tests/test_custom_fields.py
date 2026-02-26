@@ -272,3 +272,68 @@ class TestSalarySlipCustomFields(FrappeTestCase):
 		self.assertIsNotNone(field, "custom_error_log field missing from Salary Slip")
 		self.assertEqual(field.fieldtype, "Text Editor")
 		self.assertEqual(int(field.read_only or 0), 1, "custom_error_log should be read_only")
+
+
+class TestExpenseClaimCustomFields(FrappeTestCase):
+	"""Tests for Expense Claim LHDN custom fields (TDD red phase).
+
+	These tests verify that the 9 custom fields for LHDN e-Invoice
+	compliance are present on the Expense Claim DocType. The expense
+	category and employee receipt fields are editable; status/response
+	fields are read_only.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.meta = frappe.get_meta("Expense Claim")
+
+	def test_lhdn_section_exists(self):
+		"""LHDN e-Invoice section break must exist on Expense Claim."""
+		field = self.meta.get_field("custom_lhdn_section")
+		self.assertIsNotNone(field, "custom_lhdn_section field missing from Expense Claim")
+		self.assertEqual(field.fieldtype, "Section Break")
+
+	def test_expense_category_options(self):
+		"""custom_expense_category must be a Select with the correct pathway options."""
+		field = self.meta.get_field("custom_expense_category")
+		self.assertIsNotNone(field, "custom_expense_category field missing from Expense Claim")
+		self.assertEqual(field.fieldtype, "Select")
+		options = (field.options or "").split("\n")
+		for expected in ["Self-Billed Required", "Employee Receipt Provided", "Overseas - Exempt"]:
+			self.assertIn(expected, options, f"Option '{expected}' missing from custom_expense_category")
+
+	def test_receipt_fields_are_editable(self):
+		"""custom_employee_receipt_uuid and custom_employee_receipt_qr_url must be editable."""
+		for fname in ["custom_employee_receipt_uuid", "custom_employee_receipt_qr_url"]:
+			field = self.meta.get_field(fname)
+			self.assertIsNotNone(field, f"{fname} field missing from Expense Claim")
+			self.assertEqual(field.fieldtype, "Data")
+			self.assertEqual(
+				int(field.read_only or 0), 0,
+				f"{fname} should be editable (read_only=0)",
+			)
+
+	def test_status_fields_are_read_only(self):
+		"""LHDN response fields must be read_only."""
+		read_only_fields = {
+			"custom_lhdn_status": "Select",
+			"custom_lhdn_uuid": "Data",
+			"custom_lhdn_qr_url": "Data",
+			"custom_error_log": "Text Editor",
+			"custom_retry_count": "Int",
+		}
+		for fname, expected_type in read_only_fields.items():
+			field = self.meta.get_field(fname)
+			self.assertIsNotNone(field, f"{fname} field missing from Expense Claim")
+			self.assertEqual(field.fieldtype, expected_type, f"{fname} should be {expected_type}")
+			self.assertEqual(
+				int(field.read_only or 0), 1,
+				f"{fname} should be read_only",
+			)
+
+	def test_retry_count_default(self):
+		"""custom_retry_count must default to 0."""
+		field = self.meta.get_field("custom_retry_count")
+		self.assertIsNotNone(field, "custom_retry_count field missing from Expense Claim")
+		self.assertEqual(str(field.default or "0"), "0", "custom_retry_count should default to 0")
