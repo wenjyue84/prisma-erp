@@ -751,3 +751,44 @@ Completed: Implement submission service: HTTP POST to LHDN and response writer (
 ### Gotchas
 - None — clean red phase for all three test modules
 
+## Iteration 17 - Thu, Feb 26, 2026  1:19:28 PM
+Completed: Write failing tests for validation + decimal + date utils (ID: UT-012) in 4m
+
+## Iteration 25 — US-012: Implement input validation and sanitization utilities
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench commands:**
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_validation` — PASS (5/5)
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_decimal_utils` — PASS (3/3)
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_date_utils` — PASS (4/4)
+- Full app suite: 86/86 tests pass, 0 failures, 0 errors
+**Result:** PASS
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/validation.py` — Replaced stub with full implementation
+- `lhdn_payroll_integration/utils/decimal_utils.py` — New file
+- `lhdn_payroll_integration/utils/date_utils.py` — New file
+- `lhdn_payroll_integration/tests/test_submission_hooks.py` — Updated test_document_name_length_validation for new truncation behavior
+
+### Implementation details
+- **validation.py:**
+  - `validate_tin(tin, id_type, is_foreign_worker=False)`: Foreign worker → 'EI00000000010'; Individual TIN regex `^IG\d{11}$`; Non-individual `^[A-Z]\d{8,9}0$`; raises frappe.ValidationError on mismatch
+  - `validate_document_name_length(doc_name, max_length=50)`: **Changed behavior** from throwing to truncating + frappe.log_error warning; returns truncated string
+  - `validate_bank_account_length(account, max_length=150)`: Truncates silently if >150 chars
+- **decimal_utils.py:**
+  - `quantize(value)`: Decimal(str(value)).quantize(TWOPLACES, ROUND_HALF_UP)
+  - `assert_totals_balance(subtotal, tax, total)`: Raises ValueError if quantized subtotal + tax != total
+- **date_utils.py:**
+  - `to_lhdn_date(value)`: Accepts date object or YYYY-MM-DD string; raises ValueError on invalid
+  - `to_lhdn_datetime()`: Returns datetime.utcnow() as YYYY-MM-DDTHH:MM:SSZ
+
+### Breaking change handled
+- `validate_document_name_length` changed from throwing frappe.ValidationError to returning truncated string + logging warning
+- Updated `test_submission_hooks.test_document_name_length_validation` to expect the new behavior (no exception, submission proceeds normally)
+- Full app test suite confirms zero regressions (86/86 pass)
+
+### Patterns discovered
+- Changing validation behavior (throw → truncate) required updating dependent tests — always run full suite after behavior changes
+- `frappe.log_error(message=..., title=...)` logs to Error Log doctype without interrupting execution
+

@@ -109,13 +109,17 @@ class TestSubmissionHooks(FrappeTestCase):
     @patch("lhdn_payroll_integration.services.submission_service.frappe")
     @patch("lhdn_payroll_integration.services.submission_service.should_submit_to_lhdn", return_value=True)
     def test_document_name_length_validation(self, mock_filter, mock_frappe):
-        """Document name longer than 50 chars triggers validation before enqueue."""
+        """Document name longer than 50 chars is gracefully truncated — submission still proceeds."""
         from lhdn_payroll_integration.services.submission_service import enqueue_salary_slip_submission
 
         long_name = "SAL-SLP-" + "X" * 50  # 58 chars, exceeds 50 limit
         doc = self._make_salary_slip(name=long_name)
 
-        # Should raise a validation error for name too long
-        mock_frappe.throw.side_effect = frappe.ValidationError("Document name too long")
-        with self.assertRaises(frappe.ValidationError):
-            enqueue_salary_slip_submission(doc, "on_submit")
+        # Should NOT raise — validate_document_name_length now truncates instead of throwing
+        enqueue_salary_slip_submission(doc, "on_submit")
+
+        # Should still set Pending status and enqueue the job
+        mock_frappe.db.set_value.assert_any_call(
+            "Salary Slip", doc.name, "custom_lhdn_status", "Pending"
+        )
+        mock_frappe.enqueue.assert_called_once()
