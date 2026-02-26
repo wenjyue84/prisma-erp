@@ -2391,3 +2391,24 @@ document_type, document_name, employee, period, amount, lhdn_status, uuid, submi
   - PermissionError if "System Manager" not in frappe.get_roles()
   - ValidationError if custom_lhdn_status not in {Invalid, Submitted}
   - Sets custom_lhdn_status=Pending + frappe.enqueue() to process_salary_slip or process_expense_claim
+## Iteration 1 - Thu, Feb 26, 2026  8:20:37 PM
+Completed: Sync comprehensive salary components as lhdn_payroll_integration fixtures (ID: US-039) in 13m
+
+
+## Iteration N — UT-037: Write failing tests for LHDN Payroll workspace fixture
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_workspace`
+**Result:** FAIL — 5 failures, AssertionError: workspace.json not found
+
+### Files created/modified
+- `lhdn_payroll_integration/tests/test_workspace.py` — 1 test class, 5 test methods
+
+### Test methods
+- test_workspace_fixture_file_exists: asserts workspace.json exists
+- test_workspace_name: asserts name='LHDN Payroll'
+- test_workspace_module: asserts module='LHDN Payroll Integration'
+- test_workspace_has_minimum_shortcuts: asserts ≥4 shortcuts
+- test_workspace_required_shortcuts: asserts Salary Slip, Expense Claim, LHDN Payroll Compliance, Background Jobs
+
