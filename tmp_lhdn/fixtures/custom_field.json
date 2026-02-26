@@ -310,5 +310,50 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_error_log"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim Type-custom_lhdn_classification_code",
+    "dt": "Expense Claim Type",
+    "fieldname": "custom_lhdn_classification_code",
+    "fieldtype": "Select",
+    "label": "LHDN Classification Code",
+    "options": "\n022 : Others\n027 : Reimbursement\n036 : Self-billed - Others\n037 : Self-billed - Monetary payment to agents, dealers or distributors\n045 : Self-billed - Non-monetary payment to agents, dealers or distributors",
+    "default": "027 : Reimbursement",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "description"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_state_code",
+    "dt": "Employee",
+    "fieldname": "custom_state_code",
+    "fieldtype": "Select",
+    "label": "State Code",
+    "options": "\n01 : Johor\n02 : Kedah\n03 : Kelantan\n04 : Melaka\n05 : Negeri Sembilan\n06 : Pahang\n07 : Pulau Pinang\n08 : Perak\n09 : Perlis\n10 : Selangor\n11 : Terengganu\n12 : Sabah\n13 : Sarawak\n14 : W.P. Kuala Lumpur\n15 : W.P. Putrajaya\n16 : W.P. Labuan\n17 : Not Applicable",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_bank_account_number"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_state_code",
+    "dt": "Company",
+    "fieldname": "custom_state_code",
+    "fieldtype": "Select",
+    "label": "State Code",
+    "options": "\n01 : Johor\n02 : Kedah\n03 : Kelantan\n04 : Melaka\n05 : Negeri Sembilan\n06 : Pahang\n07 : Pulau Pinang\n08 : Perak\n09 : Perlis\n10 : Selangor\n11 : Terengganu\n12 : Sabah\n13 : Sarawak\n14 : W.P. Kuala Lumpur\n15 : W.P. Putrajaya\n16 : W.P. Labuan\n17 : Not Applicable",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_enable_lhdn_invoice"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_annual_revenue_tier",
+    "dt": "Company",
+    "fieldname": "custom_annual_revenue_tier",
+    "fieldtype": "Select",
+    "label": "Annual Revenue Tier",
+    "options": "\nAbove RM100M\nRM25M to RM100M\nRM5M to RM25M\nRM1M to RM5M\nBelow RM1M (Exempt)",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_state_code"
   }
 ]

@@ -1743,3 +1743,50 @@ Re-verified: bench tests pass, marked US-027 passes: true.
 ### Gotchas
 - None — clean red phase, ImportError on missing functions
 
+## Iteration 53 - Thu, Feb 26, 2026
+Completed: Write failing tests for mandatory e-invoice date gating (ID: UT-028) — recovered from previous session
+
+## Note on US-022 (INTG)
+US-022 is the highest priority eligible story but requires real LHDN sandbox credentials.
+Credentials on Company doc are placeholder values per CLAUDE.md. Skipped — needs real credentials to proceed.
+
+## Iteration 54 — US-028: Implement revenue-tier mandatory date gating for LHDN e-invoice compliance
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config`
+**Result:** PASS — 12/12 tests pass (5 TestEnvironmentToggle + 7 TestMandatoryDateGating), 0 failures, 0 errors
+
+### Files modified
+- `lhdn_payroll_integration/utils/config.py` — Added MANDATORY_DATES dict, get_mandatory_date(tier), check_mandatory_compliance(company_name)
+
+### Implementation details
+- MANDATORY_DATES maps tier strings to date objects per December 2025 Cabinet decision
+- get_mandatory_date(tier) returns the date for the tier (or None for exempt)
+- check_mandatory_compliance(company_name) reads lhdn_environment from conf; sandbox bypasses entirely; production mode logs frappe.log_error warning if today < mandatory date
+- String comparison of ISO dates for date comparison (str(today) < str(mandatory))
+
+### Patterns discovered
+- Previous session had already written both test and implementation locally but didn't deploy to container or mark prd.json
+
+## Iteration 54 - Thu, Feb 26, 2026
+Completed: Implement revenue-tier mandatory date gating (ID: US-028)
+
+
+## Iteration 54 — US-028: Implement revenue-tier mandatory date gating for LHDN e-invoice compliance
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config`
+**Result:** PASS — 12/12 tests pass (5 existing + 7 new), 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/config.py` — Added MANDATORY_DATES dict, get_mandatory_date(), check_mandatory_compliance()
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added Company-custom_annual_revenue_tier (Select)
+
+### Implementation details
+- MANDATORY_DATES dict maps 5 revenue tiers to date objects (or None for exempt)
+- get_mandatory_date(tier) looks up from MANDATORY_DATES dict
+- check_mandatory_compliance(company_name) bypasses in sandbox, logs warning in production before mandatory date
+- custom_annual_revenue_tier field added to Company with 5 tier options
+
