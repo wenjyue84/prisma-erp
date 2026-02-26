@@ -1241,3 +1241,24 @@ Incomplete: Write failing tests for monthly consolidation scheduler (ID: UT-018)
 
 ### Gotchas
 - None — straightforward implementation following existing patterns
+
+## Iteration 32 — UT-020: Write failing tests for environment toggle
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config`
+**Result:** FAIL — ModuleNotFoundError: No module named 'lhdn_payroll_integration.utils.config'
+
+### Files created/modified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_config.py`
+
+### Test methods (5 total)
+1. test_sandbox_config_uses_preprod_url — ERROR (ModuleNotFoundError)
+2. test_production_config_uses_prod_url — ERROR (ModuleNotFoundError)
+3. test_missing_config_defaults_to_sandbox — ERROR (ModuleNotFoundError)
+4. test_einvoice_version_from_config — ERROR (ModuleNotFoundError)
+5. test_no_hardcoded_urls_in_python_files — ERROR (ModuleNotFoundError)
+
+### Red phase mechanism
+- Imports `get_lhdn_base_url` and `get_einvoice_version` from `utils.config` which doesn't exist
+- ModuleNotFoundError prevents all test discovery
