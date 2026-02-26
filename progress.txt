@@ -1637,3 +1637,32 @@ Completed: Add Malaysian state code to UBL address elements (ID: US-025)
 
 ### Gotchas
 - Import failure at module level prevents any test from running (all 5 fail together)
+
+## Iteration — US-026: Implement QR code rendering for LHDN e-Invoice on Salary Slip print format
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_qr_code`
+**Result:** PASS — 5/5 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `utils/qr_utils.py` — Created with `generate_qr_code_base64(url)` function
+- `hooks.py` — Added `jinja = {"methods": ["lhdn_payroll_integration.utils.qr_utils.generate_qr_code_base64"]}`
+
+### Implementation
+- `generate_qr_code_base64(url)`: Returns empty string for falsy input. Otherwise uses `qrcode.make(url)` → saves to BytesIO PNG → base64 encodes → returns `data:image/png;base64,...` string
+- Installed `qrcode[pil]` (v8.2) in container venv
+- Registered as Jinja method in hooks.py for use in print format templates
+
+### Patterns discovered
+- `qrcode` library needs explicit install — not included in frappe/erpnext base image
+- Frappe `jinja.methods` hook allows dotted-path strings that get imported at render time
+
+### Gotchas
+- None — clean implementation, all 5 tests pass on first attempt
+
+### Note on US-022 (INTG)
+- Skipped US-022 (priority 43, INTG) — requires real LHDN sandbox credentials
+- Company doc has placeholder values (from test data seed), not real sandbox credentials
+- Cannot complete integration tests without real `custom_client_id` / `custom_client_secret`
+
