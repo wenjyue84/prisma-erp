@@ -1135,7 +1135,7 @@
         "US-005"
       ],
       "estimatedComplexity": "small",
-      "passes": false,
+      "passes": true,
       "passesWhen": "Test file is written AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_rbac shows AssertionError (red phase confirmed)"
     },
     {

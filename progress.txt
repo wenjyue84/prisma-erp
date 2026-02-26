@@ -1307,3 +1307,24 @@ Completed: Write failing tests for monthly consolidation scheduler (ID: UT-018) 
 
 ### Notes
 - Implementation was already in container from UT-020 iteration — tests immediately green
+
+## Iteration 34 — UT-021: Write failing tests for RBAC field visibility
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_rbac`
+**Result:** FAIL — 3 failures, 0 errors (AssertionError on permlevel checks)
+
+### Files created/modified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_rbac.py`
+
+### Test methods (3 total)
+1. test_hr_user_cannot_see_lhdn_uuid_field — FAIL (permlevel is 0, expected >= 1)
+2. test_hr_manager_can_see_all_lhdn_fields — FAIL (no DocPerm at permlevel=1)
+3. test_requires_self_billed_field_restricted_to_hr_manager — FAIL (permlevel is 0)
+
+### Red phase mechanism
+- Tests use real Frappe metadata (frappe.get_meta, frappe.get_all for DocPerm)
+- Fields exist (from US-004/US-005) but permlevel is default 0
+- No permlevel=1 permission entries for HR Manager role
+- Clean AssertionError failures as specified
