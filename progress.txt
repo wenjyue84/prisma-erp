@@ -708,3 +708,46 @@ Completed: Write failing tests for submission service HTTP POST (ID: UT-011) in 
 
 ### Gotchas
 - None — clean green phase on first attempt
+## Iteration 16 - Thu, Feb 26, 2026  1:15:24 PM
+Completed: Implement submission service: HTTP POST to LHDN and response writer (ID: US-011) in 7m
+
+## Iteration 24 — UT-012: Write failing tests for validation + decimal + date utils
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench commands:**
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_validation` — FAIL (ImportError: cannot import name 'validate_tin')
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_decimal_utils` — FAIL (ModuleNotFoundError: No module named 'lhdn_payroll_integration.utils.decimal_utils')
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_date_utils` — FAIL (ModuleNotFoundError: No module named 'lhdn_payroll_integration.utils.date_utils')
+
+### Files created
+- `lhdn_payroll_integration/tests/test_validation.py` — TestValidationUtils (5 methods)
+- `lhdn_payroll_integration/tests/test_decimal_utils.py` — TestDecimalUtils (3 methods)
+- `lhdn_payroll_integration/tests/test_date_utils.py` — TestDateUtils (4 methods)
+
+### Test methods (12 total)
+**TestValidationUtils (5):**
+1. test_invalid_tin_nric_raises_error — validate_tin with wrong-length NRIC TIN raises ValidationError
+2. test_valid_nric_tin_returns_value — validate_tin with valid 13-char NRIC returns value
+3. test_foreign_worker_returns_ei_tin — foreign worker returns EI00000000010
+4. test_long_document_name_truncated_to_50 — truncates names > 50 chars
+5. test_bank_account_truncated_to_150 — truncates accounts > 150 chars
+
+**TestDecimalUtils (3):**
+6. test_quantize_0_1_plus_0_2_equals_0_30 — avoids floating point error
+7. test_totals_balance_exact_passes — subtotal + tax == total passes
+8. test_totals_imbalance_raises_value_error — imbalanced totals raise ValueError
+
+**TestDateUtils (4):**
+9. test_to_lhdn_date_valid_date_object — date object returns YYYY-MM-DD
+10. test_to_lhdn_date_valid_string — valid string returns as-is
+11. test_to_lhdn_date_invalid_raises_value_error — 'N/A', empty, garbage raise ValueError
+12. test_to_lhdn_datetime_returns_utc_format — returns YYYY-MM-DDTHH:MM:SSZ regex match
+
+### Patterns discovered
+- validation.py already exists as a partial stub (has validate_document_name_length from US-008) — test_validation imports validate_tin which doesn't exist yet, causing ImportError
+- decimal_utils.py and date_utils.py modules don't exist at all — ModuleNotFoundError
+
+### Gotchas
+- None — clean red phase for all three test modules
+
