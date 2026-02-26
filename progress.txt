@@ -2377,3 +2377,17 @@ Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → docum
 ### Required fieldnames tested
 document_type, document_name, employee, period, amount, lhdn_status, uuid, submitted_at, validated_at
 
+
+## Iteration N — US-036: Add resubmit_to_lhdn whitelisted action for stuck Invalid submissions
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 6 UT-036 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_resubmit_action`
+**Result:** PASS — 6/6 tests, 0 failures, 0 errors
+
+### Files modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/submission_service.py`
+  - Added `resubmit_to_lhdn(docname, doctype)` with @frappe.whitelist() decorator
+  - PermissionError if "System Manager" not in frappe.get_roles()
+  - ValidationError if custom_lhdn_status not in {Invalid, Submitted}
+  - Sets custom_lhdn_status=Pending + frappe.enqueue() to process_salary_slip or process_expense_claim

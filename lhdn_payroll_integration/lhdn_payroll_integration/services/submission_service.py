@@ -120,6 +120,51 @@ def _write_response_to_doc(doctype, docname, response):
         frappe.db.set_value(doctype, docname, "custom_error_log", error_msg)
 
 
+@frappe.whitelist()
+def resubmit_to_lhdn(docname, doctype="Salary Slip"):
+    """Reset LHDN status to Pending and re-enqueue a stuck Invalid submission.
+
+    Only System Manager users may call this action. The document must currently
+    have custom_lhdn_status of 'Invalid' or 'Submitted' (stuck / needs retry).
+
+    Args:
+        docname: The document name (e.g. 'Sal Slip/2026/00001').
+        doctype: The Frappe doctype — 'Salary Slip' or 'Expense Claim'.
+
+    Raises:
+        frappe.PermissionError: If the current user lacks System Manager role.
+        frappe.ValidationError: If the document's LHDN status is not Invalid or Submitted.
+    """
+    if "System Manager" not in frappe.get_roles():
+        frappe.throw(
+            "Only System Manager can resubmit documents to LHDN.",
+            frappe.PermissionError,
+        )
+
+    doc = frappe.get_doc(doctype, docname)
+    allowed_statuses = {"Invalid", "Submitted"}
+    if doc.custom_lhdn_status not in allowed_statuses:
+        frappe.throw(
+            f"Cannot resubmit: LHDN Status is '{doc.custom_lhdn_status}'. "
+            f"Only documents with status Invalid or Submitted can be resubmitted.",
+            frappe.ValidationError,
+        )
+
+    frappe.db.set_value(doctype, docname, "custom_lhdn_status", "Pending")
+
+    if doctype == "Salary Slip":
+        method = "lhdn_payroll_integration.services.submission_service.process_salary_slip"
+    else:
+        method = "lhdn_payroll_integration.services.submission_service.process_expense_claim"
+
+    frappe.enqueue(
+        method=method,
+        docname=docname,
+        queue="short",
+        timeout=300,
+    )
+
+
 def schedule_retry(doctype, docname, process_method):
     """Schedule a retry for a failed LHDN submission.
 
