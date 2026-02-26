@@ -1,10 +1,10 @@
-"""UBL 2.1 XML payload builder for Salary Slip e-Invoices.
+"""UBL 2.1 XML payload builder for Salary Slip and Expense Claim e-Invoices.
 
 Generates self-billed e-Invoice XML for LHDN MyInvois submission.
-Self-billed inversion: Employer = Buyer (payer), Contractor = Supplier (payee).
+Self-billed inversion: Employer = Buyer (payer), Employee = Supplier (payee).
 e-Invoice type code = '11' (self-billed).
 
-Financial totals are calculated from doc.earnings child table ONLY —
+Financial totals are calculated from child table rows ONLY —
 never from YTD fields or compute_year_to_date() (v16 bug).
 """
 import base64
@@ -43,69 +43,56 @@ def assert_totals_balance(total_excl, total_tax, total_incl):
         )
 
 
-def build_salary_slip_xml(docname):
-    """Build UBL 2.1 XML for a self-billed Salary Slip e-Invoice.
+def _extract_classification_code(raw_code, default="022"):
+    """Extract numeric classification code from 'NNN : Description' format."""
+    if raw_code and " : " in str(raw_code):
+        return str(raw_code).split(" : ")[0].strip()
+    return default
 
-    Args:
-        docname: The Salary Slip document name.
 
-    Returns:
-        str: UBL 2.1 XML string.
+def _build_invoice_skeleton(docname, issue_date, employee, company):
+    """Build common UBL 2.1 Invoice skeleton with supplier/customer parties.
+
+    Returns the root Element with ID, IssueDate, InvoiceTypeCode, Currency,
+    AccountingSupplierParty (Employee), and AccountingCustomerParty (Company).
     """
-    # Register namespaces for clean prefix output
     ET.register_namespace("", UBL_NS)
     ET.register_namespace("cac", CAC_NS)
     ET.register_namespace("cbc", CBC_NS)
 
-    # Fetch documents
-    doc = frappe.get_doc("Salary Slip", docname)
-    employee = frappe.get_doc("Employee", doc.employee)
-    company = frappe.get_doc("Company", doc.company)
-
-    # Root element
     root = ET.Element(f"{{{UBL_NS}}}Invoice")
-
-    # Invoice ID
     _sub(root, CBC_NS, "ID", docname)
+    _sub(root, CBC_NS, "IssueDate", str(issue_date))
 
-    # Issue date
-    _sub(root, CBC_NS, "IssueDate", str(doc.posting_date))
-
-    # Invoice type code: 11 = self-billed
     type_code = _sub(root, CBC_NS, "InvoiceTypeCode", "11")
     type_code.set("listVersionID", "1.1")
 
-    # Currency
     _sub(root, CBC_NS, "DocumentCurrencyCode", "MYR")
 
-    # --- AccountingSupplierParty (Employee = Payee = Supplier in self-billed) ---
+    # AccountingSupplierParty (Employee = Payee = Supplier in self-billed)
     supplier_party = _sub(root, CAC_NS, "AccountingSupplierParty")
     supplier_inner = _sub(supplier_party, CAC_NS, "Party")
-
     supplier_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
     _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin)
-
     supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
     _sub(supplier_name_elem, CBC_NS, "Name", employee.employee_name)
 
-    # --- AccountingCustomerParty (Company = Payer = Buyer in self-billed) ---
+    # AccountingCustomerParty (Company = Payer = Buyer in self-billed)
     customer_party = _sub(root, CAC_NS, "AccountingCustomerParty")
     customer_inner = _sub(customer_party, CAC_NS, "Party")
-
     customer_id = _sub(customer_inner, CAC_NS, "PartyIdentification")
     _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number)
-
     customer_name_elem = _sub(customer_inner, CAC_NS, "PartyName")
     _sub(customer_name_elem, CBC_NS, "Name", company.name)
 
-    # --- Calculate totals from earnings ONLY (never use YTD fields) ---
-    total_excl = sum(_quantize(e.amount) for e in doc.earnings)
-    total_tax = Decimal("0.00")
-    total_incl = total_excl + total_tax
+    return root
 
+
+def _add_tax_and_totals(root, total_excl, total_tax):
+    """Add TaxTotal and LegalMonetaryTotal elements to the invoice root."""
+    total_incl = total_excl + total_tax
     assert_totals_balance(total_excl, total_tax, total_incl)
 
-    # --- TaxTotal ---
     tax_total = _sub(root, CAC_NS, "TaxTotal")
     _sub(tax_total, CBC_NS, "TaxAmount", str(total_tax), currencyID="MYR")
 
@@ -117,13 +104,34 @@ def build_salary_slip_xml(docname):
     tax_scheme = _sub(tax_cat, CAC_NS, "TaxScheme")
     _sub(tax_scheme, CBC_NS, "ID", "OTH")
 
-    # --- LegalMonetaryTotal ---
     monetary_total = _sub(root, CAC_NS, "LegalMonetaryTotal")
     _sub(monetary_total, CBC_NS, "TaxExclusiveAmount", str(total_excl), currencyID="MYR")
     _sub(monetary_total, CBC_NS, "TaxInclusiveAmount", str(total_incl), currencyID="MYR")
     _sub(monetary_total, CBC_NS, "PayableAmount", str(total_incl), currencyID="MYR")
 
-    # --- InvoiceLines (one per earnings row) ---
+
+def build_salary_slip_xml(docname):
+    """Build UBL 2.1 XML for a self-billed Salary Slip e-Invoice.
+
+    Args:
+        docname: The Salary Slip document name.
+
+    Returns:
+        str: UBL 2.1 XML string.
+    """
+    doc = frappe.get_doc("Salary Slip", docname)
+    employee = frappe.get_doc("Employee", doc.employee)
+    company = frappe.get_doc("Company", doc.company)
+
+    root = _build_invoice_skeleton(docname, doc.posting_date, employee, company)
+
+    # Calculate totals from earnings ONLY (never use YTD fields)
+    total_excl = sum(_quantize(e.amount) for e in doc.earnings)
+    total_tax = Decimal("0.00")
+
+    _add_tax_and_totals(root, total_excl, total_tax)
+
+    # InvoiceLines (one per earnings row)
     for idx, earning in enumerate(doc.earnings, start=1):
         line = _sub(root, CAC_NS, "InvoiceLine")
         _sub(line, CBC_NS, "ID", str(idx))
@@ -132,24 +140,63 @@ def build_salary_slip_xml(docname):
         amount = _quantize(earning.amount)
         _sub(line, CBC_NS, "LineExtensionAmount", str(amount), currencyID="MYR")
 
-        # Item with classification
         item = _sub(line, CAC_NS, "Item")
         _sub(item, CBC_NS, "Description", earning.salary_component)
 
         classification = getattr(earning, "custom_lhdn_classification_code", None)
-        if classification and " : " in str(classification):
-            class_code = str(classification).split(" : ")[0].strip()
-        else:
-            class_code = "022"
+        class_code = _extract_classification_code(classification, default="022")
 
         commodity = _sub(item, CAC_NS, "CommodityClassification")
         _sub(commodity, CBC_NS, "ItemClassificationCode", class_code, listID="CLASS")
 
-        # Price
         price = _sub(line, CAC_NS, "Price")
         _sub(price, CBC_NS, "PriceAmount", str(amount), currencyID="MYR")
 
-    # Serialize to XML string
+    return ET.tostring(root, encoding="unicode", xml_declaration=True)
+
+
+def build_expense_claim_xml(docname):
+    """Build UBL 2.1 XML for a self-billed Expense Claim e-Invoice.
+
+    Args:
+        docname: The Expense Claim document name.
+
+    Returns:
+        str: UBL 2.1 XML string.
+    """
+    doc = frappe.get_doc("Expense Claim", docname)
+    employee = frappe.get_doc("Employee", doc.employee)
+    company = frappe.get_doc("Company", doc.company)
+
+    root = _build_invoice_skeleton(docname, doc.posting_date, employee, company)
+
+    # Calculate totals from expenses rows (sanctioned_amount)
+    total_excl = sum(_quantize(row.sanctioned_amount) for row in doc.expenses)
+    total_tax = Decimal("0.00")
+
+    _add_tax_and_totals(root, total_excl, total_tax)
+
+    # InvoiceLines (one per expenses row)
+    for idx, expense in enumerate(doc.expenses, start=1):
+        line = _sub(root, CAC_NS, "InvoiceLine")
+        _sub(line, CBC_NS, "ID", str(idx))
+        _sub(line, CBC_NS, "InvoicedQuantity", "1", unitCode="C62")
+
+        amount = _quantize(expense.sanctioned_amount)
+        _sub(line, CBC_NS, "LineExtensionAmount", str(amount), currencyID="MYR")
+
+        item = _sub(line, CAC_NS, "Item")
+        _sub(item, CBC_NS, "Description", expense.expense_type)
+
+        classification = getattr(expense, "custom_lhdn_classification_code", None)
+        class_code = _extract_classification_code(classification, default="027")
+
+        commodity = _sub(item, CAC_NS, "CommodityClassification")
+        _sub(commodity, CBC_NS, "ItemClassificationCode", class_code, listID="CLASS")
+
+        price = _sub(line, CAC_NS, "Price")
+        _sub(price, CBC_NS, "PriceAmount", str(amount), currencyID="MYR")
+
     return ET.tostring(root, encoding="unicode", xml_declaration=True)
 
 

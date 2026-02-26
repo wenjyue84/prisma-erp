@@ -605,3 +605,43 @@ Completed: Implement UBL 2.1 XML payload builder for Salary Slip (ID: US-009) in
 ## Iteration 20 - Thu, Feb 26, 2026
 Completed: Write failing tests for Expense Claim XML payload builder (ID: UT-010)
 
+## Iteration 13 - Thu, Feb 26, 2026 12:57:55 PM
+Completed: Write failing tests for Expense Claim XML payload builder (ID: UT-010) in 5m
+
+## Iteration 21 — US-010: Implement UBL 2.1 XML payload builder for Expense Claim
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 16/16 tests pass, 0 failures, 0 errors
+
+### Files modified
+- `lhdn_payroll_integration/services/payload_builder.py` — Added build_expense_claim_xml(), refactored shared logic into _build_invoice_skeleton(), _add_tax_and_totals(), _extract_classification_code()
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added Expense Claim Type-custom_lhdn_classification_code (Select, default "027 : Reimbursement")
+
+### Implementation details
+- **build_expense_claim_xml(docname):** Builds UBL 2.1 XML identical structure to salary slip
+  - Fetches Expense Claim, Employee, Company docs
+  - Uses doc.expenses child table (sanctioned_amount per row)
+  - Classification code from expense row's custom_lhdn_classification_code (default: 027)
+  - Same self-billed inversion: Employee=Supplier, Company=Customer
+  - InvoiceTypeCode = '11', Tax category 'E' (Exempt), tax amount = 0.00
+
+### Refactoring
+- Extracted _build_invoice_skeleton() — shared Invoice root + supplier/customer party generation
+- Extracted _add_tax_and_totals() — shared TaxTotal + LegalMonetaryTotal generation
+- Extracted _extract_classification_code() — shared "NNN : Description" parsing logic
+- Both build_salary_slip_xml and build_expense_claim_xml now use these shared helpers
+
+### Fixture added
+- Expense Claim Type: custom_lhdn_classification_code (Select field)
+  - Options: 022/027/036/037/045
+  - Default: "027 : Reimbursement"
+
+### Patterns discovered
+- Frappe DocType for expense types is "Expense Claim Type" (not "Expense Type" as PRD says)
+- Refactoring to shared helpers keeps both builders DRY without breaking existing tests
+
+## Iteration 21 - Thu, Feb 26, 2026
+Completed: Implement UBL 2.1 XML payload builder for Expense Claim (ID: US-010)
+
