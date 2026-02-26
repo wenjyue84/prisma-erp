@@ -103,6 +103,25 @@ def _add_postal_address(party_elem, state_code):
     _sub(postal, CBC_NS, "CountrySubentityCode", state_code)
 
 
+def _add_party_tax_scheme(party_elem, sst_registration):
+    """Add cac:PartyTaxScheme to a Party element.
+
+    LHDN v1.1 requires PartyTaxScheme on both supplier and buyer.
+    Non-SST-registered parties use 'NA' for both RegistrationName and TaxScheme/ID.
+
+    Args:
+        party_elem: The cac:Party element to add PartyTaxScheme to.
+        sst_registration: SST registration number string, or None/empty for 'NA'.
+    """
+    reg_name = sst_registration if sst_registration else "NA"
+    scheme_id = "SST" if sst_registration else "NA"
+
+    tax_scheme_elem = _sub(party_elem, CAC_NS, "PartyTaxScheme")
+    _sub(tax_scheme_elem, CBC_NS, "RegistrationName", reg_name)
+    inner_scheme = _sub(tax_scheme_elem, CAC_NS, "TaxScheme")
+    _sub(inner_scheme, CBC_NS, "ID", scheme_id)
+
+
 def _build_invoice_skeleton(docname, issue_date, employee, company):
     """Build common UBL 2.1 Invoice skeleton with supplier/customer parties.
 
@@ -134,6 +153,10 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
     _sub(supplier_name_elem, CBC_NS, "Name", employee.employee_name)
     _add_postal_address(supplier_inner, supplier_state)
+    _add_party_tax_scheme(
+        supplier_inner,
+        getattr(employee, "custom_sst_registration_number", None) or ""
+    )
 
     # AccountingCustomerParty (Company = Payer = Buyer in self-billed)
     customer_party = _sub(root, CAC_NS, "AccountingCustomerParty")
@@ -143,6 +166,10 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     customer_name_elem = _sub(customer_inner, CAC_NS, "PartyName")
     _sub(customer_name_elem, CBC_NS, "Name", company.name)
     _add_postal_address(customer_inner, buyer_state)
+    _add_party_tax_scheme(
+        customer_inner,
+        getattr(company, "custom_sst_registration_number", None) or ""
+    )
 
     return root
 
