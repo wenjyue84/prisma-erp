@@ -858,7 +858,7 @@
         "US-011"
       ],
       "estimatedComplexity": "small",
-      "passes": false,
+      "passes": true,
       "passesWhen": "Test file is written AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation shows ImportError (red phase confirmed)"
     },
     {

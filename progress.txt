@@ -960,3 +960,31 @@ Completed: Write failing tests for exponential backoff retry (ID: UT-015) in 2m
 ### Patterns discovered
 - frappe.enqueue supports enqueue_after_timeout kwarg for delayed execution
 - db_set with update_modified=False avoids touching modified timestamp
+## Iteration 24 - Thu, Feb 26, 2026  1:46:32 PM
+Completed: Implement exponential backoff retry service (ID: US-015) in 2m
+
+## Iteration 25 — UT-016: Write failing tests for cancellation hook (72h window)
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation`
+**Result:** FAIL — 5/5 errors (AttributeError: cancellation_service does not have the attribute 'frappe')
+
+### Files created
+- `lhdn_payroll_integration/tests/test_cancellation.py` — TestCancellationHook class with 5 test methods
+
+### Test methods (5 total)
+1. test_exempt_slip_allows_native_cancel — ERROR (can't patch frappe on stub)
+2. test_within_72h_enqueues_cancellation_job — ERROR (same)
+3. test_past_72h_raises_validation_error — ERROR (same)
+4. test_error_message_mentions_credit_note_and_72_hours — ERROR (same)
+5. test_uses_validated_datetime_if_set_else_submission_datetime — ERROR (same)
+
+### Patterns discovered
+- Cancellation service stub has no `import frappe` — @patch fails with AttributeError (standard red phase)
+- Tests use datetime arithmetic (timedelta) to simulate 10h and 96h elapsed since validation
+- mock_frappe.ValidationError set to real_frappe.ValidationError for assertRaises compatibility
+
+### Gotchas
+- None — clean red phase, all 5 tests error as expected
+
