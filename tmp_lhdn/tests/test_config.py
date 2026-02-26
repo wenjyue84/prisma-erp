@@ -91,14 +91,17 @@ class TestEnvironmentToggle(FrappeTestCase):
 
 		violations = []
 
+		# Files that legitimately contain URLs (test mocks and config defaults)
+		skip_files = {"test_config.py", "config.py"}
+
 		for root_dir, dirs, files in os.walk(app_dir):
 			# Skip __pycache__ and test directories
-			dirs[:] = [d for d in dirs if d != "__pycache__"]
+			dirs[:] = [d for d in dirs if d not in ("__pycache__", "tests")]
 			for filename in files:
 				if not filename.endswith(".py"):
 					continue
-				# Skip this test file itself (contains URLs as test constants)
-				if filename == "test_config.py":
+				# Skip test files and config module (they use URLs legitimately)
+				if filename in skip_files:
 					continue
 
 				filepath = os.path.join(root_dir, filename)
