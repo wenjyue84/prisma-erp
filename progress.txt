@@ -935,3 +935,28 @@ Completed: Implement Status 3 error log parser (ID: US-014) in 4m
 - Uses unittest.mock.patch to mock frappe module at service level
 - Tests verify frappe.enqueue call kwargs (enqueue_after_timeout) and db_set calls
 
+## Iteration 23 - Thu, Feb 26, 2026  1:43:32 PM
+Completed: Write failing tests for exponential backoff retry (ID: UT-015) in 2m
+
+
+## Iteration 24 — US-015: Implement exponential backoff retry service
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retry_service`
+**Result:** PASS — 6/6 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/retry_service.py` — New file with schedule_retry()
+
+### Implementation details
+- schedule_retry(doctype, docname, error) — main entry point
+- MAX_RETRIES = 5; on 6th call (count already 5), sets Invalid status
+- Backoff: wait_seconds = min(2**new_count * 60, 3600)
+- PROCESS_METHODS dict maps doctype to dotted method path
+- Uses doc.db_set() with update_modified=False for all field updates
+- frappe.enqueue with queue="long" and enqueue_after_timeout parameter
+
+### Patterns discovered
+- frappe.enqueue supports enqueue_after_timeout kwarg for delayed execution
+- db_set with update_modified=False avoids touching modified timestamp
