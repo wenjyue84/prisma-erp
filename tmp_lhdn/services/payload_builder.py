@@ -4,7 +4,7 @@ Generates self-billed e-Invoice XML for LHDN MyInvois submission.
 Self-billed inversion: Employer = Buyer (payer), Employee = Supplier (payee).
 e-Invoice type code = '11' (self-billed).
 
-Financial totals are calculated from child table rows ONLY —
+Financial totals are calculated from child table rows ONLY --
 never from YTD fields or compute_year_to_date() (v16 bug).
 """
 import base64
@@ -21,6 +21,11 @@ CAC_NS = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents
 CBC_NS = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
 
 TWO_DP = Decimal("0.01")
+
+# PCB component names to detect withholding tax deductions
+PCB_COMPONENT_NAMES = frozenset({
+    'Monthly Tax Deduction', 'PCB', 'Income Tax', 'Tax Deduction'
+})
 
 
 def _quantize(value):
@@ -51,6 +56,41 @@ def _extract_classification_code(raw_code, default="022"):
     return default
 
 
+def _resolve_state_code(employee):
+    """Resolve Malaysian state code for an employee.
+
+    Foreign workers (custom_is_foreign_worker=1) always return '17' (Not Applicable).
+    Local employees must have custom_state_code set or a ValidationError is raised.
+
+    Returns:
+        str: Two-digit state code ('01'-'17').
+    """
+    if getattr(employee, "custom_is_foreign_worker", 0):
+        return "17"
+    state_code = getattr(employee, "custom_state_code", None)
+    if not state_code:
+        frappe.throw("Employee state code not set")
+    return str(state_code)
+
+
+def _resolve_company_state_code(company):
+    """Resolve Malaysian state code for a company.
+
+    Returns:
+        str: Two-digit state code ('01'-'17').
+    """
+    state_code = getattr(company, "custom_state_code", None)
+    if not state_code:
+        frappe.throw("Company state code not set")
+    return str(state_code)
+
+
+def _add_postal_address(party_elem, state_code):
+    """Add cac:PostalAddress with cbc:CountrySubentityCode to a Party element."""
+    postal = _sub(party_elem, CAC_NS, "PostalAddress")
+    _sub(postal, CBC_NS, "CountrySubentityCode", state_code)
+
+
 def _build_invoice_skeleton(docname, issue_date, employee, company):
     """Build common UBL 2.1 Invoice skeleton with supplier/customer parties.
 
@@ -70,6 +110,10 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
 
     _sub(root, CBC_NS, "DocumentCurrencyCode", "MYR")
 
+    # Resolve state codes before building XML
+    supplier_state = _resolve_state_code(employee)
+    buyer_state = _resolve_company_state_code(company)
+
     # AccountingSupplierParty (Employee = Payee = Supplier in self-billed)
     supplier_party = _sub(root, CAC_NS, "AccountingSupplierParty")
     supplier_inner = _sub(supplier_party, CAC_NS, "Party")
@@ -77,6 +121,7 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin)
     supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
     _sub(supplier_name_elem, CBC_NS, "Name", employee.employee_name)
+    _add_postal_address(supplier_inner, supplier_state)
 
     # AccountingCustomerParty (Company = Payer = Buyer in self-billed)
     customer_party = _sub(root, CAC_NS, "AccountingCustomerParty")
@@ -85,6 +130,7 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number)
     customer_name_elem = _sub(customer_inner, CAC_NS, "PartyName")
     _sub(customer_name_elem, CBC_NS, "Name", company.name)
+    _add_postal_address(customer_inner, buyer_state)
 
     return root
 
@@ -131,6 +177,16 @@ def build_salary_slip_xml(docname):
     total_tax = Decimal("0.00")
 
     _add_tax_and_totals(root, total_excl, total_tax)
+
+    # PCB withholding tax: detect from deductions and add WithholdingTaxTotal
+    pcb_amount = sum(
+        _quantize(d.amount)
+        for d in getattr(doc, 'deductions', [])
+        if getattr(d, 'salary_component', '') in PCB_COMPONENT_NAMES
+    )
+    if pcb_amount > Decimal("0.00"):
+        withholding = _sub(root, CAC_NS, "WithholdingTaxTotal")
+        _sub(withholding, CBC_NS, "TaxAmount", str(pcb_amount), currencyID="MYR")
 
     # InvoiceLines (one per earnings row)
     for idx, earning in enumerate(doc.earnings, start=1):
@@ -202,11 +258,11 @@ def build_expense_claim_xml(docname):
 
 
 def build_consolidated_xml(docnames, target_month):
-    """Build UBL 2.1 XML for a consolidated e-Invoice.
+    """Build UBL 2.1 XML for a consolidated e-Invoice aggregating multiple documents.
 
-    Aggregates multiple Salary Slip or Expense Claim documents into one
-    e-Invoice. One InvoiceLine per source document, classification code '004',
-    buyer contact = 'NA'.
+    Consolidates multiple Salary Slip documents into a single e-Invoice with
+    one InvoiceLine per source document. Uses classification code '004' for
+    all line items and 'NA' for buyer contact (grace period consolidation).
 
     Args:
         docnames: List of Salary Slip document names to consolidate.
@@ -215,82 +271,92 @@ def build_consolidated_xml(docnames, target_month):
     Returns:
         str: UBL 2.1 XML string.
     """
-    # Parse target month for billing period
-    year, month = map(int, target_month.split("-"))
-    start_date = f"{year}-{month:02d}-01"
-    last_day = calendar.monthrange(year, month)[1]
-    end_date = f"{year}-{month:02d}-{last_day:02d}"
+    if not docnames:
+        frappe.throw("No documents provided for consolidation")
 
-    # Get first doc to determine company
+    # Load first document to determine company
     first_doc = frappe.get_doc("Salary Slip", docnames[0])
     company = frappe.get_doc("Company", first_doc.company)
 
     # Build invoice code: CONSOL-{company_abbr}-{YYYY-MM} (max 50 chars)
     invoice_code = f"CONSOL-{company.abbr}-{target_month}"[:50]
 
-    # Build XML skeleton
+    # Parse target month for billing period
+    year, month = target_month.split("-")
+    year = int(year)
+    month = int(month)
+    last_day_num = calendar.monthrange(year, month)[1]
+    start_date = f"{target_month}-01"
+    end_date = f"{target_month}-{last_day_num:02d}"
+
+    # Register namespaces and build root
     ET.register_namespace("", UBL_NS)
     ET.register_namespace("cac", CAC_NS)
     ET.register_namespace("cbc", CBC_NS)
 
     root = ET.Element(f"{{{UBL_NS}}}Invoice")
     _sub(root, CBC_NS, "ID", invoice_code)
-    _sub(root, CBC_NS, "IssueDate", end_date)
+    _sub(root, CBC_NS, "IssueDate", start_date)
 
     type_code = _sub(root, CBC_NS, "InvoiceTypeCode", "11")
     type_code.set("listVersionID", "1.1")
 
     _sub(root, CBC_NS, "DocumentCurrencyCode", "MYR")
 
-    # BillingPeriod (InvoicePeriod)
-    period = _sub(root, CAC_NS, "InvoicePeriod")
-    _sub(period, CBC_NS, "StartDate", start_date)
-    _sub(period, CBC_NS, "EndDate", end_date)
+    # InvoicePeriod (BillingPeriod)
+    invoice_period = _sub(root, CAC_NS, "InvoicePeriod")
+    _sub(invoice_period, CBC_NS, "StartDate", start_date)
+    _sub(invoice_period, CBC_NS, "EndDate", end_date)
 
-    # AccountingSupplierParty — NA for consolidated (no single employee)
+    # AccountingSupplierParty (first employee = Supplier in self-billed)
+    employee = frappe.get_doc("Employee", first_doc.employee)
+    supplier_state = _resolve_state_code(employee)
     supplier_party = _sub(root, CAC_NS, "AccountingSupplierParty")
     supplier_inner = _sub(supplier_party, CAC_NS, "Party")
+    supplier_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
+    _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin)
     supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
-    _sub(supplier_name_elem, CBC_NS, "Name", "NA")
+    _sub(supplier_name_elem, CBC_NS, "Name", employee.employee_name)
+    _add_postal_address(supplier_inner, supplier_state)
 
-    # AccountingCustomerParty — Company (buyer/payer) with contact = NA
+    # AccountingCustomerParty (Company = Buyer) with contact = 'NA'
+    # Consolidated submissions use state code '17' (Not Applicable) for buyer
     customer_party = _sub(root, CAC_NS, "AccountingCustomerParty")
     customer_inner = _sub(customer_party, CAC_NS, "Party")
     customer_id = _sub(customer_inner, CAC_NS, "PartyIdentification")
     _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number)
     customer_name_elem = _sub(customer_inner, CAC_NS, "PartyName")
     _sub(customer_name_elem, CBC_NS, "Name", company.name)
+    _add_postal_address(customer_inner, "17")
+    # Buyer contact = 'NA' (allowed during grace period consolidation)
     contact = _sub(customer_inner, CAC_NS, "Contact")
     _sub(contact, CBC_NS, "Name", "NA")
 
-    # Collect documents and calculate totals
+    # Load all docs and calculate totals
     docs = []
     total_excl = Decimal("0.00")
-    for dn in docnames:
-        doc = frappe.get_doc("Salary Slip", dn)
-        docs.append(doc)
-        total_excl += _quantize(doc.net_pay)
+    for docname in docnames:
+        doc = frappe.get_doc("Salary Slip", docname)
+        amount = _quantize(doc.net_pay)
+        total_excl += amount
+        docs.append((doc, amount))
 
     total_tax = Decimal("0.00")
+
+    # Add tax and totals
     _add_tax_and_totals(root, total_excl, total_tax)
 
-    # InvoiceLines — one per source document (not per salary component)
-    for idx, doc in enumerate(docs, start=1):
+    # InvoiceLines (one per source document, classification code '004')
+    for idx, (doc, amount) in enumerate(docs, start=1):
         line = _sub(root, CAC_NS, "InvoiceLine")
         _sub(line, CBC_NS, "ID", str(idx))
         _sub(line, CBC_NS, "InvoicedQuantity", "1", unitCode="C62")
-
-        amount = _quantize(doc.net_pay)
         _sub(line, CBC_NS, "LineExtensionAmount", str(amount), currencyID="MYR")
 
         item = _sub(line, CAC_NS, "Item")
-        desc = (
-            f"Self-billed payroll - {doc.name}"
-            f" - {doc.employee_name} - {doc.end_date}"
-        )
+        desc = f"Self-billed payroll - {doc.name} - {doc.employee_name} - {doc.end_date}"
         _sub(item, CBC_NS, "Description", desc)
 
-        # Classification code '004' for all consolidated line items
         commodity = _sub(item, CAC_NS, "CommodityClassification")
         _sub(commodity, CBC_NS, "ItemClassificationCode", "004", listID="CLASS")
 

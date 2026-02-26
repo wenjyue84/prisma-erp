@@ -1823,3 +1823,25 @@ Completed: Implement revenue-tier mandatory date gating (ID: US-028)
 
 ## Iteration 55
 Completed: Write failing tests for PCB withholding tax (ID: UT-029) — tests already existed, confirmed red phase
+
+## Iteration 56 — US-029: Add PCB withholding tax element to contractor UBL invoice (gross billing)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 33/33 tests pass, 0 failures, 0 errors
+
+### Files modified
+- `lhdn_payroll_integration/services/payload_builder.py` — Added PCB_COMPONENT_NAMES constant and WithholdingTaxTotal generation in build_salary_slip_xml
+
+### Implementation details
+- PCB_COMPONENT_NAMES = frozenset({'Monthly Tax Deduction', 'PCB', 'Income Tax', 'Tax Deduction'})
+- After _add_tax_and_totals(), sums PCB deduction amounts from doc.deductions where salary_component matches PCB_COMPONENT_NAMES
+- When pcb_amount > 0: appends cac:WithholdingTaxTotal with cbc:TaxAmount (currencyID=MYR) to root
+- When pcb_amount == 0: element omitted (no change to XML output)
+- Gross earnings (sum of doc.earnings) remains as TaxInclusiveAmount — PCB is a separate withholding, not a reduction
+
+### Patterns discovered
+- WithholdingTaxTotal is a UBL 2.1 top-level Invoice child (not a child of TaxTotal)
+- getattr(doc, 'deductions', []) safely handles missing deductions attribute on mock objects
+
