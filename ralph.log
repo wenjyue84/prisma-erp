@@ -758,3 +758,72 @@ warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the nex
 [2m[2:30][0m 🔧 [36mEdit[0m [2mprogress.txt[0m
 [2m[2:33][0m [37mNow commit:[0m
 [2m[2:35][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:41][0m [37m**US-007: Implement exemption filter service** — COMPLETE  - **TDD Phase:** GREEN — 6/6 tests pass -...[0m
+
+[32m[1m✓ Claude finished[0m [2m(17 tool calls in 2:42)[0m
+
+[2mStream ended (17 tool calls, 2:43 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 2m
+
+  [done] Story completed: Implement exemption filter service
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... 
+  │     Module: lhdn_payroll_integration.tests.test_exemption_filter
+  │     Type:   IMPL
+  │     Result: ✓ PASS (green phase confirmed)
+  └────────────────────────────────────────────┘
+  ✓ All quality gates passed!
+warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the next time Git touches it
+[feature/lhdn-payroll-integration 944c983] feat: US-007 - Implement exemption filter service
+ 1 file changed, 65 insertions(+)
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 9/60
+  Progress: [█████████░░░░░░░░░░░░░░░░░░░░░] 14/43 (32%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       UT-008
+  │ Title:    Write failing tests for on_submit hooks
+  │ Priority: 15
+  │ Deps:     US-007
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for UT-008...
+  ─────── Claude Output Start ──────────
+[2m[0:39][0m [37mI'll start by reading the current state of the project.[0m
+[2m[0:40][0m 📖 [36mRead[0m [2mprogress.txt[0m
+[2m[0:41][0m 📖 [36mRead[0m [2mprd.json[0m
+[2m[0:44][0m [37mThe prd.json is too large. Let me get the incomplete stories and check what's next.[0m
+[2m[0:46][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[0:47][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:03][0m [37mDocker is running. The next story is **UT-008** (priority 15, depends on US-007 which is `passes: tr...[0m
+[2m[1:04][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:07][0m [37mNow let me also check what US-008 expects so I write tests that cover its acceptance criteria.[0m
+[2m[1:08][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:13][0m [37mNow let me look at the existing test files for patterns and the current submission_service.py stub.[0m
+[2m[1:15][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:17][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:20][0m [37mRight, the MINGW path expansion issue. Need to use `bash -c` wrapper.[0m
+[2m[1:21][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:22][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:31][0m [37mI see — the submission_service.py **already exists** as a stub with `enqueue_salary_slip_submission`...[0m
+[2m[1:32][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:38][0m [37mGood. Now I have all the context. Let me write the test file. The key insight is:  1. The stub `subm...[0m
+[2m[1:57][0m ✏️ [36mWrite[0m [2mtest_submission_hooks.py[0m
+[2m[2:03][0m [37mNow copy the test file to the container and run the tests.[0m
+[2m[2:03][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:11][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:20][0m [37mAll 5 tests fail with `AttributeError` — the stub `submission_service.py` doesn't import `should_sub...[0m
+[2m[2:23][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:27][0m [37mNow update progress.txt.[0m
+[2m[2:28][0m 📖 [36mRead[0m [2mprogress.txt[0m
+[2m[2:39][0m 🔧 [36mEdit[0m [2mprogress.txt[0m
+[2m[2:43][0m [37mNow commit the changes.[0m
+[2m[2:46][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:53][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
