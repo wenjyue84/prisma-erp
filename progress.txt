@@ -1790,3 +1790,36 @@ Completed: Implement revenue-tier mandatory date gating (ID: US-028)
 - check_mandatory_compliance(company_name) bypasses in sandbox, logs warning in production before mandatory date
 - custom_annual_revenue_tier field added to Company with 5 tier options
 
+
+## Iteration 55 — US-022: INTG story BLOCKED (missing real LHDN sandbox credentials)
+
+**Type:** INTG
+**Status:** BLOCKED — Cannot proceed
+**Reason:** Company doc has placeholder credentials (custom_client_id: d2906b87-..., custom_client_secret: sndx-K9m...) per CLAUDE.md warning. Real LHDN sandbox credentials required for T-02 (valid submission), T-03 (bad TIN), and T-05 (consolidation).
+**Action:** Skipped to next eligible story (UT-029).
+
+---
+
+## Iteration 55 — UT-029: Write failing tests for PCB withholding tax handling in contractor invoice
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** FAIL — 33 tests total, 1 failure (test_pcb_amount_in_withholding_tax_total)
+
+### Test methods in TestPCBWithholdingTax (4 total)
+1. test_gross_pay_used_as_invoice_total_not_net_pay — PASS (existing code already uses gross)
+2. test_pcb_amount_in_withholding_tax_total — FAIL (WithholdingTaxTotal element missing from XML)
+3. test_zero_pcb_omits_withholding_tax_element — PASS (element absent as expected when PCB=0)
+4. test_invoice_total_equals_sum_of_earnings_components — PASS (existing code uses gross earnings sum)
+
+### Files
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_payload_builder.py` — TestPCBWithholdingTax class (lines 1006-1168)
+
+### Notes
+- Tests were written in a previous session but UT-029 was not marked passes:true
+- The key failing test (test_pcb_amount_in_withholding_tax_total) confirms production code does not yet generate WithholdingTaxTotal element when PCB deduction > 0
+- This drives the US-029 implementation story
+
+## Iteration 55
+Completed: Write failing tests for PCB withholding tax (ID: UT-029) — tests already existed, confirmed red phase
