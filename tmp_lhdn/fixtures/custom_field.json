@@ -367,5 +367,17 @@
     "default": "Employee",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_requires_self_billed_invoice"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Component-custom_lhdn_exclude_from_invoice",
+    "dt": "Salary Component",
+    "fieldname": "custom_lhdn_exclude_from_invoice",
+    "fieldtype": "Check",
+    "label": "Exclude from LHDN Invoice",
+    "description": "When checked, this salary component will be excluded from self-billed e-Invoice lines",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_classification_code"
   }
 ]

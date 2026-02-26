@@ -2080,3 +2080,57 @@ Completed: US-033 green phase verified
 
 ## Iteration 35 - Thu, Feb 26, 2026
 Completed: UT-034 red phase verified
+
+## Iteration 34 — US-033: Explicitly exclude employer statutory contributions from self-billed invoice
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 52/52 tests pass (including 5 new statutory exclusion tests), 0 failures, 0 errors
+
+### Files created/modified
+- `payload_builder.py` — EMPLOYER_STATUTORY_COMPONENTS frozenset already present from previous session; eligible_earnings filter with custom_lhdn_exclude_from_invoice already implemented
+- `fixtures/custom_field.json` — Added `Salary Component-custom_lhdn_exclude_from_invoice` Check field (default 0)
+- `bench migrate` applied to create the custom field in database
+
+### Acceptance criteria verified
+1. EMPLOYER_STATUTORY_COMPONENTS frozenset defined with all Malaysian employer contribution names
+2. eligible_earnings filters by set membership AND custom_lhdn_exclude_from_invoice flag
+3. Salary Component has custom_lhdn_exclude_from_invoice Check field (default 0)
+4. Custom flag exclusion works (test_custom_exclude_flag_removes_component passes)
+5. Invoice totals reflect only eligible earnings
+6. All existing totals balance tests still pass
+7. All 52 tests pass — TDD GREEN confirmed
+
+### Gotchas
+- .pyc cache caused stale code to run; always clear __pycache__ after docker cp updates
+- TestSSTHandling (UT-034 red phase) tests were previously invisible due to .pyc cache; they now pass because production code already had SST handling
+
+## Iteration 36 — US-034: Add SST registration to supplier and buyer UBL PartyTaxScheme blocks
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 52/52 tests pass, 0 failures, 0 errors
+
+### Files modified
+- `payload_builder.py` — Added _add_party_tax_scheme helper and calls in _build_invoice_skeleton
+
+### Changes made
+1. Added `_add_party_tax_scheme(party_elem, sst_registration)` helper function
+2. Logic: if sst_registration is set, RegistrationName=SST_number, TaxScheme/ID='SST'
+3. If sst_registration is empty/None, RegistrationName='NA', TaxScheme/ID='NA'
+4. Called for both supplier (employee) and buyer (company) in _build_invoice_skeleton
+5. Uses `getattr(obj, 'custom_sst_registration_number', None) or ''` for safe access
+
+### Patterns discovered
+- UBL PartyTaxScheme structure: Party > PartyTaxScheme > RegistrationName + TaxScheme > ID
+- LHDN v1.1 requires PartyTaxScheme as mandatory field — 'NA' if not registered
+
+## Iteration 36 - Thu, Feb 26, 2026
+Completed: US-034 green phase verified
+
+---
+
+## PRD Status: 66/67 stories complete (98.5%)
+Only remaining: US-022 (INTG) — requires real LHDN sandbox credentials
