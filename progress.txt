@@ -573,3 +573,35 @@ Completed: Write failing tests for Salary Slip XML payload builder (ID: UT-009) 
 ## Iteration 19 - Thu, Feb 26, 2026
 Completed: Implement UBL 2.1 XML payload builder for Salary Slip (ID: US-009)
 
+## Iteration 12 - Thu, Feb 26, 2026 12:52:33 PM
+Completed: Implement UBL 2.1 XML payload builder for Salary Slip (ID: US-009) in 4m
+
+## Iteration 20 — UT-010: Write failing tests for Expense Claim XML payload builder
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** FAIL — ImportError: cannot import name 'build_expense_claim_xml' from payload_builder
+
+### Files modified
+- `lhdn_payroll_integration/tests/test_payload_builder.py` — Added class TestExpenseClaimXMLBuilder
+
+### Test methods added (6 total)
+1. test_build_expense_claim_xml_returns_valid_xml — XML string with Invoice root
+2. test_invoice_type_code_is_11 — InvoiceTypeCode = '11' (self-billed)
+3. test_line_items_from_expenses_table — InvoiceLine count == len(doc.expenses)
+4. test_total_matches_total_sanctioned_amount — TaxExclusiveAmount == sum(sanctioned_amount)
+5. test_same_buyer_supplier_inversion_as_salary_slip — Employee=Supplier, Company=Customer
+6. test_expense_type_classification_code_used — Each line uses classification code from expense row
+
+### Patterns discovered
+- Expense Claim uses `expenses` child table with `sanctioned_amount` (vs Salary Slip's `earnings` with `amount`)
+- Same self-billed inversion pattern as Salary Slip
+- Classification codes on expense rows use `custom_lhdn_classification_code` (same field name pattern)
+
+### Gotchas
+- None — clean red phase, ImportError as expected
+
+## Iteration 20 - Thu, Feb 26, 2026
+Completed: Write failing tests for Expense Claim XML payload builder (ID: UT-010)
+

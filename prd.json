@@ -516,7 +516,7 @@
         "US-005"
       ],
       "estimatedComplexity": "small",
-      "passes": false,
+      "passes": true,
       "passesWhen": "Test class is added AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder shows failures (red phase confirmed)"
     },
     {
