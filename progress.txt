@@ -1190,3 +1190,25 @@ Incomplete: Write failing tests for monthly consolidation scheduler (ID: UT-018)
 ### Patterns discovered
 - Adding a non-existent import to an existing test file breaks ALL tests in that module (module-level ImportError)
 - This is expected and acceptable for the red phase — US-019 implementation will fix the import
+
+## Iteration 31 — US-019: Implement consolidated payload builder (classification code 004)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 23/23 tests pass (7 new + 16 existing), 0 failures, 0 errors
+
+### Files created/modified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/services/payload_builder.py` — Added `build_consolidated_xml(docnames, target_month)` and `import calendar`
+
+### Implementation details
+- `build_consolidated_xml(docnames, target_month)` builds a single UBL 2.1 XML aggregating multiple Salary Slips
+- InvoiceCode: `CONSOL-{company.abbr}-{target_month}`[:50]
+- BillingPeriod: InvoicePeriod with StartDate = first day, EndDate = last day of target month
+- Uses `calendar.monthrange()` for month-end calculation
+- One InvoiceLine per source document (not per salary component)
+- ItemClassificationCode = '004' on all line items
+- AccountingSupplierParty name = 'NA' (no single employee for consolidated)
+- AccountingCustomerParty includes Contact with Name = 'NA' (buyer contact)
+- Totals: sum of all doc.net_pay amounts, tax exempt (0.00)
+- IssueDate: last day of target month

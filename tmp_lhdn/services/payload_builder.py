@@ -8,6 +8,7 @@ Financial totals are calculated from child table rows ONLY —
 never from YTD fields or compute_year_to_date() (v16 bug).
 """
 import base64
+import calendar
 import hashlib
 import xml.etree.ElementTree as ET
 from decimal import Decimal, ROUND_HALF_UP
@@ -193,6 +194,105 @@ def build_expense_claim_xml(docname):
 
         commodity = _sub(item, CAC_NS, "CommodityClassification")
         _sub(commodity, CBC_NS, "ItemClassificationCode", class_code, listID="CLASS")
+
+        price = _sub(line, CAC_NS, "Price")
+        _sub(price, CBC_NS, "PriceAmount", str(amount), currencyID="MYR")
+
+    return ET.tostring(root, encoding="unicode", xml_declaration=True)
+
+
+def build_consolidated_xml(docnames, target_month):
+    """Build UBL 2.1 XML for a consolidated e-Invoice.
+
+    Aggregates multiple Salary Slip or Expense Claim documents into one
+    e-Invoice. One InvoiceLine per source document, classification code '004',
+    buyer contact = 'NA'.
+
+    Args:
+        docnames: List of Salary Slip document names to consolidate.
+        target_month: Target month string in 'YYYY-MM' format.
+
+    Returns:
+        str: UBL 2.1 XML string.
+    """
+    # Parse target month for billing period
+    year, month = map(int, target_month.split("-"))
+    start_date = f"{year}-{month:02d}-01"
+    last_day = calendar.monthrange(year, month)[1]
+    end_date = f"{year}-{month:02d}-{last_day:02d}"
+
+    # Get first doc to determine company
+    first_doc = frappe.get_doc("Salary Slip", docnames[0])
+    company = frappe.get_doc("Company", first_doc.company)
+
+    # Build invoice code: CONSOL-{company_abbr}-{YYYY-MM} (max 50 chars)
+    invoice_code = f"CONSOL-{company.abbr}-{target_month}"[:50]
+
+    # Build XML skeleton
+    ET.register_namespace("", UBL_NS)
+    ET.register_namespace("cac", CAC_NS)
+    ET.register_namespace("cbc", CBC_NS)
+
+    root = ET.Element(f"{{{UBL_NS}}}Invoice")
+    _sub(root, CBC_NS, "ID", invoice_code)
+    _sub(root, CBC_NS, "IssueDate", end_date)
+
+    type_code = _sub(root, CBC_NS, "InvoiceTypeCode", "11")
+    type_code.set("listVersionID", "1.1")
+
+    _sub(root, CBC_NS, "DocumentCurrencyCode", "MYR")
+
+    # BillingPeriod (InvoicePeriod)
+    period = _sub(root, CAC_NS, "InvoicePeriod")
+    _sub(period, CBC_NS, "StartDate", start_date)
+    _sub(period, CBC_NS, "EndDate", end_date)
+
+    # AccountingSupplierParty — NA for consolidated (no single employee)
+    supplier_party = _sub(root, CAC_NS, "AccountingSupplierParty")
+    supplier_inner = _sub(supplier_party, CAC_NS, "Party")
+    supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
+    _sub(supplier_name_elem, CBC_NS, "Name", "NA")
+
+    # AccountingCustomerParty — Company (buyer/payer) with contact = NA
+    customer_party = _sub(root, CAC_NS, "AccountingCustomerParty")
+    customer_inner = _sub(customer_party, CAC_NS, "Party")
+    customer_id = _sub(customer_inner, CAC_NS, "PartyIdentification")
+    _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number)
+    customer_name_elem = _sub(customer_inner, CAC_NS, "PartyName")
+    _sub(customer_name_elem, CBC_NS, "Name", company.name)
+    contact = _sub(customer_inner, CAC_NS, "Contact")
+    _sub(contact, CBC_NS, "Name", "NA")
+
+    # Collect documents and calculate totals
+    docs = []
+    total_excl = Decimal("0.00")
+    for dn in docnames:
+        doc = frappe.get_doc("Salary Slip", dn)
+        docs.append(doc)
+        total_excl += _quantize(doc.net_pay)
+
+    total_tax = Decimal("0.00")
+    _add_tax_and_totals(root, total_excl, total_tax)
+
+    # InvoiceLines — one per source document (not per salary component)
+    for idx, doc in enumerate(docs, start=1):
+        line = _sub(root, CAC_NS, "InvoiceLine")
+        _sub(line, CBC_NS, "ID", str(idx))
+        _sub(line, CBC_NS, "InvoicedQuantity", "1", unitCode="C62")
+
+        amount = _quantize(doc.net_pay)
+        _sub(line, CBC_NS, "LineExtensionAmount", str(amount), currencyID="MYR")
+
+        item = _sub(line, CAC_NS, "Item")
+        desc = (
+            f"Self-billed payroll - {doc.name}"
+            f" - {doc.employee_name} - {doc.end_date}"
+        )
+        _sub(item, CBC_NS, "Description", desc)
+
+        # Classification code '004' for all consolidated line items
+        commodity = _sub(item, CAC_NS, "CommodityClassification")
+        _sub(commodity, CBC_NS, "ItemClassificationCode", "004", listID="CLASS")
 
         price = _sub(line, CAC_NS, "Price")
         _sub(price, CBC_NS, "PriceAmount", str(amount), currencyID="MYR")
