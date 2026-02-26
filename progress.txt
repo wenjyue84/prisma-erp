@@ -2491,3 +2491,20 @@ Completed: Sync comprehensive salary components as lhdn_payroll_integration fixt
 - HTML uses Jinja2: frappe.utils.fmt_money() for currency formatting, {% if %} for conditional badge
 - No migrate needed — print format loaded from filesystem fixture
 
+
+## Iteration — US-038: Create LHDN-compliant Salary Slip print format with UUID and QR code
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_print_format`
+**Result:** PASS — 8/8 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `print_format/lhdn_salary_slip_einvoice/lhdn_salary_slip_einvoice.json` — Print Format doctype JSON with doc_type=Salary Slip, module=LHDN Payroll Integration, print_format_type=Jinja
+- `print_format/lhdn_salary_slip_einvoice/lhdn_salary_slip_einvoice.html` — Jinja HTML template with earnings/deductions tables, LHDN section (custom_lhdn_uuid, custom_lhdn_qr_code, custom_lhdn_status), LHDN Compliant badge conditional on Valid status
+
+### Patterns discovered
+- Print format files in `print_format/<folder_name>/<folder_name>.{json,html}` — Frappe auto-discovers them
+- Print format JSON needs: doc_type, doctype="Print Format", print_format_type="Jinja", standard="Yes", module
+- HTML uses `doc.custom_lhdn_*` field access (Jinja template context)
+- Files auto-registered on bench migrate — no manual fixture entry needed for Print Format
