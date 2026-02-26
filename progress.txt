@@ -1357,3 +1357,34 @@ The test file is valid and correctly covers all US-018 acceptance criteria.
 - Patches `submission_service` for verifying individual vs batch submission calls
 - Uses frappe._dict helpers to create mock Salary Slip and Expense Claim records
 
+
+## Bookkeeping — UT-018, US-021 (previously completed)
+
+UT-018 and US-021 were already implemented in previous iterations but prd.json was not updated.
+- UT-018: test_consolidation.py exists in container, consolidation_service.py fully implemented, 6/6 tests pass → marked passes: true
+- US-021: RBAC permlevel=1 already applied in DB for custom_lhdn_uuid, custom_requires_self_billed_invoice; DocPerm for HR Manager at permlevel=1 exists; 3/3 tests pass → marked passes: true
+
+## Iteration 22 — UT-023: Write failing tests for Self-Billed Credit Note (type 12) flow
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_credit_note`
+**Result:** FAIL — ModuleNotFoundError: No module named 'lhdn_payroll_integration.services.credit_note_service'
+
+### Files created
+- `tmp_lhdn/tests/test_credit_note.py` → container `tests/test_credit_note.py`
+
+### Test methods (7 total)
+1. test_build_credit_note_xml_returns_string — ImportError (credit_note_service not found)
+2. test_invoice_type_code_is_12 — ImportError
+3. test_billing_reference_contains_original_uuid — ImportError
+4. test_billing_reference_internal_id_present — ImportError
+5. test_credit_note_amount_is_negative_adjustment — ImportError
+6. test_credit_note_references_original_docname — ImportError
+7. test_cancellation_error_includes_credit_note_instruction — ImportError
+
+### Patterns
+- Credit note is type '12' in LHDN (vs type '11' for self-billed invoice)
+- BillingReference structure: cac:BillingReference > cac:InvoiceDocumentReference > cbc:UUID + cbc:ID
+- Cancellation service already includes "Self-Billed Credit Note" in ValidationError message
+- Tests use mock original doc with custom_lhdn_uuid to verify BillingReference population

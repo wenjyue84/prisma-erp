@@ -1239,7 +1239,7 @@
         "US-016"
       ],
       "estimatedComplexity": "medium",
-      "passes": false,
+      "passes": true,
       "passesWhen": "Test file written AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_credit_note FAILS with ImportError (red phase confirmed)"
     },
     {
