@@ -1,0 +1,47 @@
+[
+  {
+    "doctype": "Workspace",
+    "name": "LHDN Payroll",
+    "label": "LHDN Payroll",
+    "title": "LHDN Payroll",
+    "type": "Workspace",
+    "module": "LHDN Payroll Integration",
+    "icon": "accounting",
+    "public": 1,
+    "is_hidden": 0,
+    "content": "[]",
+    "shortcuts": [
+      {
+        "doctype": "Workspace Shortcut",
+        "type": "DocType",
+        "link_to": "Salary Slip",
+        "label": "Salary Slip",
+        "icon": "salary"
+      },
+      {
+        "doctype": "Workspace Shortcut",
+        "type": "DocType",
+        "link_to": "Expense Claim",
+        "label": "Expense Claim",
+        "icon": "expense-claim"
+      },
+      {
+        "doctype": "Workspace Shortcut",
+        "type": "Report",
+        "link_to": "LHDN Payroll Compliance",
+        "label": "LHDN Payroll Compliance",
+        "icon": "list"
+      },
+      {
+        "doctype": "Workspace Shortcut",
+        "type": "Page",
+        "link_to": "background-jobs",
+        "label": "Background Jobs",
+        "icon": "settings"
+      }
+    ],
+    "links": [],
+    "charts": [],
+    "number_cards": []
+  }
+]

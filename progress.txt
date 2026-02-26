@@ -2412,3 +2412,25 @@ Completed: Sync comprehensive salary components as lhdn_payroll_integration fixt
 - test_workspace_has_minimum_shortcuts: asserts ≥4 shortcuts
 - test_workspace_required_shortcuts: asserts Salary Slip, Expense Claim, LHDN Payroll Compliance, Background Jobs
 
+
+
+## Iteration — US-037: Create LHDN Payroll workspace page with curated shortcuts
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_workspace`
+**Result:** PASS — 5/5 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/fixtures/workspace.json` — Added `"type": "Workspace"` mandatory field; fixture already had name, module, 4 shortcuts
+- Container synced via `frappe.utils.fixtures.sync_fixtures`
+
+### Patterns discovered
+- Frappe Workspace doctype requires `"type": "Workspace"` field — migration fails with MandatoryError without it
+- `bench migrate` calls `sync_fixtures` internally but may delete workspace as "orphan" if module filter doesn't match at that moment
+- Use `bench --site frontend execute frappe.utils.fixtures.sync_fixtures --kwargs '{"app": "lhdn_payroll_integration"}'` to force fixture load
+- Stale `bench_migrate.lock` file needs manual removal if migrate was interrupted: `rm -f sites/frontend/locks/bench_migrate.lock`
+
+### Gotchas
+- `bench sync-fixtures` and `bench load-fixtures` do NOT exist — use `bench execute frappe.utils.fixtures.sync_fixtures`
+- workspace.json was already in repo from previous session; only needed `type` field fix + fixture sync
