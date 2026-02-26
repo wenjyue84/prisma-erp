@@ -1605,3 +1605,35 @@ All implementation was already in place from previous iterations:
 
 Completed: Add Malaysian state code to UBL address elements (ID: US-025)
 
+
+
+## Iteration — US-022: BLOCKED (INTG — Missing LHDN Sandbox Credentials)
+
+**Type:** INTG
+**Status:** BLOCKED — Company doc has placeholder credentials (not real LHDN sandbox creds)
+**Action:** Skipped to next eligible story (UT-026). User must provide real LHDN sandbox credentials to complete US-022.
+
+## Iteration — UT-026: Write failing tests for QR code rendering on Salary Slip print format
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_qr_code`
+**Result:** FAIL — ModuleNotFoundError: No module named 'lhdn_payroll_integration.utils.qr_utils'
+
+### Files created/modified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_qr_code.py`
+- Local: `tmp_lhdn/tests/test_qr_code.py`
+
+### Test methods (5 total)
+1. test_generate_qr_code_returns_base64_png — FAIL (qr_utils module does not exist)
+2. test_qr_code_from_valid_url — FAIL (qr_utils module does not exist)
+3. test_qr_code_empty_url_returns_empty_string — FAIL (qr_utils module does not exist)
+4. test_qr_code_none_url_returns_empty_string — FAIL (qr_utils module does not exist)
+5. test_jinja_helper_registered_in_hooks — FAIL (qr_utils module does not exist)
+
+### Patterns discovered
+- Frappe hooks.py supports `jinja = {"methods": [...]}` for registering Jinja template helpers
+- QR code utility should be in utils/qr_utils.py following existing utils/ pattern
+
+### Gotchas
+- Import failure at module level prevents any test from running (all 5 fail together)
