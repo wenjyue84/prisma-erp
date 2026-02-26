@@ -910,3 +910,28 @@ Completed: Write failing tests for Status 3 error log parser (ID: UT-014) in 2m
 
 ## Iteration 22 - Thu, Feb 26, 2026  1:40:00 PM
 Completed: Implement Status 3 error log parser (ID: US-014) in 3m
+## Iteration 22 - Thu, Feb 26, 2026  1:40:38 PM
+Completed: Implement Status 3 error log parser (ID: US-014) in 4m
+
+## Iteration 23 — UT-015: Write failing tests for exponential backoff retry
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retry_service`
+**Result:** FAIL — ModuleNotFoundError: No module named 'lhdn_payroll_integration.services.retry_service'
+
+### Files created/modified
+- `lhdn_payroll_integration/tests/test_retry_service.py` — 6 test methods in TestRetryService
+
+### Test methods (6 total)
+1. test_first_retry_schedules_120_second_delay — tests 2**1 * 60 = 120s delay
+2. test_second_retry_schedules_240_second_delay — tests 2**2 * 60 = 240s delay
+3. test_retry_count_5_capped_at_3600_seconds — tests min(delay, 3600) cap
+4. test_after_5_retries_sets_invalid_status — tests Invalid status + error log after max retries
+5. test_no_job_enqueued_after_max_retries — tests frappe.enqueue not called at max
+6. test_retry_count_incremented_on_each_call — tests count incremented by 1
+
+### Patterns discovered
+- Uses unittest.mock.patch to mock frappe module at service level
+- Tests verify frappe.enqueue call kwargs (enqueue_after_timeout) and db_set calls
+
