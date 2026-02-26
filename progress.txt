@@ -2279,3 +2279,25 @@ No further stories can be implemented until real LHDN sandbox credentials are pr
 Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → document and EXIT"
 
 
+
+## Iteration N — US-039: Sync comprehensive salary components as lhdn_payroll_integration fixtures
+
+**Type:** IMPL
+**TDD Phase:** GREEN (fixture import verified)
+**Result:** PASS — all 6 LHDN salary components in fixtures, bench migrate creates them on fresh install
+
+### Files created/modified
+- `lhdn_payroll_integration/fixtures/salary_component.json` — New: 6 LHDN salary components (Basic Salary, Monthly Tax Deduction, EPF Employee, SOCSO Employee, EPF - Employer, SOCSO - Employer)
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added custom_is_pcb_component Check field for Salary Component
+- `lhdn_payroll_integration/hooks.py` — Added Salary Component to fixtures list with name filter
+
+### Verification
+- bench migrate created custom_is_pcb_component field (Check) on Salary Component
+- Monthly Tax Deduction: custom_is_pcb_component=1 ✓
+- EPF - Employer + SOCSO - Employer: custom_lhdn_exclude_from_invoice=1 ✓
+- seed_payroll_demo.py run on localhost — all components skipped (already exist) ✓
+
+### Patterns discovered
+- Fixtures filter using `{"dt": "Salary Component", "filters": [["name", "in", [...]]]}` works correctly
+- bench migrate applies both Custom Field fixtures (creates new fields) and Salary Component fixtures
+

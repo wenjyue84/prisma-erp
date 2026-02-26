@@ -379,5 +379,17 @@
     "default": "0",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_lhdn_classification_code"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Component-custom_is_pcb_component",
+    "dt": "Salary Component",
+    "fieldname": "custom_is_pcb_component",
+    "fieldtype": "Check",
+    "label": "Is PCB Component",
+    "description": "Mark this component as the Monthly Tax Deduction (PCB / Potongan Cukai Berjadual) component",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_exclude_from_invoice"
   }
 ]
