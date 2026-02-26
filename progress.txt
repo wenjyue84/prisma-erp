@@ -1212,3 +1212,32 @@ Incomplete: Write failing tests for monthly consolidation scheduler (ID: UT-018)
 - AccountingCustomerParty includes Contact with Name = 'NA' (buyer contact)
 - Totals: sum of all doc.net_pay amounts, tax exempt (0.00)
 - IssueDate: last day of target month
+
+## Iteration 19 — US-019: Implement consolidated payload builder (classification code 004)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 23/23 tests pass (7 consolidated + 16 existing), 0 failures, 0 errors
+
+### Files created/modified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/services/payload_builder.py` — Added `build_consolidated_xml(docnames, target_month)` function and `import calendar`
+
+### Implementation details
+- `build_consolidated_xml(docnames, target_month)` builds a single UBL 2.1 XML aggregating multiple Salary Slips
+- InvoiceCode: `CONSOL-{company.abbr}-{target_month}`[:50]
+- BillingPeriod: InvoicePeriod with StartDate = first day, EndDate = last day of target month
+- Uses `calendar.monthrange()` for correct month-end calculation
+- One InvoiceLine per source document (not per salary component)
+- ItemClassificationCode = '004' on all line items
+- AccountingCustomerParty includes Contact with Name = 'NA' (buyer contact during grace period)
+- Totals: sum of all doc.net_pay amounts, tax exempt (0.00)
+- Line description format: `Self-billed payroll - {doc.name} - {employee_name} - {end_date}`
+
+### Patterns discovered
+- Consolidated XML reuses existing _add_tax_and_totals() and _sub() helpers
+- calendar.monthrange() gives (weekday, num_days) — use [1] for last day
+- UT-018 was previously completed but not marked in prd.json — fixed in this iteration
+
+### Gotchas
+- None — straightforward implementation following existing patterns
