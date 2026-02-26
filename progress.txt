@@ -2344,3 +2344,18 @@ Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → docum
 - get_columns() returns list of dicts; get_data(filters) returns list of dicts; execute(filters) returns (columns, data)
 - Indicator colours are embedded in data: `row["lhdn_status"] = "green Valid"` etc.
 - The lhdn_status column value format: `"<color> <status>"` renders with Frappe indicator badges
+
+## Iteration N — UT-036: Write failing tests for Re-submit to LHDN server action
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed — ImportError: cannot import name 'resubmit_to_lhdn')
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_resubmit_action`
+**Result:** FAIL (exit 1) — ImportError as expected since function doesn't exist yet
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_resubmit_action.py`
+
+### Test classes (3 total)
+1. TestResubmitPermission — permission check tests
+2. TestResubmitStatusPrecondition — validates Invalid/Submitted status precondition
+3. TestResubmitStatusReset — verifies status reset to Pending + enqueue call
