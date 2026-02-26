@@ -2508,3 +2508,6 @@ Completed: Sync comprehensive salary components as lhdn_payroll_integration fixt
 - Print format JSON needs: doc_type, doctype="Print Format", print_format_type="Jinja", standard="Yes", module
 - HTML uses `doc.custom_lhdn_*` field access (Jinja template context)
 - Files auto-registered on bench migrate — no manual fixture entry needed for Print Format
+## Iteration 2 - Thu, Feb 26, 2026  8:29:15 PM
+Completed: Create LHDN Payroll workspace page with curated shortcuts (ID: US-037) in 4m
+
