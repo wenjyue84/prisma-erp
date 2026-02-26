@@ -409,3 +409,27 @@ so the test RED phase could not be re-confirmed. Marked passes:true since:
 ## Iteration 14 - Thu, Feb 26, 2026
 Completed: Write failing tests for exemption filter (ID: UT-007)
 
+## Iteration 15 — US-007: Implement exemption filter service
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_exemption_filter`
+**Result:** PASS — 6/6 tests pass, 0 failures, 0 errors
+
+### Files created
+- `lhdn_payroll_integration/services/exemption_filter.py` — should_submit_to_lhdn(doctype, doc) -> bool
+
+### Implementation logic
+- Salary Slip: Returns True only if employee.custom_requires_self_billed_invoice == 1 AND doc.net_pay > 0
+- Expense Claim: Returns False for 'Overseas - Exempt' and 'Employee Receipt Provided' categories; True for 'Self-Billed Required' when employee flag is set
+- All unrecognised combinations return False (safe default)
+
+### Patterns discovered
+- unittest.mock.patch on module-level `frappe` import works cleanly — tests don't need a real DB for pure logic testing
+
+## Iteration 15 - Thu, Feb 26, 2026
+Completed: Implement exemption filter service (ID: US-007)
+
+## Iteration 7 - Thu, Feb 26, 2026 12:35:45 PM
+Completed: Write failing tests for Salary Component field (ID: UT-003) in 3m
+
