@@ -792,3 +792,35 @@ Completed: Write failing tests for validation + decimal + date utils (ID: UT-012
 - Changing validation behavior (throw → truncate) required updating dependent tests — always run full suite after behavior changes
 - `frappe.log_error(message=..., title=...)` logs to Error Log doctype without interrupting execution
 
+## Iteration 18 - Thu, Feb 26, 2026  1:25:42 PM
+Completed: Implement input validation and sanitization utilities (ID: US-012) in 6m
+
+## Iteration 26 — UT-013: Write failing tests for status polling scheduler
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_status_poller`
+**Result:** FAIL — 7/7 errors (AttributeError: status_poller module has no 'frappe', 'requests', 'get_access_token' attributes)
+
+### Files created
+- `lhdn_payroll_integration/tests/test_status_poller.py` — TestStatusPoller class with 7 test methods
+
+### Test methods (7 total)
+1. test_queries_salary_slip_with_submitted_status — ERROR (can't patch frappe on stub)
+2. test_queries_expense_claim_with_submitted_status — ERROR (same)
+3. test_status_2_response_sets_valid — ERROR (same)
+4. test_status_3_response_sets_invalid — ERROR (same)
+5. test_documents_without_uuid_are_skipped — ERROR (same)
+6. test_per_document_error_does_not_abort_batch — ERROR (same)
+7. test_max_100_documents_per_doctype_per_run — ERROR (same)
+
+### Patterns discovered
+- @patch fails with AttributeError when module doesn't import the patched name — this is the standard red phase behavior for stub modules
+- status_poller.py stub has only `def poll_pending_documents(): pass` — no imports of frappe, requests, or get_access_token
+
+### Gotchas
+- None — clean red phase, all 7 tests error as expected
+
+## Iteration 19 - Thu, Feb 26, 2026
+Completed: Write failing tests for status polling scheduler (ID: UT-013)
+
