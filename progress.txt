@@ -1845,3 +1845,6 @@ Completed: Write failing tests for PCB withholding tax (ID: UT-029) — tests al
 - WithholdingTaxTotal is a UBL 2.1 top-level Invoice child (not a child of TaxTotal)
 - getattr(doc, 'deductions', []) safely handles missing deductions attribute on mock objects
 
+## Iteration 56
+Completed: Add PCB withholding tax element to contractor UBL invoice (ID: US-029) — code was already in place from previous session, confirmed green phase (33/33 pass)
+
