@@ -1,0 +1,152 @@
+{%- set currency = doc.currency or "MYR" %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { font-family: Arial, sans-serif; font-size: 10pt; color: #222; margin: 0; padding: 0; }
+  .payslip-wrap { max-width: 720px; margin: 0 auto; padding: 20px; }
+  h2 { font-size: 14pt; margin: 0 0 4px; }
+  .company-header { border-bottom: 2px solid #1a73e8; padding-bottom: 8px; margin-bottom: 16px; }
+  .meta-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
+  .meta-col { flex: 1; }
+  .meta-col label { font-weight: bold; color: #555; font-size: 8pt; display: block; }
+  .meta-col span { font-size: 10pt; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+  th { background: #1a73e8; color: #fff; padding: 6px 8px; text-align: left; font-size: 9pt; }
+  td { padding: 5px 8px; font-size: 9pt; border-bottom: 1px solid #e8e8e8; }
+  td.amount { text-align: right; }
+  .total-row td { font-weight: bold; background: #f0f4ff; }
+  .net-row td { font-weight: bold; font-size: 11pt; background: #1a73e8; color: #fff; }
+  .lhdn-section { border: 1px solid #d0d7e3; border-radius: 6px; padding: 12px; margin-top: 14px; background: #fafbff; }
+  .lhdn-section h4 { margin: 0 0 8px; font-size: 10pt; color: #1a73e8; }
+  .lhdn-badge {
+    display: inline-block;
+    background: #1e7e34;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 9pt;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  .lhdn-field { font-size: 9pt; margin-bottom: 4px; }
+  .lhdn-field label { font-weight: bold; color: #555; margin-right: 6px; }
+  .qr-wrap { margin-top: 10px; }
+  .footer-note { font-size: 8pt; color: #888; margin-top: 16px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="payslip-wrap">
+
+  <!-- Company header -->
+  <div class="company-header">
+    <h2>{{ doc.company }}</h2>
+    <div style="font-size:9pt; color:#555;">LHDN Salary Slip e-Invoice &mdash; Pay Period: {{ doc.start_date }} to {{ doc.end_date }}</div>
+  </div>
+
+  <!-- Employee meta -->
+  <div class="meta-row">
+    <div class="meta-col">
+      <label>Employee</label>
+      <span>{{ doc.employee_name }} ({{ doc.employee }})</span>
+    </div>
+    <div class="meta-col">
+      <label>Department</label>
+      <span>{{ doc.department or "-" }}</span>
+    </div>
+    <div class="meta-col">
+      <label>Designation</label>
+      <span>{{ doc.designation or "-" }}</span>
+    </div>
+    <div class="meta-col">
+      <label>Payment Date</label>
+      <span>{{ doc.posting_date }}</span>
+    </div>
+  </div>
+
+  <!-- Earnings -->
+  <table>
+    <thead>
+      <tr><th>Earnings</th><th class="amount">Amount ({{ currency }})</th></tr>
+    </thead>
+    <tbody>
+      {% for row in doc.earnings %}
+      <tr>
+        <td>{{ row.salary_component }}</td>
+        <td class="amount">{{ frappe.utils.fmt_money(row.amount, currency=currency) }}</td>
+      </tr>
+      {% endfor %}
+      <tr class="total-row">
+        <td>Gross Pay</td>
+        <td class="amount">{{ frappe.utils.fmt_money(doc.gross_pay, currency=currency) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Deductions -->
+  <table>
+    <thead>
+      <tr><th>Deductions</th><th class="amount">Amount ({{ currency }})</th></tr>
+    </thead>
+    <tbody>
+      {% for row in doc.deductions %}
+      <tr>
+        <td>{{ row.salary_component }}</td>
+        <td class="amount">{{ frappe.utils.fmt_money(row.amount, currency=currency) }}</td>
+      </tr>
+      {% endfor %}
+      <tr class="total-row">
+        <td>Total Deductions</td>
+        <td class="amount">{{ frappe.utils.fmt_money(doc.total_deduction, currency=currency) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Net pay -->
+  <table>
+    <tbody>
+      <tr class="net-row">
+        <td>Net Pay</td>
+        <td class="amount">{{ frappe.utils.fmt_money(doc.net_pay, currency=currency) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- LHDN e-Invoice section -->
+  {% if doc.custom_lhdn_status and doc.custom_lhdn_status != "Exempt" %}
+  <div class="lhdn-section">
+    <h4>LHDN MyInvois e-Invoice</h4>
+
+    {% if doc.custom_lhdn_status == "Valid" %}
+    <div class="lhdn-badge">LHDN e-Invoice Compliant</div>
+    {% endif %}
+
+    <div class="lhdn-field">
+      <label>LHDN Status:</label>
+      <span>{{ doc.custom_lhdn_status }}</span>
+    </div>
+
+    {% if doc.custom_lhdn_uuid %}
+    <div class="lhdn-field">
+      <label>LHDN UUID:</label>
+      <span style="font-family: monospace;">{{ doc.custom_lhdn_uuid }}</span>
+    </div>
+    {% endif %}
+
+    {% if doc.custom_lhdn_qr_code %}
+    <div class="qr-wrap">
+      <div class="lhdn-field"><label>QR Code:</label></div>
+      {{ doc.custom_lhdn_qr_code }}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <div class="footer-note">
+    This is a computer-generated payslip. No signature required.
+  </div>
+
+</div>
+</body>
+</html>
