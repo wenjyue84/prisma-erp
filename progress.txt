@@ -1428,3 +1428,26 @@ FAILED quality gates: Implement environment toggle (sandbox / production) (ID: U
 1. Verified all 7 tests pass immediately (implementation was correct from prior session)
 2. Marked US-023 passes=true
 
+## Iteration 38 — UT-024: Write failing tests for 7-day consolidated submission deadline enforcement
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation`
+**Result:** FAIL — 5 errors (ImportError: get_consolidation_deadline not found), 6 existing tests pass
+
+### Files modified
+- `tmp_lhdn/tests/test_consolidation.py` — Added TestConsolidationDeadline class
+
+### Test methods (5 new, all fail with ImportError)
+1. test_deadline_is_7_days_after_month_end — ImportError
+2. test_submission_within_7_days_succeeds — ImportError
+3. test_submission_on_day_8_raises_deadline_error — ImportError
+4. test_missed_deadline_logs_frappe_error — ImportError
+5. test_consolidation_deadline_field_computed_correctly — ImportError
+
+### Patterns
+- Used lazy import (_import_get_consolidation_deadline) to avoid module-level ImportError
+  that would break existing TestConsolidationScheduler tests
+- Existing 6 tests continue to pass (isolated from new class failures)
+- Tests cover: deadline calculation, within-window success, past-window error, log_error audit trail, varying month lengths
+

@@ -1,18 +1,13 @@
-"""Tests for monthly consolidation scheduler — TDD red phase (UT-018).
+"""Tests for monthly consolidation scheduler and deadline enforcement.
 
-Tests verify that run_monthly_consolidation():
-- Queries previous calendar month's pending Salary Slips and Expense Claims
-- Excludes high-value docs (>RM 10,000) from batch (submitted individually)
-- Groups remaining docs into one consolidated submission
-- Sets custom_is_consolidated=1 after successful submission
-- Skips already-submitted docs
-- Handles empty batches silently
+TestConsolidationScheduler (UT-018): Tests for run_monthly_consolidation()
+TestConsolidationDeadline (UT-024): Tests for 7-day post-month-end deadline
 """
 
 import frappe
 from frappe.tests.utils import FrappeTestCase
 from unittest.mock import patch, call, MagicMock
-from datetime import date
+from datetime import date, timedelta
 
 from lhdn_payroll_integration.services.consolidation_service import run_monthly_consolidation
 
@@ -202,3 +197,108 @@ class TestConsolidationScheduler(FrappeTestCase):
 			run_monthly_consolidation()
 		except Exception as e:
 			self.fail(f"run_monthly_consolidation raised {type(e).__name__} on empty batch: {e}")
+
+
+class TestConsolidationDeadline(FrappeTestCase):
+	"""Test suite for 7-day consolidated submission deadline enforcement (UT-024).
+
+	LHDN requires consolidated e-invoices to be submitted within 7 calendar
+	days after month-end. These tests verify deadline calculation and enforcement.
+	"""
+
+	def _import_get_consolidation_deadline(self):
+		"""Lazy import to trigger ImportError in red phase (function not yet implemented)."""
+		from lhdn_payroll_integration.services.consolidation_service import get_consolidation_deadline
+		return get_consolidation_deadline
+
+	def test_deadline_is_7_days_after_month_end(self):
+		"""get_consolidation_deadline('2026-01') must return date(2026, 2, 7)
+		— exactly 7 calendar days after the last day of January."""
+		get_deadline = self._import_get_consolidation_deadline()
+		result = get_deadline("2026-01")
+		expected = date(2026, 2, 7)
+		self.assertEqual(result, expected,
+			f"Deadline for 2026-01 must be 2026-02-07, got {result}")
+
+	def test_submission_within_7_days_succeeds(self):
+		"""run_monthly_consolidation() must NOT raise when called within
+		the 7-day window (e.g. on day 5 after month-end)."""
+		get_deadline = self._import_get_consolidation_deadline()
+
+		# Simulate calling on Feb 5 for January consolidation (day 5, within deadline)
+		with patch("lhdn_payroll_integration.services.consolidation_service.frappe") as mock_frappe:
+			mock_frappe.get_all.return_value = []
+			mock_frappe.utils.today.return_value = "2026-02-05"
+			mock_frappe.utils.get_first_day.return_value = date(2026, 1, 1)
+			mock_frappe.utils.get_last_day.return_value = date(2026, 1, 31)
+			mock_frappe.utils.add_months.return_value = date(2026, 1, 15)
+			mock_frappe.ValidationError = frappe.ValidationError
+
+			try:
+				run_monthly_consolidation()
+			except frappe.ValidationError:
+				self.fail("run_monthly_consolidation should not raise within 7-day deadline window")
+
+	@patch("lhdn_payroll_integration.services.consolidation_service.frappe")
+	def test_submission_on_day_8_raises_deadline_error(self, mock_frappe):
+		"""run_monthly_consolidation() must raise frappe.ValidationError
+		when called on or after day 8 post-month-end (past the deadline)."""
+		get_deadline = self._import_get_consolidation_deadline()
+
+		# Simulate calling on Feb 8 for January consolidation (past deadline)
+		mock_frappe.utils.today.return_value = "2026-02-08"
+		mock_frappe.utils.get_first_day.return_value = date(2026, 1, 1)
+		mock_frappe.utils.get_last_day.return_value = date(2026, 1, 31)
+		mock_frappe.utils.add_months.return_value = date(2026, 1, 15)
+		mock_frappe.ValidationError = frappe.ValidationError
+		mock_frappe.throw.side_effect = frappe.ValidationError("Deadline missed")
+
+		with self.assertRaises(frappe.ValidationError):
+			run_monthly_consolidation()
+
+	@patch("lhdn_payroll_integration.services.consolidation_service.frappe")
+	def test_missed_deadline_logs_frappe_error(self, mock_frappe):
+		"""When the deadline is missed, frappe.log_error must be called
+		to record the missed deadline for audit trail."""
+		get_deadline = self._import_get_consolidation_deadline()
+
+		mock_frappe.utils.today.return_value = "2026-02-10"
+		mock_frappe.utils.get_first_day.return_value = date(2026, 1, 1)
+		mock_frappe.utils.get_last_day.return_value = date(2026, 1, 31)
+		mock_frappe.utils.add_months.return_value = date(2026, 1, 15)
+		mock_frappe.ValidationError = frappe.ValidationError
+		mock_frappe.throw.side_effect = frappe.ValidationError("Deadline missed")
+
+		try:
+			run_monthly_consolidation()
+		except frappe.ValidationError:
+			pass
+
+		mock_frappe.log_error.assert_called()
+		# Verify the log message references the missed deadline
+		log_call_args = str(mock_frappe.log_error.call_args)
+		self.assertTrue(
+			"deadline" in log_call_args.lower() or "consolidation" in log_call_args.lower(),
+			f"log_error must mention deadline or consolidation, got: {log_call_args}"
+		)
+
+	def test_consolidation_deadline_field_computed_correctly(self):
+		"""get_consolidation_deadline must correctly compute the deadline
+		for months with varying lengths (28, 29, 30, 31 days)."""
+		get_deadline = self._import_get_consolidation_deadline()
+
+		# February 2026 (28 days) → deadline = March 7
+		self.assertEqual(get_deadline("2026-02"), date(2026, 3, 7),
+			"Feb 2026 (28 days): deadline must be March 7")
+
+		# February 2028 (29 days, leap year) → deadline = March 7
+		self.assertEqual(get_deadline("2028-02"), date(2028, 3, 7),
+			"Feb 2028 (29 days, leap): deadline must be March 7")
+
+		# April 2026 (30 days) → deadline = May 7
+		self.assertEqual(get_deadline("2026-04"), date(2026, 5, 7),
+			"Apr 2026 (30 days): deadline must be May 7")
+
+		# December 2026 (31 days) → deadline = January 7, 2027
+		self.assertEqual(get_deadline("2026-12"), date(2027, 1, 7),
+			"Dec 2026 (31 days): deadline must be Jan 7, 2027")
