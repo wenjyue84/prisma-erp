@@ -1328,3 +1328,32 @@ Completed: Write failing tests for monthly consolidation scheduler (ID: UT-018) 
 - Fields exist (from US-004/US-005) but permlevel is default 0
 - No permlevel=1 permission entries for HR Manager role
 - Clean AssertionError failures as specified
+## Iteration 35 — UT-018: Write failing tests for monthly consolidation scheduler
+
+**Type:** TEST
+**TDD Phase:** GREEN (tests pass — implementation already existed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation`
+**Result:** PASS — 6/6 tests pass (US-018 implementation was already in place)
+
+### TDD Ordering Deviation
+US-018 was implemented before UT-018 tests were written. The consolidation_service.py
+module already exists with full implementation. As a result, the tests pass immediately
+instead of failing with ImportError as the story description expected.
+The test file is valid and correctly covers all US-018 acceptance criteria.
+
+### Files created/modified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_consolidation.py`
+
+### Test methods (6 total)
+1. test_queries_previous_calendar_month_records — PASS
+2. test_high_value_docs_excluded_from_batch — PASS
+3. test_batch_submission_called_for_eligible_docs — PASS
+4. test_is_consolidated_set_after_successful_submission — PASS
+5. test_already_submitted_docs_excluded — PASS
+6. test_empty_batch_completes_silently — PASS
+
+### Testing approach
+- Patches `lhdn_payroll_integration.services.consolidation_service.frappe` module-level
+- Patches `submission_service` for verifying individual vs batch submission calls
+- Uses frappe._dict helpers to create mock Salary Slip and Expense Claim records
+
