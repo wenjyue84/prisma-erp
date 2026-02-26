@@ -37,6 +37,8 @@ class TestSalarySlipXMLBuilder(FrappeTestCase):
         doc.net_pay = net_pay
         doc.company = "Arising Packaging"
         doc.posting_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
 
         # Earnings rows
         earning1 = MagicMock()
@@ -62,6 +64,9 @@ class TestSalarySlipXMLBuilder(FrappeTestCase):
         emp.custom_id_value = "901201145678"
         emp.employee_name = "Ahmad bin Abdullah"
         emp.custom_is_foreign_worker = 1 if is_foreign else 0
+        emp.custom_state_code = "01"
+        emp.custom_bank_account_number = None
+        emp.custom_worker_type = "Employee"
         return emp
 
     def _make_company_doc(self):
@@ -70,6 +75,7 @@ class TestSalarySlipXMLBuilder(FrappeTestCase):
         company.custom_company_tin_number = "C12345678901"
         company.name = "Arising Packaging"
         company.company_name = "Arising Packaging Sdn Bhd"
+        company.custom_state_code = "14"
         return company
 
     @patch("lhdn_payroll_integration.services.payload_builder.frappe")
@@ -291,6 +297,9 @@ class TestExpenseClaimXMLBuilder(FrappeTestCase):
         emp.custom_id_value = "901201145678"
         emp.employee_name = "Ahmad bin Abdullah"
         emp.custom_is_foreign_worker = 1 if is_foreign else 0
+        emp.custom_state_code = "01"
+        emp.custom_bank_account_number = None
+        emp.custom_worker_type = "Employee"
         return emp
 
     def _make_company_doc(self):
@@ -299,6 +308,7 @@ class TestExpenseClaimXMLBuilder(FrappeTestCase):
         company.custom_company_tin_number = "C12345678901"
         company.name = "Arising Packaging"
         company.company_name = "Arising Packaging Sdn Bhd"
+        company.custom_state_code = "14"
         return company
 
     @patch("lhdn_payroll_integration.services.payload_builder.frappe")
@@ -537,6 +547,8 @@ class TestConsolidatedXMLBuilder(FrappeTestCase):
         doc.company = company
         doc.posting_date = posting_date
         doc.end_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
 
         earning = MagicMock()
         earning.salary_component = "Basic Salary"
@@ -781,6 +793,8 @@ class TestStateCodeInUBL(FrappeTestCase):
         doc.net_pay = 5000
         doc.company = "Arising Packaging"
         doc.posting_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
 
         earning = MagicMock()
         earning.salary_component = "Basic Salary"
@@ -823,6 +837,8 @@ class TestStateCodeInUBL(FrappeTestCase):
         doc.company = "Arising Packaging"
         doc.posting_date = "2026-01-15"
         doc.end_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
 
         earning = MagicMock()
         earning.salary_component = "Basic Salary"
@@ -1001,3 +1017,490 @@ class TestStateCodeInUBL(FrappeTestCase):
         self.assertEqual(supplier_state.text, "17",
                          f"Foreign employee state code is '{supplier_state.text}', "
                          f"expected '17' (Not Applicable)")
+
+
+class TestPCBWithholdingTax(FrappeTestCase):
+    """Test PCB withholding tax handling in contractor salary slip XML.
+
+    Verifies:
+    - TaxableAmount uses gross earnings (not net_pay)
+    - PCB deduction appears as WithholdingTaxTotal when > 0
+    - Zero PCB omits the WithholdingTaxTotal element
+    - Invoice total equals sum of earnings components
+    """
+
+    PCB_COMPONENT_NAMES = ("Monthly Tax Deduction", "PCB", "Income Tax")
+
+    def _make_salary_slip_with_pcb(self, pcb_amount=500):
+        """Create a mock Salary Slip with earnings and PCB deduction."""
+        doc = MagicMock()
+        doc.name = "SAL-SLP-PCB-001"
+        doc.employee = "HR-EMP-00001"
+        doc.employee_name = "Ahmad bin Abdullah"
+        doc.company = "Arising Packaging"
+        doc.posting_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
+
+        # Earnings: gross = 4000 + 1000 = 5000
+        earning1 = MagicMock()
+        earning1.salary_component = "Basic Salary"
+        earning1.amount = 4000
+        earning1.custom_lhdn_classification_code = "022 : Others"
+
+        earning2 = MagicMock()
+        earning2.salary_component = "Allowance"
+        earning2.amount = 1000
+        earning2.custom_lhdn_classification_code = "022 : Others"
+
+        doc.earnings = [earning1, earning2]
+
+        # net_pay = gross - pcb = 5000 - pcb_amount
+        doc.net_pay = 5000 - pcb_amount
+
+        # PCB deduction
+        deductions = []
+        if pcb_amount > 0:
+            pcb = MagicMock()
+            pcb.salary_component = "Monthly Tax Deduction"
+            pcb.amount = pcb_amount
+            deductions.append(pcb)
+        doc.deductions = deductions
+
+        return doc
+
+    def _make_employee_doc(self):
+        emp = MagicMock()
+        emp.custom_lhdn_tin = "IG12345678901"
+        emp.custom_id_type = "NRIC"
+        emp.custom_id_value = "901201145678"
+        emp.employee_name = "Ahmad bin Abdullah"
+        emp.custom_is_foreign_worker = 0
+        emp.custom_state_code = "01"
+        emp.custom_bank_account_number = None
+        emp.custom_worker_type = "Contractor"
+        return emp
+
+    def _make_company_doc(self):
+        company = MagicMock()
+        company.custom_company_tin_number = "C12345678901"
+        company.name = "Arising Packaging"
+        company.company_name = "Arising Packaging Sdn Bhd"
+        company.custom_state_code = "14"
+        return company
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_gross_pay_used_as_invoice_total_not_net_pay(self, mock_frappe):
+        """TotalIncludingTax in the XML must use gross earnings (5000),
+        not net_pay (4500 after PCB deduction)."""
+        doc = self._make_salary_slip_with_pcb(pcb_amount=500)
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-PCB-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-PCB-001")
+        root = ET.fromstring(xml_string)
+
+        # Find LegalMonetaryTotal/TaxInclusiveAmount (gross pay)
+        tax_inclusive = root.find(
+            f".//{{{CAC_NS}}}LegalMonetaryTotal"
+            f"/{{{CBC_NS}}}TaxInclusiveAmount"
+        )
+        self.assertIsNotNone(tax_inclusive,
+            "TaxInclusiveAmount element must exist in LegalMonetaryTotal")
+        # Must be gross (5000), not net_pay (4500)
+        amount = Decimal(tax_inclusive.text)
+        self.assertEqual(amount, Decimal("5000.00"),
+            f"TaxInclusiveAmount should be gross 5000.00, got {amount}")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_pcb_amount_in_withholding_tax_total(self, mock_frappe):
+        """When PCB deduction > 0, XML must include WithholdingTaxTotal
+        with the correct PCB amount."""
+        doc = self._make_salary_slip_with_pcb(pcb_amount=500)
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-PCB-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-PCB-001")
+        root = ET.fromstring(xml_string)
+
+        # WithholdingTaxTotal element should exist
+        withholding = root.find(f".//{{{CAC_NS}}}WithholdingTaxTotal")
+        self.assertIsNotNone(withholding,
+            "WithholdingTaxTotal element must exist when PCB > 0")
+
+        # Amount should be 500
+        wh_amount = withholding.find(f"{{{CBC_NS}}}TaxAmount")
+        self.assertIsNotNone(wh_amount,
+            "WithholdingTaxTotal/TaxAmount must exist")
+        self.assertEqual(Decimal(wh_amount.text), Decimal("500.00"),
+            f"WithholdingTaxTotal amount should be 500.00, got {wh_amount.text}")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_zero_pcb_omits_withholding_tax_element(self, mock_frappe):
+        """When PCB deduction is 0 or absent, WithholdingTaxTotal must
+        be omitted from the XML."""
+        doc = self._make_salary_slip_with_pcb(pcb_amount=0)
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-PCB-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-PCB-001")
+        root = ET.fromstring(xml_string)
+
+        withholding = root.find(f".//{{{CAC_NS}}}WithholdingTaxTotal")
+        self.assertIsNone(withholding,
+            "WithholdingTaxTotal must NOT exist when PCB is 0 or absent")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_invoice_total_equals_sum_of_earnings_components(self, mock_frappe):
+        """TotalIncludingTax must always equal sum of earnings rows
+        (gross pay before any deduction)."""
+        doc = self._make_salary_slip_with_pcb(pcb_amount=300)
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-PCB-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-PCB-001")
+        root = ET.fromstring(xml_string)
+
+        expected_gross = sum(e.amount for e in doc.earnings)
+
+        tax_inclusive = root.find(
+            f".//{{{CAC_NS}}}LegalMonetaryTotal"
+            f"/{{{CBC_NS}}}TaxInclusiveAmount"
+        )
+        self.assertIsNotNone(tax_inclusive, "TaxInclusiveAmount must exist")
+        actual = Decimal(tax_inclusive.text)
+        self.assertEqual(actual, Decimal(str(expected_gross)),
+            f"TaxInclusiveAmount ({actual}) must equal sum of earnings ({expected_gross})")
+
+
+class TestPaymentMeans(FrappeTestCase):
+    """Test PaymentMeans element in UBL self-billed invoice.
+
+    Verifies:
+    - PaymentMeans present when employee has bank account set
+    - PayeeFinancialAccount contains correct bank account number
+    - PaymentMeans omitted when bank account is empty/None
+    - Bank account truncated to 150 chars
+    """
+
+    def _make_salary_slip(self):
+        doc = MagicMock()
+        doc.name = "SAL-SLP-PM-001"
+        doc.employee = "HR-EMP-00001"
+        doc.employee_name = "Ahmad bin Abdullah"
+        doc.company = "Arising Packaging"
+        doc.posting_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
+
+        earning = MagicMock()
+        earning.salary_component = "Basic Salary"
+        earning.amount = 5000
+        earning.custom_lhdn_classification_code = "022 : Others"
+        doc.earnings = [earning]
+        doc.deductions = []
+        doc.net_pay = 5000
+        return doc
+
+    def _make_employee(self, bank_account=None):
+        emp = MagicMock()
+        emp.custom_lhdn_tin = "IG12345678901"
+        emp.custom_id_type = "NRIC"
+        emp.custom_id_value = "901201145678"
+        emp.employee_name = "Ahmad bin Abdullah"
+        emp.custom_is_foreign_worker = 0
+        emp.custom_state_code = "01"
+        emp.custom_bank_account_number = bank_account
+        return emp
+
+    def _make_company(self):
+        company = MagicMock()
+        company.custom_company_tin_number = "C12345678901"
+        company.name = "Arising Packaging"
+        company.company_name = "Arising Packaging Sdn Bhd"
+        company.custom_state_code = "14"
+        return company
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_payment_means_present_when_bank_account_set(self, mock_frappe):
+        """When employee has custom_bank_account_number, XML must include
+        cac:PaymentMeans with PaymentMeansCode '30' (credit transfer)."""
+        doc = self._make_salary_slip()
+        emp = self._make_employee(bank_account="1234567890")
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-PM-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-PM-001")
+        root = ET.fromstring(xml_string)
+
+        payment_means = root.find(f".//{{{CAC_NS}}}PaymentMeans")
+        self.assertIsNotNone(payment_means,
+            "PaymentMeans element must exist when bank account is set")
+
+        means_code = payment_means.find(f"{{{CBC_NS}}}PaymentMeansCode")
+        self.assertIsNotNone(means_code,
+            "PaymentMeansCode must exist inside PaymentMeans")
+        self.assertEqual(means_code.text, "30",
+            "PaymentMeansCode must be '30' (credit transfer)")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_payee_financial_account_contains_bank_number(self, mock_frappe):
+        """PayeeFinancialAccount/ID must contain the employee bank account number."""
+        doc = self._make_salary_slip()
+        emp = self._make_employee(bank_account="1234567890")
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-PM-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-PM-001")
+        root = ET.fromstring(xml_string)
+
+        account_id = root.find(
+            f".//{{{CAC_NS}}}PaymentMeans"
+            f"/{{{CAC_NS}}}PayeeFinancialAccount"
+            f"/{{{CBC_NS}}}ID"
+        )
+        self.assertIsNotNone(account_id,
+            "PayeeFinancialAccount/ID must exist")
+        self.assertEqual(account_id.text, "1234567890",
+            f"Bank account should be '1234567890', got '{account_id.text}'")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_payment_means_omitted_when_no_bank_account(self, mock_frappe):
+        """When employee has no bank account, PaymentMeans must be omitted."""
+        doc = self._make_salary_slip()
+        emp = self._make_employee(bank_account=None)
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-PM-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-PM-001")
+        root = ET.fromstring(xml_string)
+
+        payment_means = root.find(f".//{{{CAC_NS}}}PaymentMeans")
+        self.assertIsNone(payment_means,
+            "PaymentMeans must NOT exist when bank account is empty/None")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_bank_account_truncated_to_150_chars(self, mock_frappe):
+        """Bank account numbers longer than 150 chars must be truncated."""
+        long_account = "A" * 200
+        doc = self._make_salary_slip()
+        emp = self._make_employee(bank_account=long_account)
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-PM-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-PM-001")
+        root = ET.fromstring(xml_string)
+
+        account_id = root.find(
+            f".//{{{CAC_NS}}}PaymentMeans"
+            f"/{{{CAC_NS}}}PayeeFinancialAccount"
+            f"/{{{CBC_NS}}}ID"
+        )
+        self.assertIsNotNone(account_id,
+            "PayeeFinancialAccount/ID must exist for long account")
+        self.assertLessEqual(len(account_id.text), 150,
+            f"Bank account must be truncated to 150 chars, got {len(account_id.text)}")
+
+
+class TestForeignCurrencyHandling(FrappeTestCase):
+    """Test foreign currency to MYR conversion in UBL payload.
+
+    Verifies:
+    - DocumentCurrencyCode is always 'MYR'
+    - MYR salary amounts used directly (no conversion)
+    - Foreign currency amounts multiplied by conversion_rate
+    - Missing exchange rate raises ValidationError
+    - TaxCurrencyCode set for non-MYR currencies
+    """
+
+    def _make_salary_slip(self, currency="MYR", conversion_rate=1):
+        doc = MagicMock()
+        doc.name = "SAL-SLP-FX-001"
+        doc.employee = "HR-EMP-00001"
+        doc.employee_name = "Ahmad bin Abdullah"
+        doc.company = "Arising Packaging"
+        doc.posting_date = "2026-01-31"
+        doc.currency = currency
+        doc.conversion_rate = conversion_rate
+        doc.net_pay = 5000
+
+        earning = MagicMock()
+        earning.salary_component = "Basic Salary"
+        earning.amount = 1000
+        earning.custom_lhdn_classification_code = "022 : Others"
+        doc.earnings = [earning]
+        doc.deductions = []
+        return doc
+
+    def _make_employee(self):
+        emp = MagicMock()
+        emp.custom_lhdn_tin = "IG12345678901"
+        emp.custom_id_type = "NRIC"
+        emp.custom_id_value = "901201145678"
+        emp.employee_name = "Ahmad bin Abdullah"
+        emp.custom_is_foreign_worker = 0
+        emp.custom_state_code = "01"
+        emp.custom_bank_account_number = None
+        emp.custom_worker_type = "Contractor"
+        return emp
+
+    def _make_company(self):
+        company = MagicMock()
+        company.custom_company_tin_number = "C12345678901"
+        company.name = "Arising Packaging"
+        company.custom_state_code = "14"
+        return company
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_document_currency_code_is_always_myr(self, mock_frappe):
+        """DocumentCurrencyCode must always be 'MYR', even for foreign currency slips."""
+        doc = self._make_salary_slip(currency="USD", conversion_rate=4.5)
+        emp = self._make_employee()
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-FX-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-FX-001")
+        root = ET.fromstring(xml_string)
+
+        currency_code = root.find(f"{{{CBC_NS}}}DocumentCurrencyCode")
+        self.assertIsNotNone(currency_code, "DocumentCurrencyCode must exist")
+        self.assertEqual(currency_code.text, "MYR",
+            f"DocumentCurrencyCode must be 'MYR', got '{currency_code.text}'")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_myr_salary_no_conversion_needed(self, mock_frappe):
+        """MYR salary amounts should be used directly without conversion."""
+        doc = self._make_salary_slip(currency="MYR", conversion_rate=1)
+        emp = self._make_employee()
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-FX-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-FX-001")
+        root = ET.fromstring(xml_string)
+
+        # Line amount should be 1000.00 (no conversion)
+        line_amount = root.find(
+            f".//{{{CAC_NS}}}InvoiceLine/{{{CBC_NS}}}LineExtensionAmount"
+        )
+        self.assertIsNotNone(line_amount, "LineExtensionAmount must exist")
+        self.assertEqual(line_amount.text, "1000.00",
+            f"MYR amount should be 1000.00, got '{line_amount.text}'")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_usd_salary_amounts_converted_to_myr(self, mock_frappe):
+        """USD salary with conversion_rate=4.5 must multiply amounts by 4.5."""
+        doc = self._make_salary_slip(currency="USD", conversion_rate=4.5)
+        emp = self._make_employee()
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-FX-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-FX-001")
+        root = ET.fromstring(xml_string)
+
+        # Line amount should be 1000 * 4.5 = 4500.00
+        line_amount = root.find(
+            f".//{{{CAC_NS}}}InvoiceLine/{{{CBC_NS}}}LineExtensionAmount"
+        )
+        self.assertIsNotNone(line_amount, "LineExtensionAmount must exist")
+        self.assertEqual(line_amount.text, "4500.00",
+            f"USD 1000 * 4.5 should be 4500.00, got '{line_amount.text}'")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_missing_exchange_rate_raises_validation_error(self, mock_frappe):
+        """Foreign currency with conversion_rate=0 must raise ValidationError."""
+        doc = self._make_salary_slip(currency="USD", conversion_rate=0)
+        emp = self._make_employee()
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-FX-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        mock_frappe.ValidationError = type("ValidationError", (Exception,), {})
+        mock_frappe.throw.side_effect = mock_frappe.ValidationError("Exchange rate required")
+
+        with self.assertRaises(mock_frappe.ValidationError):
+            build_salary_slip_xml("SAL-SLP-FX-001")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_tax_currency_code_set_for_foreign_currency(self, mock_frappe):
+        """When currency != MYR, XML must include TaxCurrencyCode with source currency."""
+        doc = self._make_salary_slip(currency="USD", conversion_rate=4.5)
+        emp = self._make_employee()
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-FX-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-FX-001")
+        root = ET.fromstring(xml_string)
+
+        tax_currency = root.find(f"{{{CBC_NS}}}TaxCurrencyCode")
+        self.assertIsNotNone(tax_currency,
+            "TaxCurrencyCode must exist for foreign currency slips")
+        self.assertEqual(tax_currency.text, "USD",
+            f"TaxCurrencyCode should be 'USD', got '{tax_currency.text}'")

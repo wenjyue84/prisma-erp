@@ -1938,3 +1938,41 @@ Tests already existed in test_exemption_filter.py (TestWorkerTypeGate class). Co
 
 ### Gotchas
 - Container had stale version with EXEMPT_WORKER_TYPES deny-list; local had correct IN_SCOPE_WORKER_TYPES
+
+## Iteration 32 — US-032: Implement foreign currency to MYR conversion in UBL payload builder
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 42/42 tests pass, 0 failures, 0 errors
+
+### Analysis
+The foreign currency conversion logic was already implemented in payload_builder.py (in `build_salary_slip_xml()`):
+- DocumentCurrencyCode always 'MYR' (set in `_build_invoice_skeleton`)
+- Currency check: `getattr(doc, "currency", "MYR")` with Decimal conversion_rate
+- ValidationError when foreign currency has conversion_rate == 0
+- TaxCurrencyCode added for non-MYR currencies
+- Earnings amounts multiplied by conv_rate in both totals and line items
+
+### Problem found
+Existing test classes' mock Salary Slip helpers (6 helpers across 5 classes) did NOT set `doc.currency` or `doc.conversion_rate`. MagicMock auto-creates attributes as MagicMock objects, which caused `Decimal(str(MagicMock))` → `decimal.InvalidOperation` errors. This broke 19 of 42 tests.
+
+### Fix applied
+Added `doc.currency = "MYR"` and `doc.conversion_rate = 1` to all 6 mock salary slip helpers:
+1. TestSalarySlipXMLBuilder._make_salary_slip_doc
+2. TestConsolidatedXMLBuilder._make_salary_slip
+3. TestStateCodeInUBL._make_salary_slip_doc
+4. TestStateCodeInUBL._make_salary_slip_for_consol
+5. TestPCBWithholdingTax._make_salary_slip_with_pcb
+6. TestPaymentMeans._make_salary_slip
+
+### Files modified
+- `tests/test_payload_builder.py` — Added currency/conversion_rate to 6 mock helpers
+
+### Patterns discovered
+- MagicMock auto-attributes are truthy, so `getattr(mock, "attr", default) or default` won't use the default — must explicitly set expected attributes on mocks
+- When adding new code paths to existing functions, ALL test mocks calling that function need updating
+
+### Gotchas
+- No production code changes needed — only test mock fixtures needed updating to match the existing currency conversion code path
+
