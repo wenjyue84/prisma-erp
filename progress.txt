@@ -2032,3 +2032,27 @@ Added `doc.currency = "MYR"` and `doc.conversion_rate = 1` to all 6 mock salary 
 
 ## Iteration 33 - Thu, Feb 26, 2026
 Completed: UT-033 red phase verified
+
+## Iteration 34 — US-033: Exclude employer statutory contributions from self-billed invoice
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 47/47 tests pass, 0 failures, 0 errors
+
+### Files modified
+- `payload_builder.py` — Added EMPLOYER_STATUTORY_COMPONENTS frozenset and filtering logic
+
+### Changes made
+1. Added `EMPLOYER_STATUTORY_COMPONENTS` frozenset with 10 common Malaysian employer contribution names
+2. Added `eligible_earnings` filter in `build_salary_slip_xml()`:
+   - Excludes components in EMPLOYER_STATUTORY_COMPONENTS set
+   - Excludes components with `custom_lhdn_exclude_from_invoice == 1` (via frappe.db.get_value)
+3. Both totals calculation and InvoiceLine generation now use `eligible_earnings` instead of `doc.earnings`
+
+### Gotchas
+- `frappe.db.get_value` returns MagicMock in tests (truthy by default) — must use explicit `!= 1` comparison instead of `not` truthiness check to avoid filtering ALL components in mock context
+- This pattern is important for any future custom field flag checks against frappe.db in mocked tests
+
+## Iteration 34 - Thu, Feb 26, 2026
+Completed: US-033 green phase verified
