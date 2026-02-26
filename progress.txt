@@ -1103,3 +1103,28 @@ Completed: Implement async LHDN cancellation job (ID: US-017) in 4m
 
 ### Patterns discovered
 - When patching module-level attributes, the target module must actually import them — stubs without imports cause AttributeError (valid red phase)
+## Iteration 29 - Thu, Feb 26, 2026  2:06:29 PM
+Completed: Write failing tests for monthly consolidation scheduler (ID: UT-018) in 3m
+
+
+## Iteration 19 — US-018: Implement monthly consolidation scheduler
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation`
+**Result:** PASS — 6/6 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/services/consolidation_service.py` — Full implementation replacing stub
+
+### Implementation details
+- `run_monthly_consolidation()` calculates previous month date range using `frappe.utils.today()`, `add_months()`, `get_first_day()`, `get_last_day()`
+- Queries Salary Slips and Expense Claims with filters: `custom_lhdn_status='Pending'`, `custom_is_consolidated=0`, `posting_date` between first/last day of previous month
+- Documents with net_pay > RM 10,000 (Salary Slip) or total_sanctioned_amount > RM 10,000 (Expense Claim) are submitted individually via `submission_service.process_salary_slip/process_expense_claim`
+- Remaining documents are submitted as a consolidated batch via the same service methods
+- After each submission, `frappe.db.set_value` marks the document with `custom_is_consolidated=1`
+- Empty batches complete silently (no docs → no processing → no errors)
+
+### Patterns discovered
+- Tests patch `frappe` and `submission_service` at module level — implementation must use top-level imports for both
+- `HIGH_VALUE_THRESHOLD = 10000` constant for the RM 10,000 per-document threshold
