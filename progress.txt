@@ -885,3 +885,28 @@ Completed: Implement hourly status polling scheduler (ID: US-013) in 3m
 ### Gotchas
 - None — clean red phase, ImportError as expected
 
+## Iteration 21 - Thu, Feb 26, 2026  1:35:58 PM
+Completed: Write failing tests for Status 3 error log parser (ID: UT-014) in 2m
+
+## Iteration 22 — US-014: Implement Status 3 error log parser
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_error_parser`
+**Result:** PASS — 5/5 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `services/status_poller.py` — Added `_format_error_log(response)` function; updated `_poll_single_document` to use it instead of raw `json.dumps`
+- `services/submission_service.py` — Added `_format_rejection_errors(error)` function; updated `_write_response_to_doc` to use it instead of raw `json.dumps`
+
+### Implementation details
+- `_format_error_log(response)`: Parses Status 3 document details response (validationSteps array). Header: "LHDN Validation Failed — N error(s)", per-step: "[errorCode] propertyName: error", then "---RAW JSON---" separator + json.dumps
+- `_format_rejection_errors(error)`: Parses 202 rejection error (details array). Same format but reads code/message/target from details. Header + per-detail lines + raw JSON
+- Both return "LHDN returned Invalid status with no error details" when error array is empty
+
+### Patterns discovered
+- Tests import the functions directly (not through doc hooks), so pure unit testing of formatting logic
+- Both functions use same output format pattern — could be refactored to share a base formatter later
+
+## Iteration 22 - Thu, Feb 26, 2026  1:40:00 PM
+Completed: Implement Status 3 error log parser (ID: US-014) in 3m

@@ -28,6 +28,42 @@ LHDN_STATUS_MAP = {
 }
 
 
+def _format_error_log(response):
+    """Parse LHDN document details error response into human-readable text.
+
+    For Status 3 (Invalid) responses from the document details endpoint.
+    Input shape: {status, validationResults: {status, validationSteps: [
+        {status, name, error: {propertyName, errorCode, error, innerError}}
+    ]}}
+
+    Args:
+        response: The LHDN document details JSON dict.
+
+    Returns:
+        str: Formatted error text with header, error lines, and raw JSON.
+    """
+    validation_results = response.get("validationResults", {})
+    steps = validation_results.get("validationSteps", [])
+
+    if not steps:
+        return "LHDN returned Invalid status with no error details"
+
+    lines = []
+    lines.append(f"LHDN Validation Failed \u2014 {len(steps)} error(s)\n")
+
+    for step in steps:
+        error = step.get("error", {})
+        code = error.get("errorCode", "UNKNOWN")
+        field = error.get("propertyName", "unknown")
+        message = error.get("error", "No message")
+        lines.append(f"[{code}] {field}: {message}")
+
+    lines.append("\n---RAW JSON---")
+    lines.append(json.dumps(response, indent=2))
+
+    return "\n".join(lines)
+
+
 def _get_base_url():
     """Get the LHDN API base URL from default Company configuration.
 
@@ -74,8 +110,7 @@ def _poll_single_document(doctype, doc, token, base_url):
         frappe.db.set_value(doctype, doc.name, "custom_lhdn_validated_datetime", validated_dt)
     elif erp_status == "Invalid":
         frappe.db.set_value(doctype, doc.name, "custom_lhdn_status", "Invalid")
-        validation_results = data.get("validationResults", {})
-        error_msg = json.dumps(validation_results) if isinstance(validation_results, dict) else str(validation_results)
+        error_msg = _format_error_log(data)
         frappe.db.set_value(doctype, doc.name, "custom_error_log", error_msg)
 
 
