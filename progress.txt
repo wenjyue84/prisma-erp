@@ -1967,12 +1967,15 @@ Added `doc.currency = "MYR"` and `doc.conversion_rate = 1` to all 6 mock salary 
 6. TestPaymentMeans._make_salary_slip
 
 ### Files modified
-- `tests/test_payload_builder.py` — Added currency/conversion_rate to 6 mock helpers
+- `tests/test_payload_builder.py` — Added currency/conversion_rate to 6 mock helpers; also added custom_state_code, custom_bank_account_number, custom_worker_type to employee/company mocks in TestSalarySlipXMLBuilder, TestExpenseClaimXMLBuilder, TestPCBWithholdingTax for consistency
 
 ### Patterns discovered
 - MagicMock auto-attributes are truthy, so `getattr(mock, "attr", default) or default` won't use the default — must explicitly set expected attributes on mocks
 - When adding new code paths to existing functions, ALL test mocks calling that function need updating
+- Always set ALL attributes used by production code on mock objects, even if the mock's auto-attribute wouldn't crash (it produces ugly XML with mock repr strings)
 
 ### Gotchas
 - No production code changes needed — only test mock fixtures needed updating to match the existing currency conversion code path
+- US-022 (INTG) blocked: LHDN sandbox credentials on Company doc are placeholder values from test data seed, not real credentials
+
 
