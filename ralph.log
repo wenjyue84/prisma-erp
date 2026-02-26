@@ -827,3 +827,88 @@ warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the nex
 [2m[2:43][0m [37mNow commit the changes.[0m
 [2m[2:46][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
 [2m[2:53][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:01][0m [37m**UT-008 complete.**   **Summary:** - **Story:** UT-008 — Write failing tests for on_submit hooks - ...[0m
+
+[32m[1m✓ Claude finished[0m [2m(19 tool calls in 3:02)[0m
+
+[2mStream ended (19 tool calls, 3:03 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 3m
+
+  [done] Story completed: Write failing tests for on_submit hooks
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... 
+  │     Module: lhdn_payroll_integration.tests.test_submission_hooks
+  │     Type:   TEST
+  │     Result: ✓ FAIL (red phase confirmed — expected for UT)
+  └────────────────────────────────────────────┘
+  ✓ All quality gates passed!
+warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the next time Git touches it
+[feature/lhdn-payroll-integration 2a42065] feat: UT-008 - Write failing tests for on_submit hooks
+ 1 file changed, 69 insertions(+)
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 10/60
+  Progress: [██████████░░░░░░░░░░░░░░░░░░░░] 15/43 (34%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       US-008
+  │ Title:    Implement on_submit hooks with async enqueue
+  │ Priority: 16
+  │ Deps:     UT-008, US-007
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for US-008...
+  ─────── Claude Output Start ──────────
+
+  ╔══════════════════════════════════════════╗
+  ║   📊 15-MIN PROGRESS REPORT — 12:41  ║
+  ╠══════════════════════════════════════════╣
+  ║  Completed:  15 / 43 stories
+  ║  Remaining:  28 stories
+  ║
+  ║  Recently done:
+  ║    ✓ [UT-007] Write failing tests for exemption filter
+  ║    ✓ [US-007] Implement exemption filter service
+  ║    ✓ [UT-008] Write failing tests for on_submit hooks
+  ║
+  ║  Up next:
+  ║    → [US-008] Implement on_submit hooks with async enqueue
+  ║    → [UT-009] Write failing tests for Salary Slip XML payload builder
+  ║    → [US-009] Implement UBL 2.1 XML payload builder for Salary Slip
+  ╚══════════════════════════════════════════╝
+
+[2m[0:46][0m [37mI'll start by reading the current state of the project.[0m
+[2m[0:47][0m 📖 [36mRead[0m [2mprogress.txt[0m
+[2m[0:47][0m 📖 [36mRead[0m [2mprd.json[0m
+[2m[0:51][0m [37mLet me get the next story from prd.json.[0m
+[2m[0:55][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:11][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:15][0m [37mNow let me check the current test file and existing submission_service.py stub to understand what's ...[0m
+[2m[1:17][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 cat /home/frappe/frappe-ben...[0m
+[2m[1:17][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 cat /home/frappe/frappe-ben...[0m
+[2m[1:18][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 cat /home/frappe/frappe-ben...[0m
+[2m[1:21][0m [37mGit path expansion issue on Windows. Need to use `bash -c` wrapper.[0m
+[2m[1:22][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:23][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:24][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:30][0m [37mNow let me also check if there's a utils/validation.py file already.[0m
+[2m[1:31][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls -la /home/frapp...[0m
+[2m[1:38][0m [37mNo `validation.py` yet. I need to create: 1. `lhdn_payroll_integration/utils/validation.py` — with `...[0m
+[2m[1:41][0m ✏️ [36mWrite[0m [2mvalidation.py[0m
+[2m[1:51][0m ✏️ [36mWrite[0m [2msubmission_service.py[0m
+[2m[1:55][0m [37mNow copy both files into the container and run tests.[0m
+[2m[1:57][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:03][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[2:10][0m [37mAll 5 tests pass. TDD GREEN confirmed. Now let me update prd.json and progress.txt.[0m
+[2m[2:13][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:17][0m 📖 [36mRead[0m [2mprogress.txt[0m
+[2m[2:30][0m 🔧 [36mEdit[0m [2mprogress.txt[0m
+[2m[2:33][0m [37mNow commit the changes.[0m
+[2m[2:33][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:41][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
