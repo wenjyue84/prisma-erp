@@ -15,8 +15,20 @@ RUN /home/frappe/frappe-bench/env/bin/pip install --quiet --no-deps -e apps/myin
 # hrms has its own Python dependencies (install with deps)
 RUN /home/frappe/frappe-bench/env/bin/pip install --quiet -e apps/hrms
 
+# Copy and install lhdn_payroll_integration custom app (built locally, not on PyPI)
+COPY lhdn_payroll_integration apps/lhdn_payroll_integration
+RUN /home/frappe/frappe-bench/env/bin/pip install --quiet --no-deps -e apps/lhdn_payroll_integration
+
 # Create assets symlinks so /assets/<app>/ is served by nginx
 RUN ln -sf /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public \
     /home/frappe/frappe-bench/sites/assets/myinvois_erpgulf \
  && ln -sf /home/frappe/frappe-bench/apps/hrms/hrms/public \
-    /home/frappe/frappe-bench/sites/assets/hrms
+    /home/frappe/frappe-bench/sites/assets/hrms \
+ && ln -sf /home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/public \
+    /home/frappe/frappe-bench/sites/assets/lhdn_payroll_integration
+
+# Demo login: patch login page + expose test data seed as importable module
+COPY frappe_patches/login.html apps/frappe/frappe/www/login.html
+COPY frappe_patches/login.js apps/frappe/frappe/templates/includes/login/login.js
+COPY frappe_patches/login.py apps/frappe/frappe/www/login.py
+COPY setup_test_data.py apps/frappe/frappe/setup_test_data.py
