@@ -1,0 +1,22 @@
+FROM frappe/erpnext:v16.7.0
+
+USER frappe
+WORKDIR /home/frappe/frappe-bench
+
+# Clone myinvois app (bench get-app fails due to uv resolving frappe's git-pinned pypika)
+RUN git clone --depth 1 --branch main https://github.com/ERPGulf/myinvois.git apps/myinvois_erpgulf
+
+# Clone hrms (HR & Payroll) — separated from ERPNext core in v15+
+RUN git clone --depth 1 --branch version-16 https://github.com/frappe/hrms.git apps/hrms
+
+# Install with pip --no-deps: frappe/erpnext are already in the venv
+RUN /home/frappe/frappe-bench/env/bin/pip install --quiet --no-deps -e apps/myinvois_erpgulf
+
+# hrms has its own Python dependencies (install with deps)
+RUN /home/frappe/frappe-bench/env/bin/pip install --quiet -e apps/hrms
+
+# Create assets symlinks so /assets/<app>/ is served by nginx
+RUN ln -sf /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public \
+    /home/frappe/frappe-bench/sites/assets/myinvois_erpgulf \
+ && ln -sf /home/frappe/frappe-bench/apps/hrms/hrms/public \
+    /home/frappe/frappe-bench/sites/assets/hrms
