@@ -302,3 +302,16 @@ Completed: Write failing tests for Expense Claim custom fields (ID: UT-005)
 ## Iteration 10 - Wed, Feb 26, 2026
 Completed: Add custom fields to Expense Claim DocType (ID: US-005)
 
+## Iteration 11 — UT-006: Write failing tests for LHDN MSIC Code DocType
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_msic_code`
+**Result:** FAIL — 4/5 fail (1 pass: test_employee_can_link_msic_code since field already exists)
+
+### Files created
+- `tests/test_msic_code.py` — TestLHDNMSICCode class with 5 test methods
+
+## Iteration 11 - Wed, Feb 26, 2026
+Completed: Write failing tests for LHDN MSIC Code DocType (ID: UT-006)
+
