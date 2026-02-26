@@ -2056,3 +2056,27 @@ Completed: UT-033 red phase verified
 
 ## Iteration 34 - Thu, Feb 26, 2026
 Completed: US-033 green phase verified
+
+## Iteration 35 — UT-034: Write failing tests for SST registration in PartyTaxScheme
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** FAIL — 5 failures in TestSSTHandling (PartyTaxScheme not yet in XML)
+
+### Files modified
+- `test_payload_builder.py` — Added class TestSSTHandling with 5 test methods
+
+### Test methods (5 total — all FAIL)
+1. test_non_sst_supplier_shows_na_registration — FAIL (no PartyTaxScheme element)
+2. test_non_sst_scheme_id_is_na — FAIL (no PartyTaxScheme/TaxScheme/ID element)
+3. test_sst_supplier_registration_in_party_tax_scheme — FAIL (no PartyTaxScheme)
+4. test_sst_scheme_id_is_sst — FAIL (no PartyTaxScheme/TaxScheme/ID)
+5. test_buyer_also_has_party_tax_scheme — FAIL (no PartyTaxScheme on buyer)
+
+### Patterns discovered
+- ET namespace-prefixed XPath queries require explicit ns dict: {"cac": CAC_NS, "cbc": CBC_NS}
+- 52 total tests now (47 existing + 5 new SST tests)
+
+## Iteration 35 - Thu, Feb 26, 2026
+Completed: UT-034 red phase verified
