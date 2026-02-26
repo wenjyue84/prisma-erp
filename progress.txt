@@ -1714,3 +1714,7 @@ Completed: Add Malaysian state code to UBL address elements (ID: US-025)
 ### Gotchas
 - None — clean implementation, all 5 tests pass on first run
 
+## Recovery — US-027 prd.json update
+Previous session completed US-027 implementation (5/5 tests pass) but did not update prd.json.
+Re-verified: bench tests pass, marked US-027 passes: true.
+
