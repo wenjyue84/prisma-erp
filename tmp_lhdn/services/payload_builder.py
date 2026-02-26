@@ -174,8 +174,22 @@ def build_salary_slip_xml(docname):
 
     root = _build_invoice_skeleton(docname, doc.posting_date, employee, company)
 
+    # Foreign currency conversion: LHDN requires MYR
+    source_currency = getattr(doc, "currency", "MYR") or "MYR"
+    if source_currency != "MYR":
+        conv_rate = Decimal(str(getattr(doc, "conversion_rate", 0) or 0))
+        if conv_rate == Decimal("0"):
+            frappe.throw(
+                "Exchange rate required for foreign currency salary slip",
+                frappe.ValidationError,
+            )
+        # Add TaxCurrencyCode for non-MYR source
+        _sub(root, CBC_NS, "TaxCurrencyCode", source_currency)
+    else:
+        conv_rate = Decimal("1")
+
     # Calculate totals from earnings ONLY (never use YTD fields)
-    total_excl = sum(_quantize(e.amount) for e in doc.earnings)
+    total_excl = sum(_quantize(Decimal(str(e.amount)) * conv_rate) for e in doc.earnings)
     total_tax = Decimal("0.00")
 
     _add_tax_and_totals(root, total_excl, total_tax)
@@ -209,7 +223,7 @@ def build_salary_slip_xml(docname):
         _sub(line, CBC_NS, "ID", str(idx))
         _sub(line, CBC_NS, "InvoicedQuantity", "1", unitCode="C62")
 
-        amount = _quantize(earning.amount)
+        amount = _quantize(Decimal(str(earning.amount)) * conv_rate)
         _sub(line, CBC_NS, "LineExtensionAmount", str(amount), currencyID="MYR")
 
         item = _sub(line, CAC_NS, "Item")

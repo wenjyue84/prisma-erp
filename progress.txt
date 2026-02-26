@@ -1912,3 +1912,29 @@ Tests already existed in test_exemption_filter.py (TestWorkerTypeGate class). Co
 
 ### Gotchas
 - Old TestExemptionFilter._make_employee didn't set custom_worker_type; MagicMock returned truthy object that wasn't in either set
+
+## Iteration 32 — US-031: Implement worker type gate: Employee vs Contractor vs Director for LHDN scope
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_exemption_filter`
+**Result:** PASS — 12/12 tests pass, 0 failures, 0 errors
+
+### Files modified
+- `services/exemption_filter.py` — Changed from EXEMPT_WORKER_TYPES (deny-list) to IN_SCOPE_WORKER_TYPES (allow-list). Now only Contractor/Director pass through; all unknown types (Employee, "", Intern, etc.) are exempt
+- `services/payload_builder.py` — Added import of get_default_classification_code; build_salary_slip_xml now uses worker-type-based fallback classification code instead of hardcoded "022"
+
+### Actions taken
+1. Identified the one remaining failing test: test_unknown_worker_type_defaults_to_exempt (Intern worker type not exempt with old deny-list approach)
+2. Local exemption_filter.py already had the fix (IN_SCOPE_WORKER_TYPES allow-list) — copied to container
+3. Updated payload_builder.py: imported get_default_classification_code, used it as fallback in InvoiceLine classification
+4. Deployed both files to container
+5. Ran exemption_filter tests — all 12 pass
+6. Ran full app tests — 182/184 pass (2 pre-existing RBAC failures unrelated to US-031)
+
+### Patterns discovered
+- Allow-list (IN_SCOPE) is safer than deny-list (EXEMPT) for worker types — future unknown types auto-exempt
+- payload_builder can import from exemption_filter without circular dependency
+
+### Gotchas
+- Container had stale version with EXEMPT_WORKER_TYPES deny-list; local had correct IN_SCOPE_WORKER_TYPES
