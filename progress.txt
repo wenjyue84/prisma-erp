@@ -824,3 +824,34 @@ Completed: Implement input validation and sanitization utilities (ID: US-012) in
 ## Iteration 19 - Thu, Feb 26, 2026
 Completed: Write failing tests for status polling scheduler (ID: UT-013)
 
+## Iteration 19 - Thu, Feb 26, 2026  1:29:29 PM
+Completed: Write failing tests for status polling scheduler (ID: UT-013) in 3m
+
+## Iteration 27 — US-013: Implement hourly status polling scheduler
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_status_poller`
+**Result:** PASS — 7/7 tests pass, 0 failures, 0 errors
+
+### Files modified
+- `lhdn_payroll_integration/services/status_poller.py` — Replaced stub with full implementation
+
+### Implementation details
+- `poll_pending_documents()`: Iterates over Salary Slip and Expense Claim doctypes
+  - Queries `frappe.get_all` with filters: custom_lhdn_status='Submitted', custom_lhdn_uuid != ''
+  - limit_page_length=100 per doctype per run
+  - Gets bearer token via `get_access_token()` (imported from submission_service)
+  - For each document: GETs `/api/v1.0/documents/{uuid}/details` from LHDN API
+  - Maps response status: 'valid' → 'Valid' + stores dateTimeValidated, 'invalid' → 'Invalid' + stores error log
+  - Documents with empty UUID are skipped (double-filtered: once in query, once in code)
+  - Per-document errors caught and logged via `frappe.log_error()` without aborting batch
+
+### Patterns discovered
+- Tests mock at module level (`status_poller.frappe`, `status_poller.requests`, `status_poller.get_access_token`) — module must import these names at top level
+- `frappe.get_all.side_effect = [list1, list2]` returns different results per sequential call — enables testing both doctypes in one function call
+- `frappe.db.set_value(doctype, name, fieldname, value)` 4-arg form is what tests assert on
+
+### Gotchas
+- None — clean green phase on first attempt
+
