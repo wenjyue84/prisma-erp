@@ -1848,3 +1848,35 @@ Completed: Write failing tests for PCB withholding tax (ID: UT-029) — tests al
 ## Iteration 56
 Completed: Add PCB withholding tax element to contractor UBL invoice (ID: US-029) — code was already in place from previous session, confirmed green phase (33/33 pass)
 
+## Iteration 57 — UT-030: Write failing tests for bank account in UBL PaymentMeans element
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** FAIL — 3 failures (TestPaymentMeans), 34 passes, total 37 tests
+
+### Files modified
+- `tests/test_payload_builder.py` — Added class TestPaymentMeans with 4 test methods
+
+### Test methods (4 total)
+1. test_payment_means_present_when_bank_account_set — FAIL (no PaymentMeans in XML)
+2. test_payee_financial_account_contains_bank_number — FAIL (no PaymentMeans in XML)
+3. test_payment_means_omitted_when_no_bank_account — PASS (correctly absent)
+4. test_bank_account_truncated_to_150_chars — FAIL (no PaymentMeans in XML)
+
+## Iteration 58 — US-030: Add bank account to UBL PaymentMeans element in self-billed XML
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 37/37 tests pass, 0 failures, 0 errors
+
+### Files modified
+- `lhdn_payroll_integration/services/payload_builder.py` — Added PaymentMeans block in build_salary_slip_xml
+
+### Implementation details
+- Reads employee.custom_bank_account_number; if truthy, adds cac:PaymentMeans block
+- PaymentMeansCode = '30' (credit transfer per ISO 20022)
+- PayeeFinancialAccount/ID = bank account truncated to 150 chars
+- When bank_account is empty/None/falsy, PaymentMeans block is omitted
+

@@ -188,6 +188,15 @@ def build_salary_slip_xml(docname):
         withholding = _sub(root, CAC_NS, "WithholdingTaxTotal")
         _sub(withholding, CBC_NS, "TaxAmount", str(pcb_amount), currencyID="MYR")
 
+    # PaymentMeans: include when employee has bank account set
+    bank_account = getattr(employee, 'custom_bank_account_number', '') or ''
+    if bank_account:
+        bank_account = str(bank_account)[:150]
+        payment_means = _sub(root, CAC_NS, "PaymentMeans")
+        _sub(payment_means, CBC_NS, "PaymentMeansCode", "30")
+        payee_account = _sub(payment_means, CAC_NS, "PayeeFinancialAccount")
+        _sub(payee_account, CBC_NS, "ID", bank_account)
+
     # InvoiceLines (one per earnings row)
     for idx, earning in enumerate(doc.earnings, start=1):
         line = _sub(root, CAC_NS, "InvoiceLine")
