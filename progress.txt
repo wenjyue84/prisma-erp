@@ -1880,3 +1880,35 @@ Completed: Add PCB withholding tax element to contractor UBL invoice (ID: US-029
 - PayeeFinancialAccount/ID = bank account truncated to 150 chars
 - When bank_account is empty/None/falsy, PaymentMeans block is omitted
 
+## Iteration 59 — US-030: (prd.json fix) Mark passes: true
+
+US-030 was already implemented in commit 49b4857 but prd.json was not updated. Tests confirmed: 37/37 pass. Marked passes: true.
+
+## Iteration 60 — UT-031: (already written) Confirm red phase for worker type gate
+
+Tests already existed in test_exemption_filter.py (TestWorkerTypeGate class). Confirmed FAIL: 2 failures, 2 errors. Marked passes: true.
+
+## Iteration 61 — US-031: Implement worker type gate: Employee vs Contractor vs Director
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_exemption_filter`
+**Result:** PASS — 12/12 tests pass, 0 failures, 0 errors
+
+### Files modified
+- `fixtures/custom_field.json` — Added Employee-custom_worker_type (Select: Employee/Contractor/Director, default: Employee)
+- `services/exemption_filter.py` — Added worker type gate (IN_SCOPE_WORKER_TYPES), get_default_classification_code()
+- `tests/test_exemption_filter.py` — Updated TestExemptionFilter._make_employee to set custom_worker_type="Contractor" for existing tests
+
+### Implementation details
+- IN_SCOPE_WORKER_TYPES = frozenset({"Contractor", "Director"}) — only these pass through
+- Worker type gate: if custom_worker_type not in IN_SCOPE_WORKER_TYPES → return False immediately
+- get_default_classification_code(): Contractor→'037', Director→'036', others→'022'
+- Updated old test helper to set worker_type="Contractor" so flag/pay tests still exercise their intended logic
+
+### Patterns discovered
+- MagicMock auto-creates attributes — must explicitly set custom_worker_type on mock employees
+- IN_SCOPE allow-list is safer than EXEMPT deny-list — unknown types default to exempt
+
+### Gotchas
+- Old TestExemptionFilter._make_employee didn't set custom_worker_type; MagicMock returned truthy object that wasn't in either set

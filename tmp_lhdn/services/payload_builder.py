@@ -15,6 +15,8 @@ from decimal import Decimal, ROUND_HALF_UP
 
 import frappe
 
+from lhdn_payroll_integration.services.exemption_filter import get_default_classification_code
+
 # UBL 2.1 Namespaces
 UBL_NS = "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
 CAC_NS = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
@@ -197,6 +199,10 @@ def build_salary_slip_xml(docname):
         payee_account = _sub(payment_means, CAC_NS, "PayeeFinancialAccount")
         _sub(payee_account, CBC_NS, "ID", bank_account)
 
+    # Worker-type-based fallback classification code
+    worker_type = getattr(employee, "custom_worker_type", "") or ""
+    default_class_code = get_default_classification_code(worker_type)
+
     # InvoiceLines (one per earnings row)
     for idx, earning in enumerate(doc.earnings, start=1):
         line = _sub(root, CAC_NS, "InvoiceLine")
@@ -210,7 +216,7 @@ def build_salary_slip_xml(docname):
         _sub(item, CBC_NS, "Description", earning.salary_component)
 
         classification = getattr(earning, "custom_lhdn_classification_code", None)
-        class_code = _extract_classification_code(classification, default="022")
+        class_code = _extract_classification_code(classification, default=default_class_code)
 
         commodity = _sub(item, CAC_NS, "CommodityClassification")
         _sub(commodity, CBC_NS, "ItemClassificationCode", class_code, listID="CLASS")

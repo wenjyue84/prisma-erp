@@ -355,5 +355,17 @@
     "options": "\nAbove RM100M\nRM25M to RM100M\nRM5M to RM25M\nRM1M to RM5M\nBelow RM1M (Exempt)",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_state_code"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_worker_type",
+    "dt": "Employee",
+    "fieldname": "custom_worker_type",
+    "fieldtype": "Select",
+    "label": "Worker Type",
+    "options": "\nEmployee\nContractor\nDirector",
+    "default": "Employee",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_requires_self_billed_invoice"
   }
 ]
