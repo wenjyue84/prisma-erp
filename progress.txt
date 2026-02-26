@@ -433,3 +433,33 @@ Completed: Implement exemption filter service (ID: US-007)
 ## Iteration 7 - Thu, Feb 26, 2026 12:35:45 PM
 Completed: Write failing tests for Salary Component field (ID: UT-003) in 3m
 
+## Iteration 8 - Thu, Feb 26, 2026 12:38:32 PM
+Completed: Implement exemption filter service (ID: US-007) in 2m
+
+## Iteration 16 — UT-008: Write failing tests for on_submit hooks
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_hooks`
+**Result:** FAIL — 5/5 errors (AttributeError: submission_service has no attribute 'should_submit_to_lhdn')
+
+### Files created
+- `lhdn_payroll_integration/tests/test_submission_hooks.py` — TestSubmissionHooks class with 5 test methods
+
+### Test methods (5 total)
+1. test_standard_slip_sets_exempt_status — ERROR (can't patch should_submit_to_lhdn on stub)
+2. test_contractor_slip_sets_pending_and_enqueues — ERROR (same)
+3. test_expense_claim_overseas_sets_exempt_status — ERROR (same)
+4. test_enqueue_called_with_after_commit_true — ERROR (same)
+5. test_document_name_length_validation — ERROR (same)
+
+### Patterns discovered
+- @patch on a module attribute fails if the attribute doesn't exist in the target module — this is actually the desired TDD red behavior
+- The stub submission_service.py has no `from ... import should_submit_to_lhdn` — so patching it fails with AttributeError
+
+### Gotchas
+- None — clean red phase, all 5 tests error as expected
+
+## Iteration 16 - Thu, Feb 26, 2026
+Completed: Write failing tests for on_submit hooks (ID: UT-008)
+

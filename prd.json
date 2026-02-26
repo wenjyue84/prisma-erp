@@ -399,7 +399,7 @@
         "US-007"
       ],
       "estimatedComplexity": "small",
-      "passes": false,
+      "passes": true,
       "passesWhen": "Test file is written AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_hooks shows ImportError (red phase confirmed)"
     },
     {
