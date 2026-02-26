@@ -499,3 +499,42 @@ Completed: Write failing tests for on_submit hooks (ID: UT-008) in 3m
 ## Iteration 17 - Thu, Feb 26, 2026
 Completed: Implement on_submit hooks with async enqueue (ID: US-008)
 
+## Iteration 10 - Thu, Feb 26, 2026 12:44:35 PM
+Completed: Implement on_submit hooks with async enqueue (ID: US-008) in 2m
+
+## Iteration 18 — UT-009: Write failing tests for Salary Slip XML payload builder
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** FAIL — ModuleNotFoundError: No module named 'lhdn_payroll_integration.services.payload_builder'
+
+### Files created
+- `lhdn_payroll_integration/tests/test_payload_builder.py` — TestSalarySlipXMLBuilder (7 methods) + TestSubmissionWrapper (3 methods)
+
+### Test methods (10 total)
+**TestSalarySlipXMLBuilder:**
+1. test_build_salary_slip_xml_returns_string — XML string with root <Invoice xmlns=UBL>
+2. test_invoice_type_code_is_11 — InvoiceTypeCode = '11' (self-billed)
+3. test_supplier_is_employee_payee — AccountingSupplierParty has employee TIN+name
+4. test_buyer_is_employer_payer — AccountingCustomerParty has company TIN+name
+5. test_foreign_worker_tin_is_ei00000000010 — Foreign worker uses EI00000000010
+6. test_totals_balance_exact — TaxExcl + TaxAmount == TaxIncl (Decimal, 2dp)
+7. test_ytd_fields_not_accessed — ytd_net_pay/year_to_date never accessed
+
+**TestSubmissionWrapper:**
+8. test_prepare_submission_wrapper_format — Returns dict with documents list
+9. test_wrapper_contains_base64_document — base64-encoded XML decodes correctly
+10. test_wrapper_contains_sha256_hash — SHA-256 hex digest matches
+
+### Patterns discovered
+- xml.etree.ElementTree namespace queries use {namespace}ElementName syntax
+- Decimal comparison for financial totals ensures exact 2dp precision
+- MagicMock side_effect with lambda+dict enables multi-doctype get_doc routing
+
+### Gotchas
+- None — clean red phase, ImportError as expected
+
+## Iteration 18 - Thu, Feb 26, 2026
+Completed: Write failing tests for Salary Slip XML payload builder (ID: UT-009)
+
