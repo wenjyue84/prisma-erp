@@ -677,3 +677,34 @@ Completed: Implement UBL 2.1 XML payload builder for Expense Claim (ID: US-010) 
 ## Iteration 22 - Thu, Feb 26, 2026
 Completed: Write failing tests for submission service HTTP POST (ID: UT-011)
 
+## Iteration 15 - Thu, Feb 26, 2026  1:08:05 PM
+Completed: Write failing tests for submission service HTTP POST (ID: UT-011) in 3m
+
+
+## Iteration 23 — US-011: Implement submission service HTTP POST to LHDN and response writer
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_service`
+**Result:** PASS — 7/7 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/submission_service.py` — Replaced stubs with full implementation
+
+### Implementation details
+- `get_access_token(company_name)`: Checks `company.custom_bearer_token` first (cached), falls back to myinvois_erpgulf's taxpayerlogin
+- `process_salary_slip(docname)`: Builds XML via `build_salary_slip_xml`, wraps with `prepare_submission_wrapper`, POSTs to LHDN
+- `process_expense_claim(docname)`: Same flow using `build_expense_claim_xml`
+- `_write_response_to_doc()`: Parses 202 response — accepted → Submitted + UUID, rejected → Invalid + error log
+- `schedule_retry()`: Increments `custom_retry_count`, re-enqueues via `frappe.enqueue`
+- 401 handling: Refreshes token via `get_access_token()` and retries POST once
+- Timeout/ConnectionError: Routes to `schedule_retry()`
+- Other exceptions: Sets Invalid status with error log
+
+### Patterns discovered
+- When module-level `frappe` is mocked, MagicMock attributes are truthy — `company.custom_bearer_token` short-circuits to return MagicMock as token, avoiding calls to real myinvois code
+- `requests.exceptions` must be set to real exceptions on mock for `except` clauses to work (test sets `mock_requests.exceptions = real_requests.exceptions`)
+- Tests verify `frappe.db.set_value` positional args `(doctype, docname, fieldname, value)` — must use 4-arg form, not dict form
+
+### Gotchas
+- None — clean green phase on first attempt
