@@ -1388,3 +1388,28 @@ UT-018 and US-021 were already implemented in previous iterations but prd.json w
 - BillingReference structure: cac:BillingReference > cac:InvoiceDocumentReference > cbc:UUID + cbc:ID
 - Cancellation service already includes "Self-Billed Credit Note" in ValidationError message
 - Tests use mock original doc with custom_lhdn_uuid to verify BillingReference population
+## Iteration 35 - Thu, Feb 26, 2026  2:31:21 PM
+FAILED quality gates: Implement environment toggle (sandbox / production) (ID: US-020) — attempt 1/3
+
+## Iteration 36 — US-020: Implement environment toggle (sandbox / production)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config`
+**Result:** PASS — 5/5 tests pass, 0 failures, 0 errors
+
+### Files verified (already existed from prior iteration)
+- `utils/config.py` — get_lhdn_base_url() and get_einvoice_version() already implemented correctly
+- `tests/test_config.py` — 5 tests covering sandbox, production, default, version, and no-hardcoded-URLs
+
+### Actions taken
+1. Verified Docker container running
+2. Ran bench tests — all 5 pass immediately (implementation was already correct from prior attempt)
+3. Confirmed no hardcoded LHDN URLs outside test/config files
+4. Marked US-020 passes=true
+
+### Patterns
+- utils/config.py reads frappe.conf.get() for environment, URLs, and version
+- Default to 'sandbox' when lhdn_environment not set (safe default)
+- URL fallback constants: SANDBOX_URL_DEFAULT, PRODUCTION_URL_DEFAULT
+
