@@ -2301,3 +2301,27 @@ Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → docum
 - Fixtures filter using `{"dt": "Salary Component", "filters": [["name", "in", [...]]]}` works correctly
 - bench migrate applies both Custom Field fixtures (creates new fields) and Salary Component fixtures
 
+
+## Iteration N — US-039: Sync comprehensive salary components as lhdn_payroll_integration fixtures
+
+**Type:** IMPL
+**TDD Phase:** GREEN (fixture synced, seed script ran successfully)
+**Result:** PASS — 6 LHDN salary components in fixture, 10 total on site, seed script idempotent (all skipped)
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/salary_component.json` — Created with 6 LHDN salary components
+- `hooks.py` already had Salary Component fixture entry (from prior session)
+- `seed_payroll_demo.py` run on localhost (all records already existed — skipped idempotently)
+
+### Acceptance criteria verified
+- salary_component.json exists with 6 LHDN components ✓
+- EPF - Employer and SOCSO - Employer have custom_lhdn_exclude_from_invoice=1 ✓
+- Monthly Tax Deduction has custom_is_pcb_component=1 ✓
+- hooks.py fixtures list includes Salary Component ✓
+- Local site shows 10+ salary components ✓
+- seed_payroll_demo.py run on localhost ✓
+
+### Patterns discovered
+- custom_is_pcb_component already existed in custom_field.json fixture but wasn't in DB — bench migrate applied it
+- After migrate, re-reading Salary Component docs picks up the newly created custom field values
+- seed_payroll_demo.py is fully idempotent (skips existing records gracefully)
