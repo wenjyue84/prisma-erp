@@ -19,6 +19,9 @@ RUN /home/frappe/frappe-bench/env/bin/pip install --quiet -e apps/hrms
 COPY lhdn_payroll_integration apps/lhdn_payroll_integration
 RUN /home/frappe/frappe-bench/env/bin/pip install --quiet --no-deps -e apps/lhdn_payroll_integration
 
+# qrcode is used by lhdn_payroll_integration/utils/qr_utils.py at import time
+RUN /home/frappe/frappe-bench/env/bin/pip install --quiet "qrcode[pil]"
+
 # Create assets symlinks so /assets/<app>/ is served by nginx
 RUN ln -sf /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public \
     /home/frappe/frappe-bench/sites/assets/myinvois_erpgulf \
