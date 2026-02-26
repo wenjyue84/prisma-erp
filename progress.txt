@@ -2194,3 +2194,39 @@ Remaining: US-022 (INTG) — BLOCKED on real LHDN sandbox credentials
 
 ### EXIT REASON
 Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → document and EXIT"
+
+---
+
+## Ralph Session — Thu, Feb 26, 2026 (latest)
+
+### PRD Status: 66/67 stories complete (98.5%)
+
+**Next story:** US-022 (INTG) — All 5 mandatory LHDN integration test scenarios pass in sandbox
+**Status:** BLOCKED — Placeholder LHDN sandbox credentials
+
+### Credential verification
+- custom_client_id: `d2906b87-4b3e-4a9f-8c12-3f5e7a1d0b94` (fabricated UUID)
+- custom_client_secret: `sndx-K9mP2qRvL7wXjY4tNhBcZeA3uGfD` (fabricated "sndx-" prefix)
+- custom_integration_type: Sandbox
+- custom_sandbox_url: https://preprod-api.myinvois.hasil.gov.my
+
+These are NOT real LHDN sandbox credentials. They were set by `setup_test_data.py` as placeholders.
+
+### Scenarios requiring real credentials
+- T-02: Submit contractor Salary Slip → needs valid API auth to get UUID + QR
+- T-03: Submit with bad TIN → needs valid API auth to receive rejection
+- T-05: Monthly consolidation → needs valid API auth to submit consolidated payload
+
+### Scenarios that could work without credentials
+- T-01: Exempt employee → no API calls (custom_lhdn_status='Exempt')
+- T-04: Network timeout simulation → could mock requests
+
+### Action to unblock
+1. Register at LHDN MyInvois Sandbox portal (https://preprod-api.myinvois.hasil.gov.my)
+2. Obtain real sandbox client_id and client_secret
+3. Update Company "Arising Packaging" in ERPNext with real credentials
+4. Re-run Ralph to complete US-022
+
+### EXIT REASON
+Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → document and EXIT"
+
