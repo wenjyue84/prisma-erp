@@ -2004,3 +2004,31 @@ Added `doc.currency = "MYR"` and `doc.conversion_rate = 1` to all 6 mock salary 
 
 ### Gotchas
 - None
+
+## Iteration 33 — UT-033: Write failing tests for employer statutory contributions exclusion
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** FAIL — 5 failures in TestStatutoryContributionExclusion (EPF/SOCSO/EIS employer rows not yet filtered)
+
+### Files created/modified
+- Tests already existed in `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_payload_builder.py`
+- Class `TestStatutoryContributionExclusion` with 5 test methods was already present from prior work
+
+### Test methods (5 total — all FAIL)
+1. test_employer_epf_not_in_invoice_lines — FAIL (EPF - Employer found in invoice lines)
+2. test_employer_socso_not_in_invoice_lines — FAIL (SOCSO - Employer found in invoice lines)
+3. test_employer_eis_not_in_invoice_lines — FAIL (EIS - Employer found in invoice lines)
+4. test_only_earnings_components_appear_in_invoice_lines — FAIL (got 5 lines instead of 2)
+5. test_custom_exclude_flag_removes_component — FAIL (custom_lhdn_exclude_from_invoice not checked)
+
+### Patterns discovered
+- Tests were pre-written in earlier iteration; UT-033 just needed verification that they fail (red phase)
+- Production payload_builder.py currently includes ALL earnings rows — no statutory filtering yet
+
+### Gotchas
+- None — straightforward verification of existing failing tests
+
+## Iteration 33 - Thu, Feb 26, 2026
+Completed: UT-033 red phase verified
