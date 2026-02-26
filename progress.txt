@@ -1286,3 +1286,24 @@ Completed: Write failing tests for monthly consolidation scheduler (ID: UT-018) 
 ### Gotchas
 - `test_no_hardcoded_urls_in_python_files` must skip test files (contain URLs as mock data) and config.py itself (defines default fallback URLs)
 - The `dirs[:] = [d for d in dirs if d not in ("__pycache__", "tests")]` pattern prunes the os.walk tree to skip tests directory
+
+## Iteration 21 — US-020: Implement environment toggle (sandbox / production)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config`
+**Result:** PASS — 5/5 tests pass, 0 failures, 0 errors
+
+### Files verified (already existed from UT-020 iteration)
+- `utils/config.py` — get_lhdn_base_url(), get_einvoice_version() with sandbox/production toggle
+- Local copy at `tmp_lhdn/utils/config.py`
+
+### Implementation details
+- `get_lhdn_base_url()` reads `lhdn_environment` from frappe.conf, defaults to 'sandbox'
+- Production env → reads `lhdn_production_url`, fallback to `https://api.myinvois.hasil.gov.my`
+- Sandbox env → reads `lhdn_sandbox_url`, fallback to `https://preprod-api.myinvois.hasil.gov.my`
+- `get_einvoice_version()` reads `lhdn_einvoice_version`, defaults to '1.0'
+- No hardcoded URLs in any non-config/non-test Python file (verified by test)
+
+### Notes
+- Implementation was already in container from UT-020 iteration — tests immediately green
