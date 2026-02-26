@@ -2325,3 +2325,22 @@ Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → docum
 - custom_is_pcb_component already existed in custom_field.json fixture but wasn't in DB — bench migrate applied it
 - After migrate, re-reading Salary Component docs picks up the newly created custom field values
 - seed_payroll_demo.py is fully idempotent (skips existing records gracefully)
+
+## Iteration N — US-035: Create LHDN Payroll Compliance script report
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 6 UT-035 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_compliance_report`
+**Result:** PASS — 6/6 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/__init__.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/lhdn_payroll_compliance/__init__.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/lhdn_payroll_compliance/lhdn_payroll_compliance.json`
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/lhdn_payroll_compliance/lhdn_payroll_compliance.py`
+
+### Patterns discovered
+- Frappe Script Reports go in `<app>/<module>/report/<report_name>/` (with nested module folder)
+- get_columns() returns list of dicts; get_data(filters) returns list of dicts; execute(filters) returns (columns, data)
+- Indicator colours are embedded in data: `row["lhdn_status"] = "green Valid"` etc.
+- The lhdn_status column value format: `"<color> <status>"` renders with Frappe indicator badges
