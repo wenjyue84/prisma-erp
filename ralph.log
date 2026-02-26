@@ -693,3 +693,68 @@ warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the nex
 [2m[3:19][0m [37mNow let me commit.[0m
 [2m[3:19][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
 [2m[3:27][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:34][0m [37m**UT-007 complete.** RED phase confirmed — `ModuleNotFoundError` as expected.  Summary: - **UT-003**...[0m
+
+[32m[1m✓ Claude finished[0m [2m(20 tool calls in 3:34)[0m
+
+[2mStream ended (20 tool calls, 3:35 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 3m
+
+  [done] Story completed: Write failing tests for Salary Component field
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... 
+  │     Module: lhdn_payroll_integration.tests.test_custom_fields
+  │     Type:   TEST
+  │     Result: ✓ FAIL (red phase confirmed — expected for UT)
+  └────────────────────────────────────────────┘
+  ✓ All quality gates passed!
+warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the next time Git touches it
+[feature/lhdn-payroll-integration 1093eaa] feat: UT-003 - Write failing tests for Salary Component field
+ 1 file changed, 361 insertions(+)
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 8/60
+  Progress: [█████████░░░░░░░░░░░░░░░░░░░░░] 13/43 (30%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       US-007
+  │ Title:    Implement exemption filter service
+  │ Priority: 14
+  │ Deps:     UT-007, US-002
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for US-007...
+  ─────── Claude Output Start ──────────
+[2m[1:00][0m [37mI'll start by reading the context files to understand the current state.[0m
+[2m[1:01][0m 📖 [36mRead[0m [2mprogress.txt[0m
+[2m[1:01][0m 📖 [36mRead[0m [2mprd.json[0m
+[2m[1:06][0m [37mLet me get the stories with `passes: false` from prd.json.[0m
+[2m[1:08][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:24][0m [37mLet me verify the dependencies are complete and read the full story details.[0m
+[2m[1:26][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:26][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:31][0m [37mGood. **US-007: Implement exemption filter service** is next. Dependencies UT-007 and US-002 are bot...[0m
+[2m[1:32][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
+[2m[1:33][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:38][0m [37mNow I understand the tests. I need to create `lhdn_payroll_integration/services/exemption_filter.py`...[0m
+[2m[1:39][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:44][0m [37mGood — the services directory exists with stubs from US-001. Now I'll create the exemption_filter.py...[0m
+[2m[1:45][0m 💻 [36mBash[0m [2mmkdir -p /c/Users/Jyue/Documents/1-projects/Projects/prisma-...[0m
+[2m[1:52][0m ✏️ [36mWrite[0m [2mexemption_filter.py[0m
+[2m[1:58][0m 💻 [36mBash[0m [2mdocker cp /c/Users/Jyue/Documents/1-projects/Projects/prisma...[0m
+[2m[2:02][0m [37mNow run the tests to confirm GREEN phase:[0m
+[2m[2:03][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[2:10][0m [37mAll 6 tests pass. TDD GREEN confirmed. Now update prd.json and progress.txt.[0m
+[2m[2:12][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:16][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:19][0m [37mNow update progress.txt:[0m
+[2m[2:20][0m 📖 [36mRead[0m [2mprogress.txt[0m
+[2m[2:30][0m 🔧 [36mEdit[0m [2mprogress.txt[0m
+[2m[2:33][0m [37mNow commit:[0m
+[2m[2:35][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
