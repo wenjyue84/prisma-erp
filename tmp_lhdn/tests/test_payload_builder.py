@@ -1,7 +1,7 @@
-"""Tests for Salary Slip and Expense Claim XML payload builders.
+"""Tests for Salary Slip, Expense Claim, and Consolidated XML payload builders.
 
-Tests build_salary_slip_xml(), build_expense_claim_xml(), and
-prepare_submission_wrapper() functions.
+Tests build_salary_slip_xml(), build_expense_claim_xml(),
+prepare_submission_wrapper(), and build_consolidated_xml() functions.
 """
 import base64
 import hashlib
@@ -16,6 +16,7 @@ from lhdn_payroll_integration.services.payload_builder import (
     build_salary_slip_xml,
     build_expense_claim_xml,
     prepare_submission_wrapper,
+    build_consolidated_xml,
 )
 
 UBL_NS = "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
@@ -508,3 +509,251 @@ class TestSubmissionWrapper(FrappeTestCase):
         # Compute expected hash
         expected_hash = hashlib.sha256(self.SAMPLE_XML.encode("utf-8")).hexdigest()
         self.assertEqual(doc_entry["documentHash"], expected_hash)
+
+
+class TestConsolidatedXMLBuilder(FrappeTestCase):
+    """Test build_consolidated_xml(docnames, target_month) -- TDD red phase (UT-019).
+
+    Tests verify that build_consolidated_xml():
+    - Returns valid UBL 2.1 XML
+    - Creates one InvoiceLine per source document
+    - Uses classification code '004' on all line items
+    - Generates InvoiceCode following CONSOL-{company_abbr}-{YYYY-MM} pattern
+    - Sets BillingPeriod to the full target month
+    - Sums all individual doc amounts for totals (exact Decimal)
+    - Sets buyer contact to 'NA'
+    """
+
+    def _make_salary_slip(self, name, net_pay=5000, employee="HR-EMP-00001",
+                          company="Arising Packaging", posting_date="2026-01-15",
+                          employee_name="Ahmad bin Abdullah"):
+        """Create a mock Salary Slip doc for consolidated submission."""
+        doc = MagicMock()
+        doc.name = name
+        doc.doctype = "Salary Slip"
+        doc.employee = employee
+        doc.employee_name = employee_name
+        doc.net_pay = net_pay
+        doc.company = company
+        doc.posting_date = posting_date
+        doc.end_date = "2026-01-31"
+
+        earning = MagicMock()
+        earning.salary_component = "Basic Salary"
+        earning.amount = net_pay
+        earning.custom_lhdn_classification_code = "022 : Others"
+        doc.earnings = [earning]
+        doc.deductions = []
+
+        return doc
+
+    def _make_company_doc(self, abbr="AP"):
+        """Create a mock Company doc."""
+        company = MagicMock()
+        company.name = "Arising Packaging"
+        company.company_name = "Arising Packaging Sdn Bhd"
+        company.abbr = abbr
+        company.custom_company_tin_number = "C12345678901"
+        return company
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_build_consolidated_xml_returns_valid_xml(self, mock_frappe):
+        """build_consolidated_xml(docnames, '2026-01') returns a valid UBL XML
+        string with Invoice root element."""
+        doc1 = self._make_salary_slip("SS-001", net_pay=3000)
+        doc2 = self._make_salary_slip("SS-002", net_pay=4000)
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SS-001"): doc1,
+            ("Salary Slip", "SS-002"): doc2,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_consolidated_xml(["SS-001", "SS-002"], "2026-01")
+
+        self.assertIsInstance(xml_string, str)
+        root = ET.fromstring(xml_string)
+        self.assertEqual(root.tag, f"{{{UBL_NS}}}Invoice")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_invoice_lines_count_matches_docnames_count(self, mock_frappe):
+        """Each InvoiceLine corresponds to one source document --
+        len(InvoiceLines) == len(docnames)."""
+        doc1 = self._make_salary_slip("SS-001", net_pay=3000)
+        doc2 = self._make_salary_slip("SS-002", net_pay=4000)
+        doc3 = self._make_salary_slip("SS-003", net_pay=2000)
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SS-001"): doc1,
+            ("Salary Slip", "SS-002"): doc2,
+            ("Salary Slip", "SS-003"): doc3,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        docnames = ["SS-001", "SS-002", "SS-003"]
+        xml_string = build_consolidated_xml(docnames, "2026-01")
+        root = ET.fromstring(xml_string)
+
+        lines = root.findall(f".//{{{CAC_NS}}}InvoiceLine")
+        self.assertEqual(len(lines), len(docnames),
+                         f"Expected {len(docnames)} InvoiceLines, got {len(lines)}")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_all_line_items_use_classification_004(self, mock_frappe):
+        """ItemClassificationCode = '004' on ALL line items in consolidated XML."""
+        doc1 = self._make_salary_slip("SS-001", net_pay=3000)
+        doc2 = self._make_salary_slip("SS-002", net_pay=4000)
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SS-001"): doc1,
+            ("Salary Slip", "SS-002"): doc2,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_consolidated_xml(["SS-001", "SS-002"], "2026-01")
+        root = ET.fromstring(xml_string)
+
+        lines = root.findall(f".//{{{CAC_NS}}}InvoiceLine")
+        self.assertTrue(len(lines) > 0, "No InvoiceLines found")
+
+        for idx, line in enumerate(lines):
+            code_elem = line.find(
+                f".//{{{CAC_NS}}}CommodityClassification/{{{CBC_NS}}}ItemClassificationCode"
+            )
+            self.assertIsNotNone(code_elem,
+                                 f"InvoiceLine {idx+1} missing ItemClassificationCode")
+            self.assertEqual(code_elem.text, "004",
+                             f"InvoiceLine {idx+1} classification code is "
+                             f"'{code_elem.text}', expected '004'")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_invoice_code_follows_consol_pattern(self, mock_frappe):
+        """InvoiceCode follows pattern CONSOL-{company_abbr}-{YYYY-MM} (max 50 chars)."""
+        doc1 = self._make_salary_slip("SS-001", net_pay=3000)
+        company = self._make_company_doc(abbr="AP")
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SS-001"): doc1,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_consolidated_xml(["SS-001"], "2026-01")
+        root = ET.fromstring(xml_string)
+
+        invoice_id = root.find(f"{{{CBC_NS}}}ID")
+        self.assertIsNotNone(invoice_id, "Invoice ID element not found")
+
+        # Pattern: CONSOL-AP-2026-01
+        self.assertTrue(invoice_id.text.startswith("CONSOL-"),
+                        f"InvoiceCode '{invoice_id.text}' does not start with 'CONSOL-'")
+        self.assertIn("AP", invoice_id.text,
+                       f"InvoiceCode '{invoice_id.text}' does not contain "
+                       f"company abbreviation 'AP'")
+        self.assertIn("2026-01", invoice_id.text,
+                       f"InvoiceCode '{invoice_id.text}' does not contain "
+                       f"target month '2026-01'")
+        self.assertLessEqual(len(invoice_id.text), 50,
+                             f"InvoiceCode exceeds 50 characters: {len(invoice_id.text)}")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_billing_period_start_and_end_dates(self, mock_frappe):
+        """BillingPeriodStartDate = first day of target month,
+        EndDate = last day of target month."""
+        doc1 = self._make_salary_slip("SS-001", net_pay=3000)
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SS-001"): doc1,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_consolidated_xml(["SS-001"], "2026-01")
+        root = ET.fromstring(xml_string)
+
+        billing_period = root.find(f".//{{{CAC_NS}}}InvoicePeriod")
+        self.assertIsNotNone(billing_period, "InvoicePeriod (BillingPeriod) not found")
+
+        start_date = billing_period.find(f"{{{CBC_NS}}}StartDate")
+        end_date = billing_period.find(f"{{{CBC_NS}}}EndDate")
+
+        self.assertIsNotNone(start_date, "BillingPeriod StartDate not found")
+        self.assertIsNotNone(end_date, "BillingPeriod EndDate not found")
+
+        self.assertEqual(start_date.text, "2026-01-01",
+                         f"StartDate '{start_date.text}' != expected '2026-01-01'")
+        self.assertEqual(end_date.text, "2026-01-31",
+                         f"EndDate '{end_date.text}' != expected '2026-01-31'")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_totals_sum_of_all_individual_amounts(self, mock_frappe):
+        """TotalIncludingTax = sum of all individual document net amounts (Decimal).
+        TotalExcludingTax + TotalTaxAmount == TotalIncludingTax (exact Decimal)."""
+        doc1 = self._make_salary_slip("SS-001", net_pay=3000)
+        doc2 = self._make_salary_slip("SS-002", net_pay=4500.50)
+        doc3 = self._make_salary_slip("SS-003", net_pay=1200.75)
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SS-001"): doc1,
+            ("Salary Slip", "SS-002"): doc2,
+            ("Salary Slip", "SS-003"): doc3,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_consolidated_xml(
+            ["SS-001", "SS-002", "SS-003"], "2026-01"
+        )
+        root = ET.fromstring(xml_string)
+
+        monetary_total = root.find(f".//{{{CAC_NS}}}LegalMonetaryTotal")
+        self.assertIsNotNone(monetary_total, "LegalMonetaryTotal not found")
+
+        tax_excl = monetary_total.find(f"{{{CBC_NS}}}TaxExclusiveAmount")
+        tax_incl = monetary_total.find(f"{{{CBC_NS}}}TaxInclusiveAmount")
+        self.assertIsNotNone(tax_excl, "TaxExclusiveAmount not found")
+        self.assertIsNotNone(tax_incl, "TaxInclusiveAmount not found")
+
+        tax_amount = root.find(f".//{{{CAC_NS}}}TaxTotal/{{{CBC_NS}}}TaxAmount")
+        self.assertIsNotNone(tax_amount, "TaxTotal/TaxAmount not found")
+
+        excl = Decimal(tax_excl.text)
+        incl = Decimal(tax_incl.text)
+        tax = Decimal(tax_amount.text)
+
+        # Verify totals balance
+        self.assertEqual(excl + tax, incl,
+                         f"Totals don't balance: {excl} + {tax} != {incl}")
+
+        # Verify total equals sum of individual net_pay amounts
+        expected_total = Decimal("3000") + Decimal("4500.50") + Decimal("1200.75")
+        expected_total = expected_total.quantize(Decimal("0.01"))
+        self.assertEqual(excl, expected_total,
+                         f"TaxExclusiveAmount {excl} != expected sum {expected_total}")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_buyer_contact_is_na(self, mock_frappe):
+        """Buyer contact must be 'NA' (allowed during grace period consolidation)."""
+        doc1 = self._make_salary_slip("SS-001", net_pay=3000)
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SS-001"): doc1,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_consolidated_xml(["SS-001"], "2026-01")
+        root = ET.fromstring(xml_string)
+
+        # Buyer contact should be 'NA' -- look in AccountingCustomerParty or Contact
+        # Check for Contact element or direct text value
+        customer_party = root.find(f".//{{{CAC_NS}}}AccountingCustomerParty")
+        self.assertIsNotNone(customer_party,
+                             "AccountingCustomerParty not found in consolidated XML")
+
+        # 'NA' should appear in buyer contact fields within the customer party
+        customer_xml = ET.tostring(customer_party, encoding="unicode")
+        self.assertIn("NA", customer_xml,
+                       "Buyer contact 'NA' not found in AccountingCustomerParty")

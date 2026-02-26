@@ -1,17 +1,17 @@
 {
   "productName": "lhdn_payroll_integration",
   "branchName": "feature/lhdn-payroll-integration",
-  "overview": "A Frappe custom app that integrates ERPNext HRMS with LHDN MyInvois for Malaysian e-Invoice compliance. When a Salary Slip or Expense Claim is submitted, the app evaluates LHDN exemption rules, asynchronously builds a UBL 2.1 XML self-billed e-Invoice (type '11'), submits it to LHDN via HTTP POST (base64+SHA-256 wrapped), writes the UUID/QR/status back to ERPNext, and handles polling, retries, cancellation, and monthly consolidation. Built on top of the installed myinvois_erpgulf app ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ only its taxpayerlogin module is reused; XML building and HTTP submission are implemented independently.",
+  "overview": "A Frappe custom app that integrates ERPNext HRMS with LHDN MyInvois for Malaysian e-Invoice compliance. When a Salary Slip or Expense Claim is submitted, the app evaluates LHDN exemption rules, asynchronously builds a UBL 2.1 XML self-billed e-Invoice (type '11'), submits it to LHDN via HTTP POST (base64+SHA-256 wrapped), writes the UUID/QR/status back to ERPNext, and handles polling, retries, cancellation, and monthly consolidation. Built on top of the installed myinvois_erpgulf app \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd only its taxpayerlogin module is reused; XML building and HTTP submission are implemented independently.",
   "goals": [
     "Achieve LHDN e-Invoice compliance for payroll and expense claim self-billing (YA 2026+)",
-    "Zero modifications to ERPNext, HRMS, or myinvois_erpgulf source files ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ hooks only",
-    "Fully async ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ never block WSGI workers during LHDN API calls",
+    "Zero modifications to ERPNext, HRMS, or myinvois_erpgulf source files \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd hooks only",
+    "Fully async \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd never block WSGI workers during LHDN API calls",
     "Support both real-time per-document submission and monthly consolidated (code 004) grace-period mode",
     "All 5 LHDN mandatory test scenarios pass in sandbox before production cutover"
   ],
   "tddRules": {
     "testsBeforeCode": "Every US-NNN has a paired UT-NNN dependency with lower priority number. UT must pass (red) before US implementation begins.",
-    "redPhaseGate": "UT-NNN acceptance criteria require tests to FAIL initially ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ no implementation exists yet, so ImportError or AssertionError is expected and required.",
+    "redPhaseGate": "UT-NNN acceptance criteria require tests to FAIL initially \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd no implementation exists yet, so ImportError or AssertionError is expected and required.",
     "greenPhaseGate": "US-NNN acceptance criteria include a [TDD GREEN] criterion requiring bench run-tests to PASS with zero failures.",
     "noPassesWithoutTests": "US stories cannot be marked passes:true unless their paired UT story is passes:true first.",
     "benchCommand": "Each story specifies the exact bench --site frontend run-tests --module command to use for verification."
@@ -22,16 +22,16 @@
       "type": "TEST",
       "title": "Write failing tests for app scaffold",
       "priority": 1,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_app_scaffold.py using FrappeTestCase. All test methods must be present but the implementation they test does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail with ImportError or AssertionError. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_app_scaffold.py using FrappeTestCase. All test methods must be present but the implementation they test does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail with ImportError or AssertionError. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_app_scaffold.py created with class TestAppScaffold containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_app_scaffold FAILS with ImportError, AttributeError, or AssertionError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_app_scaffold FAILS with ImportError, AttributeError, or AssertionError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-001 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestAppScaffold(FrappeTestCase)",
         "Test methods: test_app_is_installed, test_hooks_doc_events_salary_slip, test_hooks_doc_events_expense_claim, test_hooks_scheduler_events, test_modules_txt_exists, test_install_py_stubs_exist, test_directory_structure",
-        "Import pattern: from lhdn_payroll_integration import hooks ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until app exists",
+        "Import pattern: from lhdn_payroll_integration import hooks \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until app exists",
         "Use frappe.get_installed_apps() to assert 'lhdn_payroll_integration' is present",
         "FrappeTestCase base: from frappe.tests.utils import FrappeTestCase"
       ],
@@ -53,7 +53,7 @@
         "modules.txt exists with content 'LHDN Payroll Integration'",
         "install.py exists with after_install() and after_migrate() stubs",
         "App directory structure matches: lhdn_payroll_integration/services/, lhdn_payroll_integration/utils/, lhdn_payroll_integration/fixtures/",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_app_scaffold ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_app_scaffold \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "Run inside Docker: docker exec -it prisma-erp-backend-1 bash, then bench new-app lhdn_payroll_integration",
@@ -75,10 +75,10 @@
       "type": "TEST",
       "title": "Write failing tests for Employee custom fields",
       "priority": 3,
-      "description": "Write test class TestEmployeeCustomFields in lhdn_payroll_integration/tests/test_custom_fields.py using FrappeTestCase. All test methods must be present but the custom fields do NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write test class TestEmployeeCustomFields in lhdn_payroll_integration/tests/test_custom_fields.py using FrappeTestCase. All test methods must be present but the custom fields do NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_custom_fields.py created (or updated) with class TestEmployeeCustomFields containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields FAILS with ImportError, AttributeError, or AssertionError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields FAILS with ImportError, AttributeError, or AssertionError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-002 has at least one corresponding test method"
       ],
       "technicalNotes": [
@@ -108,7 +108,7 @@
         "custom_is_foreign_worker is a Check field",
         "custom_bank_account_number is a Data field",
         "All fields have module = 'LHDN Payroll Integration' for fixture export",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "Fields to add (in order): custom_lhdn_section (Section Break), custom_requires_self_billed_invoice (Check, default 0), custom_lhdn_tin (Data, mandatory_depends_on: eval:doc.custom_requires_self_billed_invoice), custom_id_type (Select, options: NRIC\\nPassport\\nBusiness Registration Number\\nArmy ID), custom_id_value (Data, max 20 chars), custom_msic_code (Link to LHDN MSIC Code), custom_is_foreign_worker (Check, default 0), custom_bank_account_number (Data)",
@@ -128,10 +128,10 @@
       "type": "TEST",
       "title": "Write failing tests for Salary Component field",
       "priority": 5,
-      "description": "Write test class TestSalaryComponentCustomFields in lhdn_payroll_integration/tests/test_custom_fields.py using FrappeTestCase. All test methods must be present but the custom field does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write test class TestSalaryComponentCustomFields in lhdn_payroll_integration/tests/test_custom_fields.py using FrappeTestCase. All test methods must be present but the custom field does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_custom_fields.py updated with class TestSalaryComponentCustomFields containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields FAILS ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields FAILS \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-003 has at least one corresponding test method"
       ],
       "technicalNotes": [
@@ -156,9 +156,9 @@
       "acceptanceCriteria": [
         "Salary Component record shows custom_lhdn_classification_code dropdown",
         "Dropdown contains at minimum: 022, 024, 027, 032, 036, 037, 040, 044, 045",
-        "Field is optional (not mandatory) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ blank means payload builder defaults to 022",
+        "Field is optional (not mandatory) \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd blank means payload builder defaults to 022",
         "Field persists after save",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "fieldname: custom_lhdn_classification_code, fieldtype: Select",
@@ -178,10 +178,10 @@
       "type": "TEST",
       "title": "Write failing tests for Salary Slip custom fields",
       "priority": 7,
-      "description": "Write test class TestSalarySlipCustomFields in lhdn_payroll_integration/tests/test_custom_fields.py using FrappeTestCase. All test methods must be present but the custom fields do NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write test class TestSalarySlipCustomFields in lhdn_payroll_integration/tests/test_custom_fields.py using FrappeTestCase. All test methods must be present but the custom fields do NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_custom_fields.py updated with class TestSalarySlipCustomFields containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields FAILS ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields FAILS \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-004 has at least one corresponding test method"
       ],
       "technicalNotes": [
@@ -210,7 +210,7 @@
         "custom_lhdn_submission_datetime and custom_lhdn_validated_datetime are Datetime fields, read_only",
         "custom_retry_count is Int field, read_only, default 0",
         "custom_is_consolidated is Check field, read_only, default 0",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "Fields: custom_lhdn_section (Section Break), custom_lhdn_status (Select, read_only 1), custom_lhdn_uuid (Data, read_only 1), custom_lhdn_submission_datetime (Datetime, read_only 1), custom_lhdn_validated_datetime (Datetime, read_only 1), custom_lhdn_qr_code (HTML, read_only 1), custom_lhdn_qr_url (Data, read_only 1), custom_error_log (Text Editor, read_only 1), custom_retry_count (Int, default 0, read_only 1), custom_is_consolidated (Check, default 0, read_only 1)",
@@ -228,10 +228,10 @@
       "type": "TEST",
       "title": "Write failing tests for Expense Claim custom fields",
       "priority": 9,
-      "description": "Write test class TestExpenseClaimCustomFields in lhdn_payroll_integration/tests/test_custom_fields.py using FrappeTestCase. All test methods must be present but the custom fields do NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write test class TestExpenseClaimCustomFields in lhdn_payroll_integration/tests/test_custom_fields.py using FrappeTestCase. All test methods must be present but the custom fields do NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_custom_fields.py updated with class TestExpenseClaimCustomFields containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields FAILS ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields FAILS \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-005 has at least one corresponding test method"
       ],
       "technicalNotes": [
@@ -259,7 +259,7 @@
         "custom_expense_category options: (blank)\\nSelf-Billed Required\\nEmployee Receipt Provided\\nOverseas - Exempt",
         "custom_employee_receipt_uuid and custom_employee_receipt_qr_url are editable (not read_only)",
         "custom_lhdn_status, custom_lhdn_uuid, custom_lhdn_qr_url, custom_error_log, custom_retry_count are read_only",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "Fields: custom_lhdn_section (Section Break), custom_expense_category (Select, NOT read_only), custom_employee_receipt_uuid (Data, NOT read_only), custom_employee_receipt_qr_url (Data, NOT read_only), custom_lhdn_status (Select, read_only 1), custom_lhdn_uuid (Data, read_only 1), custom_lhdn_qr_url (Data, read_only 1), custom_error_log (Text Editor, read_only 1), custom_retry_count (Int, default 0, read_only 1)",
@@ -277,10 +277,10 @@
       "type": "TEST",
       "title": "Write failing tests for LHDN MSIC Code DocType",
       "priority": 11,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_msic_code.py using FrappeTestCase. All test methods must be present but the DocType and seed data do NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_msic_code.py using FrappeTestCase. All test methods must be present but the DocType and seed data do NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_msic_code.py created with class TestLHDNMSICCode containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_msic_code FAILS with ImportError, AttributeError, or AssertionError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_msic_code FAILS with ImportError, AttributeError, or AssertionError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-006 has at least one corresponding test method"
       ],
       "technicalNotes": [
@@ -308,7 +308,7 @@
         "Code 00000 (Not Applicable) exists",
         "Employee custom_msic_code Link field can select '78300'",
         "DocType is defined in lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_msic_code/",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_msic_code ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_msic_code \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "Minimum seed records: {code: 78300, description: Labour supply services, sector: Services}, {code: 00000, description: Not Applicable, sector: General}, {code: 46900, description: Non-specialised wholesale trade, sector: Trade}, {code: 74909, description: Other professional services n.e.c., sector: Professional}",
@@ -328,16 +328,16 @@
       "type": "TEST",
       "title": "Write failing tests for exemption filter",
       "priority": 13,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_exemption_filter.py using FrappeTestCase. All test methods must be present but the exemption_filter module does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_exemption_filter.py using FrappeTestCase. All test methods must be present but the exemption_filter module does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_exemption_filter.py created with class TestExemptionFilter containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_exemption_filter FAILS with ImportError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_exemption_filter FAILS with ImportError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-007 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestExemptionFilter(FrappeTestCase)",
         "Test methods: test_salary_slip_excluded_when_flag_off, test_salary_slip_included_when_flag_on_positive_pay, test_salary_slip_excluded_when_zero_pay, test_expense_claim_excluded_overseas_exempt, test_expense_claim_excluded_employee_receipt_provided, test_expense_claim_included_self_billed_required",
-        "Import: from lhdn_payroll_integration.services.exemption_filter import should_submit_to_lhdn ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.exemption_filter import should_submit_to_lhdn \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Use unittest.mock.MagicMock to create mock doc objects with custom_ attributes"
       ],
       "dependencies": [
@@ -360,7 +360,7 @@
         "should_submit_to_lhdn('Expense Claim', doc) returns False when custom_expense_category = 'Overseas - Exempt'",
         "should_submit_to_lhdn('Expense Claim', doc) returns False when custom_expense_category = 'Employee Receipt Provided'",
         "should_submit_to_lhdn('Expense Claim', doc) returns True when custom_expense_category = 'Self-Billed Required' and employee flag is set",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_exemption_filter ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_exemption_filter \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "File: lhdn_payroll_integration/services/exemption_filter.py",
@@ -382,16 +382,16 @@
       "type": "TEST",
       "title": "Write failing tests for on_submit hooks",
       "priority": 15,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_submission_hooks.py using FrappeTestCase. All test methods must be present but the submission_service module does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_submission_hooks.py using FrappeTestCase. All test methods must be present but the submission_service module does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_submission_hooks.py created with class TestSubmissionHooks containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_hooks FAILS with ImportError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_hooks FAILS with ImportError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-008 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestSubmissionHooks(FrappeTestCase)",
         "Test methods: test_standard_slip_sets_exempt_status, test_contractor_slip_sets_pending_and_enqueues, test_expense_claim_overseas_sets_exempt_status, test_enqueue_called_with_after_commit_true, test_document_name_length_validation",
-        "Import: from lhdn_payroll_integration.services.submission_service import enqueue_salary_slip_submission ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.submission_service import enqueue_salary_slip_submission \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Use unittest.mock.patch to mock frappe.enqueue and frappe.db.set_value",
         "Assert frappe.enqueue was called with enqueue_after_commit=True when contractor slip submitted"
       ],
@@ -414,13 +414,13 @@
         "Submitting an Expense Claim with category 'Overseas - Exempt' sets custom_lhdn_status = 'Exempt'",
         "frappe.enqueue is called with enqueue_after_commit=True, queue='short', timeout=300",
         "Document name length > 50 chars triggers validate_document_name_length before enqueue",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_hooks ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_hooks \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "File: lhdn_payroll_integration/services/submission_service.py",
         "Import: from lhdn_payroll_integration.services.exemption_filter import should_submit_to_lhdn",
         "Import: from lhdn_payroll_integration.utils.validation import validate_document_name_length",
-        "Use frappe.db.set_value to update custom_lhdn_status (not doc.save() ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ document is already submitted)",
+        "Use frappe.db.set_value to update custom_lhdn_status (not doc.save() \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd document is already submitted)",
         "enqueue target for Salary Slip: 'lhdn_payroll_integration.services.submission_service.process_salary_slip'",
         "enqueue target for Expense Claim: 'lhdn_payroll_integration.services.submission_service.process_expense_claim'",
         "Pass only docname as kwarg to the enqueued function"
@@ -437,17 +437,17 @@
       "type": "TEST",
       "title": "Write failing tests for Salary Slip XML payload builder",
       "priority": 17,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_payload_builder.py using FrappeTestCase. Include test classes TestSalarySlipXMLBuilder and TestSubmissionWrapper. All test methods must be present but the payload_builder module does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_payload_builder.py using FrappeTestCase. Include test classes TestSalarySlipXMLBuilder and TestSubmissionWrapper. All test methods must be present but the payload_builder module does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_payload_builder.py created with classes TestSalarySlipXMLBuilder and TestSubmissionWrapper containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS with ImportError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS with ImportError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-009 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test classes: TestSalarySlipXMLBuilder(FrappeTestCase), TestSubmissionWrapper(FrappeTestCase)",
         "TestSalarySlipXMLBuilder methods: test_build_salary_slip_xml_returns_string, test_invoice_type_code_is_11, test_supplier_is_employee_payee, test_buyer_is_employer_payer, test_foreign_worker_tin_is_ei00000000010, test_totals_balance_exact, test_ytd_fields_not_accessed",
         "TestSubmissionWrapper methods: test_prepare_submission_wrapper_format, test_wrapper_contains_base64_document, test_wrapper_contains_sha256_hash",
-        "Import: from lhdn_payroll_integration.services.payload_builder import build_salary_slip_xml, prepare_submission_wrapper ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.payload_builder import build_salary_slip_xml, prepare_submission_wrapper \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Use xml.etree.ElementTree to parse returned XML and assert element values"
       ],
       "dependencies": [
@@ -462,7 +462,7 @@
       "type": "IMPL",
       "title": "Implement UBL 2.1 XML payload builder for Salary Slip",
       "priority": 18,
-      "description": "Create the UBL 2.1 XML builder for self-billed Salary Slip e-Invoices in lhdn_payroll_integration/services/payload_builder.py. The builder uses Python's xml.etree.ElementTree with the exact LHDN UBL namespaces. Self-billed inversion: Employer = Buyer (payer), Contractor = Supplier (payee). e-Invoice type code = '11'. Financial totals MUST be calculated from doc.earnings child table only ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ never from YTD fields or compute_year_to_date() (v16 bug). All monetary values use decimal.Decimal with ROUND_HALF_UP. The function also provides prepare_submission_wrapper() which wraps the XML in the LHDN HTTP submission format (base64 + SHA-256).",
+      "description": "Create the UBL 2.1 XML builder for self-billed Salary Slip e-Invoices in lhdn_payroll_integration/services/payload_builder.py. The builder uses Python's xml.etree.ElementTree with the exact LHDN UBL namespaces. Self-billed inversion: Employer = Buyer (payer), Contractor = Supplier (payee). e-Invoice type code = '11'. Financial totals MUST be calculated from doc.earnings child table only \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd never from YTD fields or compute_year_to_date() (v16 bug). All monetary values use decimal.Decimal with ROUND_HALF_UP. The function also provides prepare_submission_wrapper() which wraps the XML in the LHDN HTTP submission format (base64 + SHA-256).",
       "acceptanceCriteria": [
         "build_salary_slip_xml(docname) returns a valid XML string with root element <Invoice xmlns='urn:oasis:names:specification:ubl:schema:xsd:Invoice-2'>",
         "InvoiceTypeCode element contains '11'",
@@ -472,7 +472,7 @@
         "TotalExcludingTax + TotalTaxAmount == TotalIncludingTax (exact Decimal equality, 2dp)",
         "YTD fields (doc.ytd_net_pay, doc.year_to_date) are never accessed",
         "prepare_submission_wrapper(xml_string, docname) returns dict with 'documents' list containing format, document (base64), documentHash (SHA-256 hex), codeNumber keys",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "File: lhdn_payroll_integration/services/payload_builder.py",
@@ -484,7 +484,7 @@
         "Call assert_totals_balance(total_excl, total_tax, total_incl) before returning XML",
         "Line items: one cac:InvoiceLine per doc.earnings row, classification code from component.custom_lhdn_classification_code or '022'",
         "prepare_submission_wrapper: xml_bytes = xml_string.encode('utf-8'), documentHash = hashlib.sha256(xml_bytes).hexdigest(), document = base64.b64encode(xml_bytes).decode('utf-8')",
-        "codeNumber = ''.join(filter(str.isdigit, doc_name)) or '001' ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ max 50 chars"
+        "codeNumber = ''.join(filter(str.isdigit, doc_name)) or '001' \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd max 50 chars"
       ],
       "dependencies": [
         "UT-009",
@@ -500,16 +500,16 @@
       "type": "TEST",
       "title": "Write failing tests for Expense Claim XML payload builder",
       "priority": 19,
-      "description": "Write test class TestExpenseClaimXMLBuilder in lhdn_payroll_integration/tests/test_payload_builder.py using FrappeTestCase. All test methods must be present but the Expense Claim builder function does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write test class TestExpenseClaimXMLBuilder in lhdn_payroll_integration/tests/test_payload_builder.py using FrappeTestCase. All test methods must be present but the Expense Claim builder function does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_payload_builder.py updated with class TestExpenseClaimXMLBuilder containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-010 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestExpenseClaimXMLBuilder(FrappeTestCase)",
         "Test methods: test_build_expense_claim_xml_returns_valid_xml, test_invoice_type_code_is_11, test_line_items_from_expenses_table, test_total_matches_total_sanctioned_amount, test_same_buyer_supplier_inversion_as_salary_slip, test_expense_type_classification_code_used",
-        "Import: from lhdn_payroll_integration.services.payload_builder import build_expense_claim_xml ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.payload_builder import build_expense_claim_xml \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Assert len(ET.fromstring(xml).findall('.//cac:InvoiceLine', ns)) == len(mock_doc.expenses)"
       ],
       "dependencies": [
@@ -531,7 +531,7 @@
         "TotalIncludingTax equals doc.total_sanctioned_amount as Decimal with 2dp",
         "Same buyer/supplier inversion as Salary Slip builder",
         "Expense Type DocType has custom_lhdn_classification_code field (default hint: 027)",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "Add to lhdn_payroll_integration/services/payload_builder.py",
@@ -554,16 +554,16 @@
       "type": "TEST",
       "title": "Write failing tests for submission service HTTP POST",
       "priority": 21,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_submission_service.py using FrappeTestCase. Include class TestSubmissionService. All test methods must be present but the HTTP POST functions do NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_submission_service.py using FrappeTestCase. Include class TestSubmissionService. All test methods must be present but the HTTP POST functions do NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_submission_service.py created with class TestSubmissionService containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_service FAILS with ImportError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_service FAILS with ImportError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-011 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestSubmissionService(FrappeTestCase)",
         "Test methods: test_process_salary_slip_calls_xml_builder, test_on_202_accepted_sets_submitted_status, test_on_202_rejected_sets_invalid_status, test_on_timeout_calls_schedule_retry, test_token_fetch_via_get_access_token, test_401_refreshes_token_and_retries, test_url_constructed_from_site_config",
-        "Import: from lhdn_payroll_integration.services.submission_service import process_salary_slip ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.submission_service import process_salary_slip \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Use unittest.mock.patch to mock requests.post, get_access_token, frappe.db.set_value",
         "Mock 202 response with acceptedDocuments and rejectedDocuments variants"
       ],
@@ -589,7 +589,7 @@
         "Token is fetched via get_access_token(company_name) from myinvois_erpgulf.myinvois_erpgulf.taxpayerlogin",
         "On 401 response: token is refreshed once and request retried",
         "Submission URL built from frappe.conf lhdn_environment + lhdn_sandbox_url or lhdn_production_url",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_service ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_service \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "Import: from myinvois_erpgulf.myinvois_erpgulf.taxpayerlogin import get_access_token",
@@ -597,10 +597,10 @@
         "Submission endpoint: {base_url}/api/v1.0/documentsubmissions",
         "LHDN 202 response shape: {submissionUid, acceptedDocuments: [{uuid, invoiceCodeNumber}], rejectedDocuments: [{invoiceCodeNumber, error}]}",
         "Write to Frappe doc via frappe.db.set_value (not doc.save())",
-        "On accepted: set custom_lhdn_status='Submitted' (not 'Valid' ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ must poll for final status)",
+        "On accepted: set custom_lhdn_status='Submitted' (not 'Valid' \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd must poll for final status)",
         "catch requests.ConnectionError and requests.Timeout -> schedule_retry()",
         "catch all other Exception -> log and set Invalid + error log",
-        "Bearer token lifetime is 60 min ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ reuse Company.custom_bearer_token if fresh"
+        "Bearer token lifetime is 60 min \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd reuse Company.custom_bearer_token if fresh"
       ],
       "dependencies": [
         "UT-011",
@@ -615,19 +615,19 @@
       "type": "TEST",
       "title": "Write failing tests for validation + decimal + date utils",
       "priority": 23,
-      "description": "Write three test files: lhdn_payroll_integration/tests/test_validation.py, tests/test_decimal_utils.py, and tests/test_date_utils.py using FrappeTestCase. All test methods must be present but the utility modules do NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write three test files: lhdn_payroll_integration/tests/test_validation.py, tests/test_decimal_utils.py, and tests/test_date_utils.py using FrappeTestCase. All test methods must be present but the utility modules do NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test files test_validation.py, test_decimal_utils.py, and test_date_utils.py created with all test classes and methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_validation FAILS with ImportError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_decimal_utils FAILS with ImportError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_date_utils FAILS with ImportError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_validation FAILS with ImportError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_decimal_utils FAILS with ImportError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_date_utils FAILS with ImportError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-012 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "test_validation.py class TestValidationUtils(FrappeTestCase): test_invalid_tin_nric_raises_error, test_valid_nric_tin_returns_value, test_foreign_worker_returns_ei_tin, test_long_document_name_truncated_to_50, test_bank_account_truncated_to_150",
         "test_decimal_utils.py class TestDecimalUtils(FrappeTestCase): test_quantize_0_1_plus_0_2_equals_0_30, test_totals_balance_exact_passes, test_totals_imbalance_raises_value_error",
         "test_date_utils.py class TestDateUtils(FrappeTestCase): test_to_lhdn_date_valid_date_object, test_to_lhdn_date_valid_string, test_to_lhdn_date_invalid_raises_value_error, test_to_lhdn_datetime_returns_utc_format",
-        "Import: from lhdn_payroll_integration.utils.validation import validate_tin ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented"
+        "Import: from lhdn_payroll_integration.utils.validation import validate_tin \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented"
       ],
       "dependencies": [
         "US-009"
@@ -650,17 +650,17 @@
         "quantize(Decimal('0.1') + Decimal('0.2')) == Decimal('0.30') (no float error)",
         "assert_totals_balance(Decimal('100'), Decimal('0'), Decimal('100.01')) raises ValueError",
         "to_lhdn_date(date_value) returns YYYY-MM-DD string, raises ValueError on 'N/A' or empty",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_validation AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_decimal_utils AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_date_utils ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_validation AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_decimal_utils AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_date_utils \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "File: lhdn_payroll_integration/utils/validation.py",
-        "Individual TIN regex: ^IG\\d{11}$ ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ raises frappe.ValidationError if fails",
-        "Non-individual TIN regex: ^[A-Z]\\d{8,9}0$ ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ raises frappe.ValidationError if fails",
+        "Individual TIN regex: ^IG\\d{11}$ \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd raises frappe.ValidationError if fails",
+        "Non-individual TIN regex: ^[A-Z]\\d{8,9}0$ \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd raises frappe.ValidationError if fails",
         "Foreign worker: return 'EI00000000010' without validation",
         "Document name truncation: if len(name) > 50, use name[:50] and frappe.log_error a warning",
         "Bank account truncation: if len(account) > 150, truncate silently",
-        "File: lhdn_payroll_integration/utils/decimal_utils.py ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ from decimal import Decimal, ROUND_HALF_UP; TWOPLACES = Decimal('0.01'); def quantize(value) -> Decimal: return Decimal(str(value)).quantize(TWOPLACES, rounding=ROUND_HALF_UP)",
-        "File: lhdn_payroll_integration/utils/date_utils.py ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ to_lhdn_datetime() returns now UTC as YYYY-MM-DDTHH:MM:SSZ; to_lhdn_date() accepts date object or YYYY-MM-DD string, raises ValueError on invalid"
+        "File: lhdn_payroll_integration/utils/decimal_utils.py \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd from decimal import Decimal, ROUND_HALF_UP; TWOPLACES = Decimal('0.01'); def quantize(value) -> Decimal: return Decimal(str(value)).quantize(TWOPLACES, rounding=ROUND_HALF_UP)",
+        "File: lhdn_payroll_integration/utils/date_utils.py \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd to_lhdn_datetime() returns now UTC as YYYY-MM-DDTHH:MM:SSZ; to_lhdn_date() accepts date object or YYYY-MM-DD string, raises ValueError on invalid"
       ],
       "dependencies": [
         "UT-012",
@@ -674,16 +674,16 @@
       "type": "TEST",
       "title": "Write failing tests for status polling scheduler",
       "priority": 25,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_status_poller.py using FrappeTestCase. All test methods must be present but the status_poller module does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_status_poller.py using FrappeTestCase. All test methods must be present but the status_poller module does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_status_poller.py created with class TestStatusPoller containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_status_poller FAILS with ImportError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_status_poller FAILS with ImportError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-013 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestStatusPoller(FrappeTestCase)",
         "Test methods: test_queries_salary_slip_with_submitted_status, test_queries_expense_claim_with_submitted_status, test_status_2_response_sets_valid, test_status_3_response_sets_invalid, test_documents_without_uuid_are_skipped, test_per_document_error_does_not_abort_batch, test_max_100_documents_per_doctype_per_run",
-        "Import: from lhdn_payroll_integration.services.status_poller import poll_pending_documents ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.status_poller import poll_pending_documents \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Use unittest.mock.patch to mock frappe.get_all, requests.get, frappe.db.set_value"
       ],
       "dependencies": [
@@ -698,7 +698,7 @@
       "type": "IMPL",
       "title": "Implement hourly status polling scheduler",
       "priority": 26,
-      "description": "Create lhdn_payroll_integration/services/status_poller.py with poll_pending_documents(). This function queries both Salary Slip and Expense Claim for documents with custom_lhdn_status='Submitted' (LHDN Status 1 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ awaiting final validation), fetches their current status from the LHDN API using the stored custom_lhdn_uuid, and updates the document to 'Valid' (Status 2) or 'Invalid' (Status 3). Process in batches of 100 to avoid timeouts. Errors per-document are logged but don't abort the batch.",
+      "description": "Create lhdn_payroll_integration/services/status_poller.py with poll_pending_documents(). This function queries both Salary Slip and Expense Claim for documents with custom_lhdn_status='Submitted' (LHDN Status 1 \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd awaiting final validation), fetches their current status from the LHDN API using the stored custom_lhdn_uuid, and updates the document to 'Valid' (Status 2) or 'Invalid' (Status 3). Process in batches of 100 to avoid timeouts. Errors per-document are logged but don't abort the batch.",
       "acceptanceCriteria": [
         "poll_pending_documents() queries both Salary Slip and Expense Claim for status='Submitted'",
         "Documents with valid UUID are queried against LHDN GET /api/v1.0/documents/{uuid}/details",
@@ -707,7 +707,7 @@
         "Documents without UUID are skipped",
         "Individual document errors are caught and logged without aborting the full batch",
         "Processes max 100 documents per doctype per run",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_status_poller ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_status_poller \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "File: lhdn_payroll_integration/services/status_poller.py",
@@ -731,16 +731,16 @@
       "type": "TEST",
       "title": "Write failing tests for Status 3 error log parser",
       "priority": 27,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_error_parser.py using FrappeTestCase. All test methods must be present but the error parser functions do NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_error_parser.py using FrappeTestCase. All test methods must be present but the error parser functions do NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_error_parser.py created with class TestErrorLogParser containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_error_parser FAILS with ImportError or AssertionError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_error_parser FAILS with ImportError or AssertionError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-014 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestErrorLogParser(FrappeTestCase)",
         "Test methods: test_format_error_log_with_two_errors_returns_two_lines, test_raw_json_appended_after_formatted_lines, test_empty_errors_array_returns_default_message, test_error_log_on_rejected_slip_contains_readable_text, test_error_format_includes_code_and_field_name",
-        "Import: from lhdn_payroll_integration.services.status_poller import _format_error_log ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.status_poller import _format_error_log \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Also import from submission_service: from lhdn_payroll_integration.services.submission_service import _format_rejection_errors",
         "Test with fixture error response: {'errors': [{'code': 'CF204', 'message': 'Invalid TIN', 'target': 'SupplierTIN'}]}"
       ],
@@ -763,12 +763,12 @@
         "Empty errors array returns 'LHDN returned Invalid status with no error details'",
         "custom_error_log on a rejected Salary Slip contains human-readable error text",
         "The error format is: [CF204] SupplierTIN: Invalid TIN format (submitted: 'IG123')",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_error_parser ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_error_parser \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "LHDN rejection error shape in 202 response: {invoiceCodeNumber, error: {code, message, details: [{code, message, target}]}}",
         "LHDN document status error shape: {status: 'invalid', validationResults: {status, validationSteps: [{status, name, error: {propertyName, errorCode, error, innerError}}]}}",
-        "Format: header line 'LHDN Validation Failed ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ N error(s)\\n\\n', then per error: [CODE] fieldName: message",
+        "Format: header line 'LHDN Validation Failed \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd N error(s)\\n\\n', then per error: [CODE] fieldName: message",
         "Append separator '\\n---RAW JSON---\\n' then json.dumps(response, indent=2)",
         "_format_rejection_errors() used in _write_response_to_doc for immediate rejections from 202",
         "_format_error_log() used in poll_pending_documents for Status 3 from document details endpoint"
@@ -785,16 +785,16 @@
       "type": "TEST",
       "title": "Write failing tests for exponential backoff retry",
       "priority": 29,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_retry_service.py using FrappeTestCase. All test methods must be present but the retry_service module does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_retry_service.py using FrappeTestCase. All test methods must be present but the retry_service module does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_retry_service.py created with class TestRetryService containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retry_service FAILS with ImportError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retry_service FAILS with ImportError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-015 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestRetryService(FrappeTestCase)",
         "Test methods: test_first_retry_schedules_120_second_delay, test_second_retry_schedules_240_second_delay, test_retry_count_5_capped_at_3600_seconds, test_after_5_retries_sets_invalid_status, test_no_job_enqueued_after_max_retries, test_retry_count_incremented_on_each_call",
-        "Import: from lhdn_payroll_integration.services.retry_service import schedule_retry ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.retry_service import schedule_retry \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Use unittest.mock.patch to mock frappe.enqueue and frappe.db.get_value/set_value",
         "Assert frappe.enqueue call kwargs include the expected delay parameter"
       ],
@@ -810,15 +810,15 @@
       "type": "IMPL",
       "title": "Implement exponential backoff retry service",
       "priority": 30,
-      "description": "Create lhdn_payroll_integration/services/retry_service.py with schedule_retry(doctype, docname, error). On network failure: increment custom_retry_count, compute wait_seconds = min(2**retry_count * 60, 3600), enqueue the appropriate process_ function with a delay. Cap at 5 retries ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ on the 6th failure write Invalid status. Only retry on network errors (ConnectionError, Timeout, HTTP 5xx), never on ValidationError or LHDN Status 3.",
+      "description": "Create lhdn_payroll_integration/services/retry_service.py with schedule_retry(doctype, docname, error). On network failure: increment custom_retry_count, compute wait_seconds = min(2**retry_count * 60, 3600), enqueue the appropriate process_ function with a delay. Cap at 5 retries \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd on the 6th failure write Invalid status. Only retry on network errors (ConnectionError, Timeout, HTTP 5xx), never on ValidationError or LHDN Status 3.",
       "acceptanceCriteria": [
         "First retry (count=1) schedules a 120-second delayed job",
         "Second retry (count=2) schedules a 240-second delayed job",
         "Retry count 5 schedules a 1920-second (capped to 3600) delayed job",
-        "After 5 retries, custom_lhdn_status = 'Invalid' and custom_error_log = 'Max retries exceeded ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ manual intervention required'",
+        "After 5 retries, custom_lhdn_status = 'Invalid' and custom_error_log = 'Max retries exceeded \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd manual intervention required'",
         "No further jobs are queued after max retries",
         "custom_retry_count is incremented by 1 on each call",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retry_service ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retry_service \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "File: lhdn_payroll_integration/services/retry_service.py",
@@ -841,16 +841,16 @@
       "type": "TEST",
       "title": "Write failing tests for cancellation hook (72h window)",
       "priority": 31,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_cancellation.py using FrappeTestCase. Include class TestCancellationHook. All test methods must be present but the cancellation_service module does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_cancellation.py using FrappeTestCase. Include class TestCancellationHook. All test methods must be present but the cancellation_service module does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_cancellation.py created with class TestCancellationHook containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation FAILS with ImportError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation FAILS with ImportError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-016 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestCancellationHook(FrappeTestCase)",
         "Test methods: test_exempt_slip_allows_native_cancel, test_within_72h_enqueues_cancellation_job, test_past_72h_raises_validation_error, test_error_message_mentions_credit_note_and_72_hours, test_uses_validated_datetime_if_set_else_submission_datetime",
-        "Import: from lhdn_payroll_integration.services.cancellation_service import handle_salary_slip_cancel ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.cancellation_service import handle_salary_slip_cancel \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Use unittest.mock.patch('frappe.utils.now_datetime') to simulate time passage",
         "Assert frappe.ValidationError is raised with assertRaises when past 72 hours"
       ],
@@ -873,7 +873,7 @@
         "Cancelling a Salary Slip validated 96 hours ago raises frappe.ValidationError with credit note guidance",
         "frappe.ValidationError message mentions 'Credit Note' and '72 hours'",
         "Reference time uses custom_lhdn_validated_datetime if set, else custom_lhdn_submission_datetime",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "File: lhdn_payroll_integration/services/cancellation_service.py",
@@ -896,16 +896,16 @@
       "type": "TEST",
       "title": "Write failing tests for async LHDN cancellation job",
       "priority": 33,
-      "description": "Write test class TestAsyncCancellationJob in lhdn_payroll_integration/tests/test_cancellation.py using FrappeTestCase. All test methods must be present but the process_cancellation function does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write test class TestAsyncCancellationJob in lhdn_payroll_integration/tests/test_cancellation.py using FrappeTestCase. All test methods must be present but the process_cancellation function does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_cancellation.py updated with class TestAsyncCancellationJob containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation FAILS ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation FAILS \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-017 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestAsyncCancellationJob(FrappeTestCase)",
         "Test methods: test_on_lhdn_api_success_sets_cancelled_status, test_on_lhdn_api_success_cancels_frappe_document, test_on_lhdn_api_error_status_remains_unchanged, test_on_lhdn_api_error_frappe_doc_not_cancelled, test_on_lhdn_api_error_writes_error_to_log",
-        "Import: from lhdn_payroll_integration.services.cancellation_service import process_cancellation ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.cancellation_service import process_cancellation \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Mock requests.put: 200 response for success, 400 response for error",
         "Assert frappe.get_doc(...).cancel() was called on success and NOT called on error"
       ],
@@ -921,18 +921,18 @@
       "type": "IMPL",
       "title": "Implement async LHDN cancellation job",
       "priority": 34,
-      "description": "Add process_cancellation(doctype, docname) to cancellation_service.py. This background worker calls the LHDN PUT /documents/{uuid}/state endpoint with status='cancelled'. On success: set custom_lhdn_status='Cancelled' and cancel the Frappe document programmatically. On LHDN API rejection: keep status 'Valid' and write error to custom_error_log ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ do NOT cancel the Frappe document.",
+      "description": "Add process_cancellation(doctype, docname) to cancellation_service.py. This background worker calls the LHDN PUT /documents/{uuid}/state endpoint with status='cancelled'. On success: set custom_lhdn_status='Cancelled' and cancel the Frappe document programmatically. On LHDN API rejection: keep status 'Valid' and write error to custom_error_log \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd do NOT cancel the Frappe document.",
       "acceptanceCriteria": [
         "On LHDN API success: custom_lhdn_status = 'Cancelled'",
         "On LHDN API success: Frappe document is cancelled (docstatus = 2)",
         "On LHDN API error: custom_lhdn_status remains unchanged",
         "On LHDN API error: Frappe document remains submitted (docstatus = 1)",
         "On LHDN API error: custom_error_log contains API error message",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "LHDN cancellation: PUT {base_url}/api/v1.0/documents/{uuid}/state",
-        "Request body: {'status': 'cancelled', 'reason': 'Correction required ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ see ERPNext document'}",
+        "Request body: {'status': 'cancelled', 'reason': 'Correction required \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd see ERPNext document'}",
         "On success: frappe.db.set_value(doctype, docname, 'custom_lhdn_status', 'Cancelled'), then frappe.get_doc(doctype, docname).cancel()",
         "The .cancel() call must use ignore_permissions=True since this runs in a background job context",
         "On HTTP error: parse response JSON for error message, write to custom_error_log via frappe.db.set_value"
@@ -949,23 +949,23 @@
       "type": "TEST",
       "title": "Write failing tests for monthly consolidation scheduler",
       "priority": 35,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_consolidation.py using FrappeTestCase. All test methods must be present but the consolidation_service module does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_consolidation.py using FrappeTestCase. All test methods must be present but the consolidation_service module does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail with ImportError. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_consolidation.py created with class TestConsolidationScheduler containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation FAILS with ImportError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation FAILS with ImportError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-018 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestConsolidationScheduler(FrappeTestCase)",
         "Test methods: test_queries_previous_calendar_month_records, test_high_value_docs_excluded_from_batch, test_batch_submission_called_for_eligible_docs, test_is_consolidated_set_after_successful_submission, test_already_submitted_docs_excluded, test_empty_batch_completes_silently",
-        "Import: from lhdn_payroll_integration.services.consolidation_service import run_monthly_consolidation ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.consolidation_service import run_monthly_consolidation \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Use unittest.mock.patch to mock frappe.get_all, frappe.db.set_value, and submission_service calls"
       ],
       "dependencies": [
         "US-011"
       ],
       "estimatedComplexity": "small",
-      "passes": false,
+      "passes": true,
       "passesWhen": "Test file is written AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation shows ImportError (red phase confirmed)"
     },
     {
@@ -981,7 +981,7 @@
         "After successful submission, all included documents have custom_is_consolidated = 1",
         "Documents already submitted (status != 'Pending') are not included",
         "Empty batches complete silently without error",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "File: lhdn_payroll_integration/services/consolidation_service.py",
@@ -1003,16 +1003,16 @@
       "type": "TEST",
       "title": "Write failing tests for consolidated payload builder",
       "priority": 37,
-      "description": "Write test class TestConsolidatedXMLBuilder in lhdn_payroll_integration/tests/test_payload_builder.py using FrappeTestCase. All test methods must be present but the build_consolidated_xml function does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write test class TestConsolidatedXMLBuilder in lhdn_payroll_integration/tests/test_payload_builder.py using FrappeTestCase. All test methods must be present but the build_consolidated_xml function does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_payload_builder.py updated with class TestConsolidatedXMLBuilder containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-019 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestConsolidatedXMLBuilder(FrappeTestCase)",
         "Test methods: test_build_consolidated_xml_returns_valid_xml, test_invoice_lines_count_matches_docnames_count, test_all_line_items_use_classification_004, test_invoice_code_follows_consol_pattern, test_billing_period_start_and_end_dates, test_totals_sum_of_all_individual_amounts, test_buyer_contact_is_na",
-        "Import: from lhdn_payroll_integration.services.payload_builder import build_consolidated_xml ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.services.payload_builder import build_consolidated_xml \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Use a list of mock docnames and assert len(InvoiceLines) == len(docnames)"
       ],
       "dependencies": [
@@ -1020,7 +1020,7 @@
         "US-009"
       ],
       "estimatedComplexity": "small",
-      "passes": false,
+      "passes": true,
       "passesWhen": "Test class is added AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder shows failures (red phase confirmed)"
     },
     {
@@ -1038,15 +1038,15 @@
         "TotalIncludingTax = sum of all individual document net amounts (Decimal)",
         "TotalExcludingTax + TotalTaxAmount == TotalIncludingTax (exact Decimal equality)",
         "buyer contact = 'NA' (allowed during grace period consolidation)",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "Add to lhdn_payroll_integration/services/payload_builder.py",
         "InvoiceCode: f'CONSOL-{company_abbr}-{target_month}'[:50]",
-        "InvoiceLine description format: 'Self-billed payroll ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ {doc.name} ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ {employee.employee_name} ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ {doc.end_date}'",
+        "InvoiceLine description format: 'Self-billed payroll \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd {doc.name} \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd {employee.employee_name} \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd {doc.end_date}'",
         "One InvoiceLine per document (not per salary component) to keep payload size manageable",
         "Classification code on each line: '004'",
-        "Tax: all exempt (type 'E', rate '0.00') ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ same as individual builder",
+        "Tax: all exempt (type 'E', rate '0.00') \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd same as individual builder",
         "First document in the list determines the Supplier and Buyer (all must be same company)"
       ],
       "dependencies": [
@@ -1062,16 +1062,16 @@
       "type": "TEST",
       "title": "Write failing tests for environment toggle",
       "priority": 39,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_config.py using FrappeTestCase. All test methods must be present but the config utility does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_config.py using FrappeTestCase. All test methods must be present but the config utility does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_config.py created with class TestEnvironmentToggle containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config FAILS with ImportError or AssertionError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config FAILS with ImportError or AssertionError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-020 has at least one corresponding test method"
       ],
       "technicalNotes": [
         "Test class: TestEnvironmentToggle(FrappeTestCase)",
         "Test methods: test_sandbox_config_uses_preprod_url, test_production_config_uses_prod_url, test_missing_config_defaults_to_sandbox, test_einvoice_version_from_config, test_no_hardcoded_urls_in_python_files",
-        "Import: from lhdn_payroll_integration.utils.config import get_lhdn_base_url ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ will fail until implemented",
+        "Import: from lhdn_payroll_integration.utils.config import get_lhdn_base_url \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd will fail until implemented",
         "Use unittest.mock.patch('frappe.conf.get') to set lhdn_environment values",
         "test_no_hardcoded_urls: use grep or ast.parse to scan .py files for hardcoded URLs"
       ],
@@ -1094,7 +1094,7 @@
         "lhdn_einvoice_version controls the listVersionID attribute on InvoiceTypeCode element",
         "Missing config key lhdn_environment defaults to 'sandbox' (safe default)",
         "No hardcoded URLs in any .py file in the app",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "Read config: frappe.conf.get('lhdn_environment', 'sandbox')",
@@ -1117,10 +1117,10 @@
       "type": "TEST",
       "title": "Write failing tests for RBAC field visibility",
       "priority": 41,
-      "description": "Write the complete test file lhdn_payroll_integration/tests/test_rbac.py using FrappeTestCase. All test methods must be present but the RBAC configuration does NOT exist yet ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
+      "description": "Write the complete test file lhdn_payroll_integration/tests/test_rbac.py using FrappeTestCase. All test methods must be present but the RBAC configuration does NOT exist yet \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd so bench run-tests will fail. This is the TDD red phase. Do NOT implement any production code in this story.",
       "acceptanceCriteria": [
         "Test file lhdn_payroll_integration/tests/test_rbac.py created with class TestRBAC containing all test methods",
-        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_rbac FAILS with AssertionError ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ confirming the TDD red phase",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_rbac FAILS with AssertionError \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd confirming the TDD red phase",
         "Every acceptance criterion of paired US-021 has at least one corresponding test method"
       ],
       "technicalNotes": [
@@ -1149,7 +1149,7 @@
         "User with 'HR Manager' role can see all custom_lhdn_* fields",
         "Manual resubmission button (if added as custom button in JS) is visible only to System Manager",
         "custom_requires_self_billed_invoice on Employee is editable only by HR Manager and System Manager",
-        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_rbac ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_rbac \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "Use Frappe's Permission table or field-level permlevel to restrict visibility",
@@ -1182,7 +1182,7 @@
         "Unit test: quantize(0.1 + 0.2) == Decimal('0.30')",
         "Unit test: validate_tin('IG123', 'NRIC') raises frappe.ValidationError",
         "Unit test: should_submit_to_lhdn('Salary Slip', exempt_doc) returns False",
-        "bench --site frontend run-tests --app lhdn_payroll_integration ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ï¿½ ALL tests pass. Zero failures, zero errors."
+        "bench --site frontend run-tests --app lhdn_payroll_integration \u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u00af\u00c2\u00bf\u00c2\u00bd ALL tests pass. Zero failures, zero errors."
       ],
       "technicalNotes": [
         "Create lhdn_payroll_integration/tests/test_exemption_filter.py, test_payload_builder.py, test_validation.py, test_decimal_utils.py, test_cancellation.py",
@@ -1215,6 +1215,659 @@
         "US-019"
       ],
       "estimatedComplexity": "large",
+      "passes": false
+    },
+    {
+      "id": "UT-023",
+      "type": "TEST",
+      "title": "Write failing tests for Self-Billed Credit Note (type 12) flow",
+      "priority": 44,
+      "description": "Write test file lhdn_payroll_integration/tests/test_credit_note.py. Tests cover: a credit_note_service that issues a type-12 UBL XML; BillingReference containing the original invoice UUID; InvoiceTypeCode='12'; cancellation_service raises ValidationError with clear 'issue Credit Note' message. Do NOT implement production code in this story.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_credit_note.py created with class TestSelfBilledCreditNote containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_credit_note FAILS with ImportError -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-023 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestSelfBilledCreditNote(FrappeTestCase)",
+        "Test methods: test_build_credit_note_xml_returns_string, test_invoice_type_code_is_12, test_billing_reference_contains_original_uuid, test_billing_reference_internal_id_present, test_credit_note_amount_is_negative_adjustment, test_credit_note_references_original_docname, test_cancellation_error_includes_credit_note_instruction",
+        "Import: from lhdn_payroll_integration.services.credit_note_service import build_credit_note_xml -- will fail until implemented",
+        "Assert ET.fromstring(xml).find('.//cac:BillingReference/cac:InvoiceDocumentReference/cbc:UUID', ns).text == original_uuid",
+        "Assert InvoiceTypeCode element text == '12'"
+      ],
+      "dependencies": [
+        "US-016"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false,
+      "passesWhen": "Test file written AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_credit_note FAILS with ImportError (red phase confirmed)"
+    },
+    {
+      "id": "US-023",
+      "type": "IMPL",
+      "title": "Implement Self-Billed Credit Note (type 12) builder and service",
+      "priority": 45,
+      "description": "Create lhdn_payroll_integration/services/credit_note_service.py with build_credit_note_xml(original_docname, reason) and enqueue_credit_note_submission(original_docname, reason). The UBL XML must use InvoiceTypeCode='12', include a BillingReference with the original invoice's LHDN UUID and docname, and reverse the original amounts (negative adjustment). Update cancellation_service to include clear credit note guidance in its ValidationError. This completes the post-72-hour amendment pathway mandated by LHDN.",
+      "acceptanceCriteria": [
+        "build_credit_note_xml(original_docname, reason) returns valid UBL XML with InvoiceTypeCode='12'",
+        "cac:BillingReference/cac:InvoiceDocumentReference/cbc:UUID contains the original LHDN UUID from custom_lhdn_uuid",
+        "cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID contains the original Frappe docname",
+        "Credit note amounts are the reversal (negative) of the original invoice line amounts",
+        "enqueue_credit_note_submission posts the credit note XML to LHDN and writes UUID/status back",
+        "cancellation_service ValidationError message includes 'Please use the Self-Billed Credit Note button' as actionable guidance",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_credit_note -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "File: lhdn_payroll_integration/services/credit_note_service.py",
+        "InvoiceTypeCode: <cbc:InvoiceTypeCode listVersionID='1.1'>12</cbc:InvoiceTypeCode>",
+        "BillingReference structure: cac:BillingReference > cac:InvoiceDocumentReference > cbc:UUID (LHDN UUID) + cbc:ID (docname)",
+        "Load original doc: frappe.get_doc('Salary Slip', original_docname)",
+        "Get UUID: doc.custom_lhdn_uuid -- raise ValidationError if empty (no original UUID to reference)",
+        "Amount reversal: negate all earnings amounts so TotalIncludingTax is negative (credit)",
+        "LHDN endpoint for credit note submission: same as regular invoice -- /api/v1.0/documentsubmissions",
+        "Add custom_lhdn_credit_note_uuid and custom_lhdn_credit_note_status fields to Salary Slip for tracking"
+      ],
+      "dependencies": [
+        "UT-023",
+        "US-016",
+        "US-009"
+      ],
+      "estimatedComplexity": "large",
+      "passes": false
+    },
+    {
+      "id": "UT-024",
+      "type": "TEST",
+      "title": "Write failing tests for 7-day consolidated submission deadline enforcement",
+      "priority": 46,
+      "description": "Write test class TestConsolidationDeadline in lhdn_payroll_integration/tests/test_consolidation.py. Tests must verify that consolidated e-invoice submission is rejected after the 7th calendar day following month-end, that a deadline field is computed correctly, and that an alert is raised when the deadline is missed. Do NOT implement production code in this story.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_consolidation.py updated with class TestConsolidationDeadline containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation FAILS -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-024 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestConsolidationDeadline(FrappeTestCase)",
+        "Test methods: test_deadline_is_7_days_after_month_end, test_submission_within_7_days_succeeds, test_submission_on_day_8_raises_deadline_error, test_missed_deadline_logs_frappe_error, test_consolidation_deadline_field_computed_correctly",
+        "Import: from lhdn_payroll_integration.services.consolidation_service import get_consolidation_deadline, run_monthly_consolidation -- will fail if deadline function missing",
+        "Mock frappe.utils.today() to simulate day 8 after month-end",
+        "Assert frappe.log_error is called when deadline is missed"
+      ],
+      "dependencies": [
+        "US-018"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "passesWhen": "Tests added AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation FAILS (red phase confirmed)"
+    },
+    {
+      "id": "US-024",
+      "type": "IMPL",
+      "title": "Enforce 7-calendar-day consolidated submission deadline post month-end",
+      "priority": 47,
+      "description": "Add get_consolidation_deadline(target_month) to consolidation_service.py returning the 7th calendar day after month-end. In run_monthly_consolidation(), check if today exceeds the deadline; if so, log a frappe.log_error and raise ValidationError -- do NOT silently skip or submit late. LHDN requires consolidated self-billed invoices be submitted within 7 calendar days after month-end. Also add custom_consolidation_deadline (Date, read_only) to Company DocType.",
+      "acceptanceCriteria": [
+        "get_consolidation_deadline('2026-01') returns date(2026, 2, 7) (7 days after Jan 31)",
+        "run_monthly_consolidation() raises frappe.ValidationError when called after the deadline",
+        "ValidationError message includes the missed deadline date and the month it covers",
+        "Within-deadline calls proceed normally",
+        "custom_consolidation_deadline field on Company shows next month's deadline date",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "Add to lhdn_payroll_integration/services/consolidation_service.py",
+        "get_consolidation_deadline(target_month: str) -> date: parse target_month as 'YYYY-MM', get last day via frappe.utils.get_last_day(), add 7 days using timedelta(days=7)",
+        "Deadline check: if frappe.utils.today() > deadline: frappe.log_error(f'LHDN consolidation deadline missed for {target_month}. Deadline was {deadline}.', 'LHDN Consolidation'); frappe.throw(..., frappe.ValidationError)",
+        "Add custom_consolidation_deadline to Company custom fields fixture",
+        "From 1 Jan 2026: transactions >RM10,000 cannot be consolidated -- ensure existing RM10K exclusion logic is enforced"
+      ],
+      "dependencies": [
+        "UT-024",
+        "US-018"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "UT-025",
+      "type": "TEST",
+      "title": "Write failing tests for Malaysian state code in UBL address elements",
+      "priority": 48,
+      "description": "Write test class TestStateCodeInUBL in lhdn_payroll_integration/tests/test_payload_builder.py. Tests verify that the generated XML includes cbc:CountrySubentityCode in both supplier (employee) and buyer (company) address blocks, that valid Malaysian state codes (01-17) are used, and that missing state codes trigger a ValidationError. Do NOT implement production code.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_payload_builder.py updated with class TestStateCodeInUBL containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-025 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestStateCodeInUBL(FrappeTestCase)",
+        "Test methods: test_supplier_address_has_country_subentity_code, test_buyer_address_has_country_subentity_code, test_state_code_01_johor_is_valid, test_state_code_17_not_applicable_for_consolidated, test_missing_state_code_raises_validation_error, test_foreign_employee_uses_state_code_17",
+        "Parse XML: ET.fromstring(xml).find('.//cac:AccountingSupplierParty//cbc:CountrySubentityCode', ns)",
+        "Assert element is not None and element.text in ['01','02',...,'17']"
+      ],
+      "dependencies": [
+        "US-009"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "passesWhen": "Test class added AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS (red phase confirmed)"
+    },
+    {
+      "id": "US-025",
+      "type": "IMPL",
+      "title": "Add Malaysian state code (CountrySubentityCode) to UBL address elements",
+      "priority": 49,
+      "description": "Add custom_state_code (Select) to Employee and Company DocTypes with all 17 Malaysian state codes. Update payload_builder.py to include cbc:CountrySubentityCode in both AccountingSupplierParty and AccountingCustomerParty address blocks. Validate state code presence before building XML. LHDN v1.1 mandates CountrySubentityCode for all Malaysian addresses -- use '17' for foreign employees or consolidated submissions.",
+      "acceptanceCriteria": [
+        "Employee DocType has custom_state_code Select field with options 01 (Johor) through 16 (W.P. Labuan) and 17 (Not Applicable)",
+        "Company DocType has custom_state_code Select field with same options",
+        "Generated XML includes <cbc:CountrySubentityCode> in both supplier and buyer address blocks",
+        "Foreign workers (custom_is_foreign_worker=1) use state code '17' in supplier address",
+        "Missing state_code on Employee raises frappe.ValidationError before XML build",
+        "Consolidated XML uses state code '17' for buyer address",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "State code Select options: 01 : Johor\\n02 : Kedah\\n03 : Kelantan\\n04 : Melaka\\n05 : Negeri Sembilan\\n06 : Pahang\\n07 : Pulau Pinang\\n08 : Perak\\n09 : Perlis\\n10 : Selangor\\n11 : Terengganu\\n12 : Sabah\\n13 : Sarawak\\n14 : W.P. Kuala Lumpur\\n15 : W.P. Putrajaya\\n16 : W.P. Labuan\\n17 : Not Applicable",
+        "UBL placement: cac:PostalAddress > cbc:CountrySubentityCode",
+        "Add custom_state_code to fixtures/custom_fields.json for both Employee and Company",
+        "In payload_builder: resolve_state_code(employee) -> '17' if foreign worker else employee.custom_state_code or frappe.throw('Employee state code not set')",
+        "For buyer: company.custom_state_code or frappe.throw('Company state code not set')"
+      ],
+      "dependencies": [
+        "UT-025",
+        "US-009",
+        "US-002"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "UT-026",
+      "type": "TEST",
+      "title": "Write failing tests for QR code rendering on Salary Slip print format",
+      "priority": 50,
+      "description": "Write test class TestQRCodeRendering in lhdn_payroll_integration/tests/test_qr_code.py. Tests verify that custom_lhdn_qr_url is converted to an actual QR code image (base64 PNG), that a Jinja helper function exists in hooks.py, and that empty/None URLs return empty string without error. Do NOT implement production code.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_qr_code.py created with class TestQRCodeRendering containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_qr_code FAILS with ImportError -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-026 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestQRCodeRendering(FrappeTestCase)",
+        "Test methods: test_generate_qr_code_returns_base64_png, test_qr_code_from_valid_url, test_qr_code_empty_url_returns_empty_string, test_qr_code_none_url_returns_empty_string, test_jinja_helper_registered_in_hooks",
+        "Import: from lhdn_payroll_integration.utils.qr_utils import generate_qr_code_base64 -- will fail until implemented",
+        "Assert generate_qr_code_base64('https://myinvois.hasil.gov.my/...') returns string starting with 'data:image/png;base64,'",
+        "Assert '' == generate_qr_code_base64('') and '' == generate_qr_code_base64(None)"
+      ],
+      "dependencies": [
+        "US-004"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "passesWhen": "Test file written AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_qr_code FAILS with ImportError (red phase confirmed)"
+    },
+    {
+      "id": "US-026",
+      "type": "IMPL",
+      "title": "Implement QR code rendering for LHDN e-Invoice on Salary Slip print format",
+      "priority": 51,
+      "description": "Create lhdn_payroll_integration/utils/qr_utils.py with generate_qr_code_base64(url) using the qrcode library. Register it as a Jinja2 global in hooks.py (jinja.methods). Create a custom print format for Salary Slip that renders the LHDN QR code as an inline base64 PNG <img> tag when custom_lhdn_qr_url is set. LHDN compliance requires the QR code to be displayable on the submitted document.",
+      "acceptanceCriteria": [
+        "generate_qr_code_base64(url) returns a data:image/png;base64,... string for valid URLs",
+        "generate_qr_code_base64('') returns empty string without raising any exception",
+        "generate_qr_code_base64(None) returns empty string without raising any exception",
+        "hooks.py jinja.methods includes 'lhdn_payroll_integration.utils.qr_utils.generate_qr_code_base64'",
+        "Salary Slip print format includes QR code image block when custom_lhdn_status in ['Valid', 'Submitted']",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_qr_code -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "File: lhdn_payroll_integration/utils/qr_utils.py",
+        "Add qrcode to requirements.txt or install in Dockerfile.myinvois: pip install 'qrcode[pil]'",
+        "generate_qr_code_base64(url): if not url: return ''; import qrcode, io, base64; qr=qrcode.make(url); buffer=io.BytesIO(); qr.save(buffer, format='PNG'); return 'data:image/png;base64,' + base64.b64encode(buffer.getvalue()).decode()",
+        "hooks.py: jinja = {'methods': ['lhdn_payroll_integration.utils.qr_utils.generate_qr_code_base64']}",
+        "Print format HTML: {% if doc.custom_lhdn_status in ['Valid','Submitted'] and doc.custom_lhdn_qr_url %}<img src='{{ generate_qr_code_base64(doc.custom_lhdn_qr_url) }}' width='120' height='120' alt='LHDN QR'/>{% endif %}"
+      ],
+      "dependencies": [
+        "UT-026",
+        "US-004"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "UT-027",
+      "type": "TEST",
+      "title": "Write failing tests for 7-year LHDN audit retention locking",
+      "priority": 52,
+      "description": "Write test class TestAuditRetention in lhdn_payroll_integration/tests/test_retention.py. Tests verify: a scheduled job sets custom_lhdn_archived=1 on documents older than 7 years; a retention_date field is set at submission time (today+7y); archived documents cannot be amended; and records within 7 years remain unarchived. Do NOT implement production code.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_retention.py created with class TestAuditRetention containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retention FAILS with ImportError -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-027 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestAuditRetention(FrappeTestCase)",
+        "Test methods: test_retention_date_set_on_submission, test_retention_date_is_7_years_from_submission, test_archive_job_marks_old_records, test_archived_record_cannot_be_amended, test_records_within_7_years_not_archived",
+        "Import: from lhdn_payroll_integration.services.retention_service import run_retention_archival, get_retention_date -- will fail until implemented",
+        "Mock frappe.utils.now_datetime to simulate 7+ years elapsed",
+        "Assert frappe.db.get_value returns custom_lhdn_archived=1 for old record"
+      ],
+      "dependencies": [
+        "US-011"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "passesWhen": "Test file written AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retention FAILS with ImportError (red phase confirmed)"
+    },
+    {
+      "id": "US-027",
+      "type": "IMPL",
+      "title": "Implement 7-year LHDN audit retention archival and locking",
+      "priority": 53,
+      "description": "Create lhdn_payroll_integration/services/retention_service.py with run_retention_archival() (yearly scheduler) and get_retention_date(dt) returning dt + 7 years. At submission time, set custom_lhdn_retention_date = today + 7 years on the Salary Slip. Yearly archival job marks records where retention_date < today as archived (custom_lhdn_archived=1). Add before_amend hook blocking amendment of archived records. Malaysian Income Tax Act requires 7-year retention of all e-invoice records.",
+      "acceptanceCriteria": [
+        "get_retention_date(datetime(2026, 1, 15)) returns date(2033, 1, 15)",
+        "Salary Slip submission sets custom_lhdn_retention_date = submission_date + 7 years",
+        "run_retention_archival() sets custom_lhdn_archived=1 on Salary Slips where custom_lhdn_retention_date < today",
+        "Records with retention_date >= today remain unarchived",
+        "Amendment of a Salary Slip with custom_lhdn_archived=1 raises frappe.ValidationError('This LHDN record is archived for the 7-year audit period and cannot be amended')",
+        "custom_lhdn_archived (Check, read_only, default 0) and custom_lhdn_retention_date (Date, read_only) fields added to Salary Slip",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retention -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "File: lhdn_payroll_integration/services/retention_service.py",
+        "get_retention_date(dt): from dateutil.relativedelta import relativedelta; return (dt + relativedelta(years=7)).date()",
+        "Set at submission: in submission_service.py after successful LHDN submission, frappe.db.set_value(doctype, docname, 'custom_lhdn_retention_date', get_retention_date(now_datetime()))",
+        "Yearly scheduler in hooks.py: scheduler_events['yearly'] = ['lhdn_payroll_integration.services.retention_service.run_retention_archival']",
+        "run_retention_archival: frappe.get_all with filters custom_lhdn_retention_date ['<', today] and custom_lhdn_archived 0, then set_value archived=1",
+        "Add before_amend doc_event to hooks.py: doc_events['Salary Slip']['before_amend'] = 'lhdn_payroll_integration.services.retention_service.prevent_archived_amendment'",
+        "Add custom_lhdn_archived and custom_lhdn_retention_date to fixtures/custom_fields.json for Salary Slip"
+      ],
+      "dependencies": [
+        "UT-027",
+        "US-011"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "UT-028",
+      "type": "TEST",
+      "title": "Write failing tests for mandatory e-invoice date gating by company revenue tier",
+      "priority": 54,
+      "description": "Write test class TestMandatoryDateGating in lhdn_payroll_integration/tests/test_config.py. Tests must verify that the correct mandatory date is returned per revenue tier, that a warning is logged in production mode before mandatory date, and that sandbox mode always bypasses the check. Do NOT implement production code.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_config.py updated with class TestMandatoryDateGating containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config FAILS -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-028 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestMandatoryDateGating(FrappeTestCase)",
+        "Test methods: test_revenue_above_100m_mandatory_from_aug_2024, test_revenue_25m_to_100m_mandatory_from_jan_2025, test_revenue_5m_to_25m_mandatory_from_jul_2025, test_revenue_1m_to_5m_mandatory_from_jan_2026, test_below_1m_exempt_mandatory_date_is_none, test_production_before_mandatory_date_logs_warning, test_sandbox_mode_bypasses_mandatory_date_check",
+        "Import: from lhdn_payroll_integration.utils.config import get_mandatory_date, check_mandatory_compliance -- will fail until implemented",
+        "Mock frappe.utils.today() to test date boundaries and frappe.conf to set lhdn_environment"
+      ],
+      "dependencies": [
+        "US-020"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "passesWhen": "Tests added AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config FAILS (red phase confirmed)"
+    },
+    {
+      "id": "US-028",
+      "type": "IMPL",
+      "title": "Implement revenue-tier mandatory date gating for LHDN e-invoice compliance",
+      "priority": 55,
+      "description": "Add custom_annual_revenue_tier (Select) to Company DocType. Add get_mandatory_date(tier) and check_mandatory_compliance(company_name) to utils/config.py. Call check_mandatory_compliance in submission_service before XML build -- logs a warning in production mode if before mandatory date but does NOT block (allows early adopters). Sandbox mode always bypasses. Per the latest December 2025 Cabinet decision, businesses below RM1M annual turnover are exempt from mandatory compliance.",
+      "acceptanceCriteria": [
+        "Company DocType has custom_annual_revenue_tier Select with options: Above RM100M | RM25M to RM100M | RM5M to RM25M | RM1M to RM5M | Below RM1M (Exempt)",
+        "get_mandatory_date('Above RM100M') returns date(2024, 8, 1)",
+        "get_mandatory_date('RM25M to RM100M') returns date(2025, 1, 1)",
+        "get_mandatory_date('RM5M to RM25M') returns date(2025, 7, 1)",
+        "get_mandatory_date('RM1M to RM5M') returns date(2026, 1, 1)",
+        "get_mandatory_date('Below RM1M (Exempt)') returns None",
+        "check_mandatory_compliance logs frappe.log_error warning when production mode and today < mandatory_date",
+        "Sandbox mode (lhdn_environment='sandbox') bypasses mandatory date check entirely",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_config -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "Add to lhdn_payroll_integration/utils/config.py",
+        "from datetime import date; MANDATORY_DATES = {'Above RM100M': date(2024,8,1), 'RM25M to RM100M': date(2025,1,1), 'RM5M to RM25M': date(2025,7,1), 'RM1M to RM5M': date(2026,1,1), 'Below RM1M (Exempt)': None}",
+        "check_mandatory_compliance(company_name): env = frappe.conf.get('lhdn_environment','sandbox'); if env=='sandbox': return; tier = frappe.db.get_value('Company', company_name, 'custom_annual_revenue_tier'); mandatory = get_mandatory_date(tier); if mandatory and frappe.utils.today() < mandatory: frappe.log_error(..., 'LHDN Compliance Warning')",
+        "Add custom_annual_revenue_tier to Company custom fields fixture",
+        "Call check_mandatory_compliance at start of process_salary_slip in submission_service.py"
+      ],
+      "dependencies": [
+        "UT-028",
+        "US-020",
+        "US-002"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "UT-029",
+      "type": "TEST",
+      "title": "Write failing tests for PCB withholding tax handling in contractor invoice",
+      "priority": 56,
+      "description": "Write test class TestPCBWithholdingTax in lhdn_payroll_integration/tests/test_payload_builder.py. Tests verify that TaxableAmount in the invoice uses gross earnings (not net_pay), that PCB deduction appears as WithholdingTaxTotal when >0, and that zero PCB omits the element. Do NOT implement production code.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_payload_builder.py updated with class TestPCBWithholdingTax containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-029 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestPCBWithholdingTax(FrappeTestCase)",
+        "Test methods: test_gross_pay_used_as_invoice_total_not_net_pay, test_pcb_amount_in_withholding_tax_total, test_zero_pcb_omits_withholding_tax_element, test_invoice_total_equals_sum_of_earnings_components",
+        "Assert XML TaxableAmount == sum(doc.earnings amounts), NOT doc.net_pay",
+        "Assert cbc:WithholdingTaxTotal exists when PCB deduction row present",
+        "Import: from lhdn_payroll_integration.services.payload_builder import build_salary_slip_xml"
+      ],
+      "dependencies": [
+        "US-009"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "passesWhen": "Tests added AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS (red phase confirmed)"
+    },
+    {
+      "id": "US-029",
+      "type": "IMPL",
+      "title": "Add PCB withholding tax element to contractor UBL invoice (gross billing)",
+      "priority": 57,
+      "description": "Update payload_builder.py build_salary_slip_xml to: (1) confirm GROSS earnings total (sum of doc.earnings) is used as TaxableAmount/TotalIncludingTax -- never doc.net_pay; (2) detect PCB deductions from doc.deductions by component name; (3) when PCB > 0, add cbc:WithholdingTaxTotal inside cac:TaxTotal. Self-billed invoices for contractors must reflect gross payment -- PCB is an employer withholding obligation and must be separately noted per LHDN guidelines.",
+      "acceptanceCriteria": [
+        "build_salary_slip_xml uses sum(eligible doc.earnings) as TotalIncludingTax (gross), NOT doc.net_pay",
+        "When PCB deduction > 0: XML includes <cbc:WithholdingTaxTotal><cbc:Amount currencyID='MYR'>{pcb_amount}</cbc:Amount></cbc:WithholdingTaxTotal>",
+        "When PCB deduction == 0 or absent: WithholdingTaxTotal element is omitted",
+        "PCB lookup from deductions: component names 'Monthly Tax Deduction', 'PCB', 'Income Tax'",
+        "TotalIncludingTax always equals sum of earnings rows (gross pay before any deduction)",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "Add to payload_builder.py build_salary_slip_xml",
+        "PCB_COMPONENT_NAMES = frozenset({'Monthly Tax Deduction', 'PCB', 'Income Tax', 'Tax Deduction'})",
+        "pcb_amount = sum(quantize(Decimal(str(d.amount))) for d in doc.deductions if d.salary_component in PCB_COMPONENT_NAMES)",
+        "If pcb_amount > 0: inside cac:TaxTotal, append <cbc:WithholdingTaxTotal><cbc:Amount currencyID='MYR'>{pcb_amount}</cbc:Amount></cbc:WithholdingTaxTotal>",
+        "Gross total: total_incl = sum(quantize(Decimal(str(e.amount))) for e in eligible_earnings) -- already correct, add explicit assertion in test",
+        "Position: cbc:WithholdingTaxTotal is a child of cac:TaxTotal, after cbc:TaxAmount"
+      ],
+      "dependencies": [
+        "UT-029",
+        "US-009"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "UT-030",
+      "type": "TEST",
+      "title": "Write failing tests for bank account in UBL PaymentMeans element",
+      "priority": 58,
+      "description": "Write test class TestPaymentMeans in lhdn_payroll_integration/tests/test_payload_builder.py. Tests verify that when custom_bank_account_number is set on the Employee, the XML includes cac:PaymentMeans with PayeeFinancialAccount, and that missing bank accounts result in the PaymentMeans block being omitted. Do NOT implement production code.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_payload_builder.py updated with class TestPaymentMeans containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-030 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestPaymentMeans(FrappeTestCase)",
+        "Test methods: test_payment_means_present_when_bank_account_set, test_payee_financial_account_contains_bank_number, test_payment_means_omitted_when_no_bank_account, test_bank_account_truncated_to_150_chars",
+        "Assert ET.fromstring(xml).find('.//cac:PaymentMeans/cac:PayeeFinancialAccount/cbc:ID', ns).text == '1234567890'",
+        "Assert ET.fromstring(xml).find('.//cac:PaymentMeans', ns) is None when bank account empty"
+      ],
+      "dependencies": [
+        "US-009"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "passesWhen": "Tests added AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS (red phase confirmed)"
+    },
+    {
+      "id": "US-030",
+      "type": "IMPL",
+      "title": "Add bank account to UBL PaymentMeans element in self-billed XML",
+      "priority": 59,
+      "description": "Update payload_builder.py build_salary_slip_xml to conditionally include a cac:PaymentMeans block when the employee has a bank account number set (custom_bank_account_number). PaymentMeansCode='30' (credit transfer). Include PayeeFinancialAccount with the bank account ID. Omit block when bank account is empty. LHDN recommends including payment details for audit completeness.",
+      "acceptanceCriteria": [
+        "When employee.custom_bank_account_number is set, XML includes cac:PaymentMeans block",
+        "PaymentMeansCode element contains '30' (credit transfer)",
+        "cac:PayeeFinancialAccount/cbc:ID contains employee bank account number (max 150 chars)",
+        "When employee.custom_bank_account_number is empty or None, cac:PaymentMeans block is omitted entirely",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "Add to payload_builder.py after TaxTotal element, before LegalMonetaryTotal",
+        "UBL structure: <cac:PaymentMeans><cbc:PaymentMeansCode>30</cbc:PaymentMeansCode><cac:PayeeFinancialAccount><cbc:ID>{account[:150]}</cbc:ID></cac:PayeeFinancialAccount></cac:PaymentMeans>",
+        "PaymentMeansCode 30 = Credit transfer (ISO 20022 standard for salary payments)",
+        "Conditional: bank_account = getattr(employee, 'custom_bank_account_number', '') or ''; if bank_account: add PaymentMeans block",
+        "Reuse validate_bank_account_number truncation from utils/validation.py"
+      ],
+      "dependencies": [
+        "UT-030",
+        "US-009",
+        "US-002"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "UT-031",
+      "type": "TEST",
+      "title": "Write failing tests for worker type gate distinguishing Employee vs Contractor vs Director",
+      "priority": 60,
+      "description": "Write test class TestWorkerTypeGate in lhdn_payroll_integration/tests/test_exemption_filter.py. Tests must verify: regular employees (custom_worker_type='Employee') are exempt regardless of the custom_requires_self_billed_invoice toggle (employment income is exempt per LHDN FAQ); contractors and directors are in-scope when flag is set; and classification code defaults differ by worker type. Do NOT implement production code.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_exemption_filter.py updated with class TestWorkerTypeGate containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_exemption_filter FAILS -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-031 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestWorkerTypeGate(FrappeTestCase)",
+        "Test methods: test_regular_employee_always_exempt_regardless_of_flag, test_contractor_with_flag_is_in_scope, test_director_with_flag_is_in_scope, test_director_default_classification_code_is_036, test_contractor_default_classification_code_is_037, test_unknown_worker_type_defaults_to_exempt",
+        "Import: from lhdn_payroll_integration.services.exemption_filter import should_submit_to_lhdn, get_default_classification_code",
+        "Mock employee.custom_worker_type='Employee' with flag=1 -- assert returns False",
+        "Mock employee.custom_worker_type='Director' with flag=1 -- assert returns True"
+      ],
+      "dependencies": [
+        "US-007"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "passesWhen": "Tests added AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_exemption_filter FAILS (red phase confirmed)"
+    },
+    {
+      "id": "US-031",
+      "type": "IMPL",
+      "title": "Implement worker type gate: Employee vs Contractor vs Director for LHDN scope",
+      "priority": 61,
+      "description": "Add custom_worker_type (Select: Employee | Contractor | Director, default: Employee) to Employee DocType. Update exemption_filter.py: if custom_worker_type='Employee', return False immediately (employment income under contract of service is exempt per LHDN FAQ). Add get_default_classification_code(worker_type) returning '037' for Contractor, '036' for Director, '022' for others. Update payload_builder to use this as fallback when component has no explicit classification code.",
+      "acceptanceCriteria": [
+        "Employee DocType has custom_worker_type Select with options: Employee | Contractor | Director (default: Employee)",
+        "should_submit_to_lhdn returns False when custom_worker_type='Employee' regardless of custom_requires_self_billed_invoice value",
+        "should_submit_to_lhdn returns True when custom_worker_type='Contractor' AND custom_requires_self_billed_invoice=1",
+        "should_submit_to_lhdn returns True when custom_worker_type='Director' AND custom_requires_self_billed_invoice=1",
+        "get_default_classification_code('Contractor') returns '037'",
+        "get_default_classification_code('Director') returns '036'",
+        "payload_builder uses get_default_classification_code as fallback when no component-level code set",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_exemption_filter -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "Add custom_worker_type to Employee in fixtures/custom_fields.json: fieldtype=Select, options='\\nEmployee\\nContractor\\nDirector', default='Employee'",
+        "Update exemption_filter.py: EXEMPT_WORKER_TYPES = frozenset({'Employee', ''}); if employee.custom_worker_type in EXEMPT_WORKER_TYPES: return False",
+        "Add get_default_classification_code(worker_type: str) -> str: return {'Contractor': '037', 'Director': '036'}.get(worker_type, '022')",
+        "Update payload_builder: import get_default_classification_code; fallback = get_default_classification_code(employee.custom_worker_type); code = component.custom_lhdn_classification_code or fallback",
+        "LHDN FAQ: 'Employment income (salary paid to employees under a contract of service) is exempt from self-billed e-invoice requirements'"
+      ],
+      "dependencies": [
+        "UT-031",
+        "US-007",
+        "US-002"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "UT-032",
+      "type": "TEST",
+      "title": "Write failing tests for foreign currency MYR conversion in UBL payload",
+      "priority": 62,
+      "description": "Write test class TestForeignCurrencyHandling in lhdn_payroll_integration/tests/test_payload_builder.py. Tests verify: DocumentCurrencyCode is always 'MYR'; foreign currency amounts are multiplied by exchange rate; TaxCurrencyCode is set for non-MYR slips; missing exchange rate raises ValidationError. Do NOT implement production code.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_payload_builder.py updated with class TestForeignCurrencyHandling containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-032 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestForeignCurrencyHandling(FrappeTestCase)",
+        "Test methods: test_document_currency_code_is_always_myr, test_myr_salary_no_conversion_needed, test_usd_salary_amounts_converted_to_myr, test_missing_exchange_rate_raises_validation_error, test_tax_currency_code_set_for_foreign_currency",
+        "Assert ET.fromstring(xml).find('.//cbc:DocumentCurrencyCode', ns).text == 'MYR'",
+        "Mock doc.currency='USD', doc.conversion_rate=4.5; assert invoice line amount = original * 4.5"
+      ],
+      "dependencies": [
+        "US-009"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "passesWhen": "Tests added AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS (red phase confirmed)"
+    },
+    {
+      "id": "US-032",
+      "type": "IMPL",
+      "title": "Implement foreign currency to MYR conversion in UBL payload builder",
+      "priority": 63,
+      "description": "Update payload_builder.py to always emit DocumentCurrencyCode='MYR'. When doc.currency != 'MYR', multiply all earnings amounts by doc.conversion_rate (using Decimal). Add TaxCurrencyCode for non-MYR source currencies. Raise ValidationError when foreign currency slip has conversion_rate == 0 or None. Foreign workers paid in foreign currency are common in Malaysian payroll and LHDN requires invoicing in MYR.",
+      "acceptanceCriteria": [
+        "cbc:DocumentCurrencyCode element always contains 'MYR' in all generated XML",
+        "When doc.currency='MYR': amounts used directly, no conversion factor applied",
+        "When doc.currency='USD' and conversion_rate=4.5: each eligible earnings amount is Decimal(amount) * Decimal('4.5')",
+        "When doc.currency != 'MYR' and conversion_rate == 0 or None: raises frappe.ValidationError('Exchange rate required for foreign currency salary slip')",
+        "When doc.currency != 'MYR': XML includes <cbc:TaxCurrencyCode>{doc.currency}</cbc:TaxCurrencyCode>",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "Add to payload_builder.py build_salary_slip_xml",
+        "Always: ET.SubElement(invoice, CBC+'DocumentCurrencyCode').text = 'MYR' (position: after InvoiceTypeCode)",
+        "Currency check: if doc.currency != 'MYR': conv = Decimal(str(doc.conversion_rate or 0)); if conv == 0: frappe.throw('Exchange rate required', frappe.ValidationError); ET.SubElement(invoice, CBC+'TaxCurrencyCode').text = doc.currency",
+        "Amount per line: amount_myr = quantize(Decimal(str(e.amount)) * conv) if doc.currency != 'MYR' else quantize(Decimal(str(e.amount)))",
+        "For MYR: conv = Decimal('1') so formula is uniform"
+      ],
+      "dependencies": [
+        "UT-032",
+        "US-009"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "UT-033",
+      "type": "TEST",
+      "title": "Write failing tests to verify employer statutory contributions excluded from self-billed invoice",
+      "priority": 64,
+      "description": "Write test class TestStatutoryContributionExclusion in lhdn_payroll_integration/tests/test_payload_builder.py. Tests confirm that EPF (employer), SOCSO (employer), and EIS (employer) contribution amounts do NOT appear as InvoiceLine items, and that invoice line count equals only earnings rows minus employer contributions. Do NOT implement production code.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_payload_builder.py updated with class TestStatutoryContributionExclusion containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-033 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestStatutoryContributionExclusion(FrappeTestCase)",
+        "Test methods: test_employer_epf_not_in_invoice_lines, test_employer_socso_not_in_invoice_lines, test_employer_eis_not_in_invoice_lines, test_only_earnings_components_appear_in_invoice_lines, test_custom_exclude_flag_removes_component",
+        "Build XML with mock doc having earnings including 'EPF - Employer', 'SOCSO - Employer', 'EIS - Employer' rows",
+        "Assert len(InvoiceLines) == number of non-statutory earnings rows",
+        "Assert no InvoiceLine description contains 'EPF - Employer' or 'SOCSO - Employer'"
+      ],
+      "dependencies": [
+        "US-009"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "passesWhen": "Tests added AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS (red phase confirmed)"
+    },
+    {
+      "id": "US-033",
+      "type": "IMPL",
+      "title": "Explicitly exclude employer statutory contributions (EPF/SOCSO/EIS) from self-billed invoice lines",
+      "priority": 65,
+      "description": "Update payload_builder.py to define EMPLOYER_STATUTORY_COMPONENTS frozenset and filter doc.earnings to exclude any row whose salary_component is in this set. Also add custom_lhdn_exclude_from_invoice Check field to Salary Component for custom exclusions. Employer EPF/SOCSO/EIS contributions are the employer's own statutory liability to government agencies -- they are NOT payments to the employee-as-supplier and must not appear in the self-billed invoice.",
+      "acceptanceCriteria": [
+        "EMPLOYER_STATUTORY_COMPONENTS set defined in payload_builder.py: frozenset containing common Malaysian employer contribution component names",
+        "build_salary_slip_xml iterates eligible_earnings = [e for e in doc.earnings if e.salary_component not in EMPLOYER_STATUTORY_COMPONENTS and not custom_exclude_flag]",
+        "Salary Component has custom_lhdn_exclude_from_invoice Check field (default 0)",
+        "When custom_lhdn_exclude_from_invoice=1 on a component, that earnings row is excluded from invoice",
+        "Invoice TotalIncludingTax reflects only eligible earnings rows",
+        "Existing totals balance assertion still passes after exclusion logic",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "Add to payload_builder.py: EMPLOYER_STATUTORY_COMPONENTS = frozenset({'EPF - Employer', 'SOCSO - Employer', 'EIS - Employer', 'HRDF', 'HRDF Levy', 'Employer EPF', 'Employer SOCSO', 'Employer EIS', 'SIP - Employer', 'SIP Employer'})",
+        "Filter: eligible_earnings = [e for e in doc.earnings if e.salary_component not in EMPLOYER_STATUTORY_COMPONENTS]",
+        "Custom flag check: also exclude if frappe.db.get_value('Salary Component', e.salary_component, 'custom_lhdn_exclude_from_invoice') == 1",
+        "Add custom_lhdn_exclude_from_invoice Check field to Salary Component in fixtures/custom_fields.json (default 0)",
+        "LHDN rationale: employer statutory contributions are government-mandated employer obligations, not supplier payments"
+      ],
+      "dependencies": [
+        "UT-033",
+        "US-009",
+        "US-003"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "UT-034",
+      "type": "TEST",
+      "title": "Write failing tests for SST registration number in supplier UBL block",
+      "priority": 66,
+      "description": "Write test class TestSSTHandling in lhdn_payroll_integration/tests/test_payload_builder.py. Tests verify: non-SST-registered employees show 'NA' in PartyTaxScheme; SST-registered employees show their registration number; and the TaxScheme/ID is 'NA' or 'SST' accordingly. Do NOT implement production code.",
+      "acceptanceCriteria": [
+        "Test file lhdn_payroll_integration/tests/test_payload_builder.py updated with class TestSSTHandling containing all test methods",
+        "bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS -- confirming the TDD red phase",
+        "Every acceptance criterion of paired US-034 has at least one corresponding test method"
+      ],
+      "technicalNotes": [
+        "Test class: TestSSTHandling(FrappeTestCase)",
+        "Test methods: test_non_sst_supplier_shows_na_registration, test_non_sst_scheme_id_is_na, test_sst_supplier_registration_in_party_tax_scheme, test_sst_scheme_id_is_sst, test_buyer_also_has_party_tax_scheme",
+        "Assert ET.fromstring(xml).find('.//cac:AccountingSupplierParty//cac:PartyTaxScheme/cbc:TaxScheme/cbc:ID', ns).text in ['NA','SST']",
+        "Import: from lhdn_payroll_integration.services.payload_builder import build_salary_slip_xml"
+      ],
+      "dependencies": [
+        "US-009"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "passesWhen": "Tests added AND bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder FAILS (red phase confirmed)"
+    },
+    {
+      "id": "US-034",
+      "type": "IMPL",
+      "title": "Add SST registration to supplier and buyer UBL PartyTaxScheme blocks",
+      "priority": 67,
+      "description": "Add custom_sst_registration_number (Data, optional) to Employee and Company DocTypes. Update payload_builder.py to include cac:PartyTaxScheme in both AccountingSupplierParty and AccountingCustomerParty. Use 'NA' for non-SST-registered parties. Tax category on invoice lines remains 'E' (Exempt) -- SST registration identification is a mandatory UBL field independent of whether the payment is SST-taxed.",
+      "acceptanceCriteria": [
+        "Employee DocType has custom_sst_registration_number (Data, optional) field",
+        "Company DocType has custom_sst_registration_number (Data, optional) field",
+        "When employee.custom_sst_registration_number is empty: AccountingSupplierParty includes cac:PartyTaxScheme with RegistrationName='NA' and TaxScheme/ID='NA'",
+        "When employee.custom_sst_registration_number is set: RegistrationName=SST_number, TaxScheme/ID='SST'",
+        "AccountingCustomerParty (Company/Buyer) also includes cac:PartyTaxScheme with same logic",
+        "Tax category on all line items remains 'E' (Exempt) -- SST registration does not change payroll tax treatment",
+        "[TDD GREEN] bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder -- ALL tests pass. Zero failures, zero errors."
+      ],
+      "technicalNotes": [
+        "Add custom_sst_registration_number to Employee and Company in fixtures/custom_fields.json: fieldtype=Data, label='SST Registration Number', description='Enter SST reg number or leave blank (will use NA)'",
+        "UBL path: cac:Party > cac:PartyTaxScheme > cbc:RegistrationName (SST reg or 'NA') + cac:TaxScheme > cbc:ID ('SST' or 'NA')",
+        "Helper: def get_party_tax_scheme(sst_reg): name = sst_reg or 'NA'; scheme = 'SST' if sst_reg else 'NA'; return (name, scheme)",
+        "LHDN v1.1 spec: SST Registration Number field is mandatory -- must appear as 'NA' if not registered",
+        "Do NOT change tax category from 'E' to 'S' for payroll items -- salary self-billed invoices are always exempt from SST"
+      ],
+      "dependencies": [
+        "UT-034",
+        "US-009",
+        "US-002"
+      ],
+      "estimatedComplexity": "small",
       "passes": false
     }
   ]
