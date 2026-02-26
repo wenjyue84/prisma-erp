@@ -35,9 +35,9 @@
       {
         "doctype": "Workspace Shortcut",
         "type": "Page",
-        "link_to": "background-jobs",
-        "label": "Background Jobs",
-        "icon": "settings"
+        "link_to": "lhdn-dev-tools",
+        "label": "LHDN Developer Tools",
+        "icon": "tool"
       }
     ],
     "links": [],

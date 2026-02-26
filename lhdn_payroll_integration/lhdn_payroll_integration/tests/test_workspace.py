@@ -77,6 +77,6 @@ class TestLHDNPayrollWorkspaceFixture(FrappeTestCase):
         ws = self._find_workspace(data)
         shortcuts = ws.get("shortcuts") or []
         labels = {s.get("label") or s.get("link_to") or "" for s in shortcuts}
-        required = {"Salary Slip", "Expense Claim", "LHDN Payroll Compliance", "Background Jobs"}
+        required = {"Salary Slip", "Expense Claim", "LHDN Payroll Compliance", "LHDN Developer Tools"}
         for req in required:
             self.assertIn(req, labels, f"Missing shortcut: {req}")

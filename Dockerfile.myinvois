@@ -22,16 +22,27 @@ RUN /home/frappe/frappe-bench/env/bin/pip install --quiet --no-deps -e apps/lhdn
 # qrcode is used by lhdn_payroll_integration/utils/qr_utils.py at import time
 RUN /home/frappe/frappe-bench/env/bin/pip install --quiet "qrcode[pil]"
 
+# Clone and install Frappe Assistant Core (MCP server for LLM ↔ ERPNext integration)
+RUN git clone --depth 1 --branch main https://github.com/buildswithpaul/Frappe_Assistant_Core apps/frappe_assistant_core
+RUN /home/frappe/frappe-bench/env/bin/pip install --quiet -e apps/frappe_assistant_core
+# Restore frappe-pinned versions overridden by frappe_assistant_core's requirements
+RUN /home/frappe/frappe-bench/env/bin/pip install --quiet "beautifulsoup4~=4.13.5" "chardet~=5.2.0"
+
 # Create assets symlinks so /assets/<app>/ is served by nginx
 RUN ln -sf /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public \
     /home/frappe/frappe-bench/sites/assets/myinvois_erpgulf \
  && ln -sf /home/frappe/frappe-bench/apps/hrms/hrms/public \
     /home/frappe/frappe-bench/sites/assets/hrms \
  && ln -sf /home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/public \
-    /home/frappe/frappe-bench/sites/assets/lhdn_payroll_integration
+    /home/frappe/frappe-bench/sites/assets/lhdn_payroll_integration \
+ && ln -sf /home/frappe/frappe-bench/apps/frappe_assistant_core/frappe_assistant_core/public \
+    /home/frappe/frappe-bench/sites/assets/frappe_assistant_core
 
 # Demo login: patch login page + expose test data seed as importable module
 COPY frappe_patches/login.html apps/frappe/frappe/www/login.html
 COPY frappe_patches/login.js apps/frappe/frappe/templates/includes/login/login.js
 COPY frappe_patches/login.py apps/frappe/frappe/www/login.py
 COPY setup_test_data.py apps/frappe/frappe/setup_test_data.py
+
+# Prisma logo — placed at /tmp so setup_test_data.setup_prisma_branding() can find it
+COPY prisma_logo.png /tmp/prisma_logo.png

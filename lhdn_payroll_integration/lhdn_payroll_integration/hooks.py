@@ -57,4 +57,5 @@ fixtures = [
 	{"dt": "Custom Field", "filters": [["module", "=", "LHDN Payroll Integration"]]},
 	{"dt": "LHDN MSIC Code"},
 	{"dt": "Salary Component", "filters": [["name", "in", ["Basic Salary", "Monthly Tax Deduction", "EPF Employee", "SOCSO Employee", "EPF - Employer", "SOCSO - Employer"]]]},
+	{"dt": "Workspace", "filters": [["name", "=", "LHDN Payroll"]]},
 ]
