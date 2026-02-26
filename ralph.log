@@ -912,3 +912,68 @@ warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the nex
 [2m[2:33][0m [37mNow commit the changes.[0m
 [2m[2:33][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
 [2m[2:41][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:49][0m [37mUS-008 is complete. Let me verify and summarize:  **Iteration 17 — US-008: Implement on_submit hooks...[0m
+
+[32m[1m✓ Claude finished[0m [2m(20 tool calls in 2:49)[0m
+
+[2mStream ended (20 tool calls, 2:51 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 2m
+
+  [done] Story completed: Implement on_submit hooks with async enqueue
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... 
+  │     Module: lhdn_payroll_integration.tests.test_submission_hooks
+  │     Type:   IMPL
+  │     Result: ✓ PASS (green phase confirmed)
+  └────────────────────────────────────────────┘
+  ✓ All quality gates passed!
+warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the next time Git touches it
+[feature/lhdn-payroll-integration c285445] feat: US-008 - Implement on_submit hooks with async enqueue
+ 1 file changed, 85 insertions(+)
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 11/60
+  Progress: [███████████░░░░░░░░░░░░░░░░░░░] 16/43 (37%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       UT-009
+  │ Title:    Write failing tests for Salary Slip XML payload builder
+  │ Priority: 17
+  │ Deps:     US-004
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for UT-009...
+  ─────── Claude Output Start ──────────
+[2m[0:42][0m [37mI'll start by reading the current state of the project.[0m
+[2m[0:43][0m 📖 [36mRead[0m [2mprogress.txt[0m
+[2m[0:43][0m 📖 [36mRead[0m [2mprd.json[0m
+[2m[0:48][0m [37mThe prd.json is too large. Let me get the next story to implement.[0m
+[2m[0:50][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:05][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:10][0m [37mGood. **UT-009** is the next story — its only dependency (US-004) passes. Let me read the full story...[0m
+[2m[1:10][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:15][0m [37mNow let me also read the US-009 acceptance criteria to ensure every criterion has a corresponding te...[0m
+[2m[1:16][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:20][0m [37mGood. Now let me check the Docker container is running and read the existing test files for patterns...[0m
+[2m[1:21][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
+[2m[1:22][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:27][0m [37mLet me read an existing test file for patterns, specifically the exemption filter test since it also...[0m
+[2m[1:28][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:33][0m [37mGood, I have the patterns. Now let me write the test file. Based on the PRD:  - **TestSalarySlipXMLB...[0m
+[2m[2:15][0m ✏️ [36mWrite[0m [2mtest_payload_builder.py[0m
+[2m[2:19][0m [37mNow let me copy it to the container and run the tests to confirm the red phase (ImportError).[0m
+[2m[2:20][0m 💻 [36mBash[0m [2mdocker cp "C:\Users\Jyue\Documents\1-projects\Projects\prism...[0m
+[2m[2:28][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[2:34][0m [37mRed phase confirmed — `ModuleNotFoundError: No module named 'lhdn_payroll_integration.services.paylo...[0m
+[2m[2:36][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:40][0m 📖 [36mRead[0m [2mprogress.txt[0m
+[2m[2:55][0m 🔧 [36mEdit[0m [2mprogress.txt[0m
+[2m[2:58][0m [37mNow commit.[0m
+[2m[2:59][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:05][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
