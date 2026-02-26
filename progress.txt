@@ -2456,3 +2456,38 @@ Completed: Sync comprehensive salary components as lhdn_payroll_integration fixt
 ### Patterns discovered
 - Print format files go in: `print_format/lhdn_salary_slip_einvoice/lhdn_salary_slip_einvoice.{json,html}`
 - Tests read files directly (no Frappe DB required) — very fast (0.007s)
+
+## Iteration N — UT-038: Write failing tests for LHDN Salary Slip print format
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_print_format`
+**Result:** FAIL — 8/8 failures (print_format dir did not exist)
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_print_format.py`
+
+### Tests (8 total)
+- TestPrintFormatFileExists: test_print_format_json_exists, test_print_format_json_doc_type, test_print_format_json_not_disabled, test_print_format_html_exists
+- TestPrintFormatHTMLContent: test_html_contains_lhdn_uuid, test_html_contains_lhdn_qr_code, test_html_contains_lhdn_status_check, test_html_contains_compliant_badge
+
+### Patterns discovered
+- Print format tests read files directly from disk (no DB lookup needed)
+- PRINT_FORMAT_DIR built relative to __file__ using os.path.dirname chain
+
+## Iteration N+1 — US-038: Create LHDN-compliant Salary Slip print format
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_print_format`
+**Result:** PASS — 8/8 tests pass, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/print_format/lhdn_salary_slip_einvoice/lhdn_salary_slip_einvoice.json` — doc_type=Salary Slip, module=LHDN Payroll Integration, disabled=0, print_format_type=Jinja
+- `lhdn_payroll_integration/print_format/lhdn_salary_slip_einvoice/lhdn_salary_slip_einvoice.html` — Jinja2 template with earnings/deductions table, conditional LHDN badge (Valid), custom_lhdn_uuid, custom_lhdn_qr_code, custom_lhdn_status
+
+### Patterns discovered
+- Frappe print format JSON needs: doc_type, module, disabled=0, custom_format=1, print_format_type=Jinja, standard=Yes
+- HTML uses Jinja2: frappe.utils.fmt_money() for currency formatting, {% if %} for conditional badge
+- No migrate needed — print format loaded from filesystem fixture
+
