@@ -2359,3 +2359,21 @@ Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → docum
 1. TestResubmitPermission — permission check tests
 2. TestResubmitStatusPrecondition — validates Invalid/Submitted status precondition
 3. TestResubmitStatusReset — verifies status reset to Pending + enqueue call
+
+## Iteration N — UT-035: Write failing tests for LHDN Payroll Compliance report
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_compliance_report`
+**Result:** FAIL — ModuleNotFoundError: No module named 'lhdn_payroll_integration.lhdn_payroll_integration.report'
+
+### Files created/modified
+- `lhdn_payroll_integration/tests/test_compliance_report.py` — 2 test classes, 7 test methods
+
+### Test methods
+- TestComplianceReportColumns: test_get_columns_returns_list, test_get_columns_minimum_count, test_get_columns_required_fieldnames
+- TestComplianceReportData: test_get_data_returns_list, test_get_data_rows_have_required_keys, test_get_data_document_type_is_salary_slip
+
+### Required fieldnames tested
+document_type, document_name, employee, period, amount, lhdn_status, uuid, submitted_at, validated_at
+
