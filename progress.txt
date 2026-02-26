@@ -2511,4 +2511,23 @@ Completed: Sync comprehensive salary components as lhdn_payroll_integration fixt
 ## Iteration 2 - Thu, Feb 26, 2026  8:29:15 PM
 Completed: Create LHDN Payroll workspace page with curated shortcuts (ID: US-037) in 4m
 
+## Iteration — US-022: BLOCKED (Attempt 6) — LHDN Sandbox Credentials Still Placeholder
+
+**Type:** INTG
+**Status:** BLOCKED — cannot proceed without real LHDN sandbox credentials
+
+**PRD Status:** 75/76 stories complete (98.7%). US-022 is the ONLY remaining story.
+All 19 dependencies of US-022 are satisfied (passes=true).
+
+**Blocker:** Company "Arising Packaging" custom_client_id / custom_client_secret are placeholder
+values from setup_test_data.py. Real sandbox credentials from LHDN developer portal are required.
+
+### To complete US-022
+1. Register at https://sdk.myinvois.hasil.gov.my/ for sandbox access
+2. Obtain real client_id + client_secret
+3. Update Company "Arising Packaging" in ERPNext (http://localhost:8080) under LHDN Malaysia Setup tab
+4. Re-run Ralph to execute the 5 LHDN integration test scenarios (T-01 to T-05)
+
+### EXIT REASON
+Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → document and EXIT"
 
