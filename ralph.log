@@ -239,3 +239,96 @@ warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the nex
 [2m[2:14][0m 🔧 [36mEdit[0m [2mprogress.txt[0m
 [2m[2:17][0m [37mNow commit.[0m
 [2m[2:20][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[2:30][0m [37m**UT-002 complete.**   ## Summary  **Story:** UT-002 — Write failing tests for Employee custom field...[0m
+
+[32m[1m✓ Claude finished[0m [2m(15 tool calls in 2:30)[0m
+
+[2mStream ended (15 tool calls, 2:32 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 2m
+
+  [done] Story completed: Write failing tests for Employee custom fields
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... 
+  │     Module: lhdn_payroll_integration.tests.test_custom_fields
+  │     Type:   TEST
+  │     Result: ✓ FAIL (red phase confirmed — expected for UT)
+  └────────────────────────────────────────────┘
+  ✓ All quality gates passed!
+warning: in the working copy of 'ralph.log', LF will be replaced by CRLF the next time Git touches it
+[feature/lhdn-payroll-integration b3ef1bb] feat: UT-002 - Write failing tests for Employee custom fields
+ 1 file changed, 63 insertions(+)
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 4/60
+  Progress: [██░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 3/43 (6%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       US-002
+  │ Title:    Add custom fields to Employee DocType
+  │ Priority: 4
+  │ Deps:     UT-002, US-001
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for US-002...
+  ─────── Claude Output Start ──────────
+[2m[0:39][0m [37mI'll start by reading the context files to understand where we are.[0m
+[2m[0:40][0m 📖 [36mRead[0m [2mprogress.txt[0m
+[2m[0:40][0m 📖 [36mRead[0m [2mprd.json[0m
+[2m[0:46][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:03][0m [37mNext story is **US-002** (priority 4, IMPL) — "Add custom fields to Employee DocType". Dependencies ...[0m
+[2m[1:04][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:05][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
+[2m[1:09][0m [37mDocker is running. Now let me read the existing test file to understand what the tests expect.[0m
+[2m[1:10][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 cat /home/frappe/frappe-ben...[0m
+[2m[1:11][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 cat /home/frappe/frappe-ben...[0m
+[2m[1:14][0m [37mRight, the MINGW path expansion issue. Need to use `bash -c` wrapper.[0m
+[2m[1:15][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:16][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:21][0m [37mGood. Now let me also check the existing install.py and the current fixture/directory structure.[0m
+[2m[1:22][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:23][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls -la /home/frapp...[0m
+[2m[1:53][0m [37mNow I understand everything. I need to: 1. Create `fixtures/custom_field.json` with 8 Custom Field r...[0m
+[2m[1:55][0m 💻 [36mBash[0m [2mmkdir -p /c/Users/Jyue/Documents/1-projects/Projects/prisma-...[0m
+[2m[2:07][0m ✏️ [36mWrite[0m [2mcustom_field.json[0m
+[2m[2:10][0m [37mNow copy the fixture file into the container and run migrate.[0m
+[2m[2:12][0m 💻 [36mBash[0m [2mdocker cp /c/Users/Jyue/Documents/1-projects/Projects/prisma...[0m
+[2m[2:17][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[2:21][0m [37mGood. Now run `bench migrate` to import the fixtures.[0m
+[2m[2:22][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[2:57][0m 💻 [36mBash[0m [2mtail -20 "C:\Users\Jyue\.claude\projects\C--Users-Jyue-Docum...[0m
+[2m[3:00][0m [37mMigration completed successfully. Now let's run the tests.[0m
+[2m[3:02][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[3:09][0m [37mAll 9 tests pass. TDD GREEN confirmed. Now let me update prd.json and progress.txt.[0m
+[2m[3:09][0m 📖 [36mRead[0m [2mprd.json[0m
+[2m[3:13][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:18][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:22][0m [37mNow update progress.txt.[0m
+[2m[3:22][0m 📖 [36mRead[0m [2mprogress.txt[0m
+
+  ╔══════════════════════════════════════════╗
+  ║   📊 15-MIN PROGRESS REPORT — 12:11  ║
+  ╠══════════════════════════════════════════╣
+  ║  Completed:  4 / 43 stories
+  ║  Remaining:  39 stories
+  ║
+  ║  Recently done:
+  ║    ✓ [US-001] Create custom app scaffold
+  ║    ✓ [UT-002] Write failing tests for Employee custom fields
+  ║    ✓ [US-002] Add custom fields to Employee DocType
+  ║
+  ║  Up next:
+  ║    → [UT-003] Write failing tests for Salary Component field
+  ║    → [US-003] Add custom field to Salary Component DocType
+  ║    → [UT-004] Write failing tests for Salary Slip custom fields
+  ╚══════════════════════════════════════════╝
+
+[2m[3:37][0m 🔧 [36mEdit[0m [2mprogress.txt[0m
+[2m[3:40][0m [37mNow commit.[0m
+[2m[3:41][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:49][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
