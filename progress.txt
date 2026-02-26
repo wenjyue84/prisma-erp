@@ -107,3 +107,43 @@ Completed: Create custom app scaffold (ID: US-001) in 4m
 ### Gotchas
 - None — straightforward red phase
 
+## Iteration 3 - Thu, Feb 26, 2026 12:08:21 PM
+Completed: Write failing tests for Employee custom fields (ID: UT-002) in 2m
+
+## Iteration 4 — US-002: Add custom fields to Employee DocType
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields`
+**Result:** PASS — 9/9 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `fixtures/custom_field.json` — 8 Custom Field records for Employee (LHDN Malaysia Setup section)
+
+### Fields added to Employee
+1. custom_lhdn_section (Section Break) — "LHDN Malaysia Setup"
+2. custom_requires_self_billed_invoice (Check, default 0) — master toggle
+3. custom_lhdn_tin (Data, mandatory_depends_on self-billed check)
+4. custom_id_type (Select: NRIC/Passport/BRN/Army ID)
+5. custom_id_value (Data, max 20 chars)
+6. custom_msic_code (Link to LHDN MSIC Code)
+7. custom_is_foreign_worker (Check, default 0)
+8. custom_bank_account_number (Data)
+
+### Actions taken
+1. Created fixtures/custom_field.json with all 8 Custom Field records
+2. All fields have module = "LHDN Payroll Integration" for fixture export
+3. Ran `bench --site frontend migrate` to import fixtures
+4. All 9 tests pass (TDD GREEN confirmed)
+
+### Patterns discovered
+- Frappe fixture files must be named after the doctype in snake_case (e.g. `custom_field.json` for "Custom Field")
+- `bench migrate` automatically imports fixtures defined in hooks.py — no need for custom install.py logic
+- Custom Field records use naming convention `DocType-fieldname` (e.g. `Employee-custom_lhdn_section`)
+
+### Gotchas
+- None — clean implementation, fixtures imported on first migrate
+
+## Iteration 4 - Thu, Feb 26, 2026
+Completed: Add custom fields to Employee DocType (ID: US-002)
+
