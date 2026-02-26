@@ -2434,3 +2434,25 @@ Completed: Sync comprehensive salary components as lhdn_payroll_integration fixt
 ### Gotchas
 - `bench sync-fixtures` and `bench load-fixtures` do NOT exist — use `bench execute frappe.utils.fixtures.sync_fixtures`
 - workspace.json was already in repo from previous session; only needed `type` field fix + fixture sync
+
+## Iteration — UT-038: Write failing tests for LHDN Salary Slip print format
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_print_format`
+**Result:** FAIL — 6/6 tests fail (print_format directory and files don't exist yet)
+
+### Files created/modified
+- `lhdn_payroll_integration/tests/test_print_format.py` — 6 tests checking JSON+HTML existence and content
+
+### Test methods (6 total)
+1. test_print_format_json_exists — FAIL (no JSON file)
+2. test_print_format_json_doc_type — FAIL (no JSON file)
+3. test_print_format_html_exists — FAIL (no HTML file)
+4. test_print_format_html_contains_uuid_field — FAIL (no HTML file)
+5. test_print_format_html_contains_qr_code_field — FAIL (no HTML file)
+6. test_print_format_html_has_lhdn_compliant_badge — FAIL (no HTML file)
+
+### Patterns discovered
+- Print format files go in: `print_format/lhdn_salary_slip_einvoice/lhdn_salary_slip_einvoice.{json,html}`
+- Tests read files directly (no Frappe DB required) — very fast (0.007s)
