@@ -176,3 +176,28 @@ Completed: Add custom fields to Employee DocType (ID: US-002) in 3m
 ## Iteration 5 - Wed, Feb 26, 2026
 Completed: Write failing tests for Salary Component field (ID: UT-003)
 
+## Iteration 6 — US-003: Add custom field to Salary Component DocType
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields`
+**Result:** PASS — 13/13 tests pass, 0 failures, 0 errors
+
+### Files modified
+- `fixtures/custom_field.json` — Added Salary Component-custom_lhdn_classification_code record
+- `tests/test_custom_fields.py` — Fixed test_field_persists_after_save to use full option value
+
+### Field added to Salary Component
+- custom_lhdn_classification_code (Select) — LHDN Classification Code
+  Options: (blank), 022 : Others, 024 : Private retirement scheme..., 027 : Reimbursement, 032 : Foreign income, 036 : Self-billed - Others, 037 : Self-billed - Monetary payment..., 040 : Voluntary contribution..., 044 : Vouchers/gift cards..., 045 : Self-billed - Non-monetary...
+
+### Patterns discovered
+- Frappe Select fields validate the FULL option string — you cannot save just "022", must use "022 : Others"
+- Fixture import via `bench migrate` handles upsert automatically — existing Custom Fields are updated, new ones created
+
+### Gotchas
+- test_field_persists_after_save initially failed because test used bare "022" instead of "022 : Others" — Frappe's _validate_selects enforces exact option match
+
+## Iteration 6 - Wed, Feb 26, 2026
+Completed: Add custom field to Salary Component DocType (ID: US-003)
+

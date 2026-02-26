@@ -1,0 +1,101 @@
+[
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_lhdn_section",
+    "dt": "Employee",
+    "fieldname": "custom_lhdn_section",
+    "fieldtype": "Section Break",
+    "label": "LHDN Malaysia Setup",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "company_email"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_requires_self_billed_invoice",
+    "dt": "Employee",
+    "fieldname": "custom_requires_self_billed_invoice",
+    "fieldtype": "Check",
+    "label": "Requires Self-Billed Invoice",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_section"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_lhdn_tin",
+    "dt": "Employee",
+    "fieldname": "custom_lhdn_tin",
+    "fieldtype": "Data",
+    "label": "LHDN TIN",
+    "mandatory_depends_on": "eval:doc.custom_requires_self_billed_invoice",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_requires_self_billed_invoice"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_id_type",
+    "dt": "Employee",
+    "fieldname": "custom_id_type",
+    "fieldtype": "Select",
+    "label": "ID Type",
+    "options": "NRIC\nPassport\nBusiness Registration Number\nArmy ID",
+    "mandatory_depends_on": "eval:doc.custom_requires_self_billed_invoice",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_tin"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_id_value",
+    "dt": "Employee",
+    "fieldname": "custom_id_value",
+    "fieldtype": "Data",
+    "label": "ID Value",
+    "length": 20,
+    "mandatory_depends_on": "eval:doc.custom_requires_self_billed_invoice",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_id_type"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_msic_code",
+    "dt": "Employee",
+    "fieldname": "custom_msic_code",
+    "fieldtype": "Link",
+    "label": "MSIC Code",
+    "options": "LHDN MSIC Code",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_id_value"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_is_foreign_worker",
+    "dt": "Employee",
+    "fieldname": "custom_is_foreign_worker",
+    "fieldtype": "Check",
+    "label": "Is Foreign Worker",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_msic_code"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_bank_account_number",
+    "dt": "Employee",
+    "fieldname": "custom_bank_account_number",
+    "fieldtype": "Data",
+    "label": "Bank Account Number",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_is_foreign_worker"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Component-custom_lhdn_classification_code",
+    "dt": "Salary Component",
+    "fieldname": "custom_lhdn_classification_code",
+    "fieldtype": "Select",
+    "label": "LHDN Classification Code",
+    "options": "\n022 : Others\n024 : Private retirement scheme or deferred annuity scheme\n027 : Reimbursement\n032 : Foreign income\n036 : Self-billed - Others\n037 : Self-billed - Monetary payment to agents, dealers or distributors\n040 : Voluntary contribution to approved provident fund\n044 : Vouchers, gift cards, loyalty points\n045 : Self-billed - Non-monetary payment to agents, dealers or distributors",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "type"
+  }
+]

@@ -170,7 +170,7 @@ class TestSalaryComponentCustomFields(FrappeTestCase):
 				"salary_component": "_Test LHDN Component",
 				"salary_component_abbr": "TLHDN",
 				"type": "Earning",
-				"custom_lhdn_classification_code": "022",
+				"custom_lhdn_classification_code": "022 : Others",
 			}
 		)
 		sc.insert(ignore_permissions=True)
@@ -180,6 +180,6 @@ class TestSalaryComponentCustomFields(FrappeTestCase):
 		reloaded = frappe.get_doc("Salary Component", sc.name)
 		self.assertEqual(
 			reloaded.custom_lhdn_classification_code,
-			"022",
+			"022 : Others",
 			"custom_lhdn_classification_code value did not persist after save",
 		)
