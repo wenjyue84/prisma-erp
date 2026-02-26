@@ -1128,3 +1128,29 @@ Completed: Write failing tests for monthly consolidation scheduler (ID: UT-018) 
 ### Patterns discovered
 - Tests patch `frappe` and `submission_service` at module level — implementation must use top-level imports for both
 - `HIGH_VALUE_THRESHOLD = 10000` constant for the RM 10,000 per-document threshold
+## Iteration 19 — US-018: Implement monthly consolidation scheduler
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation`
+**Result:** PASS — 6 tests, 0 failures, 0 errors
+
+### Files verified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/services/consolidation_service.py`
+- Local: `tmp_lhdn/services/consolidation_service.py`
+
+### Implementation details
+- Previous iteration (UT-018 RED phase) wrote failing tests; a prior GREEN implementation was already in place in tmp_lhdn/services/consolidation_service.py
+- Copied to container and all 6 tests passed immediately
+- `run_monthly_consolidation()` queries previous month pending docs, separates high-value (>RM 10,000) for individual submission, batches the rest
+- Uses `submission_service.process_salary_slip` / `process_expense_claim` for both individual and batch
+- Marks all processed docs with `custom_is_consolidated=1` via `frappe.db.set_value`
+
+### Patterns discovered
+- Implementation was already written during a previous session — just needed container sync and verification
+
+---
+
+## Iteration 1 - Thu, Feb 26, 2026  2:10:18 PM
+FAILED quality gates: Write failing tests for monthly consolidation scheduler (ID: UT-018) — attempt 1/3
+
