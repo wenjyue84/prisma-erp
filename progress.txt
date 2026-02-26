@@ -1666,3 +1666,27 @@ Completed: Add Malaysian state code to UBL address elements (ID: US-025)
 - Company doc has placeholder values (from test data seed), not real sandbox credentials
 - Cannot complete integration tests without real `custom_client_id` / `custom_client_secret`
 
+## Iteration 51 — UT-027: Write failing tests for 7-year LHDN audit retention locking
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retention`
+**Result:** FAIL — ModuleNotFoundError: No module named 'lhdn_payroll_integration.services.retention_service'
+
+### Files created
+- `lhdn_payroll_integration/tests/test_retention.py` — TestAuditRetention class with 5 test methods
+
+### Test methods (5 total)
+1. test_retention_date_set_on_submission — tests get_retention_date returns non-None for submitted doc
+2. test_retention_date_is_7_years_from_submission — tests get_retention_date returns date 7 years after submission
+3. test_archive_job_marks_old_records — tests run_retention_archival sets custom_lhdn_archived=1 for 7+ year old records
+4. test_archived_record_cannot_be_amended — tests check_retention_lock raises ValidationError for archived docs
+5. test_records_within_7_years_not_archived — tests run_retention_archival skips recent records
+
+### Patterns discovered
+- Test imports `run_retention_archival`, `get_retention_date`, `check_retention_lock` from retention_service — all will be needed in US-027
+- Uses @patch on frappe module within retention_service to mock db calls and now_datetime
+
+### Gotchas
+- None — test file was pre-existing in tmp_lhdn/tests/, just needed docker cp and verification
+
