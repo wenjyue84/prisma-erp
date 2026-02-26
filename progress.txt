@@ -1489,3 +1489,34 @@ FAILED quality gates: Write failing tests for monthly consolidation scheduler (I
 - Obtain real LHDN MyInvois sandbox credentials (client_id + client_secret)
 - Configure on Company "Arising Packaging" doc: custom_client_id, custom_client_secret
 - Re-run this story after credentials are configured
+## Iteration 36 - Thu, Feb 26, 2026  2:45:16 PM
+Completed: Implement environment toggle (sandbox / production) (ID: US-020) in 13m
+
+
+## Iteration 41 — UT-025: Write failing tests for Malaysian state code in UBL address elements
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** FAIL — 6 new test failures, 23 existing tests pass
+
+### Files modified
+- `tmp_lhdn/tests/test_payload_builder.py` — Added class TestStateCodeInUBL with 6 test methods
+- Container: `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_payload_builder.py`
+
+### Test methods (6 total — all FAIL as expected)
+1. test_supplier_address_has_country_subentity_code — FAIL (no PostalAddress in XML)
+2. test_buyer_address_has_country_subentity_code — FAIL (no PostalAddress in XML)
+3. test_state_code_01_johor_is_valid — FAIL (no CountrySubentityCode in XML)
+4. test_state_code_17_not_applicable_for_consolidated — FAIL (no PostalAddress in consolidated XML)
+5. test_missing_state_code_raises_validation_error — FAIL (ValidationError not raised)
+6. test_foreign_employee_uses_state_code_17 — FAIL (no CountrySubentityCode in XML)
+
+### Why tests fail
+- Current `_build_invoice_skeleton()` creates no `PostalAddress` or `CountrySubentityCode` elements
+- No validation for missing `custom_state_code` — code doesn't check or throw
+- `build_consolidated_xml()` also has no address block with state codes
+
+### Notes
+- US-022 (INTG) was skipped — LHDN sandbox credentials are placeholders (invalid_client)
+- This is the first eligible non-INTG story after US-022

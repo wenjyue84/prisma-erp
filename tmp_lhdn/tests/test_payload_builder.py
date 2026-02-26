@@ -757,3 +757,247 @@ class TestConsolidatedXMLBuilder(FrappeTestCase):
         customer_xml = ET.tostring(customer_party, encoding="unicode")
         self.assertIn("NA", customer_xml,
                        "Buyer contact 'NA' not found in AccountingCustomerParty")
+
+
+class TestStateCodeInUBL(FrappeTestCase):
+    """Test Malaysian state code (CountrySubentityCode) in UBL address elements.
+
+    LHDN v1.1 mandates cbc:CountrySubentityCode in both supplier (employee)
+    and buyer (company) PostalAddress blocks. Valid codes: 01-17.
+    Foreign employees and consolidated submissions use '17' (Not Applicable).
+    """
+
+    VALID_STATE_CODES = [
+        "01", "02", "03", "04", "05", "06", "07", "08",
+        "09", "10", "11", "12", "13", "14", "15", "16", "17",
+    ]
+
+    def _make_salary_slip_doc(self):
+        """Create a mock Salary Slip doc."""
+        doc = MagicMock()
+        doc.name = "SAL-SLP-00001"
+        doc.employee = "HR-EMP-00001"
+        doc.employee_name = "Ahmad bin Abdullah"
+        doc.net_pay = 5000
+        doc.company = "Arising Packaging"
+        doc.posting_date = "2026-01-31"
+
+        earning = MagicMock()
+        earning.salary_component = "Basic Salary"
+        earning.amount = 5000
+        earning.custom_lhdn_classification_code = "022 : Others"
+        doc.earnings = [earning]
+        doc.deductions = []
+
+        return doc
+
+    def _make_employee_doc(self, state_code="10", is_foreign=False):
+        """Create a mock Employee doc with custom_state_code."""
+        emp = MagicMock()
+        emp.custom_lhdn_tin = "IG12345678901"
+        emp.custom_id_type = "NRIC"
+        emp.custom_id_value = "901201145678"
+        emp.employee_name = "Ahmad bin Abdullah"
+        emp.custom_is_foreign_worker = 1 if is_foreign else 0
+        emp.custom_state_code = state_code
+        return emp
+
+    def _make_company_doc(self, state_code="14"):
+        """Create a mock Company doc with custom_state_code."""
+        company = MagicMock()
+        company.custom_company_tin_number = "C12345678901"
+        company.name = "Arising Packaging"
+        company.company_name = "Arising Packaging Sdn Bhd"
+        company.abbr = "AP"
+        company.custom_state_code = state_code
+        return company
+
+    def _make_salary_slip_for_consol(self, name, net_pay=5000):
+        """Create a mock Salary Slip doc for consolidated submission."""
+        doc = MagicMock()
+        doc.name = name
+        doc.doctype = "Salary Slip"
+        doc.employee = "HR-EMP-00001"
+        doc.employee_name = "Ahmad bin Abdullah"
+        doc.net_pay = net_pay
+        doc.company = "Arising Packaging"
+        doc.posting_date = "2026-01-15"
+        doc.end_date = "2026-01-31"
+
+        earning = MagicMock()
+        earning.salary_component = "Basic Salary"
+        earning.amount = net_pay
+        earning.custom_lhdn_classification_code = "022 : Others"
+        doc.earnings = [earning]
+        doc.deductions = []
+
+        return doc
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_supplier_address_has_country_subentity_code(self, mock_frappe):
+        """AccountingSupplierParty PostalAddress must include cbc:CountrySubentityCode."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee_doc(state_code="10")  # Selangor
+        company = self._make_company_doc(state_code="14")
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-00001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-00001")
+        root = ET.fromstring(xml_string)
+
+        # Find CountrySubentityCode inside AccountingSupplierParty > Party > PostalAddress
+        supplier_state = root.find(
+            f".//{{{CAC_NS}}}AccountingSupplierParty"
+            f"//{{{CAC_NS}}}PostalAddress"
+            f"/{{{CBC_NS}}}CountrySubentityCode"
+        )
+        self.assertIsNotNone(
+            supplier_state,
+            "CountrySubentityCode not found in AccountingSupplierParty PostalAddress"
+        )
+        self.assertEqual(supplier_state.text, "10",
+                         f"Supplier state code is '{supplier_state.text}', expected '10'")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_buyer_address_has_country_subentity_code(self, mock_frappe):
+        """AccountingCustomerParty PostalAddress must include cbc:CountrySubentityCode."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee_doc(state_code="10")
+        company = self._make_company_doc(state_code="14")  # W.P. Kuala Lumpur
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-00001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-00001")
+        root = ET.fromstring(xml_string)
+
+        # Find CountrySubentityCode inside AccountingCustomerParty > Party > PostalAddress
+        buyer_state = root.find(
+            f".//{{{CAC_NS}}}AccountingCustomerParty"
+            f"//{{{CAC_NS}}}PostalAddress"
+            f"/{{{CBC_NS}}}CountrySubentityCode"
+        )
+        self.assertIsNotNone(
+            buyer_state,
+            "CountrySubentityCode not found in AccountingCustomerParty PostalAddress"
+        )
+        self.assertEqual(buyer_state.text, "14",
+                         f"Buyer state code is '{buyer_state.text}', expected '14'")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_state_code_01_johor_is_valid(self, mock_frappe):
+        """State code '01' (Johor) is a valid CountrySubentityCode value."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee_doc(state_code="01")  # Johor
+        company = self._make_company_doc(state_code="01")
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-00001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-00001")
+        root = ET.fromstring(xml_string)
+
+        # Both supplier and buyer should have state code '01'
+        supplier_state = root.find(
+            f".//{{{CAC_NS}}}AccountingSupplierParty"
+            f"//{{{CAC_NS}}}PostalAddress"
+            f"/{{{CBC_NS}}}CountrySubentityCode"
+        )
+        self.assertIsNotNone(supplier_state,
+                             "CountrySubentityCode not found in supplier address")
+        self.assertEqual(supplier_state.text, "01",
+                         f"Supplier state code '{supplier_state.text}' != '01' (Johor)")
+        self.assertIn(supplier_state.text, self.VALID_STATE_CODES,
+                      f"State code '{supplier_state.text}' not in valid Malaysian codes")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_state_code_17_not_applicable_for_consolidated(self, mock_frappe):
+        """Consolidated XML uses state code '17' (Not Applicable) for buyer address."""
+        doc1 = self._make_salary_slip_for_consol("SS-001", net_pay=3000)
+        company = self._make_company_doc(state_code="14")
+
+        emp = self._make_employee_doc(state_code="10")
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SS-001"): doc1,
+            ("Company", "Arising Packaging"): company,
+            ("Employee", "HR-EMP-00001"): emp,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_consolidated_xml(["SS-001"], "2026-01")
+        root = ET.fromstring(xml_string)
+
+        # Consolidated buyer address should use '17' (Not Applicable)
+        buyer_state = root.find(
+            f".//{{{CAC_NS}}}AccountingCustomerParty"
+            f"//{{{CAC_NS}}}PostalAddress"
+            f"/{{{CBC_NS}}}CountrySubentityCode"
+        )
+        self.assertIsNotNone(
+            buyer_state,
+            "CountrySubentityCode not found in consolidated buyer address"
+        )
+        self.assertEqual(buyer_state.text, "17",
+                         f"Consolidated buyer state code is '{buyer_state.text}', "
+                         f"expected '17' (Not Applicable)")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_missing_state_code_raises_validation_error(self, mock_frappe):
+        """Missing custom_state_code on Employee raises frappe.ValidationError."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee_doc(state_code=None)  # No state code
+        company = self._make_company_doc(state_code="14")
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-00001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        # Configure mock to raise ValidationError when frappe.throw is called
+        mock_frappe.throw.side_effect = frappe.ValidationError
+
+        with self.assertRaises(frappe.ValidationError):
+            build_salary_slip_xml("SAL-SLP-00001")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_foreign_employee_uses_state_code_17(self, mock_frappe):
+        """Foreign worker (custom_is_foreign_worker=1) uses state code '17'
+        regardless of custom_state_code value."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee_doc(state_code="10", is_foreign=True)
+        emp.custom_lhdn_tin = "EI00000000010"  # Foreign worker TIN
+        company = self._make_company_doc(state_code="14")
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-00001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-00001")
+        root = ET.fromstring(xml_string)
+
+        # Foreign employee supplier address should use '17'
+        supplier_state = root.find(
+            f".//{{{CAC_NS}}}AccountingSupplierParty"
+            f"//{{{CAC_NS}}}PostalAddress"
+            f"/{{{CBC_NS}}}CountrySubentityCode"
+        )
+        self.assertIsNotNone(
+            supplier_state,
+            "CountrySubentityCode not found in foreign employee supplier address"
+        )
+        self.assertEqual(supplier_state.text, "17",
+                         f"Foreign employee state code is '{supplier_state.text}', "
+                         f"expected '17' (Not Applicable)")
