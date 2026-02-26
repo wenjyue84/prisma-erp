@@ -183,3 +183,92 @@ class TestSalaryComponentCustomFields(FrappeTestCase):
 			"022 : Others",
 			"custom_lhdn_classification_code value did not persist after save",
 		)
+
+
+class TestSalarySlipCustomFields(FrappeTestCase):
+	"""Tests for Salary Slip LHDN custom fields (TDD red phase).
+
+	These tests verify that the 10 custom fields for LHDN e-Invoice
+	status tracking are present on the Salary Slip DocType under the
+	'LHDN e-Invoice Status' section. All response fields must be read_only.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.meta = frappe.get_meta("Salary Slip")
+
+	def test_lhdn_status_section_exists(self):
+		"""LHDN e-Invoice Status section break must exist on Salary Slip."""
+		field = self.meta.get_field("custom_lhdn_section")
+		self.assertIsNotNone(field, "custom_lhdn_section field missing from Salary Slip")
+		self.assertEqual(field.fieldtype, "Section Break")
+
+	def test_lhdn_status_options(self):
+		"""custom_lhdn_status must be a Select with correct status options."""
+		field = self.meta.get_field("custom_lhdn_status")
+		self.assertIsNotNone(field, "custom_lhdn_status field missing from Salary Slip")
+		self.assertEqual(field.fieldtype, "Select")
+		options = (field.options or "").split("\n")
+		for expected in ["Pending", "Submitted", "Valid", "Invalid", "Exempt", "Cancelled"]:
+			self.assertIn(expected, options, f"Option '{expected}' missing from custom_lhdn_status")
+		# Status field should be read_only (set by background worker only)
+		self.assertEqual(int(field.read_only or 0), 1, "custom_lhdn_status should be read_only")
+
+	def test_uuid_is_read_only(self):
+		"""custom_lhdn_uuid must be a Data field and read_only."""
+		field = self.meta.get_field("custom_lhdn_uuid")
+		self.assertIsNotNone(field, "custom_lhdn_uuid field missing from Salary Slip")
+		self.assertEqual(field.fieldtype, "Data")
+		self.assertEqual(int(field.read_only or 0), 1, "custom_lhdn_uuid should be read_only")
+
+	def test_submission_datetime_is_datetime_field(self):
+		"""custom_lhdn_submission_datetime must be a Datetime field and read_only."""
+		field = self.meta.get_field("custom_lhdn_submission_datetime")
+		self.assertIsNotNone(field, "custom_lhdn_submission_datetime field missing from Salary Slip")
+		self.assertEqual(field.fieldtype, "Datetime")
+		self.assertEqual(int(field.read_only or 0), 1, "custom_lhdn_submission_datetime should be read_only")
+
+	def test_validated_datetime_is_datetime_field(self):
+		"""custom_lhdn_validated_datetime must be a Datetime field and read_only."""
+		field = self.meta.get_field("custom_lhdn_validated_datetime")
+		self.assertIsNotNone(field, "custom_lhdn_validated_datetime field missing from Salary Slip")
+		self.assertEqual(field.fieldtype, "Datetime")
+		self.assertEqual(int(field.read_only or 0), 1, "custom_lhdn_validated_datetime should be read_only")
+
+	def test_retry_count_defaults_to_zero(self):
+		"""custom_retry_count must be an Int field, read_only, default 0."""
+		field = self.meta.get_field("custom_retry_count")
+		self.assertIsNotNone(field, "custom_retry_count field missing from Salary Slip")
+		self.assertEqual(field.fieldtype, "Int")
+		self.assertEqual(int(field.read_only or 0), 1, "custom_retry_count should be read_only")
+		self.assertEqual(str(field.default or "0"), "0", "custom_retry_count should default to 0")
+
+	def test_is_consolidated_defaults_to_zero(self):
+		"""custom_is_consolidated must be a Check field, read_only, default 0."""
+		field = self.meta.get_field("custom_is_consolidated")
+		self.assertIsNotNone(field, "custom_is_consolidated field missing from Salary Slip")
+		self.assertEqual(field.fieldtype, "Check")
+		self.assertEqual(int(field.read_only or 0), 1, "custom_is_consolidated should be read_only")
+		self.assertEqual(str(field.default or "0"), "0", "custom_is_consolidated should default to 0")
+
+	def test_qr_code_is_read_only(self):
+		"""custom_lhdn_qr_code must be an HTML field and read_only."""
+		field = self.meta.get_field("custom_lhdn_qr_code")
+		self.assertIsNotNone(field, "custom_lhdn_qr_code field missing from Salary Slip")
+		self.assertEqual(field.fieldtype, "HTML")
+		self.assertEqual(int(field.read_only or 0), 1, "custom_lhdn_qr_code should be read_only")
+
+	def test_qr_url_is_read_only(self):
+		"""custom_lhdn_qr_url must be a Data field and read_only."""
+		field = self.meta.get_field("custom_lhdn_qr_url")
+		self.assertIsNotNone(field, "custom_lhdn_qr_url field missing from Salary Slip")
+		self.assertEqual(field.fieldtype, "Data")
+		self.assertEqual(int(field.read_only or 0), 1, "custom_lhdn_qr_url should be read_only")
+
+	def test_error_log_is_read_only(self):
+		"""custom_error_log must be a Text Editor field and read_only."""
+		field = self.meta.get_field("custom_error_log")
+		self.assertIsNotNone(field, "custom_error_log field missing from Salary Slip")
+		self.assertEqual(field.fieldtype, "Text Editor")
+		self.assertEqual(int(field.read_only or 0), 1, "custom_error_log should be read_only")

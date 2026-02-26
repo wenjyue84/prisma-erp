@@ -201,3 +201,31 @@ Completed: Write failing tests for Salary Component field (ID: UT-003)
 ## Iteration 6 - Wed, Feb 26, 2026
 Completed: Add custom field to Salary Component DocType (ID: US-003)
 
+## Iteration 7 — UT-004: Write failing tests for Salary Slip custom fields
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields`
+**Result:** FAIL — 10 new Salary Slip tests fail, 13 existing tests pass
+
+### Files modified
+- `tests/test_custom_fields.py` — Added class TestSalarySlipCustomFields
+
+### Test methods added (10 total)
+1. test_lhdn_status_section_exists — FAIL (custom_lhdn_section missing from Salary Slip)
+2. test_lhdn_status_options — FAIL (custom_lhdn_status missing)
+3. test_uuid_is_read_only — FAIL (custom_lhdn_uuid missing)
+4. test_submission_datetime_is_datetime_field — FAIL (missing)
+5. test_validated_datetime_is_datetime_field — FAIL (missing)
+6. test_retry_count_defaults_to_zero — FAIL (missing)
+7. test_is_consolidated_defaults_to_zero — FAIL (missing)
+8. test_qr_code_is_read_only — FAIL (missing)
+9. test_qr_url_is_read_only — FAIL (missing)
+10. test_error_log_is_read_only — FAIL (missing)
+
+### Patterns discovered
+- Salary Slip section fieldname uses same convention as Employee: custom_lhdn_section (will need distinct name in fixture to avoid collision)
+
+## Iteration 7 - Wed, Feb 26, 2026
+Completed: Write failing tests for Salary Slip custom fields (ID: UT-004)
+
