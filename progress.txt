@@ -147,3 +147,32 @@ Completed: Write failing tests for Employee custom fields (ID: UT-002) in 2m
 ## Iteration 4 - Thu, Feb 26, 2026
 Completed: Add custom fields to Employee DocType (ID: US-002)
 
+## Iteration 4 - Thu, Feb 26, 2026 12:12:23 PM
+Completed: Add custom fields to Employee DocType (ID: US-002) in 3m
+
+## Iteration 5 — UT-003: Write failing tests for Salary Component field
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields`
+**Result:** FAIL — 4 new Salary Component tests fail (3 failures, 1 error), 9 Employee tests pass
+
+### Files modified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_custom_fields.py` — Added class TestSalaryComponentCustomFields
+
+### Test methods added (4 total)
+1. test_lhdn_classification_code_field_exists — FAIL (field missing from Salary Component)
+2. test_classification_code_options_contain_022 — FAIL (field missing)
+3. test_field_is_optional — FAIL (field missing)
+4. test_field_persists_after_save — ERROR (AttributeError: no custom_lhdn_classification_code attribute)
+
+### Patterns discovered
+- Multiple test classes in one module file work correctly — bench discovers and runs all of them
+- Frappe ignores unknown fields in doc dict on insert (no error), but the attribute doesn't exist on reload → AttributeError
+
+### Gotchas
+- None — clean red phase
+
+## Iteration 5 - Wed, Feb 26, 2026
+Completed: Write failing tests for Salary Component field (ID: UT-003)
+
