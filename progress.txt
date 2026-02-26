@@ -2616,3 +2616,6 @@ Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → docum
 - The Company "Arising Packaging" credentials are still simulated (LHDN returns 400 invalid_client)
 - T-02 to T-05 use mocked HTTP calls (not real LHDN sandbox) — test coverage is via behavior verification
 - To enable live LHDN calls: register at https://sdk.myinvois.hasil.gov.my/ and update Company doc
+## Iteration 6 - Thu, Feb 26, 2026  8:50:28 PM
+Completed: All 5 mandatory LHDN integration test scenarios pass in sandbox (ID: US-022) in 12m
+
