@@ -855,3 +855,33 @@ Completed: Write failing tests for status polling scheduler (ID: UT-013) in 3m
 ### Gotchas
 - None — clean green phase on first attempt
 
+## Iteration 20 - Thu, Feb 26, 2026  1:33:16 PM
+Completed: Implement hourly status polling scheduler (ID: US-013) in 3m
+
+## Iteration 28 — UT-014: Write failing tests for Status 3 error log parser
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_error_parser`
+**Result:** FAIL — ImportError: cannot import name '_format_error_log' from status_poller
+
+### Files created
+- `lhdn_payroll_integration/tests/test_error_parser.py` — TestErrorLogParser class with 5 test methods
+
+### Test methods (5 total)
+1. test_format_error_log_with_two_errors_returns_two_lines — Tests 2 validation errors produce 2 [CODE] lines
+2. test_raw_json_appended_after_formatted_lines — Tests raw JSON dump after separator
+3. test_empty_errors_array_returns_default_message — Tests empty validationSteps returns default message
+4. test_error_log_on_rejected_slip_contains_readable_text — Tests _format_rejection_errors on 202 rejection
+5. test_error_format_includes_code_and_field_name — Tests [CF204] SupplierTIN: message format
+
+### Imports that fail (red phase)
+- `from lhdn_payroll_integration.services.status_poller import _format_error_log` — function doesn't exist yet
+- `from lhdn_payroll_integration.services.submission_service import _format_rejection_errors` — function doesn't exist yet
+
+### Patterns discovered
+- Both functions parse different LHDN error response shapes (status_poller: validationSteps, submission_service: rejection details)
+
+### Gotchas
+- None — clean red phase, ImportError as expected
+
