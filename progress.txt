@@ -1468,3 +1468,24 @@ FAILED quality gates: Implement environment toggle (sandbox / production) (ID: U
 - If past deadline: frappe.log_error for audit trail, then frappe.throw(ValidationError)
 - date.fromisoformat(str(today)) converts mocked frappe.utils.today() string to date for comparison
 
+## Iteration 3 - Thu, Feb 26, 2026  2:41:51 PM
+FAILED quality gates: Write failing tests for monthly consolidation scheduler (ID: UT-018) — attempt 2/3
+
+
+## Iteration 40 — US-022: All 5 mandatory LHDN integration test scenarios pass in sandbox
+
+**Type:** INTG
+**Status:** BLOCKED — Missing real LHDN sandbox credentials
+**Result:** SKIPPED
+
+### Details
+- Tested credentials on Company "Arising Packaging": client_id=d2906b87-..., client_secret=sndx-K9m...
+- LHDN sandbox API (preprod-api.myinvois.hasil.gov.my/connect/token) returned: 400 `{"error":"invalid_client"}`
+- These are placeholder values from setup_test_data.py, not real sandbox credentials
+- T-02 and T-03 require valid sandbox auth; T-04 uses mocking but is part of the INTG bundle
+- Per Ralph INTG rules: credentials missing → document and skip
+
+### Action Required
+- Obtain real LHDN MyInvois sandbox credentials (client_id + client_secret)
+- Configure on Company "Arising Packaging" doc: custom_client_id, custom_client_secret
+- Re-run this story after credentials are configured
