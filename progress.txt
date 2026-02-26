@@ -463,3 +463,39 @@ Completed: Implement exemption filter service (ID: US-007) in 2m
 ## Iteration 16 - Thu, Feb 26, 2026
 Completed: Write failing tests for on_submit hooks (ID: UT-008)
 
+## Iteration 9 - Thu, Feb 26, 2026 12:41:40 PM
+Completed: Write failing tests for on_submit hooks (ID: UT-008) in 3m
+
+## Iteration 17 — US-008: Implement on_submit hooks with async enqueue
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_hooks`
+**Result:** PASS — 5/5 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/submission_service.py` — Full implementation replacing stub
+- `lhdn_payroll_integration/utils/validation.py` — validate_document_name_length()
+
+### Implementation logic
+- enqueue_salary_slip_submission(doc, method):
+  1. Calls should_submit_to_lhdn("Salary Slip", doc)
+  2. If False → sets custom_lhdn_status='Exempt' via frappe.db.set_value, returns
+  3. Validates document name length (max 50 chars)
+  4. Sets custom_lhdn_status='Pending' via frappe.db.set_value
+  5. Calls frappe.enqueue with method=process_salary_slip, queue='short', timeout=300, enqueue_after_commit=True
+
+- enqueue_expense_claim_submission(doc, method):
+  Same pattern but for Expense Claim doctype
+
+- validate_document_name_length: frappe.throw(ValidationError) if name > 50 chars
+- process_salary_slip/process_expense_claim: background job stubs (pass)
+
+### Patterns discovered
+- frappe.db.set_value is correct for updating submitted docs (not doc.save())
+- enqueue_after_commit=True prevents DoesNotExistError in background workers
+- unittest.mock.patch on module-level imports works cleanly for both frappe and should_submit_to_lhdn
+
+## Iteration 17 - Thu, Feb 26, 2026
+Completed: Implement on_submit hooks with async enqueue (ID: US-008)
+
