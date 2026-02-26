@@ -1074,3 +1074,32 @@ Completed: Write failing tests for async LHDN cancellation job (ID: UT-017) in 4
 - Tests mock both `frappe` and `requests` at module level — implementation must use these as top-level imports (not lazy imports)
 - `doc.db_set(field, value, update_modified=False)` is used instead of `frappe.db.set_value` for doc-level updates in background jobs
 - Cross-module imports to submission_service should be avoided in cancellation_service — tests mock at module boundary
+## Iteration 28 - Thu, Feb 26, 2026  2:02:41 PM
+Completed: Implement async LHDN cancellation job (ID: US-017) in 4m
+
+
+## Iteration 29 — UT-018: Write failing tests for monthly consolidation scheduler
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation`
+**Result:** FAIL — 6 errors, 0 passes (0.023s)
+
+### Files created/modified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_consolidation.py`
+
+### Test methods (6 total)
+1. test_queries_previous_calendar_month_records — ERROR (AttributeError: module has no 'frappe')
+2. test_high_value_docs_excluded_from_batch — ERROR
+3. test_batch_submission_called_for_eligible_docs — ERROR
+4. test_is_consolidated_set_after_successful_submission — ERROR
+5. test_already_submitted_docs_excluded — ERROR
+6. test_empty_batch_completes_silently — ERROR
+
+### Red phase mechanism
+- consolidation_service.py exists as a stub (`def run_monthly_consolidation(): pass`) with no `import frappe`
+- `@patch("...consolidation_service.frappe")` raises AttributeError because the module has no `frappe` attribute
+- This correctly confirms the TDD red phase — all 6 tests error before any assertion runs
+
+### Patterns discovered
+- When patching module-level attributes, the target module must actually import them — stubs without imports cause AttributeError (valid red phase)
