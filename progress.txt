@@ -645,3 +645,35 @@ Completed: Write failing tests for Expense Claim XML payload builder (ID: UT-010
 ## Iteration 21 - Thu, Feb 26, 2026
 Completed: Implement UBL 2.1 XML payload builder for Expense Claim (ID: US-010)
 
+## Iteration 14 - Thu, Feb 26, 2026  1:04:38 PM
+Completed: Implement UBL 2.1 XML payload builder for Expense Claim (ID: US-010) in 6m
+
+## Iteration 22 — UT-011: Write failing tests for submission service HTTP POST
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_service`
+**Result:** FAIL — 7/7 errors (AttributeError: submission_service has no 'requests', 'build_salary_slip_xml' attributes)
+
+### Files created
+- `lhdn_payroll_integration/tests/test_submission_service.py` — TestSubmissionService class with 7 test methods
+
+### Test methods (7 total)
+1. test_process_salary_slip_calls_xml_builder — ERROR (no build_salary_slip_xml on module)
+2. test_on_202_accepted_sets_submitted_status — ERROR (no requests on module)
+3. test_on_202_rejected_sets_invalid_status — ERROR (no requests on module)
+4. test_on_timeout_calls_schedule_retry — ERROR (no requests on module)
+5. test_token_fetch_via_get_access_token — ERROR (no requests on module)
+6. test_401_refreshes_token_and_retries — ERROR (no requests on module)
+7. test_url_constructed_from_site_config — ERROR (no requests on module)
+
+### Patterns discovered
+- @patch on module attributes fails with AttributeError when the module doesn't import that dependency — this IS the desired red behavior
+- submission_service.py currently imports only frappe, exemption_filter, and validation — no requests, no payload_builder imports
+
+### Gotchas
+- None — clean red phase, all 7 tests error because production code doesn't import requests or payload_builder yet
+
+## Iteration 22 - Thu, Feb 26, 2026
+Completed: Write failing tests for submission service HTTP POST (ID: UT-011)
+
