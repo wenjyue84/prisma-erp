@@ -4,12 +4,38 @@ Runs as a monthly scheduled job. Finds all pending, unconsolidated Salary Slips
 and Expense Claims from the previous calendar month. High-value documents
 (> RM 10,000) are submitted individually. The rest are submitted as a batch.
 All processed documents are marked with custom_is_consolidated=1.
+
+Enforces LHDN's 7-calendar-day deadline after month-end for consolidated
+submission. If the deadline is missed, logs an error and raises ValidationError.
 """
+import calendar
+from datetime import date, timedelta
 
 import frappe
 from lhdn_payroll_integration.services import submission_service
 
 HIGH_VALUE_THRESHOLD = 10000
+DEADLINE_DAYS = 7
+
+
+def get_consolidation_deadline(target_month):
+	"""Calculate the LHDN consolidation submission deadline for a given month.
+
+	LHDN requires consolidated self-billed invoices to be submitted within
+	7 calendar days after the last day of the target month.
+
+	Args:
+		target_month: Month string in 'YYYY-MM' format (e.g. '2026-01').
+
+	Returns:
+		date: The deadline date (7 days after the last day of target_month).
+	"""
+	year, month = target_month.split("-")
+	year = int(year)
+	month = int(month)
+	last_day_num = calendar.monthrange(year, month)[1]
+	last_day = date(year, month, last_day_num)
+	return last_day + timedelta(days=DEADLINE_DAYS)
 
 
 def run_monthly_consolidation():
@@ -19,12 +45,32 @@ def run_monthly_consolidation():
 	that have not yet been consolidated. High-value documents (> RM 10,000) are
 	submitted individually. Remaining documents are submitted as a consolidated batch.
 	After successful submission, all processed documents are marked as consolidated.
+
+	Raises frappe.ValidationError if the 7-day deadline has been missed.
 	"""
 	# Calculate previous month date range
 	today = frappe.utils.today()
 	prev_month_date = frappe.utils.add_months(today, -1)
 	first_day = frappe.utils.get_first_day(prev_month_date)
 	last_day = frappe.utils.get_last_day(prev_month_date)
+
+	# Check 7-day deadline
+	target_month = f"{first_day.year:04d}-{first_day.month:02d}"
+	deadline = get_consolidation_deadline(target_month)
+	today_date = date.fromisoformat(str(today))
+
+	if today_date > deadline:
+		frappe.log_error(
+			message=f"LHDN consolidation deadline missed for {target_month}. "
+					f"Deadline was {deadline}. Current date: {today_date}.",
+			title="LHDN Consolidation Deadline Missed",
+		)
+		frappe.throw(
+			f"LHDN consolidation deadline missed for {target_month}. "
+			f"The deadline was {deadline} (7 days after month-end). "
+			f"Please contact LHDN for late submission guidance.",
+			frappe.ValidationError,
+		)
 
 	# Query pending, unconsolidated Salary Slips from previous month
 	salary_slips = frappe.get_all(

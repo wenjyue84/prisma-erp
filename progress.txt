@@ -1451,3 +1451,20 @@ FAILED quality gates: Implement environment toggle (sandbox / production) (ID: U
 - Existing 6 tests continue to pass (isolated from new class failures)
 - Tests cover: deadline calculation, within-window success, past-window error, log_error audit trail, varying month lengths
 
+## Iteration 39 — US-024: Enforce 7-calendar-day consolidated submission deadline post month-end
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation`
+**Result:** PASS — 11/11 tests pass (5 deadline + 6 scheduler), 0 failures, 0 errors
+
+### Files modified
+- `tmp_lhdn/services/consolidation_service.py` — Added get_consolidation_deadline() and deadline check
+
+### Implementation details
+- get_consolidation_deadline(target_month) uses pure Python calendar/datetime (no frappe.utils dependency)
+- Deadline = last day of target month + 7 calendar days
+- run_monthly_consolidation() checks deadline before querying documents
+- If past deadline: frappe.log_error for audit trail, then frappe.throw(ValidationError)
+- date.fromisoformat(str(today)) converts mocked frappe.utils.today() string to date for comparison
+
