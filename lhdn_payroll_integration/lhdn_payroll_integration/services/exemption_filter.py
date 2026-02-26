@@ -1,0 +1,66 @@
+"""Exemption filter service for LHDN payroll integration.
+
+Determines whether a Salary Slip or Expense Claim should be submitted
+to LHDN as a self-billed e-Invoice.
+
+Worker type gate:
+- Employee (contract of service) = always exempt per LHDN FAQ
+- Contractor / Director = in-scope when self-billed flag is set
+"""
+import frappe
+
+# Only these worker types are in-scope for self-billed e-Invoice
+IN_SCOPE_WORKER_TYPES = frozenset({"Contractor", "Director"})
+
+# Default LHDN classification codes by worker type
+_WORKER_TYPE_CLASSIFICATION = {
+    "Contractor": "037",
+    "Director": "036",
+}
+
+
+def get_default_classification_code(worker_type: str) -> str:
+    """Return the default LHDN classification code for a worker type.
+
+    Args:
+        worker_type: 'Employee', 'Contractor', 'Director', or other.
+
+    Returns:
+        '037' for Contractor, '036' for Director, '022' for all others.
+    """
+    return _WORKER_TYPE_CLASSIFICATION.get(worker_type, "022")
+
+
+def should_submit_to_lhdn(doctype: str, doc) -> bool:
+    """Check if a document should be submitted to LHDN.
+
+    Args:
+        doctype: "Salary Slip" or "Expense Claim"
+        doc: The Frappe document object
+
+    Returns:
+        True if the document should be submitted to LHDN, False otherwise.
+    """
+    employee = frappe.get_doc("Employee", doc.employee)
+
+    # Worker type gate: only Contractor/Director are in-scope
+    worker_type = getattr(employee, "custom_worker_type", "") or ""
+    if worker_type not in IN_SCOPE_WORKER_TYPES:
+        return False
+
+    if doctype == "Salary Slip":
+        if not employee.custom_requires_self_billed_invoice:
+            return False
+        if doc.net_pay <= 0:
+            return False
+        return True
+
+    if doctype == "Expense Claim":
+        category = getattr(doc, "custom_expense_category", None)
+        if category in ("Overseas - Exempt", "Employee Receipt Provided"):
+            return False
+        if category == "Self-Billed Required" and employee.custom_requires_self_billed_invoice:
+            return True
+        return False
+
+    return False
