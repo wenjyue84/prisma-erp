@@ -538,3 +538,38 @@ Completed: Implement on_submit hooks with async enqueue (ID: US-008) in 2m
 ## Iteration 18 - Thu, Feb 26, 2026
 Completed: Write failing tests for Salary Slip XML payload builder (ID: UT-009)
 
+## Iteration 11 - Thu, Feb 26, 2026 12:47:54 PM
+Completed: Write failing tests for Salary Slip XML payload builder (ID: UT-009) in 3m
+
+## Iteration 19 — US-009: Implement UBL 2.1 XML payload builder for Salary Slip
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 10/10 tests pass, 0 failures, 0 errors
+
+### Files created
+- `lhdn_payroll_integration/services/payload_builder.py` — build_salary_slip_xml() + prepare_submission_wrapper()
+
+### Implementation details
+- **build_salary_slip_xml(docname):** Builds UBL 2.1 XML with proper namespaces (UBL, CAC, CBC)
+  - InvoiceTypeCode = '11' (self-billed), listVersionID='1.1'
+  - AccountingSupplierParty = Employee (payee), AccountingCustomerParty = Company (payer)
+  - Foreign worker TIN handled via employee.custom_lhdn_tin (EI00000000010)
+  - Totals calculated from doc.earnings ONLY — never accesses YTD fields
+  - All monetary values use Decimal with ROUND_HALF_UP to 2dp
+  - assert_totals_balance() validates excl + tax == incl before returning
+  - Tax category 'E' (Exempt), tax amount = 0.00
+  - One InvoiceLine per earnings row with classification code from custom_lhdn_classification_code or default '022'
+- **prepare_submission_wrapper(xml_string, docname):** LHDN HTTP format
+  - base64-encodes XML bytes, SHA-256 hex digest for documentHash
+  - codeNumber = digits from docname (max 50 chars) or '001'
+
+### Patterns discovered
+- ET.register_namespace() with "", "cac", "cbc" prefixes produces clean XML output
+- ET.tostring(root, encoding="unicode", xml_declaration=True) returns string with XML declaration
+- getattr(earning, "custom_lhdn_classification_code", None) safely handles missing attribute on mocks
+
+## Iteration 19 - Thu, Feb 26, 2026
+Completed: Implement UBL 2.1 XML payload builder for Salary Slip (ID: US-009)
+
