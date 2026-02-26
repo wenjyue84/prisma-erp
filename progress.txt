@@ -75,3 +75,35 @@ Completed: Write failing tests for app scaffold (ID: UT-001) in 4m
 ### Gotchas
 - docker cp on Windows/MINGW needs `bash -c` wrapper to avoid Git path expansion (e.g. /home gets expanded to C:/Program Files/Git/home)
 
+## Iteration 2 - Thu, Feb 26, 2026 12:05:45 PM
+Completed: Create custom app scaffold (ID: US-001) in 4m
+
+## Iteration 3 — UT-002: Write failing tests for Employee custom fields
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_custom_fields`
+**Result:** FAIL — 9/9 tests fail, 0 pass
+
+### Files created/modified
+- `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_custom_fields.py`
+
+### Test methods (9 total)
+1. test_employee_lhdn_section_exists — FAIL (custom_lhdn_section not on Employee)
+2. test_requires_self_billed_invoice_is_check_field — FAIL (field missing)
+3. test_lhdn_tin_field_exists — FAIL (field missing)
+4. test_id_type_options — FAIL (field missing)
+5. test_id_value_field_exists — FAIL (field missing)
+6. test_msic_code_link_field — FAIL (field missing)
+7. test_is_foreign_worker_field — FAIL (field missing)
+8. test_bank_account_number_field — FAIL (field missing)
+9. test_all_fields_have_correct_module — FAIL (Custom Field records don't exist in DB)
+
+### Patterns discovered
+- `frappe.get_meta('Employee').get_field('custom_xyz')` returns None for non-existent custom fields — clean assertion
+- Custom Field DB records use naming convention `DocType-fieldname` (e.g. `Employee-custom_lhdn_tin`)
+- `frappe.db.exists("Custom Field", cf_name)` checks if the Custom Field record exists
+
+### Gotchas
+- None — straightforward red phase
+
