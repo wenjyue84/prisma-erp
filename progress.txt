@@ -1018,3 +1018,34 @@ Completed: Write failing tests for cancellation hook (72h window) (ID: UT-016) i
 ### Gotchas
 - None — clean green phase on first attempt
 
+## Iteration 26 - Thu, Feb 26, 2026  1:53:30 PM
+Completed: Implement on_cancel hook with 72-hour window check (ID: US-016) in 3m
+
+## Iteration 27 — UT-017: Write failing tests for async LHDN cancellation job
+
+**Type:** TEST
+**TDD Phase:** RED (fail confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cancellation`
+**Result:** FAIL — 5 errors (AttributeError: cancellation_service does not have the attribute 'requests'), 5 existing tests pass
+
+### Files created/modified
+- `lhdn_payroll_integration/tests/test_cancellation.py` — Added TestAsyncCancellationJob class (5 new test methods)
+
+### Test methods (5 new, in TestAsyncCancellationJob)
+1. test_on_lhdn_api_success_sets_cancelled_status — ERROR (no requests import in stub)
+2. test_on_lhdn_api_success_cancels_frappe_document — ERROR (same)
+3. test_on_lhdn_api_error_status_remains_unchanged — ERROR (same)
+4. test_on_lhdn_api_error_frappe_doc_not_cancelled — ERROR (same)
+5. test_on_lhdn_api_error_writes_error_to_log — ERROR (same)
+
+### Patterns discovered
+- @patch("module.requests") fails with AttributeError if module doesn't `import requests` — standard red phase pattern
+- Tests mock both `requests.put` (for LHDN API) and `frappe` (for get_doc, db_set, log_error)
+- Company doc mock provides API credentials (custom_client_id, custom_client_secret, custom_sandbox_url)
+
+### Gotchas
+- None — clean red phase, all 5 new tests error as expected, all 5 existing tests still pass
+
+## Iteration 27 - Thu, Feb 26, 2026  2:00:00 PM
+Completed: Write failing tests for async LHDN cancellation job (ID: UT-017) in 3m
+
