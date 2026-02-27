@@ -3480,3 +3480,22 @@ Completed: Fix custom_id_type options to match LHDN schemeID vocabulary (ID: US-
 
 ### Gotchas
 - Container nested path sync required: `docker cp` to outer path, then `docker exec -u root cp` to nested path
+
+## Iteration N — US-026: Add Expense Claims to LHDN compliance report
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_compliance_report`
+**Result:** PASS — 8/8 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/lhdn_payroll_compliance/lhdn_payroll_compliance.py` — Refactored `_build_conditions` to produce `ss_where` + `ec_where`; replaced single SELECT with UNION ALL; added Expense Claim subquery using `posting_date`, `total_claimed_amount`, `custom_lhdn_uuid`, `custom_lhdn_status`
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_compliance_report.py` — Replaced `test_get_data_document_type_is_salary_slip` with `test_get_data_document_types_are_valid`; added `TestComplianceReportExpenseClaims` class with 2 mock-based tests
+
+### Patterns discovered
+- `unittest.mock.patch("frappe.db.sql", return_value=mock_rows)` works cleanly for testing UNION ALL report output without needing real DB records
+- UNION ALL with shared parameter names (same `%(from_date)s` in both subqueries) works correctly in MariaDB via frappe.db.sql
+
+### Gotchas
+- Expense Claim has `total_claimed_amount` (not `total_amount`) for the claim total
+- Expense Claim has no `custom_lhdn_submission_datetime`/`custom_lhdn_validated_datetime` — must use NULL for those columns in the UNION

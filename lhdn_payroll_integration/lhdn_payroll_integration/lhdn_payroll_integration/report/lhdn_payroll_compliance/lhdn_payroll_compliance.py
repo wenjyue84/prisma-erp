@@ -1,6 +1,6 @@
 """LHDN Payroll Compliance Script Report.
 
-Lists all Salary Slips with their LHDN submission status.
+Lists Salary Slips and Expense Claims with their LHDN submission status.
 Columns: Document Type, Document Name, Employee, Period, Amount, LHDN Status, UUID, Submitted At, Validated At.
 """
 import frappe
@@ -113,38 +113,53 @@ _STATUS_INDICATOR = {
 
 
 def _build_conditions(filters):
-    conditions = []
+    """Build WHERE clauses for Salary Slip and Expense Claim subqueries.
+
+    Both subqueries share the same parameter dict since they filter on the
+    same logical values (same company, same employee, same date range, same status).
+    The date field aliases differ: SS uses start_date/end_date; EC uses posting_date.
+
+    Returns (ss_where, ec_where, values).
+    """
+    ss_conds = []
+    ec_conds = []
     values = {}
 
     if filters.get("from_date"):
-        conditions.append("ss.start_date >= %(from_date)s")
+        ss_conds.append("ss.start_date >= %(from_date)s")
+        ec_conds.append("ec.posting_date >= %(from_date)s")
         values["from_date"] = filters["from_date"]
 
     if filters.get("to_date"):
-        conditions.append("ss.end_date <= %(to_date)s")
+        ss_conds.append("ss.end_date <= %(to_date)s")
+        ec_conds.append("ec.posting_date <= %(to_date)s")
         values["to_date"] = filters["to_date"]
 
     if filters.get("company"):
-        conditions.append("ss.company = %(company)s")
+        ss_conds.append("ss.company = %(company)s")
+        ec_conds.append("ec.company = %(company)s")
         values["company"] = filters["company"]
 
     if filters.get("employee"):
-        conditions.append("ss.employee = %(employee)s")
+        ss_conds.append("ss.employee = %(employee)s")
+        ec_conds.append("ec.employee = %(employee)s")
         values["employee"] = filters["employee"]
 
     if filters.get("lhdn_status"):
-        conditions.append("ss.custom_lhdn_status = %(lhdn_status)s")
+        ss_conds.append("ss.custom_lhdn_status = %(lhdn_status)s")
+        ec_conds.append("ec.custom_lhdn_status = %(lhdn_status)s")
         values["lhdn_status"] = filters["lhdn_status"]
 
-    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
-    return where, values
+    ss_where = ("WHERE " + " AND ".join(ss_conds)) if ss_conds else ""
+    ec_where = ("WHERE " + " AND ".join(ec_conds)) if ec_conds else ""
+    return ss_where, ec_where, values
 
 
 def get_data(filters=None):
     if filters is None:
         filters = frappe._dict()
 
-    where, values = _build_conditions(filters)
+    ss_where, ec_where, values = _build_conditions(filters)
 
     sql = f"""
         SELECT
@@ -158,8 +173,24 @@ def get_data(filters=None):
             ss.custom_lhdn_submission_datetime AS submitted_at,
             ss.custom_lhdn_validated_datetime  AS validated_at
         FROM `tabSalary Slip` ss
-        {where}
-        ORDER BY ss.start_date DESC, ss.name ASC
+        {ss_where}
+
+        UNION ALL
+
+        SELECT
+            'Expense Claim'                    AS document_type,
+            ec.name                            AS document_name,
+            ec.employee                        AS employee,
+            ec.posting_date                    AS period,
+            ec.total_claimed_amount            AS amount,
+            COALESCE(ec.custom_lhdn_status, 'Pending') AS lhdn_status,
+            ec.custom_lhdn_uuid                AS uuid,
+            NULL                               AS submitted_at,
+            NULL                               AS validated_at
+        FROM `tabExpense Claim` ec
+        {ec_where}
+
+        ORDER BY document_name ASC
     """
 
     rows = frappe.db.sql(sql, values, as_dict=True)
