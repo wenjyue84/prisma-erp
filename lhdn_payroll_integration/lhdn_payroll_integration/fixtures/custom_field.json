@@ -80,13 +80,26 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Employee-custom_nationality_code",
+    "dt": "Employee",
+    "fieldname": "custom_nationality_code",
+    "fieldtype": "Data",
+    "label": "Nationality Code (ISO 3166-1 alpha-2)",
+    "length": 2,
+    "description": "2-letter ISO country code for foreign workers (e.g. PH, BD, ID). Required by LHDN for foreign worker self-billed invoices.",
+    "depends_on": "eval:doc.custom_is_foreign_worker",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_is_foreign_worker"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Employee-custom_bank_account_number",
     "dt": "Employee",
     "fieldname": "custom_bank_account_number",
     "fieldtype": "Data",
     "label": "Bank Account Number",
     "module": "LHDN Payroll Integration",
-    "insert_after": "custom_is_foreign_worker"
+    "insert_after": "custom_nationality_code"
   },
   {
     "doctype": "Custom Field",

@@ -3925,3 +3925,26 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 2
 ### Gotchas
 - `frappe.throw(msg, frappe.PermissionError)` does NOT raise in mock context — must use `raise frappe.PermissionError(...)` directly
 - File had a duplicate function that needed cleanup (Edit tool added a second copy)
+## Iteration 18 - Fri, Feb 27, 2026  2:19:44 PM
+Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 1/3
+
+
+## Iteration 19 — US-039: Add nationality field for foreign worker ISO country code
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 67 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added Employee-custom_nationality_code (Data, len=2, depends_on foreign_worker), updated bank_account_number insert_after to nationality_code
+- `lhdn_payroll_integration/services/payload_builder.py` — Added nationality code PartyIdentification block in _build_invoice_skeleton() for foreign workers
+- `lhdn_payroll_integration/tests/test_payload_builder.py` — Added TestForeignWorkerNationalityCode (3 tests)
+
+### Patterns discovered
+- New test classes need doc.currency="MYR" and doc.conversion_rate=1 on MagicMock salary slip, else Decimal() conversion fails on the MagicMock attribute
+- Nationality code uses a second cac:PartyIdentification element with schemeID="NATIONALITY" after the TIN element
+- Blank nationality_code falls back to "MY" via `or "MY"` idiom
+
+### Gotchas
+- MagicMock auto-creates attributes — always explicitly set numeric fields used in Decimal() conversion

@@ -2301,3 +2301,153 @@ class TestTaxExemptionReasonCode(FrappeTestCase):
             "TaxExemptionReasonCode must be present when TaxCategory/ID = E")
         self.assertEqual(reason_code.text, "VATEX-MY-ES-43",
             f"TaxExemptionReasonCode must be VATEX-MY-ES-43, got {reason_code.text!r}")
+
+
+class TestForeignWorkerNationalityCode(FrappeTestCase):
+    """US-039: nationality code appears in supplier PartyIdentification for foreign workers."""
+
+    def _make_salary_slip(self):
+        doc = MagicMock()
+        doc.name = "SAL-SLP-NATL-001"
+        doc.employee = "HR-EMP-NATL-001"
+        doc.company = "Arising Packaging"
+        doc.posting_date = "2025-01-31"
+        doc.net_pay = 3000
+        doc.total_deductions = 0
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
+        earning = MagicMock()
+        earning.salary_component = "Basic Salary"
+        earning.amount = 3000
+        earning.custom_lhdn_classification_code = "022 : Others"
+        doc.earnings = [earning]
+        doc.deductions = []
+        return doc
+
+    def _make_foreign_employee(self, nationality_code="PH"):
+        emp = MagicMock()
+        emp.custom_lhdn_tin = "EI00000000010"
+        emp.custom_id_type = "Passport"
+        emp.custom_id_value = "A12345678"
+        emp.employee_name = "Maria Santos"
+        emp.custom_is_foreign_worker = 1
+        emp.custom_nationality_code = nationality_code
+        emp.custom_state_code = "14"
+        emp.custom_bank_account_number = None
+        emp.custom_payment_means_code = ""
+        emp.custom_worker_type = "Employee"
+        return emp
+
+    def _make_local_employee(self):
+        emp = MagicMock()
+        emp.custom_lhdn_tin = "IG12345678901"
+        emp.custom_id_type = "NRIC"
+        emp.custom_id_value = "901201145678"
+        emp.employee_name = "Ahmad bin Abdullah"
+        emp.custom_is_foreign_worker = 0
+        emp.custom_state_code = "01"
+        emp.custom_bank_account_number = None
+        emp.custom_payment_means_code = ""
+        emp.custom_worker_type = "Employee"
+        return emp
+
+    def _make_company(self):
+        company = MagicMock()
+        company.custom_company_tin_number = "C12345678901"
+        company.name = "Arising Packaging"
+        company.company_name = "Arising Packaging Sdn Bhd"
+        company.custom_state_code = "14"
+        return company
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_nationality_code_in_xml_for_foreign_worker(self, mock_frappe):
+        """Foreign worker XML must contain PartyIdentification with schemeID=NATIONALITY."""
+        doc = self._make_salary_slip()
+        emp = self._make_foreign_employee(nationality_code="PH")
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-NATL-001"): doc,
+            ("Employee", "HR-EMP-NATL-001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-NATL-001")
+        root = ET.fromstring(xml_string)
+
+        supplier = root.find(f".//{{{CAC_NS}}}AccountingSupplierParty")
+        self.assertIsNotNone(supplier, "AccountingSupplierParty must exist")
+
+        party = supplier.find(f"{{{CAC_NS}}}Party")
+        party_ids = party.findall(f"{{{CAC_NS}}}PartyIdentification")
+        self.assertGreaterEqual(len(party_ids), 2,
+            "Foreign worker must have at least 2 PartyIdentification elements (TIN + nationality)")
+
+        nationality_ids = [
+            pid for pid in party_ids
+            if pid.find(f"{{{CBC_NS}}}ID") is not None
+            and pid.find(f"{{{CBC_NS}}}ID").get("schemeID") == "NATIONALITY"
+        ]
+        self.assertEqual(len(nationality_ids), 1,
+            "Exactly one PartyIdentification with schemeID=NATIONALITY must be present")
+        self.assertEqual(nationality_ids[0].find(f"{{{CBC_NS}}}ID").text, "PH",
+            "Nationality code must match employee.custom_nationality_code")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_nationality_code_absent_for_local_employee(self, mock_frappe):
+        """Local (non-foreign) worker XML must NOT contain NATIONALITY PartyIdentification."""
+        doc = self._make_salary_slip()
+        emp = self._make_local_employee()
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-NATL-001"): doc,
+            ("Employee", "HR-EMP-NATL-001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-NATL-001")
+        root = ET.fromstring(xml_string)
+
+        supplier = root.find(f".//{{{CAC_NS}}}AccountingSupplierParty")
+        party = supplier.find(f"{{{CAC_NS}}}Party")
+        party_ids = party.findall(f"{{{CAC_NS}}}PartyIdentification")
+
+        nationality_ids = [
+            pid for pid in party_ids
+            if pid.find(f"{{{CBC_NS}}}ID") is not None
+            and pid.find(f"{{{CBC_NS}}}ID").get("schemeID") == "NATIONALITY"
+        ]
+        self.assertEqual(len(nationality_ids), 0,
+            "Local employee must NOT have NATIONALITY PartyIdentification")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_nationality_code_defaults_to_my_when_blank(self, mock_frappe):
+        """When custom_nationality_code is empty/None, nationality defaults to 'MY'."""
+        doc = self._make_salary_slip()
+        emp = self._make_foreign_employee(nationality_code="")
+        emp.custom_nationality_code = ""
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-NATL-001"): doc,
+            ("Employee", "HR-EMP-NATL-001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-NATL-001")
+        root = ET.fromstring(xml_string)
+
+        supplier = root.find(f".//{{{CAC_NS}}}AccountingSupplierParty")
+        party = supplier.find(f"{{{CAC_NS}}}Party")
+        party_ids = party.findall(f"{{{CAC_NS}}}PartyIdentification")
+
+        nationality_ids = [
+            pid for pid in party_ids
+            if pid.find(f"{{{CBC_NS}}}ID") is not None
+            and pid.find(f"{{{CBC_NS}}}ID").get("schemeID") == "NATIONALITY"
+        ]
+        self.assertEqual(len(nationality_ids), 1,
+            "NATIONALITY PartyIdentification must exist even when code is blank")
+        self.assertEqual(nationality_ids[0].find(f"{{{CBC_NS}}}ID").text, "MY",
+            "Blank nationality_code must default to 'MY'")

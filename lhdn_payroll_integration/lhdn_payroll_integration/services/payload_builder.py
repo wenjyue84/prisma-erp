@@ -175,6 +175,10 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     id_type = getattr(employee, "custom_id_type", None) or "NRIC"
     scheme_id = ID_TYPE_SCHEME_MAP.get(id_type, "NRIC")
     _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin, schemeID=scheme_id)
+    if getattr(employee, "custom_is_foreign_worker", 0):
+        nationality_code = getattr(employee, "custom_nationality_code", None) or "MY"
+        nationality_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
+        _sub(nationality_id, CBC_NS, "ID", nationality_code, schemeID="NATIONALITY")
     supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
     _sub(supplier_name_elem, CBC_NS, "Name", employee.employee_name)
     _add_postal_address(
