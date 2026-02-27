@@ -3433,3 +3433,27 @@ Completed: Fix status poller to use per-document company for base_url and token 
 ### Gotchas
 - Both container paths (nested and non-nested) must be updated (CRITICAL pattern)
 - test_custom_fields.py test must be updated in sync with fixture option change or it fails
+## Iteration 6 - Fri, Feb 27, 2026 12:46:31 PM
+Completed: Fix custom_id_type options to match LHDN schemeID vocabulary (ID: US-024) in 7m
+
+
+## Iteration 7 — US-025: Add full PostalAddress fields beyond state code only
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 59/59 tests pass (includes 3 new TestFullPostalAddress tests), 0 failures
+
+### Files created/modified
+- `fixtures/custom_field.json` — Added 6 new fields: Employee-custom_address_line1, Employee-custom_city, Employee-custom_postcode, Company-custom_address_line1, Company-custom_city, Company-custom_postcode
+- `services/payload_builder.py` — Updated _add_postal_address() to accept address_line1, city, postcode kwargs; emits AddressLine/Line, CityName, PostalZone (when non-empty strings), CountrySubentityCode, Country/IdentificationCode=MYS; updated all 4 callers
+- `tests/test_payload_builder.py` — Added TestFullPostalAddress class with 3 tests
+
+### Patterns discovered
+- `isinstance(val, str) and val` is the correct guard for optional XML elements when MagicMock is involved: MagicMock is not a str so it returns False, preventing spurious XML emission in tests
+- Country/IdentificationCode = "MYS" is hardcoded (always present)
+- Always emit CountrySubentityCode; optional elements (AddressLine, CityName, PostalZone) only when non-empty string
+
+### Gotchas
+- MagicMock auto-creates attributes as truthy non-string objects; `isinstance(val, str)` check is needed to distinguish real string data from MagicMock attributes in test helpers
+- Both container paths (nested and non-nested) must be updated (CRITICAL pattern)

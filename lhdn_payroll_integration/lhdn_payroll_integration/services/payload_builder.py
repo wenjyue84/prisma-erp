@@ -106,10 +106,24 @@ def _resolve_company_state_code(company):
     return str(state_code)
 
 
-def _add_postal_address(party_elem, state_code):
-    """Add cac:PostalAddress with cbc:CountrySubentityCode to a Party element."""
+def _add_postal_address(party_elem, state_code, address_line1=None, city=None, postcode=None):
+    """Add cac:PostalAddress to a Party element.
+
+    LHDN v1.1 full address: AddressLine/Line, CityName, PostalZone,
+    CountrySubentityCode, Country/IdentificationCode (MYS).
+    Optional fields (address_line1, city, postcode) are omitted when None/empty.
+    """
     postal = _sub(party_elem, CAC_NS, "PostalAddress")
+    if address_line1:
+        addr_line = _sub(postal, CAC_NS, "AddressLine")
+        _sub(addr_line, CBC_NS, "Line", address_line1)
+    if city:
+        _sub(postal, CBC_NS, "CityName", city)
+    if postcode:
+        _sub(postal, CBC_NS, "PostalZone", postcode)
     _sub(postal, CBC_NS, "CountrySubentityCode", state_code)
+    country = _sub(postal, CAC_NS, "Country")
+    _sub(country, CBC_NS, "IdentificationCode", "MYS")
 
 
 def _add_party_tax_scheme(party_elem, sst_registration):
@@ -163,7 +177,12 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin, schemeID=scheme_id)
     supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
     _sub(supplier_name_elem, CBC_NS, "Name", employee.employee_name)
-    _add_postal_address(supplier_inner, supplier_state)
+    _add_postal_address(
+        supplier_inner, supplier_state,
+        address_line1=getattr(employee, "custom_address_line1", None) or None,
+        city=getattr(employee, "custom_city", None) or None,
+        postcode=getattr(employee, "custom_postcode", None) or None,
+    )
     _add_party_tax_scheme(
         supplier_inner,
         getattr(employee, "custom_sst_registration_number", None) or ""
@@ -176,7 +195,12 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number)
     customer_name_elem = _sub(customer_inner, CAC_NS, "PartyName")
     _sub(customer_name_elem, CBC_NS, "Name", company.name)
-    _add_postal_address(customer_inner, buyer_state)
+    _add_postal_address(
+        customer_inner, buyer_state,
+        address_line1=getattr(company, "custom_address_line1", None) or None,
+        city=getattr(company, "custom_city", None) or None,
+        postcode=getattr(company, "custom_postcode", None) or None,
+    )
     _add_party_tax_scheme(
         customer_inner,
         getattr(company, "custom_sst_registration_number", None) or ""
@@ -406,7 +430,12 @@ def build_consolidated_xml(docnames, target_month):
     _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin, schemeID=consol_scheme_id)
     supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
     _sub(supplier_name_elem, CBC_NS, "Name", employee.employee_name)
-    _add_postal_address(supplier_inner, supplier_state)
+    _add_postal_address(
+        supplier_inner, supplier_state,
+        address_line1=getattr(employee, "custom_address_line1", None) or None,
+        city=getattr(employee, "custom_city", None) or None,
+        postcode=getattr(employee, "custom_postcode", None) or None,
+    )
 
     # AccountingCustomerParty (Company = Buyer) with contact = 'NA'
     # Consolidated submissions use state code '17' (Not Applicable) for buyer
