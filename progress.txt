@@ -3293,3 +3293,27 @@ The container has TWO copies of the services directory:
 - Nested: `apps/lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/services/` (what bench tests import)
 
 Tests import `lhdn_payroll_integration.lhdn_payroll_integration.services.*` which resolves to the NESTED path. Must use `docker exec -u root cp` to sync nested copy after updating the outer one.
+## Iteration 4 - Fri, Feb 27, 2026 12:18:35 PM
+Completed: Add bonus/irregular payment classification for PCB differentiation (ID: US-018) in 10m
+
+
+## Iteration — US-021: Integrate LHDN TIN validation API before submission
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 10 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_tin_validator`
+**Result:** PASS — 10/10 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/tin_validator.py` — New: `get_access_token` wrapper (module-level for patchability), `validate_tin_with_lhdn()`, `@frappe.whitelist() validate_employee_tin()`
+- `lhdn_payroll_integration/services/submission_service.py` — Modified: added TIN validation gate in `enqueue_salary_slip_submission()` before enqueue
+- `lhdn_payroll_integration/tests/test_tin_validator.py` — New: 10 tests across 4 classes
+
+### Patterns discovered
+- Lazy import (`from module import fn` inside a function body) breaks `@patch('module.fn')` — the attribute doesn't exist at the module level for patching. Fix: expose a module-level wrapper function that does the lazy import internally. This avoids circular imports AND makes patching work.
+- Circular import pattern: submission_service → tin_validator → submission_service. Solved by defining a module-level `get_access_token()` wrapper in tin_validator that uses a lazy import inside its body.
+- The `TestEnqueueSalarySlipTinGate` tests patch `lhdn_payroll_integration.utils.tin_validator.validate_tin_with_lhdn` directly (the function called inside enqueue_salary_slip_submission via `from ... import`) — this works because the import path in submission_service.py is inside the try block.
+
+### Gotchas
+- Initial patch path `lhdn_payroll_integration.utils.tin_validator.get_access_token` failed because `get_access_token` was only a local name inside the function body (lazy import), not a module attribute. Solution: add a module-level wrapper.
+- Regression check: `test_submission_service.py` still passes 11/11 after submission_service.py modification.
