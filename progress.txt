@@ -3528,3 +3528,29 @@ Completed: Add Expense Claims to LHDN compliance report (ID: US-026) in 6m
 ### Patterns discovered
 - `frappe.db.sql` mock patches cleanly with `return_value=[]` for empty-month tests
 - Use past year (2020) in tests to force "Late"/"On Time" status; future year (2035) forces "Pending"
+## Iteration 11 - Fri, Feb 27, 2026  1:06:26 PM
+Completed: Build monthly LHDN submission summary report (ID: US-027) in 5m
+
+
+## Iteration — US-027: Build monthly LHDN submission summary report
+
+**Type:** IMPL
+**TDD Phase:** GREEN (13/13 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_monthly_summary`
+**Result:** PASS — 13 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/lhdn_monthly_summary/lhdn_monthly_summary.py` — Report implementation (already in container)
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/lhdn_monthly_summary/lhdn_monthly_summary.json` — Report metadata
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_monthly_summary.py` — 13 tests across 4 test classes
+
+### Test classes
+1. TestMonthlySummaryColumns — 3 tests (returns list, min 8 cols, required fieldnames)
+2. TestMonthlySummaryData — 5 tests (12 rows, month names, required keys, deadline status values, empty zeros)
+3. TestMonthlySummaryAggregation — 2 tests (counts correctly, other months stay zero)
+4. TestMonthlySummaryDeadlineStatus — 3 tests (past no-pending=On Time, past with-pending=Late, future=Pending)
+
+### Patterns discovered
+- Use past year (2020) in tests to guarantee deadline has passed; use 2099 for future
+- `frappe.db.sql` mock with `return_value=[]` cleanly tests empty month behaviour
+- Month NAMES list is 1-indexed (empty string at index 0) to allow `MONTH_NAMES[m]` where m=1..12
