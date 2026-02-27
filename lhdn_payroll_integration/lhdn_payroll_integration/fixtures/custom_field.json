@@ -557,5 +557,27 @@
     "label": "Postcode",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_city"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_lhdn_raw_document",
+    "dt": "Salary Slip",
+    "fieldname": "custom_lhdn_raw_document",
+    "fieldtype": "Text",
+    "label": "LHDN Raw Document (XML)",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_error_log"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim-custom_lhdn_raw_document",
+    "dt": "Expense Claim",
+    "fieldname": "custom_lhdn_raw_document",
+    "fieldtype": "Text",
+    "label": "LHDN Raw Document (XML)",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_retry_count"
   }
 ]

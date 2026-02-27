@@ -32,6 +32,7 @@ class LHDNDevTools {
                         ${this._panel_connection_test()}
                         ${this._panel_recent_submissions()}
                         ${this._panel_resubmit()}
+                        ${this._panel_retrieve_document()}
                     </div>
                 </div>
             </div>
@@ -154,6 +155,34 @@ class LHDNDevTools {
         </div>`;
     }
 
+    _panel_retrieve_document() {
+        return `
+        <div class="card mb-3" id="panel-retrieve-document">
+            <div class="card-header"><strong>7 — Retrieve from LHDN</strong></div>
+            <div class="card-body p-2">
+                <p class="text-muted" style="font-size:12px;">
+                    Fetches the validated XML stored on the LHDN portal via
+                    <code>GET /api/v1.0/documents/{uuid}/raw</code> and saves it
+                    to the document's <em>LHDN Raw Document</em> field for audit comparison.
+                </p>
+                <div class="form-group">
+                    <label class="control-label">DocType</label>
+                    <select class="form-control form-control-sm select-retrieve-doctype">
+                        <option value="Salary Slip">Salary Slip</option>
+                        <option value="Expense Claim">Expense Claim</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Document Name</label>
+                    <input type="text" class="form-control form-control-sm input-retrieve-docname"
+                           placeholder="e.g. Sal Slip/2026/00001">
+                </div>
+                <button class="btn btn-sm btn-info btn-retrieve-document">Retrieve from LHDN</button>
+                <div id="retrieve-result" class="mt-2"></div>
+            </div>
+        </div>`;
+    }
+
     /* ------------------------------------------------------------------ */
     /* Event binding                                                        */
     /* ------------------------------------------------------------------ */
@@ -180,6 +209,8 @@ class LHDNDevTools {
         $b.find('.select-status-filter').on('change', () => this._load_recent_submissions());
 
         $b.find('.btn-resubmit').on('click', () => this._resubmit());
+
+        $b.find('.btn-retrieve-document').on('click', () => this._retrieve_document());
     }
 
     /* ------------------------------------------------------------------ */
@@ -388,5 +419,46 @@ class LHDNDevTools {
                 });
             }
         );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Panel 7 — Retrieve from LHDN                                         */
+    /* ------------------------------------------------------------------ */
+
+    _retrieve_document() {
+        const doctype = this.$body.find('.select-retrieve-doctype').val();
+        const docname = this.$body.find('.input-retrieve-docname').val().trim();
+        const $el = this.$body.find('#retrieve-result');
+
+        if (!docname) {
+            frappe.msgprint('Please enter a Document Name.');
+            return;
+        }
+
+        $el.html('<span class="text-muted">Retrieving from LHDN portal…</span>');
+
+        frappe.call({
+            method: 'lhdn_payroll_integration.lhdn_payroll_integration.page.lhdn_dev_tools.lhdn_dev_tools.retrieve_lhdn_document',
+            args: { docname, doctype },
+            callback: (r) => {
+                if (r.exc) {
+                    $el.html(`<span class="text-danger">${frappe.utils.escape_html(r.exc)}</span>`);
+                    return;
+                }
+                const d = r.message;
+                if (d.success) {
+                    const preview = d.raw_xml
+                        ? frappe.utils.escape_html(d.raw_xml.substring(0, 200)) + (d.raw_xml.length > 200 ? '…' : '')
+                        : '(empty)';
+                    $el.html(`
+                        <span class="badge badge-success">Retrieved & Saved</span>
+                        <pre class="mt-2 p-2 bg-light" style="font-size:11px;max-height:100px;overflow:auto;">${preview}</pre>
+                    `);
+                } else {
+                    $el.html(`<span class="badge badge-danger">Failed</span>
+                        <small class="text-danger ml-1">${frappe.utils.escape_html(d.error_detail || '')}</small>`);
+                }
+            }
+        });
     }
 }

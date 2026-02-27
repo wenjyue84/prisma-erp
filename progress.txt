@@ -4027,3 +4027,25 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 1
 
 ### Gotchas
 - Outer tests path (`/lhdn_payroll_integration/lhdn_payroll_integration/tests/`) requires `docker exec -u root cp` to write
+## Iteration 20 - Fri, Feb 27, 2026  2:48:01 PM
+Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 2/3
+
+
+## Iteration N — US-038: Implement LHDN portal document retrieval for audit verification
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_dev_tools_page`
+**Result:** PASS — 23/23 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/page/lhdn_dev_tools/lhdn_dev_tools.py` — Added `retrieve_lhdn_document(docname, doctype)` whitelisted function
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/page/lhdn_dev_tools/lhdn_dev_tools.js` — Added Panel 7 "Retrieve from LHDN" with button and result display
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — Added `custom_lhdn_raw_document` (Text) to Salary Slip and Expense Claim
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_dev_tools_page.py` — Added `TestRetrieveLhdnDocument` class with 4 tests + permission guard test
+
+### Patterns discovered
+- Container 4th-level path (`...lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/page/`) is where `_PAGE_DIR` in tests resolves — must copy JS/PY there too
+- Local repo page/ is at the 3rd-level: `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/page/`
+- Local repo fixtures/ and tests/ are at the 2nd-level: `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/` and `tests/`
+- bench migrate handles custom field creation from fixtures (no separate sync_fixtures call needed)
