@@ -3368,3 +3368,6 @@ Implementation already existed from a previous session (submission_service.py + 
 - Field name in fixtures is `custom_lhdn_tin` not `custom_tin` — verify against fixtures when implementing validation
 - Existing `test_submission_hooks.py` needed `validate_tin_with_lhdn` added to 3 existing patches (tests with `should_submit_to_lhdn=True` now reach TIN validation code)
 - Circular import safely avoided: `submission_service.py` imports `tin_validator` at module level; `tin_validator.py` imports from `submission_service` only lazily (inside function body)
+## Iteration 7 - Fri, Feb 27, 2026 12:36:14 PM
+Completed: Add submission failure email notification for HR Manager (ID: US-022) in 4m
+
