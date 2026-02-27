@@ -3104,3 +3104,34 @@ Incomplete: Generate EPF Borang A monthly contribution schedule (ID: US-015) —
 ### Gotchas
 - Report was already deployed from a prior partial attempt; tests passed on first run
 - 17 tests ran (including __pycache__ version with extra tests); all GREEN
+## Iteration 2 - Fri, Feb 27, 2026 11:59:25 AM
+Completed: Generate EPF Borang A monthly contribution schedule (ID: US-015) in 5m
+
+
+## Iteration — US-015, US-016, US-017: EPF Borang A, SOCSO Borang 8A, EIS Monthly Reports
+
+**Type:** IMPL (combined — test files were pre-created in untracked state)
+**TDD Phase:** GREEN (all tests pass)
+**Bench commands:**
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_epf_borang_a` → 12/12 PASS
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_socso_borang_8a` → 12/12 PASS
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_eis_monthly` → 10/10 PASS
+
+### Files created/modified
+- `report/epf_borang_a/epf_borang_a.py` — Fixed: renamed `total_contribution` → `total_epf` to match test expectations
+- `report/epf_borang_a/epf_borang_a.json` — Script Report fixture
+- `report/socso_borang_8a/socso_borang_8a.py` — SOCSO report (total_socso, socso_member_number)
+- `report/socso_borang_8a/socso_borang_8a.json` — Script Report fixture
+- `report/eis_monthly/eis_monthly.py` — EIS report (total_eis, eis_employee, eis_employer)
+- `report/eis_monthly/eis_monthly.json` — Script Report fixture
+- `fixtures/custom_field.json` — Added custom_epf_member_number + custom_socso_member_number on Employee
+- `tests/test_epf_borang_a.py`, `tests/test_socso_borang_8a.py`, `tests/test_eis_monthly.py`
+
+### Patterns discovered
+- `bench migrate` deletes orphan Workspaces/Desktop Icons — use `sync_fixtures` for selective fixture sync
+- `frappe.utils.fixtures.sync_fixtures(['app_name'])` is the correct call for fixture syncing
+- Report queries use HAVING (contribution > 0) to filter out employees with no statutory contributions
+
+### Gotchas
+- EPF fieldname mismatch: implementation originally used `total_contribution` but test expected `total_epf`
+- bench migrate ran and orphan-deleted LHDN Payroll workspace — workspace fixture re-synced via sync_fixtures
