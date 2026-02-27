@@ -4170,3 +4170,22 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 1
 ### Gotchas
 - `bench migrate` deletes workspace fixtures as orphans — always re-run `frappe.utils.fixtures.sync_fixtures` after migrate
 - sync_fixtures correct path: `frappe.utils.fixtures.sync_fixtures` (not frappe.sync_fixtures or frappe.modules.utils.sync_fixtures)
+
+## Iteration N — US-048: Fix retention archival to include Submitted/Invalid records
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retention`
+**Result:** PASS — 10/10 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/retention_service.py`
+  - Replaced `frappe.get_all` with `frappe.db.sql` using COALESCE
+  - SQL: COALESCE(custom_lhdn_validated_datetime, custom_lhdn_submission_datetime, creation) < cutoff
+  - Now archives Submitted/Invalid records (no validated_datetime) based on submission_datetime or creation
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_retention.py`
+  - Already had updated mocks (db.sql instead of get_all) + 2 new US-048 tests
+
+### Gotchas
+- Test file already had US-048 tests pre-written (expecting db.sql/COALESCE) — matched implementation to tests
+- Dual-path sync required: nested copy at lhdn_payroll_integration/lhdn_payroll_integration/services/ needs root cp
