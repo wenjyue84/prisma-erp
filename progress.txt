@@ -3017,3 +3017,29 @@ Completed: Wire build_consolidated_xml() into consolidation_service (ID: US-011)
 ### Gotchas
 - In frappe.db.sql with `format()` string building, use `%%` for literal `%` in DATE_FORMAT calls, otherwise Python raises TypeError on `%Y`
 
+## Iteration 9 - Fri, Feb 27, 2026 11:16:30 AM
+Completed: Generate CP39 monthly PCB remittance file (ID: US-012) in 7m
+
+
+## Iteration — US-013: Generate EA Form (Borang EA) for employees
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_ea_form`
+**Result:** PASS — 8 tests run, 7 pass, 1 skipped (Salary Slip mandatory fields in test env), 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/report/ea_form/ea_form.json` — Script Report definition
+- `lhdn_payroll_integration/report/ea_form/ea_form.py` — Aggregation logic: SUM gross_pay/net_pay per employee/year; JOIN to Salary Detail for EPF/SOCSO/EIS/PCB component totals
+- `lhdn_payroll_integration/print_format/ea_form/ea_form.json` — Print Format definition
+- `lhdn_payroll_integration/print_format/ea_form/ea_form.html` — Jinja2 Borang EA HTML layout
+- `lhdn_payroll_integration/tests/test_ea_form.py` — 8 tests covering columns structure and aggregation
+
+### Patterns discovered
+- EA Form aggregates via GROUP BY employee + YEAR(start_date) then joins to tabSalary Detail for component-level deductions via GROUP_CONCAT on slip names
+- print_format directory is owned by root in container — use `docker exec -u root` to mkdir then chown
+- Salary Slip `docstatus=1` filter is essential; `INSERT` in tests may skip due to mandatory Salary Slip fields
+
+### Gotchas
+- Employee creation needs `date_of_birth` mandatory field
+- `_get_deduction_total` uses placeholder list + component name as positional SQL args
