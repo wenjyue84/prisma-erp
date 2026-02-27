@@ -4049,3 +4049,24 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 2
 - Local repo page/ is at the 3rd-level: `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/page/`
 - Local repo fixtures/ and tests/ are at the 2nd-level: `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/` and `tests/`
 - bench migrate handles custom field creation from fixtures (no separate sync_fixtures call needed)
+
+
+## Iteration N — US-041: Build year-end PCB vs submission reconciliation report
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_yearend_reconciliation`
+**Result:** PASS — 14/14 tests pass
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/lhdn_yearend_reconciliation/lhdn_yearend_reconciliation.json`
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/lhdn_yearend_reconciliation/lhdn_yearend_reconciliation.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_yearend_reconciliation.py`
+
+### Patterns discovered
+- Report dir must be created in BOTH outer path and nested path (lhdn_payroll_integration/lhdn_payroll_integration/report/ AND lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/)
+- mkdir in container as non-root requires `docker exec -u root` then chown
+- Discrepancy logic: flag when submitted != valid OR (pcb > 0 AND valid == 0)
+
+### Gotchas
+- Container mkdir requires root; always chown frappe:frappe after
