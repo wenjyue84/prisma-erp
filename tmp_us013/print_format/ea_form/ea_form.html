@@ -1,0 +1,122 @@
+{% set doc = frappe.get_doc("Salary Slip", doc.name) %}
+{% set employee = frappe.get_doc("Employee", doc.employee) %}
+{% set company = frappe.get_doc("Company", doc.company) %}
+
+{%- macro get_deduction(slip, component) -%}
+{%- set total = namespace(val=0) -%}
+{%- for d in slip.deductions -%}
+  {%- if d.salary_component == component -%}
+    {%- set total.val = total.val + d.amount -%}
+  {%- endif -%}
+{%- endfor -%}
+{{ "%.2f"|format(total.val) }}
+{%- endmacro -%}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 10pt; margin: 0; padding: 20px; }
+    .ea-header { text-align: center; border: 2px solid #000; padding: 8px; margin-bottom: 12px; }
+    .ea-header h2 { margin: 0; font-size: 13pt; }
+    .ea-header p  { margin: 2px 0; font-size: 9pt; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+    td, th { border: 1px solid #555; padding: 5px 8px; font-size: 9pt; vertical-align: top; }
+    th { background: #ddd; font-weight: bold; }
+    .section-title { background: #bbb; font-weight: bold; font-size: 10pt; padding: 4px 8px; }
+    .right { text-align: right; }
+    .total-row td { font-weight: bold; background: #eee; }
+    .footer { margin-top: 40px; display: flex; justify-content: space-between; }
+    .sig-line { border-top: 1px solid #000; width: 200px; text-align: center; font-size: 9pt; padding-top: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="ea-header">
+  <h2>BORANG EA / EA FORM</h2>
+  <p>Penyata Pemotongan Bulanan / Statement of Monthly Tax Deduction</p>
+  <p>Tahun Taksiran / Year of Assessment: <strong>{{ doc.start_date[:4] }}</strong></p>
+</div>
+
+<table>
+  <tr>
+    <th colspan="2" class="section-title">A. Maklumat Majikan / Employer Information</th>
+  </tr>
+  <tr>
+    <td style="width:40%">Nama Majikan / Employer Name</td>
+    <td>{{ company.company_name }}</td>
+  </tr>
+  <tr>
+    <td>No. Rujukan Majikan / Employer Reference No.</td>
+    <td>{{ company.get("custom_company_tin_number") or "—" }}</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th colspan="2" class="section-title">B. Maklumat Pekerja / Employee Information</th>
+  </tr>
+  <tr>
+    <td style="width:40%">Nama Pekerja / Employee Name</td>
+    <td>{{ employee.employee_name }}</td>
+  </tr>
+  <tr>
+    <td>No. Kad Pengenalan / IC Number</td>
+    <td>{{ employee.get("custom_ic_number") or employee.get("employee_number") or "—" }}</td>
+  </tr>
+  <tr>
+    <td>No. TIN Pekerja / Employee TIN</td>
+    <td>{{ employee.get("custom_employee_tin_number") or "—" }}</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th colspan="2" class="section-title">C. Pendapatan / Remuneration</th>
+  </tr>
+  <tr>
+    <td style="width:70%">Jumlah Gaji Kasar / Total Gross Remuneration (MYR)</td>
+    <td class="right">{{ "%.2f"|format(doc.gross_pay) }}</td>
+  </tr>
+  <tr>
+    <td>Gaji Bersih / Net Pay (MYR)</td>
+    <td class="right">{{ "%.2f"|format(doc.net_pay) }}</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th colspan="2" class="section-title">D. Caruman Berkanun / Statutory Contributions</th>
+  </tr>
+  <tr>
+    <td style="width:70%">Caruman KWSP / EPF Employee Contribution (MYR)</td>
+    <td class="right">{{ get_deduction(doc, "EPF") }}</td>
+  </tr>
+  <tr>
+    <td>Caruman PERKESO / SOCSO Employee Contribution (MYR)</td>
+    <td class="right">{{ get_deduction(doc, "SOCSO") }}</td>
+  </tr>
+  <tr>
+    <td>Caruman EIS / EIS Employee Contribution (MYR)</td>
+    <td class="right">{{ get_deduction(doc, "EIS") }}</td>
+  </tr>
+  <tr>
+    <td>Potongan Cukai Berjadual / Monthly Tax Deduction PCB (MYR)</td>
+    <td class="right">{{ get_deduction(doc, "PCB") }}</td>
+  </tr>
+</table>
+
+<div class="footer">
+  <div>
+    <div class="sig-line">Tandatangan Pekerja / Employee Signature</div>
+    <p style="font-size:8pt">Tarikh / Date: _______________</p>
+  </div>
+  <div>
+    <div class="sig-line">Tandatangan Majikan / Employer Signature</div>
+    <p style="font-size:8pt">Tarikh / Date: _______________</p>
+  </div>
+</div>
+
+</body>
+</html>
