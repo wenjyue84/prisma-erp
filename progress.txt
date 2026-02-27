@@ -3809,3 +3809,26 @@ Incomplete: Add EIS, HRDF, and common allowance salary components to fixture (ID
 
 ### Patterns discovered
 - Extending calculate_pcb() with new optional params preserves backward compatibility — all existing tests still pass
+## Iteration 16 - Fri, Feb 27, 2026  1:55:36 PM
+Incomplete: Add EIS, HRDF, and common allowance salary components to fixture (ID: US-046) — attempt 1/3
+
+## Iteration 17 — US-035: Handle leave encashment and gratuity tax exemption in PCB calculation
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 36/36 tests pass (8 new gratuity tests + 28 existing), 0 failures, 0 errors
+
+### Actions taken
+1. Deployed local pcb_calculator.py (with gratuity_amount/years_of_service params) to container
+2. Deployed custom_field.json (with custom_is_gratuity_or_leave_encashment on Salary Component) to container
+3. Deployed test_pcb_calculator.py (with TestCalculatePcbGratuityExemption class) to container
+4. Ran bench migrate + clear-cache to sync fixtures
+5. All 36 tests pass (TDD GREEN confirmed)
+6. Marked US-035 passes: true in prd.json
+
+### Files deployed
+- services/pcb_calculator.py — added gratuity_amount, years_of_service params; Schedule 6 para 25 exemption
+- fixtures/custom_field.json — added custom_is_gratuity_or_leave_encashment (Check) on Salary Component
+- tests/test_pcb_calculator.py — added 8 gratuity/leave encashment test cases
+
