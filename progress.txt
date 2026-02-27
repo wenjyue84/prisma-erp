@@ -3618,3 +3618,24 @@ Incomplete: Fix alpha-only docnames producing duplicate codeNumber (ID: US-043) 
 
 ### Gotchas
 - The "two copies" warning in progress.txt is specifically for `services/` — `report/` only exists in the nested path
+## Iteration 10 - Fri, Feb 27, 2026  1:24:50 PM
+Incomplete: Fix alpha-only docnames producing duplicate codeNumber (ID: US-043) — attempt 1/3
+
+
+## Iteration N — US-043: Fix alpha-only docnames producing duplicate codeNumber
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 64/64 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/payload_builder.py` — Line 506: replaced `or "001"` with `or hashlib.md5(docname.encode()).hexdigest()[:8]`
+- `lhdn_payroll_integration/tests/test_payload_builder.py` — Added `test_alpha_docname_uses_md5_fallback` and `test_alpha_docnames_produce_unique_code_numbers` to `TestSubmissionWrapper`
+
+### Patterns discovered
+- hashlib was already imported in payload_builder.py — no new imports needed
+- Single-line fix; existing test suite caught no regressions
+
+### Gotchas
+- None; straightforward fix

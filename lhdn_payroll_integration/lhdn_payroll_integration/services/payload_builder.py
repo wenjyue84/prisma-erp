@@ -503,7 +503,7 @@ def prepare_submission_wrapper(xml_string, docname):
     xml_bytes = xml_string.encode("utf-8")
     document_hash = hashlib.sha256(xml_bytes).hexdigest()
     document_b64 = base64.b64encode(xml_bytes).decode("utf-8")
-    code_number = "".join(filter(str.isdigit, docname)) or "001"
+    code_number = "".join(filter(str.isdigit, docname)) or hashlib.md5(docname.encode()).hexdigest()[:8]
     code_number = code_number[:50]
 
     return {

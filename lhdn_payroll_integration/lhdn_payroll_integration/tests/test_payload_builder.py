@@ -520,6 +520,27 @@ class TestSubmissionWrapper(FrappeTestCase):
         expected_hash = hashlib.sha256(self.SAMPLE_XML.encode("utf-8")).hexdigest()
         self.assertEqual(doc_entry["documentHash"], expected_hash)
 
+    def test_alpha_docname_uses_md5_fallback(self):
+        """Alpha-only docnames fall back to MD5 hash instead of '001'."""
+        result = prepare_submission_wrapper(self.SAMPLE_XML, "ALPHADOCNAME")
+        doc_entry = result["documents"][0]
+
+        expected = hashlib.md5("ALPHADOCNAME".encode()).hexdigest()[:8]
+        self.assertEqual(doc_entry["codeNumber"], expected)
+
+    def test_alpha_docnames_produce_unique_code_numbers(self):
+        """Multiple alpha-named documents each get unique codeNumbers."""
+        result_a = prepare_submission_wrapper(self.SAMPLE_XML, "DOCALPHA")
+        result_b = prepare_submission_wrapper(self.SAMPLE_XML, "DOCBETA")
+        result_c = prepare_submission_wrapper(self.SAMPLE_XML, "DOCGAMMA")
+
+        codes = {
+            result_a["documents"][0]["codeNumber"],
+            result_b["documents"][0]["codeNumber"],
+            result_c["documents"][0]["codeNumber"],
+        }
+        self.assertEqual(len(codes), 3, "All alpha docnames must produce distinct codeNumbers")
+
 
 class TestConsolidatedXMLBuilder(FrappeTestCase):
     """Test build_consolidated_xml(docnames, target_month) -- TDD red phase (UT-019).
