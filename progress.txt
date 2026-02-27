@@ -2875,3 +2875,60 @@ Completed: Add InvoicePeriod to individual Salary Slip and Expense Claim invoice
 
 ### Gotchas
 - US-009 was already implemented (both local and container matched) but prd.json was not updated — verified by reading container file then marking passes=true
+## Iteration 6 - Fri, Feb 27, 2026 10:57:44 AM
+Completed: Fix credit note to use LHDN TIN not ERPNext employee code for Supplier (ID: US-009) in 4m
+
+
+## Iteration — US-007: Add InvoicePeriod to individual Salary Slip and Expense Claim invoices
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 64/64 tests pass
+
+### Files modified
+- `payload_builder.py` — Added `_add_invoice_period(root, start_date, end_date)` helper; called in both `build_salary_slip_xml()` and `build_expense_claim_xml()` after skeleton
+- `test_payload_builder.py` — Added `test_invoice_period_present_in_salary_slip_xml` and `test_invoice_period_present_in_expense_claim_xml`
+
+### Patterns
+- Test must explicitly set `doc.start_date`/`doc.end_date` on mock (MagicMock auto-returns MagicMock for any attribute)
+- InvoicePeriod added after `_build_invoice_skeleton()` call
+
+## Iteration — US-008: Fix PCB detection to use custom_is_pcb_component flag
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 65/65 tests pass
+
+### Files modified
+- `payload_builder.py` — Replaced `name in PCB_COMPONENT_NAMES` with nested `_is_pcb()` helper checking `custom_is_pcb_component == 1` OR name in fallback frozenset
+- `test_payload_builder.py` — Added `test_custom_named_pcb_component_detected_via_flag` using side_effect on `db.get_value`
+
+## Iteration — US-009: Fix credit note to use LHDN TIN not ERPNext employee code for Supplier
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_credit_note`
+**Result:** PASS — 8/8 tests pass
+
+### Files modified
+- `credit_note_service.py` — Added `_add_postal_address()` and `_add_party_tax_scheme()` inline helpers; load employee; use `employee.custom_lhdn_tin` with schemeID="TIN"; added PostalAddress+PartyTaxScheme to both parties
+- `test_credit_note.py` — Added `test_credit_note_supplier_id_uses_lhdn_tin` with side_effect routing different doctypes
+
+### Gotchas
+- Inlined `_add_postal_address`/`_add_party_tax_scheme` in credit_note_service to avoid cross-module frappe mock patching issues
+
+## Iteration — US-010: Fix consolidated invoice to use eligible earnings not net_pay
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 66/66 tests pass; 594/594 full suite
+
+### Files modified
+- `payload_builder.py` — In `build_consolidated_xml()`: replaced `_quantize(doc.net_pay)` with same eligible-earnings filter as `build_salary_slip_xml()`
+- `test_payload_builder.py` — Added `test_consolidated_line_amount_excludes_employer_statutory`
+
+### Notes
+- Existing `test_totals_sum_of_all_individual_amounts` still passes because mock earnings[0].amount == net_pay
