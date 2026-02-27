@@ -337,52 +337,46 @@ warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the
 [2m[2:17][0m 📖 [36mRead[0m [2mpayload_builder.py[0m
 [2m[2:22][0m 🔧 [36mEdit[0m [2mpayload_builder.py[0m
 [2m[2:29][0m 🔨 [36mTodoWrite[0m [2m[0m
-ool calls in 16:59)[0m
+[2m[2:37][0m [37mNow let me read the test file to find a good place to add the IssueTime test:[0m
+[2m[2:39][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'IssueDate...[0m
+[2m[2:45][0m [37mLet me look at the mock pattern used in these tests to write a proper IssueTime test:[0m
+[2m[2:47][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "sed -n '82,130p' /...[0m
+[2m[2:52][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "sed -n '60,85p' /h...[0m
+[2m[2:58][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'now_datet...[0m
+[2m[3:05][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "sed -n '190,262p' ...[0m
+[2m[3:15][0m 📖 [36mRead[0m [2mtest_payload_builder.py[0m
+[2m[3:18][0m 📖 [36mRead[0m [2mtest_payload_builder.py[0m
+[2m[3:21][0m [37mNow let me look at the test file for where to insert the IssueTime test (after `test_build_salary_sl...[0m
+[2m[3:21][0m 📖 [36mRead[0m [2mtest_payload_builder.py[0m
+[2m[3:35][0m 🔧 [36mEdit[0m [2mtest_payload_builder.py[0m
+[2m[3:41][0m [37mNow copy both files to the container and run tests:[0m
+[2m[3:43][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[3:48][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:53][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[4:02][0m [37mAll 62 tests pass (including the new `test_issue_time_present_in_invoice_header` test). Let me verif...[0m
+[2m[4:03][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[4:13][0m [37mThe new test passes. Now mark US-006 complete and commit:[0m
+[2m[4:15][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[4:21][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[4:34][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[4:43][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[4:49][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[4:54][0m [37m**US-006 complete.** Here's a summary:  **Story:** Add IssueTime element to Invoice header   **Type:...[0m
 
-[2mStream ended (56 tool calls, 17:02 elapsed)[0m
+[32m[1m✓ Claude finished[0m [2m(32 tool calls in 4:54)[0m
+
+[2mStream ended (32 tool calls, 4:56 elapsed)[0m
   ─────── Claude Output End ────────────
-  [time] Story took 17m
+  [time] Story took 4m
 
-  [done] Story completed: Fix token expiry check and status poller base_url bug
+  [done] Story completed: Add IssueTime element to Invoice header
   ┌─ Quality Gates (Frappe/Docker) ────────────┐
   │ [1/2] Docker container running... ✓ RUNNING
   │ [2/2] bench run-tests... SKIP (no bench module in acceptance criteria)
   └────────────────────────────────────────────┘
   ✓ Quality gates passed (bench check skipped)
-warning: in the working copy of 'progress.txt', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the next time Git touches it
-[feature/lhdn-gap-closure f091744] feat: US-003 - Fix token expiry check and status poller base_url bug
- 2 files changed, 29 insertions(+), 19 deletions(-)
-
-  ╔══════════════════════════════════════╗
-  ║  Iteration 4/60
-  Progress: [██░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 4/50 (8%)
-  ╚══════════════════════════════════════╝
-
-  ┌─ Story ─────────────────────────────┐
-  │ ID:       US-005
-  │ Title:    Implement NRIC format validation on Employee save
-  │ Priority: critical
-  │ Deps:     none
-  │ Attempt:  1/3
-  └─────────────────────────────────────┘
-
-  [baseline] Counting pre-story TS errors... 0 errors
-
-  [spawn] Fresh claude instance for US-005...
-  ─────── Claude Output Start ──────────
-[2m[0:54][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
-[2m[0:56][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
-[2m[1:17][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
-[2m[1:18][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
-[2m[1:23][0m [37mGood. US-005 is the next story — NRIC validation. Let me check the existing files first.[0m
-[2m[1:24][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[1:25][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[1:30][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[1:36][0m [37mNow let me check existing tests for patterns:[0m
-[2m[1:37][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[1:41][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[2:05][0m [37mNow I have full context. Let me implement US-005 — NRIC validation.[0m
+[37mNow I have full context. Let me implement US-005 — NRIC validation.[0m
 [2m[2:05][0m 🔨 [36mTodoWrite[0m [2m[0m
 [2m[2:07][0m 💻 [36mBash[0m [2mmkdir -p /tmp/lhdn_us005[0m
 [2m[2:31][0m ✏️ [36mWrite[0m [2mvalidation.py[0m
@@ -459,3 +453,57 @@ warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the
 [2m[10:11][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
 [2m[10:15][0m [37mProgress.txt already has US-005 entry. Let me add a detailed iteration entry:[0m
 [2m[10:27][0m 💻 [36mBash[0m [2mcat >> /c/Users/Jyue/Documents/1-projects/Projects/prisma-er...[0m
+[2m[10:31][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[10:35][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[10:39][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[10:43][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[10:48][0m [37mUS-005 was already committed in a previous session. Only progress.txt has new changes. Let me commit...[0m
+[2m[10:50][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[10:54][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[11:05][0m [37m**US-005 complete. ✓**  ---  **Summary:**  - **Story:** US-005 — Implement NRIC format validation on...[0m
+
+[32m[1m✓ Claude finished[0m [2m(57 tool calls in 11:05)[0m
+
+[2mStream ended (57 tool calls, 11:07 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 11m
+
+  [done] Story completed: Implement NRIC format validation on Employee save
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... SKIP (no bench module in acceptance criteria)
+  └────────────────────────────────────────────┘
+  ✓ Quality gates passed (bench check skipped)
+warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the next time Git touches it
+[feature/lhdn-gap-closure 1b84150] feat: US-005 - Implement NRIC format validation on Employee save
+ 2 files changed, 112 insertions(+), 39 deletions(-)
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 5/60
+  Progress: [███░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5/50 (10%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       US-006
+  │ Title:    Add IssueTime element to Invoice header
+  │ Priority: high
+  │ Deps:     none
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for US-006...
+  ─────── Claude Output Start ──────────
+[2m[0:51][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[0:53][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:11][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:17][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:23][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:24][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
+[2m[1:31][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m
+[2m[1:32][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:39][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'IssueDate...[0m
+[2m[1:40][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'IssueTime...[0m
+[2m[1:48][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "sed -n '90,140p' /...[0m
+[2m[1:55][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
