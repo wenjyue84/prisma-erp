@@ -3457,3 +3457,26 @@ Completed: Fix custom_id_type options to match LHDN schemeID vocabulary (ID: US-
 ### Gotchas
 - MagicMock auto-creates attributes as truthy non-string objects; `isinstance(val, str)` check is needed to distinguish real string data from MagicMock attributes in test helpers
 - Both container paths (nested and non-nested) must be updated (CRITICAL pattern)
+## Iteration 9 - Fri, Feb 27, 2026 12:54:12 PM
+Completed: Fix custom_id_type options to match LHDN schemeID vocabulary (ID: US-024) in 14m
+
+
+## Iteration N — US-025: Add full PostalAddress fields beyond state code only
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 60 tests, 0 failures, 0 errors (includes 4 new TestFullPostalAddress tests)
+
+### Files created/modified
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added 6 new fields (custom_address_line1, custom_city, custom_postcode on Employee + Company)
+- `lhdn_payroll_integration/services/payload_builder.py` — Updated `_add_postal_address()` signature to accept optional address_line1, city, postcode; emits AddressLine/Line, CityName, PostalZone, CountrySubentityCode, Country/IdentificationCode=MYS; updated all 4 call sites
+- `lhdn_payroll_integration/tests/test_payload_builder.py` — Added `TestFullPostalAddress` class with 4 tests
+
+### Patterns discovered
+- LHDN v1.1 full PostalAddress: AddressLine/Line is nested (cac:AddressLine > cbc:Line); Country/IdentificationCode always = "MYS"
+- Optional address fields (address_line1, city, postcode) use `or None` to convert empty string to None, so absent when empty
+- Consolidated buyer always uses hardcoded state "17" (Not Applicable) — no address fields passed
+
+### Gotchas
+- Container nested path sync required: `docker cp` to outer path, then `docker exec -u root cp` to nested path

@@ -1962,3 +1962,216 @@ class TestIdTypeSchemeID(FrappeTestCase):
         self.assertIsNotNone(supplier_id_elem, "Supplier cbc:ID element not found")
         self.assertEqual(supplier_id_elem.get("schemeID"), "ARMY",
             "Army ID id_type must produce schemeID='ARMY'")
+
+
+class TestFullPostalAddress(FrappeTestCase):
+    """Test LHDN v1.1 full PostalAddress fields in UBL XML.
+
+    LHDN v1.1 requires: AddressLine/Line, CityName, PostalZone,
+    CountrySubentityCode, Country/IdentificationCode = MYS.
+    When employee/company address fields are set, all elements must appear.
+    """
+
+    def _make_salary_slip_doc(self):
+        doc = MagicMock()
+        doc.name = "SAL-SLP-ADDR-001"
+        doc.employee = "HR-EMP-ADDR-001"
+        doc.employee_name = "Siti binti Rahmat"
+        doc.net_pay = 4000
+        doc.company = "Test Corp"
+        doc.posting_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
+        earning = MagicMock()
+        earning.salary_component = "Basic Salary"
+        earning.amount = 4000
+        earning.custom_lhdn_classification_code = "022 : Others"
+        doc.earnings = [earning]
+        doc.deductions = []
+        return doc
+
+    def _make_employee_doc(self, with_address=True):
+        emp = MagicMock()
+        emp.custom_lhdn_tin = "IG98765432101"
+        emp.custom_id_type = "NRIC"
+        emp.custom_id_value = "901201145678"
+        emp.employee_name = "Siti binti Rahmat"
+        emp.custom_is_foreign_worker = 0
+        emp.custom_state_code = "10"
+        if with_address:
+            emp.custom_address_line1 = "No 5 Jalan Merdeka"
+            emp.custom_city = "Petaling Jaya"
+            emp.custom_postcode = "47500"
+        else:
+            emp.custom_address_line1 = ""
+            emp.custom_city = ""
+            emp.custom_postcode = ""
+        return emp
+
+    def _make_company_doc(self, with_address=True):
+        company = MagicMock()
+        company.custom_company_tin_number = "C98765432101"
+        company.name = "Test Corp"
+        company.company_name = "Test Corp Sdn Bhd"
+        company.abbr = "TC"
+        company.custom_state_code = "14"
+        if with_address:
+            company.custom_address_line1 = "Level 10 Menara Test"
+            company.custom_city = "Kuala Lumpur"
+            company.custom_postcode = "50450"
+        else:
+            company.custom_address_line1 = ""
+            company.custom_city = ""
+            company.custom_postcode = ""
+        return company
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_supplier_full_address_all_elements_present(self, mock_frappe):
+        """Supplier PostalAddress must contain AddressLine/Line, CityName, PostalZone,
+        CountrySubentityCode, and Country/IdentificationCode=MYS when address fields set."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee_doc(with_address=True)
+        company = self._make_company_doc(with_address=False)
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-ADDR-001"): doc,
+            ("Employee", "HR-EMP-ADDR-001"): emp,
+            ("Company", "Test Corp"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-ADDR-001")
+        root = ET.fromstring(xml_string)
+
+        supplier_postal = root.find(
+            f".//{{{CAC_NS}}}AccountingSupplierParty"
+            f"//{{{CAC_NS}}}PostalAddress"
+        )
+        self.assertIsNotNone(supplier_postal, "Supplier PostalAddress not found")
+
+        # AddressLine/Line
+        addr_line = supplier_postal.find(f"{{{CAC_NS}}}AddressLine/{{{CBC_NS}}}Line")
+        self.assertIsNotNone(addr_line, "AddressLine/Line missing from supplier PostalAddress")
+        self.assertEqual(addr_line.text, "No 5 Jalan Merdeka")
+
+        # CityName
+        city = supplier_postal.find(f"{{{CBC_NS}}}CityName")
+        self.assertIsNotNone(city, "CityName missing from supplier PostalAddress")
+        self.assertEqual(city.text, "Petaling Jaya")
+
+        # PostalZone
+        postcode = supplier_postal.find(f"{{{CBC_NS}}}PostalZone")
+        self.assertIsNotNone(postcode, "PostalZone missing from supplier PostalAddress")
+        self.assertEqual(postcode.text, "47500")
+
+        # CountrySubentityCode
+        state = supplier_postal.find(f"{{{CBC_NS}}}CountrySubentityCode")
+        self.assertIsNotNone(state, "CountrySubentityCode missing from supplier PostalAddress")
+        self.assertEqual(state.text, "10")
+
+        # Country/IdentificationCode = MYS
+        country_code = supplier_postal.find(f"{{{CAC_NS}}}Country/{{{CBC_NS}}}IdentificationCode")
+        self.assertIsNotNone(country_code, "Country/IdentificationCode missing from supplier PostalAddress")
+        self.assertEqual(country_code.text, "MYS")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_buyer_full_address_all_elements_present(self, mock_frappe):
+        """Buyer PostalAddress must contain AddressLine/Line, CityName, PostalZone,
+        CountrySubentityCode, and Country/IdentificationCode=MYS when address fields set."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee_doc(with_address=False)
+        company = self._make_company_doc(with_address=True)
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-ADDR-001"): doc,
+            ("Employee", "HR-EMP-ADDR-001"): emp,
+            ("Company", "Test Corp"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-ADDR-001")
+        root = ET.fromstring(xml_string)
+
+        buyer_postal = root.find(
+            f".//{{{CAC_NS}}}AccountingCustomerParty"
+            f"//{{{CAC_NS}}}PostalAddress"
+        )
+        self.assertIsNotNone(buyer_postal, "Buyer PostalAddress not found")
+
+        # AddressLine/Line
+        addr_line = buyer_postal.find(f"{{{CAC_NS}}}AddressLine/{{{CBC_NS}}}Line")
+        self.assertIsNotNone(addr_line, "AddressLine/Line missing from buyer PostalAddress")
+        self.assertEqual(addr_line.text, "Level 10 Menara Test")
+
+        # CityName
+        city = buyer_postal.find(f"{{{CBC_NS}}}CityName")
+        self.assertIsNotNone(city, "CityName missing from buyer PostalAddress")
+        self.assertEqual(city.text, "Kuala Lumpur")
+
+        # PostalZone
+        postcode = buyer_postal.find(f"{{{CBC_NS}}}PostalZone")
+        self.assertIsNotNone(postcode, "PostalZone missing from buyer PostalAddress")
+        self.assertEqual(postcode.text, "50450")
+
+        # CountrySubentityCode
+        state = buyer_postal.find(f"{{{CBC_NS}}}CountrySubentityCode")
+        self.assertIsNotNone(state, "CountrySubentityCode missing from buyer PostalAddress")
+        self.assertEqual(state.text, "14")
+
+        # Country/IdentificationCode = MYS
+        country_code = buyer_postal.find(f"{{{CAC_NS}}}Country/{{{CBC_NS}}}IdentificationCode")
+        self.assertIsNotNone(country_code, "Country/IdentificationCode missing from buyer PostalAddress")
+        self.assertEqual(country_code.text, "MYS")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_country_identification_code_always_mys(self, mock_frappe):
+        """Country/IdentificationCode must always be MYS regardless of address fields."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee_doc(with_address=False)
+        company = self._make_company_doc(with_address=False)
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-ADDR-001"): doc,
+            ("Employee", "HR-EMP-ADDR-001"): emp,
+            ("Company", "Test Corp"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-ADDR-001")
+        root = ET.fromstring(xml_string)
+
+        for party_tag, label in [
+            ("AccountingSupplierParty", "supplier"),
+            ("AccountingCustomerParty", "buyer"),
+        ]:
+            postal = root.find(f".//{{{CAC_NS}}}{party_tag}//{{{CAC_NS}}}PostalAddress")
+            self.assertIsNotNone(postal, f"{label} PostalAddress not found")
+            country_code = postal.find(f"{{{CAC_NS}}}Country/{{{CBC_NS}}}IdentificationCode")
+            self.assertIsNotNone(country_code, f"Country/IdentificationCode missing from {label}")
+            self.assertEqual(country_code.text, "MYS",
+                             f"{label} Country/IdentificationCode must be MYS, got {country_code.text!r}")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_optional_address_fields_omitted_when_empty(self, mock_frappe):
+        """When address fields are empty, AddressLine/CityName/PostalZone must be absent."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee_doc(with_address=False)
+        company = self._make_company_doc(with_address=False)
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-ADDR-001"): doc,
+            ("Employee", "HR-EMP-ADDR-001"): emp,
+            ("Company", "Test Corp"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-ADDR-001")
+        root = ET.fromstring(xml_string)
+
+        supplier_postal = root.find(
+            f".//{{{CAC_NS}}}AccountingSupplierParty"
+            f"//{{{CAC_NS}}}PostalAddress"
+        )
+        self.assertIsNotNone(supplier_postal)
+        self.assertIsNone(supplier_postal.find(f"{{{CAC_NS}}}AddressLine"),
+                          "AddressLine should be absent when custom_address_line1 is empty")
+        self.assertIsNone(supplier_postal.find(f"{{{CBC_NS}}}CityName"),
+                          "CityName should be absent when custom_city is empty")
+        self.assertIsNone(supplier_postal.find(f"{{{CBC_NS}}}PostalZone"),
+                          "PostalZone should be absent when custom_postcode is empty")
