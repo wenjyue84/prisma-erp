@@ -25,6 +25,7 @@ CBC_NS = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
 TWO_DP = Decimal("0.01")
 
 # PCB component names to detect withholding tax deductions
+# Fallback PCB names — deprecated; prefer custom_is_pcb_component flag on Salary Component.
 PCB_COMPONENT_NAMES = frozenset({
     'Monthly Tax Deduction', 'PCB', 'Income Tax', 'Tax Deduction'
 })
@@ -128,6 +129,13 @@ def _add_party_tax_scheme(party_elem, sst_registration):
     _sub(tax_scheme_elem, CBC_NS, "RegistrationName", reg_name)
     inner_scheme = _sub(tax_scheme_elem, CAC_NS, "TaxScheme")
     _sub(inner_scheme, CBC_NS, "ID", scheme_id)
+
+
+def _add_invoice_period(root, start_date, end_date):
+    """Add cac:InvoicePeriod with StartDate and EndDate to the invoice root."""
+    invoice_period = _sub(root, CAC_NS, "InvoicePeriod")
+    _sub(invoice_period, CBC_NS, "StartDate", str(start_date))
+    _sub(invoice_period, CBC_NS, "EndDate", str(end_date))
 
 
 def _add_additional_doc_reference(root, id_type, id_value):
@@ -251,6 +259,9 @@ def build_salary_slip_xml(docname):
 
     root = _build_invoice_skeleton(docname, doc.posting_date, employee, company)
 
+    # Billing period (pay period dates) — required for payroll self-billed invoices
+    _add_invoice_period(root, doc.start_date, doc.end_date)
+
     # Foreign currency conversion: LHDN requires MYR
     source_currency = getattr(doc, "currency", "MYR") or "MYR"
     if source_currency != "MYR":
@@ -281,11 +292,18 @@ def build_salary_slip_xml(docname):
 
     _add_tax_and_totals(root, total_excl, total_tax)
 
-    # PCB withholding tax: detect from deductions and add WithholdingTaxTotal
+    # PCB withholding tax: detect from deductions and add WithholdingTaxTotal.
+    # Primary: custom_is_pcb_component flag on Salary Component; fallback: name in PCB_COMPONENT_NAMES.
+    def _is_pcb(component_name):
+        return (
+            frappe.db.get_value("Salary Component", component_name, "custom_is_pcb_component") == 1
+            or component_name in PCB_COMPONENT_NAMES
+        )
+
     pcb_amount = sum(
         _quantize(d.amount)
         for d in getattr(doc, 'deductions', [])
-        if getattr(d, 'salary_component', '') in PCB_COMPONENT_NAMES
+        if _is_pcb(getattr(d, 'salary_component', ''))
     )
     if pcb_amount > Decimal("0.00"):
         withholding = _sub(root, CAC_NS, "WithholdingTaxTotal")
@@ -342,6 +360,9 @@ def build_expense_claim_xml(docname):
     company = frappe.get_doc("Company", doc.company)
 
     root = _build_invoice_skeleton(docname, doc.posting_date, employee, company)
+
+    # Billing period (expense claim dates) — required for payroll self-billed invoices
+    _add_invoice_period(root, doc.start_date, doc.end_date)
 
     # Calculate totals from expenses rows (sanctioned_amount)
     total_excl = sum(_quantize(row.sanctioned_amount) for row in doc.expenses)

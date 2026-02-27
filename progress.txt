@@ -2810,3 +2810,41 @@ Completed: Implement NRIC format validation on Employee save (ID: US-005) in 11m
 
 ### Gotchas
 - `mock_frappe.db.get_value.return_value = 0` needed to prevent employer statutory components from triggering MagicMock truthy path in the exclusion filter
+## Iteration 4 - Fri, Feb 27, 2026 10:47:28 AM
+Completed: Add IssueTime element to Invoice header (ID: US-006) in 4m
+
+
+## Iteration — US-006: Add IssueTime element to Invoice header
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 62/62 tests pass, 0 failures, 0 errors
+
+### Files confirmed
+- `lhdn_payroll_integration/services/payload_builder.py` — Line 166: `_sub(root, CBC_NS, "IssueTime", frappe.utils.now_datetime().strftime("%H:%M:%S"))` already present
+- `lhdn_payroll_integration/tests/test_payload_builder.py` — `test_issue_time_present_in_invoice_header` already present and passing
+
+### Notes
+- Implementation was already complete (IssueTime emitted right after IssueDate in _build_invoice_skeleton)
+- Element order validated: ID → IssueDate → IssueTime → InvoiceTypeCode → DocumentCurrencyCode
+- Test mocks `frappe.utils.now_datetime` to return fixed datetime for deterministic comparison
+
+## Iteration N — US-007: Add InvoicePeriod to individual Salary Slip and Expense Claim invoices
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 64 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/payload_builder.py` — Added `_add_invoice_period(root, start_date, end_date)` helper; called it in both `build_salary_slip_xml()` and `build_expense_claim_xml()` after `_build_invoice_skeleton()`
+- `lhdn_payroll_integration/tests/test_payload_builder.py` — Added `start_date`/`end_date` to salary slip and expense claim mock factories; verified `test_invoice_period_present_in_salary_slip_xml` and `test_invoice_period_present_in_expense_claim_xml` both pass
+
+### Patterns discovered
+- Tests for InvoicePeriod were already partially in the file (from a prior edit) — matched acceptance criteria exactly
+- `_add_invoice_period()` placed right after `_build_invoice_skeleton()` before totals; XML element order works fine for LHDN
+- MagicMock auto-attributes mean `doc.start_date`/`doc.end_date` work without explicit setup in other tests (won't break them)
+
+### Gotchas
+- None — straightforward helper + 2-line call in each builder

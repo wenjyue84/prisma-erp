@@ -37,6 +37,8 @@ class TestSalarySlipXMLBuilder(FrappeTestCase):
         doc.net_pay = net_pay
         doc.company = "Arising Packaging"
         doc.posting_date = "2026-01-31"
+        doc.start_date = "2026-01-01"
+        doc.end_date = "2026-01-31"
         doc.currency = "MYR"
         doc.conversion_rate = 1
 
@@ -290,6 +292,35 @@ class TestSalarySlipXMLBuilder(FrappeTestCase):
         except (AssertionError, AttributeError):
             self.fail("build_salary_slip_xml accessed YTD fields which should not be used")
 
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_invoice_period_present_in_salary_slip_xml(self, mock_frappe):
+        """InvoicePeriod with StartDate and EndDate is present in Salary Slip XML (US-007)."""
+        doc = self._make_salary_slip_doc()
+        doc.start_date = "2026-01-01"
+        doc.end_date = "2026-01-31"
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-00001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+        mock_frappe.db.get_value.return_value = 0
+
+        xml_string = build_salary_slip_xml("SAL-SLP-00001")
+        root = ET.fromstring(xml_string)
+
+        invoice_period = root.find(f".//{{{CAC_NS}}}InvoicePeriod")
+        self.assertIsNotNone(invoice_period, "InvoicePeriod not found in Salary Slip XML")
+
+        start = invoice_period.find(f"{{{CBC_NS}}}StartDate")
+        end = invoice_period.find(f"{{{CBC_NS}}}EndDate")
+        self.assertIsNotNone(start, "InvoicePeriod/StartDate not found")
+        self.assertIsNotNone(end, "InvoicePeriod/EndDate not found")
+        self.assertEqual(start.text, "2026-01-01")
+        self.assertEqual(end.text, "2026-01-31")
+
 
 class TestExpenseClaimXMLBuilder(FrappeTestCase):
     """Test build_expense_claim_xml(docname) XML generation logic."""
@@ -302,6 +333,8 @@ class TestExpenseClaimXMLBuilder(FrappeTestCase):
         doc.employee_name = "Ahmad bin Abdullah"
         doc.company = "Arising Packaging"
         doc.posting_date = "2026-01-31"
+        doc.start_date = "2026-01-01"
+        doc.end_date = "2026-01-31"
         doc.total_sanctioned_amount = 850
         doc.custom_expense_category = "Self-Billed Required"
 
@@ -511,6 +544,34 @@ class TestExpenseClaimXMLBuilder(FrappeTestCase):
         )
         self.assertIsNotNone(code2, "Second line missing classification code")
         self.assertEqual(code2.text, "037")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_invoice_period_present_in_expense_claim_xml(self, mock_frappe):
+        """InvoicePeriod with StartDate and EndDate is present in Expense Claim XML (US-007)."""
+        doc = self._make_expense_claim_doc()
+        doc.start_date = "2026-01-01"
+        doc.end_date = "2026-01-31"
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Expense Claim", "HR-EXP-00001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_expense_claim_xml("HR-EXP-00001")
+        root = ET.fromstring(xml_string)
+
+        invoice_period = root.find(f".//{{{CAC_NS}}}InvoicePeriod")
+        self.assertIsNotNone(invoice_period, "InvoicePeriod not found in Expense Claim XML")
+
+        start = invoice_period.find(f"{{{CBC_NS}}}StartDate")
+        end = invoice_period.find(f"{{{CBC_NS}}}EndDate")
+        self.assertIsNotNone(start, "InvoicePeriod/StartDate not found")
+        self.assertIsNotNone(end, "InvoicePeriod/EndDate not found")
+        self.assertEqual(start.text, "2026-01-01")
+        self.assertEqual(end.text, "2026-01-31")
 
 
 class TestSubmissionWrapper(FrappeTestCase):
@@ -1226,6 +1287,56 @@ class TestPCBWithholdingTax(FrappeTestCase):
         actual = Decimal(tax_inclusive.text)
         self.assertEqual(actual, Decimal(str(expected_gross)),
             f"TaxInclusiveAmount ({actual}) must equal sum of earnings ({expected_gross})")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_custom_named_pcb_component_detected_via_flag(self, mock_frappe):
+        """Custom-named PCB component (e.g. 'Cukai Pendapatan') included in WithholdingTaxTotal
+        when custom_is_pcb_component flag is set (US-008)."""
+        doc = MagicMock()
+        doc.name = "SAL-SLP-PCB-001"
+        doc.employee = "HR-EMP-00001"
+        doc.company = "Arising Packaging"
+        doc.posting_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
+        doc.start_date = "2026-01-01"
+        doc.end_date = "2026-01-31"
+
+        earning = MagicMock()
+        earning.salary_component = "Basic Salary"
+        earning.amount = 4000
+        earning.custom_lhdn_classification_code = "022 : Others"
+        doc.earnings = [earning]
+
+        pcb = MagicMock()
+        pcb.salary_component = "Cukai Pendapatan"  # NOT in PCB_COMPONENT_NAMES
+        pcb.amount = 400
+        doc.deductions = [pcb]
+
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None, **kw: {
+            ("Salary Slip", "SAL-SLP-PCB-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        def _db_get_value(doctype, name, fieldname, *args, **kwargs):
+            if doctype == "Salary Component" and name == "Cukai Pendapatan" and fieldname == "custom_is_pcb_component":
+                return 1
+            return 0
+
+        mock_frappe.db.get_value.side_effect = _db_get_value
+
+        xml_string = build_salary_slip_xml("SAL-SLP-PCB-001")
+        root = ET.fromstring(xml_string)
+
+        withholding = root.find(f".//{{{CAC_NS}}}WithholdingTaxTotal")
+        self.assertIsNotNone(withholding, "WithholdingTaxTotal must exist for custom-named PCB component")
+        tax_amount = withholding.find(f"{{{CBC_NS}}}TaxAmount")
+        self.assertIsNotNone(tax_amount, "TaxAmount missing from WithholdingTaxTotal")
+        self.assertEqual(Decimal(tax_amount.text), Decimal("400.00"))
 
 
 class TestPaymentMeans(FrappeTestCase):
