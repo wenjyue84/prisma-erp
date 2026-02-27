@@ -82,11 +82,19 @@ def calculate_pcb(
     bonus_amount: float = 0.0,
     gratuity_amount: float = 0.0,
     years_of_service: int = 0,
+    worked_days: int = None,
+    total_days: int = None,
 ) -> float:
     """Calculate monthly PCB/MTD deduction amount.
 
     Applies standard reliefs for residents then uses LHDN progressive bands.
     Non-residents are taxed at flat 30% on gross income.
+
+    When worked_days and total_days are both provided and worked_days < total_days,
+    monthly income is prorated before annualising:
+        prorated_monthly = monthly_income * (worked_days / total_days)
+        annual_income = prorated_monthly * 12
+    This handles mid-month joins/departures per LHDN PCB proration rules.
 
     For irregular payments (bonus, commission), pass bonus_amount.
     The function applies the one-twelfth annualisation rule per LHDN Schedule D:
@@ -112,6 +120,10 @@ def calculate_pcb(
             to Schedule 6 para 25 exemption (RM1,000 x years_of_service).
         years_of_service: Completed years of service for Schedule 6 para 25
             exemption calculation.
+        worked_days: Number of days actually worked in the pay period.
+            When provided with total_days, prorates monthly income.
+        total_days: Total calendar days in the pay period month.
+            When provided with worked_days, prorates monthly income.
 
     Returns:
         float: Monthly PCB amount (RM), rounded to 2 decimal places.
@@ -119,6 +131,14 @@ def calculate_pcb(
                regular monthly PCB and the incremental irregular PCB.
                Returns 0.0 for zero or negative income (with no irregular payments).
     """
+    # Mid-month proration: if worked_days < total_days, prorate monthly
+    # income before annualising (LHDN PCB proration for mid-month join/leave)
+    if worked_days is not None and total_days is not None and total_days > 0:
+        if worked_days < total_days:
+            monthly_income = annual_income / 12
+            prorated_monthly = monthly_income * (worked_days / total_days)
+            annual_income = prorated_monthly * 12
+
     if annual_income <= 0 and bonus_amount <= 0 and gratuity_amount <= 0:
         return 0.0
 
@@ -197,7 +217,20 @@ def validate_pcb_amount(doc_name: str) -> dict:
     if hasattr(employee, "custom_number_of_children"):
         children = int(employee.custom_number_of_children or 0)
 
-    expected_monthly = calculate_pcb(annual_income, resident=resident, married=married, children=children)
+    # Extract proration info from Salary Slip (total_working_days, payment_days)
+    worked_days_val = None
+    total_days_val = None
+    if hasattr(doc, "payment_days") and hasattr(doc, "total_working_days"):
+        payment_days = int(doc.payment_days or 0)
+        total_working_days = int(doc.total_working_days or 0)
+        if total_working_days > 0 and payment_days < total_working_days:
+            worked_days_val = payment_days
+            total_days_val = total_working_days
+
+    expected_monthly = calculate_pcb(
+        annual_income, resident=resident, married=married, children=children,
+        worked_days=worked_days_val, total_days=total_days_val,
+    )
 
     # Find PCB deduction component (look for "Monthly Tax Deduction" or "PCB")
     actual_pcb = 0.0

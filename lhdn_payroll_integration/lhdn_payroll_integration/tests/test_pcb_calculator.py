@@ -1,4 +1,4 @@
-"""Tests for PCB/MTD calculator — US-004, US-018, and US-035.
+"""Tests for PCB/MTD calculator — US-004, US-018, US-035, and US-036.
 
 Covers:
 - Single resident: progressive tax bands
@@ -8,6 +8,7 @@ Covers:
 - validate_pcb_amount: returns warning dict
 - Bonus/irregular payment: one-twelfth annualisation rule (US-018)
 - Gratuity/leave encashment: Schedule 6 para 25 exemption (US-035)
+- Mid-month proration: worked_days/total_days proration (US-036)
 """
 from unittest.mock import MagicMock, patch
 
@@ -534,3 +535,156 @@ class TestCalculatePcbGratuityExemption(FrappeTestCase):
             gratuity_amount=15_000, years_of_service=10,
         )
         self.assertAlmostEqual(result, 0.0, places=2)
+
+
+class TestCalculatePcbProration(FrappeTestCase):
+    """Test calculate_pcb() with mid-month proration — US-036.
+
+    LHDN PCB proration for mid-month join/leave:
+    When worked_days < total_days, monthly income is prorated:
+        prorated_monthly = monthly_income * (worked_days / total_days)
+        prorated_annual = prorated_monthly * 12
+    PCB is then calculated on the prorated annual income.
+    """
+
+    def test_full_month_no_proration(self):
+        """worked_days == total_days → no proration, same as default."""
+        annual = 60_000
+        regular = calculate_pcb(annual, resident=True)
+        full_month = calculate_pcb(
+            annual, resident=True,
+            worked_days=30, total_days=30,
+        )
+        self.assertAlmostEqual(regular, full_month, places=2)
+
+    def test_half_month_prorated_pcb_lower(self):
+        """15 out of 30 days → half income → lower PCB than full month."""
+        annual = 60_000
+        full = calculate_pcb(annual, resident=True)
+        half = calculate_pcb(
+            annual, resident=True,
+            worked_days=15, total_days=30,
+        )
+        self.assertLess(half, full)
+
+    def test_half_month_prorated_calculation(self):
+        """15/30 days, annual RM 60,000.
+
+        Monthly = 60,000 / 12 = 5,000
+        Prorated monthly = 5,000 * (15/30) = 2,500
+        Prorated annual = 2,500 * 12 = 30,000
+        Chargeable = 30,000 - 9,000 = 21,000
+        Tax:
+          0%  on  5,000 =   0
+          1%  on 15,000 = 150
+          3%  on  1,000 =  30
+          Total = 180
+        Monthly PCB = 180 / 12 = 15.00
+        """
+        result = calculate_pcb(
+            60_000, resident=True,
+            worked_days=15, total_days=30,
+        )
+        self.assertAlmostEqual(result, 15.00, places=2)
+
+    def test_none_worked_days_no_proration(self):
+        """When worked_days is None, no proration applied."""
+        annual = 60_000
+        regular = calculate_pcb(annual, resident=True)
+        no_proration = calculate_pcb(
+            annual, resident=True,
+            worked_days=None, total_days=30,
+        )
+        self.assertAlmostEqual(regular, no_proration, places=2)
+
+    def test_none_total_days_no_proration(self):
+        """When total_days is None, no proration applied."""
+        annual = 60_000
+        regular = calculate_pcb(annual, resident=True)
+        no_proration = calculate_pcb(
+            annual, resident=True,
+            worked_days=15, total_days=None,
+        )
+        self.assertAlmostEqual(regular, no_proration, places=2)
+
+    def test_non_resident_proration(self):
+        """Non-resident with proration: flat 30% on prorated income.
+
+        Annual 60,000; 15/30 days → prorated annual = 30,000
+        Monthly PCB = (30,000 * 0.30) / 12 = 750.00
+        """
+        result = calculate_pcb(
+            60_000, resident=False,
+            worked_days=15, total_days=30,
+        )
+        self.assertAlmostEqual(result, 750.00, places=2)
+
+    def test_proration_with_married_relief(self):
+        """Married with children, 20/30 days.
+
+        Annual 60,000; 20/30 → prorated annual = 40,000
+        Relief = 9,000 + 4,000 + 2*2,000 = 17,000
+        Chargeable = 40,000 - 17,000 = 23,000
+        Tax:
+          0%  on  5,000 =   0
+          1%  on 15,000 = 150
+          3%  on  3,000 =  90
+          Total = 240
+        Monthly = 240 / 12 = 20.00
+        """
+        result = calculate_pcb(
+            60_000, resident=True, married=True, children=2,
+            worked_days=20, total_days=30,
+        )
+        self.assertAlmostEqual(result, 20.00, places=2)
+
+    def test_zero_total_days_no_division_error(self):
+        """total_days=0 should not cause ZeroDivisionError; treated as no proration."""
+        annual = 60_000
+        regular = calculate_pcb(annual, resident=True)
+        result = calculate_pcb(
+            annual, resident=True,
+            worked_days=0, total_days=0,
+        )
+        self.assertAlmostEqual(regular, result, places=2)
+
+
+class TestValidatePcbAmountProration(FrappeTestCase):
+    """Test validate_pcb_amount() uses prorated income — US-036."""
+
+    def _make_deduction_row(self, component, amount):
+        row = MagicMock()
+        row.salary_component = component
+        row.amount = amount
+        return row
+
+    @patch("lhdn_payroll_integration.services.pcb_calculator.frappe")
+    def test_prorated_pcb_used_when_payment_days_less_than_total(self, mock_frappe):
+        """validate_pcb_amount prorates when payment_days < total_working_days.
+
+        Monthly gross = 5,000; payment_days = 15, total_working_days = 30
+        Annual = 60,000; prorated annual = 30,000
+        Expected PCB at prorated income = 15.00
+        """
+        slip = MagicMock()
+        slip.gross_pay = 5_000
+        slip.employee = "EMP-001"
+        slip.payment_days = 15
+        slip.total_working_days = 30
+        # Set actual PCB close to prorated expected (15.00)
+        slip.deductions = [self._make_deduction_row("Monthly Tax Deduction", 15.00)]
+
+        employee = MagicMock()
+        employee.custom_is_non_resident = 0
+        employee.custom_tax_resident_status = "Resident"
+        employee.custom_marital_status = "Single"
+        employee.custom_number_of_children = 0
+
+        mock_frappe.get_doc.side_effect = lambda doctype, name: (
+            slip if doctype == "Salary Slip" else employee
+        )
+
+        result = validate_pcb_amount("SLIP-001")
+        # Expected monthly PCB should be based on prorated income (~15.00)
+        self.assertAlmostEqual(result["expected_monthly_pcb"], 15.00, places=2)
+        self.assertFalse(result["warning"])

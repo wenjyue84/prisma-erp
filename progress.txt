@@ -3832,3 +3832,34 @@ Incomplete: Add EIS, HRDF, and common allowance salary components to fixture (ID
 - fixtures/custom_field.json — added custom_is_gratuity_or_leave_encashment (Check) on Salary Component
 - tests/test_pcb_calculator.py — added 8 gratuity/leave encashment test cases
 
+## Iteration 15 - Fri, Feb 27, 2026  1:58:51 PM
+Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 1/3
+
+
+## Iteration 16 — US-036: Handle mid-month proration for pay period PCB calculation
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 45/45 tests pass (8 new proration tests + 37 existing), 0 failures, 0 errors
+
+### Files modified
+- `services/pcb_calculator.py` — Added worked_days/total_days params to calculate_pcb(); prorates monthly income before annualising when worked_days < total_days. Updated validate_pcb_amount() to extract payment_days/total_working_days from Salary Slip.
+- `tests/test_pcb_calculator.py` — Added TestCalculatePcbProration (7 tests) and TestValidatePcbAmountProration (1 test)
+
+### Test methods added (8 total)
+1. test_full_month_no_proration — No proration when worked_days == total_days
+2. test_half_month_prorated_pcb_lower — Half-month produces lower PCB
+3. test_half_month_prorated_calculation — Exact math: 15/30 days, RM60k annual → PCB RM15.00
+4. test_none_worked_days_no_proration — None worked_days = no proration
+5. test_none_total_days_no_proration — None total_days = no proration
+6. test_non_resident_proration — Non-resident flat 30% on prorated income
+7. test_proration_with_married_relief — Married+children reliefs with proration
+8. test_zero_total_days_no_division_error — Zero total_days handled safely
+9. test_prorated_pcb_used_when_payment_days_less_than_total — validate_pcb_amount() uses prorated income
+
+### Acceptance criteria met
+- [x] pcb_calculator.py accepts worked_days and total_days_in_month parameters
+- [x] Prorates monthly income before annualising
+- [x] PCB validation warning uses prorated income when worked_days < total_days
+- [x] Test verifies prorated PCB for 15-day month vs full month same income
