@@ -331,3 +331,74 @@ warning: in the working copy of 'lhdn_payroll_integration/lhdn_payroll_integrati
 [2m[7:26][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
 [2m[7:36][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
 [2m[7:50][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[8:34][0m [37mGood - US-016 is already marked `passes: True` in HEAD. The git log shows commits `790b6ac` and `d14...[0m
+[2m[8:40][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[8:45][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[8:51][0m [37mUS-016 is complete. Here's a summary of what was done:  **US-016: Generate SOCSO Borang 8A monthly c...[0m
+
+[32m[1m✓ Claude finished[0m [2m(57 tool calls in 8:52)[0m
+
+[2mStream ended (57 tool calls, 8:53 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 8m
+
+  [done] Story completed: Generate SOCSO Borang 8A monthly contribution schedule
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... SKIP (no bench module in acceptance criteria)
+  └────────────────────────────────────────────┘
+  ✓ Quality gates passed (bench check skipped)
+warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the next time Git touches it
+[feature/lhdn-gap-closure f3ccbd5] feat: US-016 - Generate SOCSO Borang 8A monthly contribution schedule
+ 2 files changed, 478 insertions(+)
+ create mode 100644 tmp_socso/custom_field_updated.json
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 4/60
+  Progress: [██████████░░░░░░░░░░░░░░░░░░░░] 17/50 (34%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       US-018
+  │ Title:    Add bonus/irregular payment classification for PCB differentiation
+  │ Priority: high
+  │ Deps:     US-004
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for US-018...
+  ─────── Claude Output Start ──────────
+
+  ╔══════════════════════════════════════════╗
+  ║   📊 15-MIN PROGRESS REPORT — 12:08  ║
+  ╠══════════════════════════════════════════╣
+  ║  Completed:  17 / 50 stories
+  ║  Remaining:  33 stories
+  ║
+  ║  Recently done:
+  ║    ✓ [US-015] Generate EPF Borang A monthly contribution schedule
+  ║    ✓ [US-016] Generate SOCSO Borang 8A monthly contribution schedule
+  ║    ✓ [US-017] Generate EIS monthly contribution report
+  ║
+  ║  Up next:
+  ║    → [US-018] Add bonus/irregular payment classification for PCB differentiation
+  ║    → [US-019] Add non-resident flat-rate 30% tax flag and handling
+  ║    → [US-020] Distinguish director fee vs director salary at invoice level
+  ╚══════════════════════════════════════════╝
+
+[2m[0:37][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[0:39][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[0:53][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:04][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:08][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:13][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
+[2m[1:16][0m [37mGood, container is running. Now let me read the existing PCB calculator and custom field fixture to ...[0m
+[2m[1:17][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:18][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:25][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:26][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:32][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:37][0m [37mThe tests and implementation already seem to exist. Let me run the tests to verify their current sta...[0m
+[2m[1:39][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
