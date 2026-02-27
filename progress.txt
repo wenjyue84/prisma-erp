@@ -3135,3 +3135,38 @@ Completed: Generate EPF Borang A monthly contribution schedule (ID: US-015) in 5
 ### Gotchas
 - EPF fieldname mismatch: implementation originally used `total_contribution` but test expected `total_epf`
 - bench migrate ran and orphan-deleted LHDN Payroll workspace — workspace fixture re-synced via sync_fixtures
+## Iteration 3 - Fri, Feb 27, 2026 12:03:39 PM
+Completed: Generate EPF Borang A monthly contribution schedule (ID: US-015) in 7m
+
+
+## Iteration 4 — US-016: Generate SOCSO Borang 8A monthly contribution schedule
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 18 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_socso_borang_8a`
+**Result:** PASS — 18/18 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_socso_borang_8a.py` — New test file (18 tests)
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — Added `custom_socso_member_number` (Data) on Employee
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/socso_borang_8a/socso_borang_8a.py` — Copied to local (already existed in container)
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/socso_borang_8a/socso_borang_8a.json` — Copied to local (already existed in container)
+
+### Actions taken
+1. Verified SOCSO report already existed in container from prior work
+2. Confirmed `custom_socso_member_number` was missing from custom_field.json fixture
+3. Added field to fixture: Employee-custom_socso_member_number (Data, insert_after: custom_epf_member_number)
+4. Ran `bench --site frontend migrate` — field created in DB confirmed
+5. Wrote test file: 3 classes (Columns, Data, Execute), 18 test methods
+6. All 18 tests pass (TDD GREEN confirmed)
+
+### Patterns discovered
+- `bench --site frontend migrate` applies fixtures via after_migrate hook — no need for separate sync_fixtures
+- Report files existed in container but not in local git repo — always docker cp back to sync
+- SOCSO test pattern mirrors EPF Borang A (test_epf_borang_a.py) closely
+
+### Gotchas
+- `bench sync_fixtures` command doesn't exist; use `bench migrate` or `frappe.utils.fixtures.sync_fixtures()` via execute
+
+## Iteration 4 - Fri, Feb 27, 2026
+Completed: Generate SOCSO Borang 8A monthly contribution schedule (ID: US-016)
