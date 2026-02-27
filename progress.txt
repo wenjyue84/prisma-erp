@@ -3384,3 +3384,26 @@ Completed: Add submission failure email notification for HR Manager (ID: US-022)
 
 ### Notes
 - Story was already implemented when picked up; verified via test run
+## Iteration 5 - Fri, Feb 27, 2026 12:39:08 PM
+Completed: Integrate LHDN TIN validation API before submission (ID: US-021) in 20m
+
+
+## Iteration N — US-023: Fix status poller to use per-document company for base_url and token
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_poller_per_company`
+**Result:** PASS — 4/4 tests pass
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_poller_per_company.py` — New test class `TestPollerPerDocumentCompany` with 4 tests
+
+### Implementation status
+- `status_poller.py` already had correct per-document company logic (doc.get("company"), get_access_token(company), _get_base_url(company))
+- The missing piece was a dedicated test verifying multi-company isolation
+
+### Tests added
+1. test_company_a_docs_hit_company_a_endpoint — verifies Company A URL used
+2. test_company_b_docs_hit_company_b_endpoint — verifies Company B URL used
+3. test_mixed_companies_each_use_own_endpoint — both companies in one batch, each gets correct URL
+4. test_base_url_never_hardcoded_empty — URL is always absolute (starts with http)
