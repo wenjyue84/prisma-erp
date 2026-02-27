@@ -64,18 +64,15 @@ def _format_error_log(response):
     return "\n".join(lines)
 
 
-def _get_base_url(company_name=None):
-    """Get the LHDN API base URL from Company configuration.
+def _get_base_url(company_name):
+    """Get the LHDN API base URL from the specified Company configuration.
 
     Args:
-        company_name: The Company name to look up. Falls back to the site
-            default company when not provided.
+        company_name: The Company name to look up.
 
     Returns:
-        str: Base URL (sandbox or production), or "" if not configured.
+        str: Base URL (sandbox or production), or empty string if not found.
     """
-    if not company_name:
-        company_name = frappe.defaults.get_defaults().get("company")
     if not company_name:
         return ""
     company = frappe.get_doc("Company", company_name)
@@ -124,11 +121,8 @@ def poll_pending_documents():
 
     Queries both Salary Slip and Expense Claim for documents with
     custom_lhdn_status='Submitted' and a non-empty custom_lhdn_uuid.
-    Fetches each document's current status from the LHDN API and
-    updates accordingly.
-
-    The base URL and token are resolved per document using the document's
-    own Company, so multi-company setups are handled correctly.
+    Fetches each document's current status from the LHDN API using the
+    document's own company to resolve the correct base URL and token.
 
     Processes max 100 documents per doctype per run.
     Individual document errors are caught and logged.
@@ -147,10 +141,10 @@ def poll_pending_documents():
         for doc in documents:
             if not doc.get("custom_lhdn_uuid"):
                 continue
-            company_name = doc.get("company")
-            token = get_access_token(company_name) if company_name else ""
-            base_url = _get_base_url(company_name)
             try:
+                company = doc.get("company")
+                token = get_access_token(company)
+                base_url = _get_base_url(company)
                 _poll_single_document(doctype, doc, token, base_url)
             except Exception:
                 frappe.log_error(

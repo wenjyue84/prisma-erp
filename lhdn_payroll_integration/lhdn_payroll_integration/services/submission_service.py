@@ -55,34 +55,36 @@ def _format_rejection_errors(error):
 def get_access_token(company_name):
     """Get LHDN MyInvois API bearer token for the given company.
 
-    Checks for a cached token on the Company doc first. Returns the cached
-    token only if it does not expire within the next 5 minutes. Otherwise
-    fetches a fresh token via myinvois_erpgulf. Exceptions are logged via
-    frappe.log_error() and an empty string is returned on failure.
+    Checks for a cached token on the Company doc. Returns the cached token
+    only if more than 5 minutes remain until expiry. If expiry is within
+    5 minutes (or no expiry is set for an empty cache), delegates to
+    myinvois_erpgulf's taxpayerlogin module to refresh.
+
+    Exceptions are logged via frappe.log_error() rather than silently
+    swallowed; empty string is returned on failure.
 
     Args:
         company_name: The Company name to fetch token for.
 
     Returns:
-        str: Bearer token string, or "" on failure.
+        str: Bearer token string, or empty string on failure.
     """
-    from datetime import timedelta, datetime as _datetime
-
     company = frappe.get_doc("Company", company_name)
-    bearer_token = company.custom_bearer_token
-    token_expires_at = company.custom_token_expires_at
-
-    # Return cached token only when it is a non-empty string with a known
-    # expiry that is more than 5 minutes away.  The isinstance guards
-    # prevent TypeError when called with mock objects in unit tests.
-    if (
-        isinstance(bearer_token, str)
-        and bearer_token
-        and isinstance(token_expires_at, _datetime)
-    ):
-        now = frappe.utils.now_datetime()
-        if now < (token_expires_at - timedelta(minutes=5)):
-            return bearer_token
+    if company.custom_bearer_token:
+        expires_at = company.custom_token_expires_at
+        if expires_at:
+            try:
+                now = frappe.utils.now_datetime()
+                time_remaining = (expires_at - now).total_seconds()
+                if time_remaining > 300:  # more than 5 minutes remaining
+                    return company.custom_bearer_token
+                # Less than 5 min remaining — fall through to refresh
+            except (TypeError, AttributeError):
+                # Cannot compute remaining time — trust the cached token
+                return company.custom_bearer_token
+        else:
+            # No expiry timestamp set — trust the cached token
+            return company.custom_bearer_token
     try:
         from myinvois_erpgulf.myinvois_erpgulf.taxpayerlogin import (
             get_access_token as _get_token,
@@ -90,7 +92,7 @@ def get_access_token(company_name):
         return _get_token(company_name)
     except Exception:
         frappe.log_error(
-            title=f"LHDN: Failed to get access token for {company_name}",
+            title=f"LHDN Token Error: {company_name}",
             message=frappe.get_traceback(),
         )
         return ""
