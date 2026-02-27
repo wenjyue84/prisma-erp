@@ -3690,3 +3690,6 @@ Completed: Fix alpha-only docnames producing duplicate codeNumber (ID: US-043) i
 - Extending archival to multiple doctypes: use `for doctype in (...)` loop, pass `doctype` variable to `frappe.get_all()` and `frappe.db.set_value()`
 - `mock_frappe.get_all.side_effect` can route calls by doctype for targeted test assertions
 
+## Iteration 12 - Fri, Feb 27, 2026  1:32:58 PM
+Completed: Add before_amend retention lock to Expense Claim (ID: US-045) in 4m
+
