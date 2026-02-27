@@ -1,0 +1,1 @@
+recursive-include prisma_assistant *.json *.js *.css *.html *.txt

@@ -1,0 +1,391 @@
+"""
+Prisma AI Chat — whitelisted API endpoint.
+
+Settings are read from the "Prisma AI Settings" Single DocType (UI-configurable).
+Falls back to site_config.json keys for backward compatibility:
+    ai_chat_provider / ai_chat_api_key / ai_chat_model / ai_chat_base_url
+
+Caller: lhdn_payroll_integration.api.chat.send_message
+"""
+
+import json
+import frappe
+from frappe import _
+
+
+# ── Provider defaults ─────────────────────────────────────────────────────────
+_PROVIDER_DEFAULTS = {
+    "anthropic": {
+        "model": "claude-haiku-4-5-20251001",
+        "url": "https://api.anthropic.com/v1/messages",
+    },
+    "openai": {
+        "model": "gpt-4o-mini",
+        "url": "https://api.openai.com/v1/chat/completions",
+    },
+    "gemini": {
+        "model": "gemini-2.0-flash-lite",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+    },
+    # OpenWebUI exposes an OpenAI-compatible API — default port 3000
+    "ollama": {
+        "model": "qwen2.5",
+        "url": "http://host.docker.internal:3000/api/chat/completions",
+    },
+}
+
+_DEFAULT_SYSTEM_PROMPT = """You are an AI assistant embedded in ERPNext for Prisma Technology (Malaysia).
+
+You can help with anything the user asks, with particular depth in:
+
+ERPNext / Frappe Framework:
+- Any module: Accounting, Purchasing, Sales, Inventory, Manufacturing, HR, Projects, CRM
+- Frappe doctype structure, reports, print formats, workflows, custom fields, scripts
+- Setup, configuration, permissions, roles, and customisation best practices
+
+Malaysian compliance (specialist knowledge):
+- Payroll: PCB/MTD, EPF, SOCSO, EIS, HRDF levy calculations and deadlines
+- LHDN MyInvois e-invoicing: UBL XML, submission API, error codes, status polling
+- Statutory forms: EA Form (CP8A), Borang E, CP8D, CP21, CP22
+- SST, transfer pricing, withholding tax, double-taxation agreements
+- Employment Act 1955, minimum wage, foreign worker rules
+
+General coding & integrations:
+- Python, JavaScript, Frappe/ERPNext custom scripts and API calls
+- REST APIs, webhooks, data imports/exports
+- SQL queries for Frappe's MariaDB schema
+
+Guidelines:
+- Answer any question the user asks — do not refuse because it seems "off topic".
+- Be concise and practical. Use numbered steps for procedures.
+- When referencing ERPNext fields or doctypes, use their exact label.
+- If uncertain about a regulatory detail, say so and point to the official source (LHDN portal, EPF website, etc.).
+- Respond in the same language as the user (English or Bahasa Malaysia).
+"""
+
+
+# ── Settings helper ────────────────────────────────────────────────────────────
+def _get_settings() -> dict:
+    """
+    Read AI settings from the Prisma AI Settings doctype.
+    Falls back to frappe.conf for any value not set in the DocType.
+    """
+    doc_settings = {}
+    try:
+        doc = frappe.get_single("Prisma AI Settings")
+        doc_settings = {
+            "provider": doc.get("provider") or "",
+            "api_key": doc.get_password("api_key") if doc.get("api_key") else "",
+            "model": doc.get("model") or "",
+            "fallback_model": doc.get("fallback_model") or "",
+            "base_url": doc.get("base_url") or "",
+            "system_prompt": doc.get("system_prompt") or "",
+        }
+    except Exception:  # noqa: BLE001
+        pass  # DocType may not exist yet — use frappe.conf only
+
+    return {
+        "provider": (doc_settings.get("provider") or frappe.conf.get("ai_chat_provider") or "anthropic").lower(),
+        "api_key": doc_settings.get("api_key") or frappe.conf.get("ai_chat_api_key") or "",
+        "model": doc_settings.get("model") or frappe.conf.get("ai_chat_model") or "",
+        "fallback_model": doc_settings.get("fallback_model") or "",
+        "base_url": doc_settings.get("base_url") or frappe.conf.get("ai_chat_base_url") or "",
+        "system_prompt": doc_settings.get("system_prompt") or _DEFAULT_SYSTEM_PROMPT,
+    }
+
+
+# ── Main whitelisted function ─────────────────────────────────────────────────
+@frappe.whitelist()
+def send_message(message: str, history: str = "[]") -> dict:
+    """Send a user message to the configured LLM and return the reply."""
+    s = _get_settings()
+    provider = s["provider"]
+    api_key = s["api_key"]
+    model = s["model"] or _PROVIDER_DEFAULTS.get(provider, {}).get("model", "")
+    fallback_model = s["fallback_model"]
+    base_url = s["base_url"]
+    system_prompt = s["system_prompt"]
+
+    if not api_key:
+        return {
+            "error": _(
+                "No AI API key configured. Open Prisma AI Settings to add your API key."
+            )
+        }
+
+    if provider not in _PROVIDER_DEFAULTS:
+        return {"error": _("Unsupported AI provider: {0}. Use anthropic, openai, gemini, or ollama.").format(provider)}
+
+    try:
+        parsed_history = json.loads(history) if history else []
+    except (ValueError, TypeError):
+        parsed_history = []
+
+    parsed_history = parsed_history[-10:]
+
+    def _dispatch(mdl):
+        if provider == "anthropic":
+            return _call_anthropic(api_key, mdl, message, parsed_history, base_url, system_prompt)
+        elif provider in ("openai", "ollama"):
+            url = base_url or _PROVIDER_DEFAULTS[provider]["url"]
+            return _call_openai_compatible_with_tools(api_key, mdl, message, parsed_history, url, system_prompt)
+        elif provider == "gemini":
+            return _call_gemini(api_key, mdl, message, parsed_history, base_url, system_prompt)
+
+    try:
+        return _dispatch(model)
+    except Exception as exc:  # noqa: BLE001
+        if fallback_model:
+            try:
+                result = _dispatch(fallback_model)
+                # Prepend a soft notice so the user knows fallback was used
+                if result.get("reply"):
+                    result["reply"] = f"*(Using fallback model: {fallback_model})*\n\n" + result["reply"]
+                return result
+            except Exception as fallback_exc:  # noqa: BLE001
+                frappe.log_error(str(fallback_exc), "Prisma AI Chat Error (Fallback)")
+        frappe.log_error(str(exc), "Prisma AI Chat Error")
+        return {"error": _("AI request failed: {0}").format(str(exc)[:200])}
+
+
+# ── Anthropic ─────────────────────────────────────────────────────────────────
+def _call_anthropic(
+    api_key: str, model: str, message: str, history: list,
+    base_url: str = "", system_prompt: str = ""
+) -> dict:
+    import urllib.request
+
+    messages = _history_to_messages(history, message)
+    url = base_url or _PROVIDER_DEFAULTS["anthropic"]["url"]
+
+    payload = json.dumps({
+        "model": model,
+        "max_tokens": 1024,
+        "system": system_prompt or _DEFAULT_SYSTEM_PROMPT,
+        "messages": messages,
+    }).encode()
+
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        },
+        method="POST",
+    )
+
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        data = json.loads(resp.read())
+
+    reply = data["content"][0]["text"]
+    return {"reply": reply}
+
+
+# ── OpenAI-compatible (OpenAI, Ollama/OpenWebUI, LiteLLM, etc.) ───────────────
+
+def _raw_openai_call(api_key: str, model: str, messages: list, url: str) -> dict:
+    """Bare HTTP POST to an OpenAI-compatible endpoint. Raises on error."""
+    import urllib.request
+
+    payload = json.dumps({
+        "model": model,
+        "messages": messages,
+        "max_tokens": 1024,
+    }).encode()
+
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        return json.loads(resp.read())
+
+
+def _get_fac_tools_openai() -> list:
+    """
+    Fetch available tools from Frappe Assistant Core and convert to OpenAI format.
+    Returns [] if FAC is not installed or any error occurs.
+    """
+    try:
+        from frappe_assistant_core.api.handlers import handle_tools_list
+    except ImportError:
+        return []
+
+    try:
+        resp = handle_tools_list(request_id=None)
+        tools = resp.get("result", {}).get("tools", [])
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": t["name"],
+                    "description": t.get("description", ""),
+                    "parameters": t.get("inputSchema", {"type": "object", "properties": {}}),
+                },
+            }
+            for t in tools
+        ]
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def _execute_fac_tool(name: str, arguments: dict) -> str:
+    """
+    Execute a single FAC tool call and return the text result.
+    Never raises — returns an error string so the agentic loop can continue.
+    """
+    try:
+        from frappe_assistant_core.api.handlers import handle_tool_call
+
+        result = handle_tool_call({"name": name, "arguments": arguments}, request_id="chat-1")
+        content = result.get("result", {}).get("content", [])
+        return "\n".join(c["text"] for c in content if c.get("type") == "text")
+    except Exception as exc:  # noqa: BLE001
+        return f"Tool execution error ({name}): {exc}"
+
+
+def _call_openai_compatible_with_tools(
+    api_key: str, model: str, message: str, history: list,
+    url: str, system_prompt: str = ""
+) -> dict:
+    """
+    Agentic loop: attach FAC tools to each OpenAI call and handle tool_calls
+    until the model returns a final text response (or 5 rounds exhausted).
+    """
+    import urllib.request
+
+    tools = _get_fac_tools_openai()
+    messages = [{"role": "system", "content": system_prompt or _DEFAULT_SYSTEM_PROMPT}]
+    messages += _history_to_messages(history, message)
+
+    for _round in range(5):
+        extra = {}
+        if tools:
+            extra["tools"] = tools
+            extra["tool_choice"] = "auto"
+
+        raw_payload = {
+            "model": model,
+            "messages": messages,
+            "max_tokens": 1024,
+        }
+        raw_payload.update(extra)
+
+        payload = json.dumps(raw_payload).encode()
+        req = urllib.request.Request(
+            url,
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            data = json.loads(resp.read())
+
+        choice = data["choices"][0]
+        msg = choice["message"]
+        finish_reason = choice.get("finish_reason", "stop")
+
+        if finish_reason != "tool_calls":
+            reply = msg.get("content") or msg.get("reasoning") or ""
+            return {"reply": reply}
+
+        tool_calls = msg.get("tool_calls") or []
+        if not tool_calls:
+            return {"reply": msg.get("content") or ""}
+
+        messages.append({
+            "role": "assistant",
+            "content": msg.get("content"),
+            "tool_calls": tool_calls,
+        })
+
+        for tc in tool_calls:
+            fn = tc.get("function", {})
+            try:
+                args = json.loads(fn.get("arguments", "{}") or "{}")
+            except (ValueError, TypeError):
+                args = {}
+            result_text = _execute_fac_tool(fn.get("name", ""), args)
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tc.get("id", ""),
+                "content": result_text,
+            })
+
+    # Loop exhausted — final plain call so the LLM can summarise
+    data = _raw_openai_call(api_key, model, messages, url)
+    msg = data["choices"][0]["message"]
+    return {"reply": msg.get("content") or ""}
+
+
+def _call_openai_compatible(
+    api_key: str, model: str, message: str, history: list,
+    url: str, system_prompt: str = ""
+) -> dict:
+    """Simple (no-tools) path. Kept for reference; dispatch uses _with_tools."""
+    messages = [{"role": "system", "content": system_prompt or _DEFAULT_SYSTEM_PROMPT}]
+    messages += _history_to_messages(history, message)
+    data = _raw_openai_call(api_key, model, messages, url)
+    msg = data["choices"][0]["message"]
+    return {"reply": msg.get("content") or msg.get("reasoning") or ""}
+
+
+# ── Gemini ────────────────────────────────────────────────────────────────────
+def _call_gemini(
+    api_key: str, model: str, message: str, history: list,
+    base_url: str = "", system_prompt: str = ""
+) -> dict:
+    import urllib.request
+
+    contents = []
+    for turn in history:
+        role = "user" if turn.get("role") == "user" else "model"
+        contents.append({"role": role, "parts": [{"text": turn.get("content", "")}]})
+    contents.append({"role": "user", "parts": [{"text": message}]})
+
+    payload = json.dumps({
+        "system_instruction": {"parts": [{"text": system_prompt or _DEFAULT_SYSTEM_PROMPT}]},
+        "contents": contents,
+        "generationConfig": {"maxOutputTokens": 1024},
+    }).encode()
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    if base_url:
+        url = f"{base_url.rstrip('/')}/models/{model}:generateContent?key={api_key}"
+
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        data = json.loads(resp.read())
+
+    reply = data["candidates"][0]["content"]["parts"][0]["text"]
+    return {"reply": reply}
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+def _history_to_messages(history: list, current_message: str) -> list:
+    """Convert stored history to OpenAI/Anthropic message format."""
+    messages = []
+    for turn in history:
+        role = turn.get("role", "user")
+        content = turn.get("content", "")
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content})
+    messages.append({"role": "user", "content": current_message})
+    return messages

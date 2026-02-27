@@ -19,6 +19,10 @@ RUN /home/frappe/frappe-bench/env/bin/pip install --quiet -e apps/hrms
 COPY lhdn_payroll_integration apps/lhdn_payroll_integration
 RUN /home/frappe/frappe-bench/env/bin/pip install --quiet --no-deps -e apps/lhdn_payroll_integration
 
+# Copy and install prisma_assistant custom app (general-purpose AI chat)
+COPY prisma_assistant apps/prisma_assistant
+RUN /home/frappe/frappe-bench/env/bin/pip install --quiet --no-deps -e apps/prisma_assistant
+
 # qrcode is used by lhdn_payroll_integration/utils/qr_utils.py at import time
 RUN /home/frappe/frappe-bench/env/bin/pip install --quiet "qrcode[pil]"
 
@@ -36,7 +40,9 @@ RUN ln -sf /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/publ
  && ln -sf /home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/public \
     /home/frappe/frappe-bench/sites/assets/lhdn_payroll_integration \
  && ln -sf /home/frappe/frappe-bench/apps/frappe_assistant_core/frappe_assistant_core/public \
-    /home/frappe/frappe-bench/sites/assets/frappe_assistant_core
+    /home/frappe/frappe-bench/sites/assets/frappe_assistant_core \
+ && ln -sf /home/frappe/frappe-bench/apps/prisma_assistant/prisma_assistant/public \
+    /home/frappe/frappe-bench/sites/assets/prisma_assistant
 
 # Demo login: patch login page + expose test data seed as importable module
 COPY frappe_patches/login.html apps/frappe/frappe/www/login.html
