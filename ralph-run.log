@@ -294,3 +294,40 @@ warning: in the working copy of 'lhdn_payroll_integration/lhdn_payroll_integrati
 [2m[3:00][0m [37mNow I have everything I need. Let me implement US-016:  1. Write the SOCSO test file 2. Add `custom_...[0m
 [2m[3:03][0m 🔨 [36mTodoWrite[0m [2m[0m
 [2m[3:36][0m ✏️ [36mWrite[0m [2mtest_socso_borang_8a.py[0m
+[2m[3:41][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[3:43][0m [37mNow let me add the `custom_socso_member_number` field to the fixture:[0m
+[2m[3:46][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[3:52][0m 💻 [36mBash[0m [2mpython3 -c " import json  with open('/c/Users/Jyue/Documents...[0m
+[2m[3:56][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[3:59][0m 📖 [36mRead[0m [2mcustom_field_current.json[0m
+[2m[4:03][0m [37mNow I'll add the `custom_socso_member_number` field to the fixture:[0m
+[2m[4:52][0m ✏️ [36mWrite[0m [2mcustom_field_updated.json[0m
+[2m[4:54][0m [37mNow copy both files to the container and run the migration:[0m
+[2m[4:56][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[4:58][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[5:02][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[5:06][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[5:11][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[5:53][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[5:57][0m [37mThe field was created. Now let's also sync the fixtures explicitly and run the tests:[0m
+[2m[5:59][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[6:04][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[6:10][0m [37mAll 18 tests pass. Now let me update the local files and mark the story complete:[0m
+[2m[6:15][0m 💻 [36mBash[0m [2m# Copy updated files from container back to local repo docke...[0m
+[2m[6:23][0m 💻 [36mBash[0m [2m# Copy the SOCSO report files to local mkdir -p "C:/Users/Jy...[0m
+[2m[6:28][0m 💻 [36mBash[0m [2m# Check if EPF Borang A and EIS monthly reports also need lo...[0m
+[2m[6:31][0m [37mNow mark the story as `passes: true` and update `prd.json`:[0m
+[2m[6:33][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[6:36][0m [37mNow update `progress.txt` and commit:[0m
+[2m[6:37][0m 📖 [36mRead[0m [2mprogress.txt[0m
+[2m[6:40][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[6:56][0m 💻 [36mBash[0m [2mcat >> /c/Users/Jyue/Documents/1-projects/Projects/prisma-er...[0m
+[2m[7:00][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[7:06][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[7:10][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[7:14][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[7:18][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[7:21][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[7:26][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[7:36][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[7:50][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
