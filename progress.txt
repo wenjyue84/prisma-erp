@@ -4189,3 +4189,19 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 1
 ### Gotchas
 - Test file already had US-048 tests pre-written (expecting db.sql/COALESCE) — matched implementation to tests
 - Dual-path sync required: nested copy at lhdn_payroll_integration/lhdn_payroll_integration/services/ needs root cp
+
+## Iteration N — US-046: Add EIS, HRDF, and common allowance salary components to fixture
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_salary_components`
+**Result:** PASS — 6/6 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- None — `salary_component.json` already had all 5 components from prior work
+- `test_salary_components.py` — already existed with full test coverage
+
+### Actions taken
+1. Verified salary_component.json has all 5 components with correct flags
+2. Ran tests — all pass against existing fixture data
+3. No code changes required
