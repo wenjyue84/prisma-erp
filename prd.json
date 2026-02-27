@@ -1,1017 +1,1017 @@
 {
-  "productName": "lhdn_payroll_integration",
-  "branchName": "feature/lhdn-gap-closure",
-  "overview": "Gap closure PRD v2.0 for lhdn_payroll_integration Frappe app. 50 stories derived from a deep code-level compliance audit against LHDN MyInvois v1.1 spec, Malaysian statutory payroll law, and ERPNext integration best practices. The original 78 v1 stories are complete (passes: true in prior prd.json). These 50 stories close critical XML schema errors, broken runtime services, missing statutory forms, and incomplete business logic.",
-  "goals": [
-    "Fix all LHDN UBL 2.1 XML schema errors so submissions pass LHDN schema validation",
-    "Fix broken runtime services (token expiry, status poller base_url)",
-    "Add all mandatory Malaysian statutory payroll reports (EA Form, Borang E, CP39, EPF, SOCSO, EIS)",
-    "Implement PCB/MTD calculation validation engine",
-    "Close data/validation gaps (NRIC validation, address fields, id_type mapping)"
-  ],
-  "userStories": [
-    {
-      "id": "US-001",
-      "title": "Add schemeID attribute to PartyIdentification/ID elements",
-      "priority": "critical",
-      "description": "Every cbc:ID inside cac:PartyIdentification is emitted without the mandatory schemeID attribute (LHDN v1.1 spec \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a76.2). All submissions currently fail LHDN schema validation. Employee has custom_id_type (NRIC/Passport/BRN/Army ID) stored but never mapped to schemeID in the XML.",
-      "acceptanceCriteria": [
-        "_build_invoice_skeleton() emits <cbc:ID schemeID=\"TIN\"> for TIN on both Supplier (Employee) and Buyer (Company) parties",
-        "Employee id_type mapped: NRIC\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2NRIC, Passport\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2PASSPORT, BRN\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2BRN, Army ID\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2ARMY",
-        "All existing tests pass; new test asserts schemeID attribute present in generated XML"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/payload_builder.py",
-        "Edit _build_invoice_skeleton() \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd add schemeID attr to all cbc:ID elements inside PartyIdentification",
-        "Add mapping dict ID_TYPE_TO_SCHEME = {\"NRIC\": \"NRIC\", \"Passport\": \"PASSPORT\", \"BRN\": \"BRN\", \"Army ID\": \"ARMY\"}"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-002",
-      "title": "Add AdditionalDocumentReference for registration ID in XML",
-      "priority": "critical",
-      "description": "LHDN v1.1 requires cac:AdditionalDocumentReference elements to carry the supplier's NRIC/BRN/Passport number separately from the TIN. Employee fields custom_id_type and custom_id_value are stored but never emitted into XML.",
-      "acceptanceCriteria": [
-        "Both build_salary_slip_xml() and build_expense_claim_xml() emit AdditionalDocumentReference with id_type, DocumentType, and id_value in ExternalReference/URI",
-        "Works for individual and consolidated invoices",
-        "Test asserts AdditionalDocumentReference node present with correct values"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/payload_builder.py",
-        "Add helper _add_additional_doc_reference(root, id_type, id_value) emitting cac:AdditionalDocumentReference",
-        "Call after building party elements in _build_invoice_skeleton()"
-      ],
-      "dependencies": [
-        "US-001"
-      ],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-003",
-      "title": "Fix token expiry check and status poller base_url bug",
-      "priority": "critical",
-      "description": "get_access_token() returns cached token unconditionally (LHDN tokens expire after 3600s). Exceptions silently return empty string. status_poller passes hardcoded empty string as base_url \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd all hourly polls fail with ConnectionError.",
-      "acceptanceCriteria": [
-        "Add custom_token_expires_at Datetime field to Company in custom_field.json",
-        "Token refreshed if within 5 min of expiry; exceptions logged via frappe.log_error()",
-        "poll_pending_documents() passes _get_base_url(doc.company) not empty string",
-        "_get_base_url() accepts company_name parameter",
-        "Tests for token expiry path and empty-token error logging"
-      ],
-      "technicalNotes": [
-        "Files: submission_service.py, status_poller.py, fixtures/custom_field.json",
-        "submission_service.get_access_token(): compare frappe.utils.now_datetime() against custom_token_expires_at",
-        "status_poller.poll_pending_documents(): replace hardcoded '' with _get_base_url(doc.company)",
-        "status_poller._get_base_url(): add company_name param"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-004",
-      "title": "Implement PCB/MTD monthly calculation validation",
-      "priority": "critical",
-      "description": "No PCB calculation engine exists. The app relies entirely on HR staff manually entering PCB deduction amounts with no validation against LHDN PCB Schedule (Jadual PCB). MTD Method 1 vs Method 2 not handled.",
-      "acceptanceCriteria": [
-        "New pcb_calculator.py with calculate_pcb(annual_income, resident=True, married=False, children=0) implementing LHDN progressive tax scale",
-        "validate_pcb_amount(doc) whitelisted function warns (not blocks) if PCB deviates >10% from calculated estimate",
-        "Warning shown on Salary Slip form when PCB appears incorrect",
-        "Tests: single resident, married with children, non-resident flat 30%, zero-income scenarios"
-      ],
-      "technicalNotes": [
-        "New file: lhdn_payroll_integration/services/pcb_calculator.py",
-        "LHDN progressive tax bands: 0% up to 5000, 1% 5001-20000, 3% 20001-35000, 8% 35001-50000, 13% 50001-70000, 21% 70001-100000, 24% 100001-400000, 24.5% 400001-600000, 25% 600001-2000000, 26% above 2000000",
-        "Non-resident: flat 30% on all income",
-        "Register validate_pcb_amount as @frappe.whitelist()"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-005",
-      "title": "Implement NRIC format validation on Employee save",
-      "priority": "critical",
-      "description": "custom_id_value accepts any string up to 20 chars. Malaysian NRIC format is 12 digits (YYMMDDPBXXXX). Incorrectly entered NRICs silently pass through to LHDN causing rejections.",
-      "acceptanceCriteria": [
-        "validate_nric(value) in validation.py: exactly 12 digits, valid YYMMDD date portion, valid state/birth code (01-16 local, 21-59 foreign)",
-        "validate_id_value(id_type, id_value) dispatcher: NRIC\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2strict check, Passport\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2length/alphanumeric, BRN\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a212-digit numeric",
-        "validate_document_for_lhdn(employee) called on Employee validate hook via hooks.py",
-        "Tests cover valid/invalid NRIC, Passport, BRN inputs"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/utils/validation.py",
-        "Add validate_nric(value), validate_id_value(id_type, id_value) functions",
-        "Register Employee validate hook in hooks.py: 'Employee': {'validate': 'lhdn_payroll_integration.utils.validation.validate_document_for_lhdn'}"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-006",
-      "title": "Add IssueTime element to Invoice header",
-      "priority": "high",
-      "description": "LHDN v1.1 requires both cbc:IssueDate and cbc:IssueTime in the Invoice root. Code emits only IssueDate. Without IssueTime, documents fail schema validation and UBL element ordering is incorrect.",
-      "acceptanceCriteria": [
-        "_build_invoice_skeleton() emits <cbc:IssueTime>HH:MM:SS</cbc:IssueTime> immediately after IssueDate",
-        "Time uses frappe.utils.now_datetime() formatted as HH:MM:SS",
-        "Element order: ID \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2 IssueDate \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2 IssueTime \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2 InvoiceTypeCode \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2 DocumentCurrencyCode",
-        "Test asserts IssueTime node present in generated XML"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/payload_builder.py",
-        "In _build_invoice_skeleton() after _sub(root, CBC_NS, 'IssueDate', ...) add _sub(root, CBC_NS, 'IssueTime', frappe.utils.now_datetime().strftime('%H:%M:%S'))"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-007",
-      "title": "Add InvoicePeriod to individual Salary Slip and Expense Claim invoices",
-      "priority": "high",
-      "description": "build_salary_slip_xml() and build_expense_claim_xml() do not emit cac:InvoicePeriod. Only consolidated invoices have it. LHDN expects billing period (pay period dates) for payroll self-billed invoices.",
-      "acceptanceCriteria": [
-        "Both builders add cac:InvoicePeriod with StartDate = doc.start_date, EndDate = doc.end_date",
-        "Test asserts InvoicePeriod present with correct dates in generated XML"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/payload_builder.py",
-        "Add _add_invoice_period(root, start_date, end_date) helper",
-        "Call after IssueTime in build_salary_slip_xml() and build_expense_claim_xml()"
-      ],
-      "dependencies": [
-        "US-006"
-      ],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-008",
-      "title": "Fix PCB detection to use custom_is_pcb_component flag",
-      "priority": "high",
-      "description": "Hardcoded PCB_COMPONENT_NAMES frozenset used instead of custom_is_pcb_component flag on Salary Component. Non-English PCB component names (e.g. 'Cukai Pendapatan') silently excluded from WithholdingTaxTotal.",
-      "acceptanceCriteria": [
-        "PCB detection checks frappe.db.get_value('Salary Component', name, 'custom_is_pcb_component') == 1 OR name in fallback frozenset",
-        "Hardcoded set retained as fallback with deprecation comment",
-        "Test with custom-named PCB component verifies inclusion in WithholdingTaxTotal"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/payload_builder.py",
-        "Replace name in PCB_COMPONENT_NAMES with: frappe.db.get_value('Salary Component', d.salary_component, 'custom_is_pcb_component') == 1 or d.salary_component in PCB_COMPONENT_NAMES"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-009",
-      "title": "Fix credit note to use LHDN TIN not ERPNext employee code for Supplier",
-      "priority": "high",
-      "description": "Credit note AccountingSupplierParty/ID uses doc.employee (ERPNext internal code like EMP-0001) instead of employee.custom_lhdn_tin. LHDN rejects credit notes where supplier TIN does not match original invoice. PostalAddress and PartyTaxScheme also missing from credit note party elements.",
-      "acceptanceCriteria": [
-        "Credit note Supplier party uses employee.custom_lhdn_tin for cbc:ID",
-        "PostalAddress and PartyTaxScheme added to both Supplier and Buyer parties matching _build_invoice_skeleton()",
-        "Test verifies credit note XML supplier ID matches LHDN TIN"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/credit_note_service.py",
-        "Load employee = frappe.get_doc('Employee', doc.employee) and use employee.custom_lhdn_tin",
-        "Call _add_postal_address() and _add_party_tax_scheme() on both supplier and buyer party elements"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-010",
-      "title": "Fix consolidated invoice to use eligible earnings not net_pay",
-      "priority": "high",
-      "description": "build_consolidated_xml() uses raw doc.net_pay for line amounts. Individual invoices filter to eligible earnings (excluding employer statutory + custom-excluded components). Creates reconciliation mismatches.",
-      "acceptanceCriteria": [
-        "Line amount = sum of eligible earnings excluding EMPLOYER_STATUTORY_COMPONENTS and custom_lhdn_exclude_from_invoice components",
-        "Test confirms consolidated line amount matches sum of individual invoice line amounts for same documents"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/payload_builder.py",
-        "In build_consolidated_xml() replace _quantize(doc.net_pay) with same eligible-earnings filter logic as build_salary_slip_xml()"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-011",
-      "title": "Wire build_consolidated_xml() into consolidation_service",
-      "priority": "high",
-      "description": "build_consolidated_xml() exists in payload_builder.py but is NEVER called. consolidation_service.py submits each document individually in a loop \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd defeats purpose of consolidated submission and makes the 7-day deadline logic meaningless.",
-      "acceptanceCriteria": [
-        "Batch docs (<=RM10,000) submitted as ONE consolidated XML via build_consolidated_xml(batch_docnames, target_month)",
-        "High-value (>RM10,000) documents continue to be submitted individually",
-        "Consolidated submission response UUID written to a new LHDN Consolidation Log record linked to all batch documents",
-        "All batch documents marked custom_is_consolidated = 1",
-        "Test verifies single HTTP call for a batch of 5 eligible salary slips"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/consolidation_service.py",
-        "Replace individual submission loop for batch_slips with single build_consolidated_xml() + prepare_submission_wrapper() + HTTP POST",
-        "Create LHDN Consolidation Log doctype or use frappe.log_error for UUID tracking"
-      ],
-      "dependencies": [
-        "US-010"
-      ],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-012",
-      "title": "Generate CP39 monthly PCB remittance file",
-      "priority": "high",
-      "description": "CP39 is mandatory monthly employer PCB remittance format for LHDN's e-PCB portal. Every employer with PCB deductions must submit monthly. Not present anywhere in the app.",
-      "acceptanceCriteria": [
-        "New Script Report cp39_pcb_remittance with filters: Company, Month, Year",
-        "Columns: Employee TIN, IC/Passport Number, Employee Name, Gross Salary, PCB Amount, Period",
-        "CSV export in LHDN e-PCB portal compatible format",
-        "Sources only submitted Salary Slips (docstatus=1) with PCB deduction > 0",
-        "Test verifies output columns and row count"
-      ],
-      "technicalNotes": [
-        "New files: lhdn_payroll_integration/report/cp39_pcb_remittance/cp39_pcb_remittance.json + .py",
-        "Query tabSalary Slip joined to tabSalary Detail for PCB deductions",
-        "Report type: Script, is_standard: Yes"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-013",
-      "title": "Generate EA Form (Borang EA) for employees",
-      "priority": "high",
-      "description": "EA Form is mandatory annual employee tax statement that every employer must provide to employees by 28 February each year. Not present in the app.",
-      "acceptanceCriteria": [
-        "New Script Report ea_form with filters: Company, Employee (optional), Year",
-        "Aggregates all submitted Salary Slips for the year per employee",
-        "Output fields: Total Gross Remuneration, EPF Employee, SOCSO Employee, EIS Employee, PCB Total, Net Pay",
-        "HTML Print Format renders as LHDN-compatible EA Form layout",
-        "Test verifies aggregation accuracy across 12 months"
-      ],
-      "technicalNotes": [
-        "New files: lhdn_payroll_integration/report/ea_form/ea_form.json + .py",
-        "New print format: lhdn_payroll_integration/print_format/ea_form/ea_form.json + .html",
-        "Aggregate by employee across all salary slips for the year using SUM on deduction/earning amounts"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "large",
-      "passes": true
-    },
-    {
-      "id": "US-014",
-      "title": "Generate Borang E (Form E) employer annual return",
-      "priority": "high",
-      "description": "Borang E is mandatory employer annual return to LHDN due 31 March each year (Income Tax Act 1967, Section 83). Non-compliance carries penalty under Section 120. Company-level summary of all PCB, headcount, and total remuneration.",
-      "acceptanceCriteria": [
-        "New Script Report borang_e with filters: Company, Year",
-        "Output: company details, total employees, total gross remuneration, total PCB withheld, total EPF employer, total SOCSO employer",
-        "CP8D employee list (per-employee annual income + PCB) included as sub-table",
-        "Test verifies company-level totals match sum of individual EA Form data"
-      ],
-      "technicalNotes": [
-        "New files: lhdn_payroll_integration/report/borang_e/borang_e.json + .py",
-        "Aggregate all ea_form data across all employees for the company and year",
-        "Include per-employee breakdown as CP8D sub-section"
-      ],
-      "dependencies": [
-        "US-013"
-      ],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-015",
-      "title": "Generate EPF Borang A monthly contribution schedule",
-      "priority": "high",
-      "description": "EPF (KWSP) Borang A is mandatory monthly contribution remittance form listing each employee's contribution. No EPF reporting exists. Required for all employers registered with EPF.",
-      "acceptanceCriteria": [
-        "New Script Report epf_borang_a with filters: Company, Month, Year",
-        "Columns: Employee Name, NRIC, EPF Member Number, Wages, Employee EPF, Employer EPF, Total",
-        "New field custom_epf_member_number (Data) on Employee",
-        "CSV export compatible with EPF i-Akaun upload format",
-        "Test verifies contribution amounts per employee"
-      ],
-      "technicalNotes": [
-        "New files: lhdn_payroll_integration/report/epf_borang_a/epf_borang_a.json + .py",
-        "Add custom_epf_member_number (Data) to custom_field.json on Employee",
-        "Query tabSalary Slip + tabSalary Detail filtered by EPF component names"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-016",
-      "title": "Generate SOCSO Borang 8A monthly contribution schedule",
-      "priority": "high",
-      "description": "SOCSO (PERKESO) Borang 8A is mandatory monthly contribution schedule. No SOCSO reporting exists in the app.",
-      "acceptanceCriteria": [
-        "New Script Report socso_borang_8a with filters: Company, Month, Year",
-        "Columns: Employee Name, NRIC, SOCSO Number, Wages, Employee SOCSO, Employer SOCSO, Total",
-        "New field custom_socso_member_number (Data) on Employee",
-        "Test verifies amounts sourced from SOCSO deduction lines"
-      ],
-      "technicalNotes": [
-        "New files: lhdn_payroll_integration/report/socso_borang_8a/socso_borang_8a.json + .py",
-        "Add custom_socso_member_number (Data) to custom_field.json on Employee",
-        "Filter for SOCSO Employee and SOCSO - Employer salary components"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-017",
-      "title": "Generate EIS monthly contribution report",
-      "priority": "high",
-      "description": "EIS (Sistem Insurans Pekerjaan) monthly contributions filed separately via EIS portal. Employer must submit monthly schedule. No EIS report exists.",
-      "acceptanceCriteria": [
-        "New Script Report eis_monthly with filters: Company, Month, Year",
-        "Columns: Employee Name, NRIC, Wages, EIS Employee, EIS Employer, Total",
-        "Sources data from submitted Salary Slips with EIS deduction/earning lines",
-        "Test verifies correct EIS amounts per employee"
-      ],
-      "technicalNotes": [
-        "New files: lhdn_payroll_integration/report/eis_monthly/eis_monthly.json + .py",
-        "Filter for EIS Employee and EIS - Employer salary components"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-018",
-      "title": "Add bonus/irregular payment classification for PCB differentiation",
-      "priority": "high",
-      "description": "LHDN and PCB rules treat irregular payments (bonus, commissions, gratuity) differently from regular salary for PCB calculation. No flag or separate calculation path distinguishes these \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd causes incorrect PCB treatment.",
-      "acceptanceCriteria": [
-        "New field custom_is_irregular_payment (Check) on Salary Component",
-        "pcb_calculator.py accepts bonus_amount parameter; applies one-twelfth annualisation rule for bonus PCB per LHDN Schedule",
-        "Test verifies bonus PCB calculation differs from regular salary PCB for same income"
-      ],
-      "technicalNotes": [
-        "Files: custom_field.json, services/pcb_calculator.py",
-        "Add custom_is_irregular_payment (Check, default 0) to Salary Component in custom_field.json",
-        "In calculate_pcb(): if bonus_amount provided, annualise as (monthly_income * 12 + bonus_amount) then compute tax; subtract tax on monthly_income*12 alone"
-      ],
-      "dependencies": [
-        "US-004"
-      ],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-019",
-      "title": "Add non-resident flat-rate 30% tax flag and handling",
-      "priority": "high",
-      "description": "Non-resident employees (present in Malaysia fewer than 182 days in a calendar year) are taxed at flat 30%. No custom_is_non_resident flag and no flat-rate calculation path exists.",
-      "acceptanceCriteria": [
-        "New field custom_is_non_resident (Check) on Employee; distinct from custom_is_foreign_worker",
-        "pcb_calculator.py returns 30% flat rate when resident=False",
-        "PCB validation warning on Salary Slip uses flat rate for non-residents",
-        "Test covers non-resident 30% calculation vs progressive scale"
-      ],
-      "technicalNotes": [
-        "Files: custom_field.json, services/pcb_calculator.py",
-        "Add custom_is_non_resident (Check, default 0) to Employee in custom_field.json",
-        "In calculate_pcb(): if not resident return round(annual_income * 0.30, 2) / 12"
-      ],
-      "dependencies": [
-        "US-004"
-      ],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-020",
-      "title": "Distinguish director fee vs director salary at invoice level",
-      "priority": "high",
-      "description": "LHDN treats director fees (board service) and director salary (executive role) differently. Both use single custom_worker_type = Director with no sub-classification. Default classification code 036 applied uniformly.",
-      "acceptanceCriteria": [
-        "New field custom_director_payment_type (Select: Director Salary/Director Fee) on Employee, visible only when custom_worker_type = Director",
-        "get_default_classification_code() returns 036 for Director Fee, 004 for Director Salary",
-        "Test verifies correct classification codes per director payment type in generated XML"
-      ],
-      "technicalNotes": [
-        "Files: custom_field.json, services/exemption_filter.py",
-        "Add custom_director_payment_type with depends_on: eval:doc.custom_worker_type=='Director'",
-        "Update _WORKER_TYPE_CLASSIFICATION to check director sub-type from employee record"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-021",
-      "title": "Integrate LHDN TIN validation API before submission",
-      "priority": "high",
-      "description": "LHDN provides GET /api/v1.0/taxpayer/validate/{tin}/{idType}/{idValue}. App never calls it \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd incorrect TINs discovered only on submission rejection.",
-      "acceptanceCriteria": [
-        "New tin_validator.py with validate_tin_with_lhdn(company_name, tin, id_type, id_value) calling LHDN validation API",
-        "Called in enqueue_salary_slip_submission() before enqueuing \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd invalid TIN sets status Invalid with error, does not enqueue",
-        "Whitelisted validate_employee_tin(employee_name) callable from Employee form button",
-        "Test with mocked HTTP: valid TIN proceeds to enqueue; invalid TIN sets Invalid status"
-      ],
-      "technicalNotes": [
-        "New file: lhdn_payroll_integration/utils/tin_validator.py",
-        "LHDN endpoint: GET {base_url}/api/v1.0/taxpayer/validate/{tin}/{idType}/{idValue}",
-        "Map id_type NRIC\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2NRIC, Passport\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2PASSPORT etc. before calling API",
-        "In enqueue_salary_slip_submission(): call validate_tin_with_lhdn() synchronously before enqueuing"
-      ],
-      "dependencies": [
-        "US-003"
-      ],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-022",
-      "title": "Add submission failure email notification for HR Manager",
-      "priority": "high",
-      "description": "When Salary Slip marked Invalid after LHDN rejection, no notification reaches HR managers. Silent failures can result in months of non-compliance before detection.",
-      "acceptanceCriteria": [
-        "_write_response_to_doc() sends frappe.sendmail() to all users with role HR Manager when status set to Invalid",
-        "Email includes: document name, employee name, first 500 chars of error log, direct link to document",
-        "New Company field custom_lhdn_failure_email (Data) \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd if set, overrides role lookup",
-        "Email sending errors are swallowed and logged, not re-raised",
-        "Test verifies sendmail called on Invalid status write"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/submission_service.py",
-        "Add custom_lhdn_failure_email (Data) to Company in custom_field.json",
-        "In _write_response_to_doc() after setting Invalid status: call frappe.sendmail() in try/except"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-023",
-      "title": "Fix status poller to use per-document company for base_url and token",
-      "priority": "high",
-      "description": "poll_pending_documents() passes hardcoded empty string as base_url to _poll_single_document(). Multi-company setups poll against wrong endpoint. Token also uses default company credentials.",
-      "acceptanceCriteria": [
-        "poll_pending_documents() passes _get_base_url(doc.company) not empty string to each poll",
-        "_get_base_url() accepts company_name parameter; reads from that company's custom_sandbox_url/custom_production_url",
-        "Token fetched via get_access_token(doc.company) per document",
-        "Test verifies Company A documents polled against Company A endpoint, not Company B"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/status_poller.py",
-        "Change _get_base_url() signature to accept company_name",
-        "In poll_pending_documents() loop: pass _get_base_url(doc.company) and get_access_token(doc.company)"
-      ],
-      "dependencies": [
-        "US-003"
-      ],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-024",
-      "title": "Fix custom_id_type options to match LHDN schemeID vocabulary",
-      "priority": "high",
-      "description": "Option 'Business Registration Number' does not match LHDN schemeID value 'BRN'. When schemeID attribute added (US-001), inconsistent mapping causes XML errors.",
-      "acceptanceCriteria": [
-        "custom_id_type options updated to: NRIC, Passport, BRN, Army ID",
-        "Mapping dict in payload_builder.py: {\"NRIC\": \"NRIC\", \"Passport\": \"PASSPORT\", \"BRN\": \"BRN\", \"Army ID\": \"ARMY\"}",
-        "Migration note added to patches.txt for records with old value 'Business Registration Number'",
-        "Test verifies each id_type produces correct schemeID attribute in generated XML"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/fixtures/custom_field.json",
-        "Update Employee-custom_id_type options field",
-        "Add migration note to lhdn_payroll_integration/patches.txt"
-      ],
-      "dependencies": [
-        "US-001"
-      ],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-025",
-      "title": "Add full PostalAddress fields beyond state code only",
-      "priority": "high",
-      "description": "LHDN v1.1 requires full PostalAddress: AddressLine/Line, CityName, PostalZone, CountrySubentityCode, Country/IdentificationCode. App only emits CountrySubentityCode (state code). Full address required for production compliance.",
-      "acceptanceCriteria": [
-        "New Employee fields: custom_address_line1 (Data), custom_city (Data), custom_postcode (Data)",
-        "New Company fields (if absent): same three fields",
-        "_add_postal_address() emits: AddressLine/Line, CityName, PostalZone, CountrySubentityCode, Country/IdentificationCode = MYS",
-        "Test asserts all address sub-elements present in generated XML"
-      ],
-      "technicalNotes": [
-        "Files: custom_field.json, payload_builder.py",
-        "Add 6 new fields to custom_field.json (3 on Employee, 3 on Company)",
-        "Update _add_postal_address(party_elem, state_code, address_line1, city, postcode) signature"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-026",
-      "title": "Add Expense Claims to LHDN compliance report",
-      "priority": "high",
-      "description": "Compliance report queries only tabSalary Slip. Expense Claims with LHDN status entirely absent. HR managers have no unified view across both submission types.",
-      "acceptanceCriteria": [
-        "Report queries both Salary Slip and Expense Claim (UNION or separate sections)",
-        "Doctype column added to distinguish record types",
-        "All existing filters (Company, Status, Date range) apply to both doctypes",
-        "Test verifies Expense Claim rows appear in report output alongside Salary Slip rows"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/report/lhdn_payroll_compliance/lhdn_payroll_compliance.py",
-        "Add UNION ALL subquery for tabExpense Claim with same LHDN status fields",
-        "Add doctype column to output"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-027",
-      "title": "Build monthly LHDN submission summary report",
-      "priority": "high",
-      "description": "No aggregated monthly view exists. Auditors need total submissions per month, count by status (Valid/Invalid/Pending/Exempt), total invoice value MYR, deadline compliance status.",
-      "acceptanceCriteria": [
-        "New Script Report lhdn_monthly_summary with filters: Company, Year",
-        "One row per month (Jan-Dec); columns: Month, Total Submitted, Valid, Invalid, Pending, Exempt, Total Value MYR, Deadline Status",
-        "Deadline Status = On Time/Late/Pending based on 7-calendar-day rule",
-        "Covers both Salary Slips and Expense Claims",
-        "Test verifies monthly aggregation accuracy"
-      ],
-      "technicalNotes": [
-        "New files: lhdn_payroll_integration/report/lhdn_monthly_summary/lhdn_monthly_summary.json + .py",
-        "Group by MONTH(posting_date) with conditional COUNT per status",
-        "Use get_consolidation_deadline() from consolidation_service to compute Deadline Status"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-028",
-      "title": "Guard credit note against already-cancelled LHDN document",
-      "priority": "medium",
-      "description": "No check prevents issuing a credit note against an already-cancelled LHDN invoice. LHDN rejects credit notes referencing cancelled documents.",
-      "acceptanceCriteria": [
-        "Before building credit note XML, check source custom_lhdn_status != Cancelled",
-        "Raise frappe.ValidationError with descriptive message if source is Cancelled",
-        "Test verifies ValidationError thrown on credit note attempt against Cancelled document"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/credit_note_service.py",
-        "At start of credit note handler: load source doc, check custom_lhdn_status"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-029",
-      "title": "Make PaymentMeansCode configurable per employee",
-      "priority": "medium",
-      "description": "PaymentMeansCode hardcoded as 30 (credit transfer). LHDN supports 01 (cash), 03 (cheque), 30 (credit transfer), 42 (bank transfer), 48 (debit card). Contractors paid by cheque/cash incorrectly tagged.",
-      "acceptanceCriteria": [
-        "New field custom_payment_means_code (Select: 01 : Cash/03 : Cheque/30 : Credit Transfer/42 : Bank Transfer/48 : Debit Card) on Employee, default 30 : Credit Transfer",
-        "build_salary_slip_xml() reads this field; falls back to 30 if not set",
-        "Test verifies non-default payment means code appears in generated XML"
-      ],
-      "technicalNotes": [
-        "Files: custom_field.json, payload_builder.py",
-        "Add Employee-custom_payment_means_code to custom_field.json",
-        "In build_salary_slip_xml() PaymentMeans block: use employee.custom_payment_means_code or '30'"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-030",
-      "title": "Add TaxExemptionReasonCode when TaxCategory ID = E",
-      "priority": "medium",
-      "description": "When TaxCategory/ID = E (exempt), LHDN v1.1 requires TaxExemptionReasonCode. Element currently absent; causes validation failures on stricter LHDN validator configurations.",
-      "acceptanceCriteria": [
-        "_add_tax_and_totals() adds <cbc:TaxExemptionReasonCode>VATEX-MY-ES-43</cbc:TaxExemptionReasonCode> immediately after TaxCategory/ID = E",
-        "Test asserts TaxExemptionReasonCode element present in generated XML"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/payload_builder.py",
-        "In _add_tax_and_totals() after _sub(tax_cat, CBC_NS, 'ID', 'E') add _sub(tax_cat, CBC_NS, 'TaxExemptionReasonCode', 'VATEX-MY-ES-43')"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-031",
-      "title": "Generate CP8D annual employee remuneration return",
-      "priority": "medium",
-      "description": "CP8D is the annual return of private employees' remuneration submitted alongside Borang E \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd machine-readable employee income list for LHDN e-Filing. Not present in app.",
-      "acceptanceCriteria": [
-        "New Script Report cp8d with filters: Company, Year",
-        "Columns: Employee TIN, NRIC, Name, Annual Gross Income, Total PCB, EPF Employee",
-        "CSV export matching LHDN e-Filing CP8D column specification",
-        "Test verifies per-employee annual totals"
-      ],
-      "technicalNotes": [
-        "New files: lhdn_payroll_integration/report/cp8d/cp8d.json + .py",
-        "Aggregate salary slip data per employee per year",
-        "add_to_report_cache_for_download = 1 for CSV export"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-032",
-      "title": "Add CP21 workflow for employee cessation and departure from Malaysia",
-      "priority": "medium",
-      "description": "CP21 must be filed with LHDN at least 30 days before employee leaves Malaysia or ceases employment. Especially critical for custom_is_foreign_worker = 1 employees. No CP21 workflow exists.",
-      "acceptanceCriteria": [
-        "New Doctype LHDN CP21 linked to Employee with fields: employee, last_working_date, reason (Select: Termination/Resignation/Departure from Malaysia/Death)",
-        "Auto-created when Employee status set to Left with custom_is_foreign_worker = 1",
-        "Alert shown if last_working_date is less than 30 days from today",
-        "HTML Print Format generates LHDN-compatible CP21 document"
-      ],
-      "technicalNotes": [
-        "New doctype: lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_cp21/",
-        "Register Employee on_update hook in hooks.py to auto-create CP21",
-        "Print format: print_format/lhdn_cp21/lhdn_cp21.html"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-033",
-      "title": "Add CP22/CP22A handling for new hire and retirement notifications",
-      "priority": "medium",
-      "description": "CP22 must be filed within 30 days of new employee commencement. CP22A covers retirement/resignation for employees age 55+. Neither workflow exists.",
-      "acceptanceCriteria": [
-        "New Doctype LHDN CP22 auto-created on Employee creation when custom_requires_self_billed_invoice = 1",
-        "Alert shown if not submitted within 30 days of date_of_joining",
-        "LHDN CP22A created automatically for employees age >=55 on status change to Left"
-      ],
-      "technicalNotes": [
-        "New doctypes: lhdn_cp22 and lhdn_cp22a",
-        "Register Employee after_insert and on_update hooks in hooks.py",
-        "Calculate age from employee.date_of_birth to determine CP22A applicability"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-034",
-      "title": "Add HRDF levy validation and basic reporting",
-      "priority": "medium",
-      "description": "HRDF levy rates differ by employer size (0.5% for 10+ employees, 1% for 50+). App excludes HRDF from e-Invoice correctly but provides no levy calculation check or reporting.",
-      "acceptanceCriteria": [
-        "New field custom_hrdf_levy_rate (Select: 0.5%/1.0%) on Company",
-        "New Script Report hrdf_monthly_levy showing monthly HRDF liability per employee",
-        "Test verifies levy calculation at 0.5% and 1.0% rates against Company fixture"
-      ],
-      "technicalNotes": [
-        "Files: custom_field.json, new report hrdf_monthly_levy",
-        "Add Company-custom_hrdf_levy_rate to custom_field.json",
-        "Report queries HRDF Levy deduction lines and applies rate from Company"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-035",
-      "title": "Handle leave encashment and gratuity tax exemption in PCB calculation",
-      "priority": "medium",
-      "description": "Leave encashment and gratuity qualify for partial exemption under ITA 1967 Schedule 6 paragraph 25 (RM1,000 per year of service). Without flagging, treated as ordinary income in PCB calculation.",
-      "acceptanceCriteria": [
-        "New field custom_is_gratuity_or_leave_encashment (Check) on Salary Component",
-        "pcb_calculator.py applies Schedule 6 para 25 exemption when such component present",
-        "Exempt amount = RM1,000 x years of service; remainder taxable as normal income",
-        "Test verifies exemption reduces taxable income correctly"
-      ],
-      "technicalNotes": [
-        "Files: custom_field.json, services/pcb_calculator.py",
-        "Add custom_is_gratuity_or_leave_encashment (Check) to Salary Component in custom_field.json",
-        "calculate_pcb() accepts years_of_service and gratuity_amount parameters; applies RM1000/year exemption"
-      ],
-      "dependencies": [
-        "US-004"
-      ],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-036",
-      "title": "Handle mid-month proration for pay period PCB calculation",
-      "priority": "medium",
-      "description": "LHDN PCB rules require proration when employee joins or leaves mid-month. PCB calculation must use prorated annual income. InvoicePeriod (US-007) reflects actual worked days; PCB should match.",
-      "acceptanceCriteria": [
-        "pcb_calculator.py accepts worked_days and total_days_in_month parameters; prorates monthly income before annualising",
-        "PCB validation warning uses prorated income when worked_days < total_days_in_month",
-        "Test verifies prorated PCB for 15-day month vs full month same income"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/pcb_calculator.py",
-        "calculate_pcb() default worked_days=None, total_days=None; if provided, monthly_income *= worked_days/total_days before annualising"
-      ],
-      "dependencies": [
-        "US-004"
-      ],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-037",
-      "title": "Add bulk Submit to LHDN action on Salary Slip list view",
-      "priority": "medium",
-      "description": "No way to submit batch of Salary Slips simultaneously. 50-contractor payroll run requires waiting for individual on_submit hooks.",
-      "acceptanceCriteria": [
-        "New whitelisted bulk_enqueue_lhdn_submission(docnames, doctype) server method",
-        "List view action Submit to LHDN on Salary Slip list visible to HR Manager role",
-        "Action shows success count and failure count message",
-        "Test verifies all provided docnames are enqueued with Pending status"
-      ],
-      "technicalNotes": [
-        "New client script: lhdn_payroll_integration/public/js/salary_slip_list.js or similar",
-        "New whitelisted method in submission_service.py",
-        "Add list action via listview_settings in JS"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-038",
-      "title": "Implement LHDN portal document retrieval for audit verification",
-      "priority": "medium",
-      "description": "LHDN provides GET /api/v1.0/documents/{uuid}/raw to retrieve the validated XML stored on their portal. No mechanism to compare LHDN stored copy against ERPNext generated XML.",
-      "acceptanceCriteria": [
-        "New whitelisted retrieve_lhdn_document(docname, doctype) calling LHDN raw document endpoint",
-        "Response XML stored in new field custom_lhdn_raw_document (Text) on Salary Slip and Expense Claim",
-        "Dev Tools page has Retrieve from LHDN button invoking this function",
-        "Test with mocked HTTP verifies UUID used in URL and response stored"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/page/lhdn_dev_tools/lhdn_dev_tools.py",
-        "LHDN endpoint: GET {base_url}/api/v1.0/documents/{uuid}/raw",
-        "Add custom_lhdn_raw_document (Text) to both Salary Slip and Expense Claim in custom_field.json",
-        "Add button to Dev Tools JS page"
-      ],
-      "dependencies": [
-        "US-003"
-      ],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-039",
-      "title": "Add nationality field for foreign worker ISO country code",
-      "priority": "medium",
-      "description": "LHDN guidelines require ISO 3166-1 alpha-2 nationality code for foreign workers. The fixed TIN EI00000000010 is used for all foreign workers as a placeholder.",
-      "acceptanceCriteria": [
-        "New field custom_nationality_code (Data, 2 chars) on Employee, visible when custom_is_foreign_worker = 1",
-        "_build_invoice_skeleton() adds nationality code to party identification element for foreign workers",
-        "Test verifies nationality code appears in XML for foreign worker employee"
-      ],
-      "technicalNotes": [
-        "Files: custom_field.json, payload_builder.py",
-        "Add Employee-custom_nationality_code (Data, length=2) with depends_on: eval:doc.custom_is_foreign_worker"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-040",
-      "title": "Define custom_sst_registration_number on Employee in fixture",
-      "priority": "medium",
-      "description": "payload_builder.py reads employee.custom_sst_registration_number via getattr() but this field is NOT defined in custom_field.json. Field only works if myinvois_erpgulf coincidentally adds it.",
-      "acceptanceCriteria": [
-        "New entry in custom_field.json: Employee-custom_sst_registration_number (Data, optional, insert_after custom_state_code)",
-        "Field visible only when custom_requires_self_billed_invoice = 1",
-        "Test verifies SST number appears in PartyTaxScheme/RegistrationName when set"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/fixtures/custom_field.json",
-        "Add Employee-custom_sst_registration_number entry with depends_on: eval:doc.custom_requires_self_billed_invoice"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-041",
-      "title": "Build year-end PCB vs submission reconciliation report",
-      "priority": "medium",
-      "description": "No tool to compare total PCB withheld per employee vs CP39 remittances, or to reconcile submitted vs accepted invoices. Required for Borang E and EA Form verification.",
-      "acceptanceCriteria": [
-        "New Script Report lhdn_yearend_reconciliation with filters: Company, Year",
-        "Columns: Employee, Annual Gross Income, Total PCB Withheld, Invoices Submitted, Invoices Valid, Discrepancy Flag",
-        "Discrepancy Flag raised when PCB total deviates from LHDN-accepted amounts",
-        "Test verifies discrepancy detection logic across mock 12-month data"
-      ],
-      "technicalNotes": [
-        "New files: lhdn_payroll_integration/report/lhdn_yearend_reconciliation/lhdn_yearend_reconciliation.json + .py",
-        "Aggregate Salary Slip and Expense Claim data by employee for the year",
-        "Compare custom_lhdn_status = Valid count vs total docstatus=1 count"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "passes": true
-    },
-    {
-      "id": "US-042",
-      "title": "Add audit log for manual LHDN resubmissions",
-      "priority": "medium",
-      "description": "resubmit_to_lhdn() is callable by any System Manager but leaves no audit trail (who triggered it, when, on which document).",
-      "acceptanceCriteria": [
-        "resubmit_to_lhdn() creates a new LHDN Resubmission Log doctype entry recording: user, timestamp, doctype, docname",
-        "Log entries viewable from Dev Tools page under Recent Submissions panel",
-        "Test verifies log entry created on manual resubmission"
-      ],
-      "technicalNotes": [
-        "Files: submission_service.py, new doctype lhdn_resubmission_log",
-        "New simple Doctype LHDN Resubmission Log with fields: user, timestamp, doctype, docname, notes",
-        "Insert record in resubmit_to_lhdn() using frappe.get_doc().insert()"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-043",
-      "title": "Fix alpha-only docnames producing duplicate codeNumber",
-      "priority": "low",
-      "description": "prepare_submission_wrapper() extracts digits from docname for codeNumber. All-alpha docnames fall back to '001' \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd duplicate codeNumber in batch submissions rejected by LHDN.",
-      "acceptanceCriteria": [
-        "Fallback uses hashlib.md5(docname.encode()).hexdigest()[:8] instead of '001' for no-digit docnames",
-        "Test verifies unique codeNumbers generated for multiple alpha-named documents"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/payload_builder.py",
-        "In prepare_submission_wrapper(): replace `or '001'` with `or hashlib.md5(docname.encode()).hexdigest()[:8]`",
-        "hashlib already imported at top of file"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-044",
-      "title": "Generate HRDF Borang PSMB/6 annual return",
-      "priority": "low",
-      "description": "HRDF annual return Borang PSMB/6 is due each January. Employers registered with HRDF must submit. Not present.",
-      "acceptanceCriteria": [
-        "New Script Report hrdf_borang_psmb6 with filters: Company, Year",
-        "Columns: Total Employees, Total Wages, Total Levy Paid",
-        "PDF-printable export format",
-        "Test verifies levy total matches sum of monthly levy reports"
-      ],
-      "technicalNotes": [
-        "New files: lhdn_payroll_integration/report/hrdf_borang_psmb6/hrdf_borang_psmb6.json + .py",
-        "Aggregate HRDF levy components across all salary slips for the year"
-      ],
-      "dependencies": [
-        "US-034"
-      ],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-045",
-      "title": "Add before_amend retention lock to Expense Claim",
-      "priority": "low",
-      "description": "Retention lock before_amend registered only on Salary Slip, not Expense Claim. Expense Claims with LHDN UUIDs can be amended after 7-year retention period. Retention archival job also only queries Salary Slips.",
-      "acceptanceCriteria": [
-        "hooks.py adds before_amend: check_retention_lock for Expense Claim",
-        "run_retention_archival() queries both Salary Slips and Expense Claims",
-        "Test verifies ValidationError thrown on before_amend for retention-locked Expense Claim"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/hooks.py, services/retention_service.py",
-        "Add 'before_amend' to Expense Claim doc_events in hooks.py",
-        "Add Expense Claim query to run_retention_archival()"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-046",
-      "title": "Add EIS, HRDF, and common allowance salary components to fixture",
-      "priority": "low",
-      "description": "Fixture seeds only 6 components. Missing: EIS Employee, EIS Employer, HRDF Levy, Transport Allowance, Housing Allowance. New installs require extensive manual setup.",
-      "acceptanceCriteria": [
-        "Add to salary_component.json: EIS Employee (Deduction), EIS - Employer (Deduction), HRDF Levy (Deduction), Transport Allowance (Earning), Housing Allowance (Earning)",
-        "Each has correct custom_lhdn_classification_code default and custom_is_pcb_component = 0",
-        "Test verifies all new components installed after fixture sync"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/fixtures/salary_component.json",
-        "EIS Employee: type Deduction, classification empty (not on invoice)",
-        "Transport Allowance: classification 022 (Others), custom_lhdn_exclude_from_invoice = 0"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-047",
-      "title": "Define custom_lhdn_archived field in custom_field.json fixture",
-      "priority": "low",
-      "description": "retention_service.py calls frappe.db.set_value(..., 'custom_lhdn_archived', 1) but this field is NOT defined in custom_field.json. Runtime error or silent failure on yearly archival job.",
-      "acceptanceCriteria": [
-        "New entry: Salary Slip-custom_lhdn_archived (Check, default 0, read_only, insert_after custom_error_log)",
-        "Same field added for Expense Claim",
-        "Test verifies retention archival job correctly sets the flag to 1"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/fixtures/custom_field.json",
-        "Add two entries: Salary Slip-custom_lhdn_archived and Expense Claim-custom_lhdn_archived"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-048",
-      "title": "Fix retention archival to include Submitted/Invalid records",
-      "priority": "low",
-      "description": "Archival filters by custom_lhdn_validated_datetime only. Records with status Submitted or Invalid (no validated_datetime) are never archived even after 7 years.",
-      "acceptanceCriteria": [
-        "run_retention_archival() uses COALESCE(custom_lhdn_validated_datetime, custom_lhdn_submission_datetime, creation) for 7-year age calculation",
-        "Records with status Submitted, Invalid, Valid all included in archival scan",
-        "Test verifies Submitted records older than 7 years are correctly archived"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/retention_service.py",
-        "Update query to use COALESCE in WHERE clause for date comparison",
-        "Use frappe.db.sql() with raw SQL for COALESCE support"
-      ],
-      "dependencies": [
-        "US-047"
-      ],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-049",
-      "title": "Generate standalone CP8D report with LHDN e-Filing format compliance",
-      "priority": "low",
-      "description": "CP8D as a standalone report needs its own column specification matching LHDN e-Filing CP8D format (separate from and in addition to the one included in Borang E).",
-      "acceptanceCriteria": [
-        "Standalone Script Report cp8d_efiling with CSV export matching LHDN e-Filing CP8D column specification precisely",
-        "Year filter, Company filter",
-        "Test verifies column headers match published LHDN CP8D spec"
-      ],
-      "technicalNotes": [
-        "New files: lhdn_payroll_integration/report/cp8d_efiling/cp8d_efiling.json + .py",
-        "Columns per LHDN CP8D spec: No., Name, NRIC/Passport, TIN, Gross Income, EPF, PCB",
-        "CSV download enabled"
-      ],
-      "dependencies": [
-        "US-031"
-      ],
-      "estimatedComplexity": "small",
-      "passes": true
-    },
-    {
-      "id": "US-050",
-      "title": "Add foreign currency conversion to Expense Claim XML builder",
-      "priority": "low",
-      "description": "build_expense_claim_xml() does not handle foreign currency. Salary slip builder has conversion_rate support; expense claim builder does not. Expense Claims in USD/SGD etc. produce incorrect MYR amounts.",
-      "acceptanceCriteria": [
-        "Builder reads doc.currency and doc.conversion_rate (default 1 for MYR)",
-        "All sanctioned_amount values converted to MYR before writing to XML",
-        "TaxCurrencyCode added when doc.currency != MYR",
-        "Test verifies USD Expense Claim produces correct converted MYR amounts in XML"
-      ],
-      "technicalNotes": [
-        "File: lhdn_payroll_integration/services/payload_builder.py",
-        "In build_expense_claim_xml(): mirror the foreign-currency pattern from build_salary_slip_xml() lines 215-226",
-        "Apply conv_rate to each expense.sanctioned_amount"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "small",
-      "passes": true
-    }
-  ]
+ "productName": "lhdn_payroll_integration",
+ "branchName": "feature/lhdn-gap-closure",
+ "overview": "Gap closure PRD v2.0 for lhdn_payroll_integration Frappe app. 50 stories derived from a deep code-level compliance audit against LHDN MyInvois v1.1 spec, Malaysian statutory payroll law, and ERPNext integration best practices. The original 78 v1 stories are complete (passes: true in prior prd.json). These 50 stories close critical XML schema errors, broken runtime services, missing statutory forms, and incomplete business logic.",
+ "goals": [
+  "Fix all LHDN UBL 2.1 XML schema errors so submissions pass LHDN schema validation",
+  "Fix broken runtime services (token expiry, status poller base_url)",
+  "Add all mandatory Malaysian statutory payroll reports (EA Form, Borang E, CP39, EPF, SOCSO, EIS)",
+  "Implement PCB/MTD calculation validation engine",
+  "Close data/validation gaps (NRIC validation, address fields, id_type mapping)"
+ ],
+ "userStories": [
+  {
+   "id": "US-001",
+   "title": "Add schemeID attribute to PartyIdentification/ID elements",
+   "priority": "critical",
+   "description": "Every cbc:ID inside cac:PartyIdentification is emitted without the mandatory schemeID attribute (LHDN v1.1 spec \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a76.2). All submissions currently fail LHDN schema validation. Employee has custom_id_type (NRIC/Passport/BRN/Army ID) stored but never mapped to schemeID in the XML.",
+   "acceptanceCriteria": [
+    "_build_invoice_skeleton() emits <cbc:ID schemeID=\"TIN\"> for TIN on both Supplier (Employee) and Buyer (Company) parties",
+    "Employee id_type mapped: NRIC\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2NRIC, Passport\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2PASSPORT, BRN\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2BRN, Army ID\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2ARMY",
+    "All existing tests pass; new test asserts schemeID attribute present in generated XML"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/payload_builder.py",
+    "Edit _build_invoice_skeleton() \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd add schemeID attr to all cbc:ID elements inside PartyIdentification",
+    "Add mapping dict ID_TYPE_TO_SCHEME = {\"NRIC\": \"NRIC\", \"Passport\": \"PASSPORT\", \"BRN\": \"BRN\", \"Army ID\": \"ARMY\"}"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-002",
+   "title": "Add AdditionalDocumentReference for registration ID in XML",
+   "priority": "critical",
+   "description": "LHDN v1.1 requires cac:AdditionalDocumentReference elements to carry the supplier's NRIC/BRN/Passport number separately from the TIN. Employee fields custom_id_type and custom_id_value are stored but never emitted into XML.",
+   "acceptanceCriteria": [
+    "Both build_salary_slip_xml() and build_expense_claim_xml() emit AdditionalDocumentReference with id_type, DocumentType, and id_value in ExternalReference/URI",
+    "Works for individual and consolidated invoices",
+    "Test asserts AdditionalDocumentReference node present with correct values"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/payload_builder.py",
+    "Add helper _add_additional_doc_reference(root, id_type, id_value) emitting cac:AdditionalDocumentReference",
+    "Call after building party elements in _build_invoice_skeleton()"
+   ],
+   "dependencies": [
+    "US-001"
+   ],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-003",
+   "title": "Fix token expiry check and status poller base_url bug",
+   "priority": "critical",
+   "description": "get_access_token() returns cached token unconditionally (LHDN tokens expire after 3600s). Exceptions silently return empty string. status_poller passes hardcoded empty string as base_url \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd all hourly polls fail with ConnectionError.",
+   "acceptanceCriteria": [
+    "Add custom_token_expires_at Datetime field to Company in custom_field.json",
+    "Token refreshed if within 5 min of expiry; exceptions logged via frappe.log_error()",
+    "poll_pending_documents() passes _get_base_url(doc.company) not empty string",
+    "_get_base_url() accepts company_name parameter",
+    "Tests for token expiry path and empty-token error logging"
+   ],
+   "technicalNotes": [
+    "Files: submission_service.py, status_poller.py, fixtures/custom_field.json",
+    "submission_service.get_access_token(): compare frappe.utils.now_datetime() against custom_token_expires_at",
+    "status_poller.poll_pending_documents(): replace hardcoded '' with _get_base_url(doc.company)",
+    "status_poller._get_base_url(): add company_name param"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-004",
+   "title": "Implement PCB/MTD monthly calculation validation",
+   "priority": "critical",
+   "description": "No PCB calculation engine exists. The app relies entirely on HR staff manually entering PCB deduction amounts with no validation against LHDN PCB Schedule (Jadual PCB). MTD Method 1 vs Method 2 not handled.",
+   "acceptanceCriteria": [
+    "New pcb_calculator.py with calculate_pcb(annual_income, resident=True, married=False, children=0) implementing LHDN progressive tax scale",
+    "validate_pcb_amount(doc) whitelisted function warns (not blocks) if PCB deviates >10% from calculated estimate",
+    "Warning shown on Salary Slip form when PCB appears incorrect",
+    "Tests: single resident, married with children, non-resident flat 30%, zero-income scenarios"
+   ],
+   "technicalNotes": [
+    "New file: lhdn_payroll_integration/services/pcb_calculator.py",
+    "LHDN progressive tax bands: 0% up to 5000, 1% 5001-20000, 3% 20001-35000, 8% 35001-50000, 13% 50001-70000, 21% 70001-100000, 24% 100001-400000, 24.5% 400001-600000, 25% 600001-2000000, 26% above 2000000",
+    "Non-resident: flat 30% on all income",
+    "Register validate_pcb_amount as @frappe.whitelist()"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-005",
+   "title": "Implement NRIC format validation on Employee save",
+   "priority": "critical",
+   "description": "custom_id_value accepts any string up to 20 chars. Malaysian NRIC format is 12 digits (YYMMDDPBXXXX). Incorrectly entered NRICs silently pass through to LHDN causing rejections.",
+   "acceptanceCriteria": [
+    "validate_nric(value) in validation.py: exactly 12 digits, valid YYMMDD date portion, valid state/birth code (01-16 local, 21-59 foreign)",
+    "validate_id_value(id_type, id_value) dispatcher: NRIC\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2strict check, Passport\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2length/alphanumeric, BRN\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a212-digit numeric",
+    "validate_document_for_lhdn(employee) called on Employee validate hook via hooks.py",
+    "Tests cover valid/invalid NRIC, Passport, BRN inputs"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/utils/validation.py",
+    "Add validate_nric(value), validate_id_value(id_type, id_value) functions",
+    "Register Employee validate hook in hooks.py: 'Employee': {'validate': 'lhdn_payroll_integration.utils.validation.validate_document_for_lhdn'}"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-006",
+   "title": "Add IssueTime element to Invoice header",
+   "priority": "high",
+   "description": "LHDN v1.1 requires both cbc:IssueDate and cbc:IssueTime in the Invoice root. Code emits only IssueDate. Without IssueTime, documents fail schema validation and UBL element ordering is incorrect.",
+   "acceptanceCriteria": [
+    "_build_invoice_skeleton() emits <cbc:IssueTime>HH:MM:SS</cbc:IssueTime> immediately after IssueDate",
+    "Time uses frappe.utils.now_datetime() formatted as HH:MM:SS",
+    "Element order: ID \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2 IssueDate \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2 IssueTime \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2 InvoiceTypeCode \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2 DocumentCurrencyCode",
+    "Test asserts IssueTime node present in generated XML"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/payload_builder.py",
+    "In _build_invoice_skeleton() after _sub(root, CBC_NS, 'IssueDate', ...) add _sub(root, CBC_NS, 'IssueTime', frappe.utils.now_datetime().strftime('%H:%M:%S'))"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-007",
+   "title": "Add InvoicePeriod to individual Salary Slip and Expense Claim invoices",
+   "priority": "high",
+   "description": "build_salary_slip_xml() and build_expense_claim_xml() do not emit cac:InvoicePeriod. Only consolidated invoices have it. LHDN expects billing period (pay period dates) for payroll self-billed invoices.",
+   "acceptanceCriteria": [
+    "Both builders add cac:InvoicePeriod with StartDate = doc.start_date, EndDate = doc.end_date",
+    "Test asserts InvoicePeriod present with correct dates in generated XML"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/payload_builder.py",
+    "Add _add_invoice_period(root, start_date, end_date) helper",
+    "Call after IssueTime in build_salary_slip_xml() and build_expense_claim_xml()"
+   ],
+   "dependencies": [
+    "US-006"
+   ],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-008",
+   "title": "Fix PCB detection to use custom_is_pcb_component flag",
+   "priority": "high",
+   "description": "Hardcoded PCB_COMPONENT_NAMES frozenset used instead of custom_is_pcb_component flag on Salary Component. Non-English PCB component names (e.g. 'Cukai Pendapatan') silently excluded from WithholdingTaxTotal.",
+   "acceptanceCriteria": [
+    "PCB detection checks frappe.db.get_value('Salary Component', name, 'custom_is_pcb_component') == 1 OR name in fallback frozenset",
+    "Hardcoded set retained as fallback with deprecation comment",
+    "Test with custom-named PCB component verifies inclusion in WithholdingTaxTotal"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/payload_builder.py",
+    "Replace name in PCB_COMPONENT_NAMES with: frappe.db.get_value('Salary Component', d.salary_component, 'custom_is_pcb_component') == 1 or d.salary_component in PCB_COMPONENT_NAMES"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-009",
+   "title": "Fix credit note to use LHDN TIN not ERPNext employee code for Supplier",
+   "priority": "high",
+   "description": "Credit note AccountingSupplierParty/ID uses doc.employee (ERPNext internal code like EMP-0001) instead of employee.custom_lhdn_tin. LHDN rejects credit notes where supplier TIN does not match original invoice. PostalAddress and PartyTaxScheme also missing from credit note party elements.",
+   "acceptanceCriteria": [
+    "Credit note Supplier party uses employee.custom_lhdn_tin for cbc:ID",
+    "PostalAddress and PartyTaxScheme added to both Supplier and Buyer parties matching _build_invoice_skeleton()",
+    "Test verifies credit note XML supplier ID matches LHDN TIN"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/credit_note_service.py",
+    "Load employee = frappe.get_doc('Employee', doc.employee) and use employee.custom_lhdn_tin",
+    "Call _add_postal_address() and _add_party_tax_scheme() on both supplier and buyer party elements"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-010",
+   "title": "Fix consolidated invoice to use eligible earnings not net_pay",
+   "priority": "high",
+   "description": "build_consolidated_xml() uses raw doc.net_pay for line amounts. Individual invoices filter to eligible earnings (excluding employer statutory + custom-excluded components). Creates reconciliation mismatches.",
+   "acceptanceCriteria": [
+    "Line amount = sum of eligible earnings excluding EMPLOYER_STATUTORY_COMPONENTS and custom_lhdn_exclude_from_invoice components",
+    "Test confirms consolidated line amount matches sum of individual invoice line amounts for same documents"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/payload_builder.py",
+    "In build_consolidated_xml() replace _quantize(doc.net_pay) with same eligible-earnings filter logic as build_salary_slip_xml()"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-011",
+   "title": "Wire build_consolidated_xml() into consolidation_service",
+   "priority": "high",
+   "description": "build_consolidated_xml() exists in payload_builder.py but is NEVER called. consolidation_service.py submits each document individually in a loop \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd defeats purpose of consolidated submission and makes the 7-day deadline logic meaningless.",
+   "acceptanceCriteria": [
+    "Batch docs (<=RM10,000) submitted as ONE consolidated XML via build_consolidated_xml(batch_docnames, target_month)",
+    "High-value (>RM10,000) documents continue to be submitted individually",
+    "Consolidated submission response UUID written to a new LHDN Consolidation Log record linked to all batch documents",
+    "All batch documents marked custom_is_consolidated = 1",
+    "Test verifies single HTTP call for a batch of 5 eligible salary slips"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/consolidation_service.py",
+    "Replace individual submission loop for batch_slips with single build_consolidated_xml() + prepare_submission_wrapper() + HTTP POST",
+    "Create LHDN Consolidation Log doctype or use frappe.log_error for UUID tracking"
+   ],
+   "dependencies": [
+    "US-010"
+   ],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-012",
+   "title": "Generate CP39 monthly PCB remittance file",
+   "priority": "high",
+   "description": "CP39 is mandatory monthly employer PCB remittance format for LHDN's e-PCB portal. Every employer with PCB deductions must submit monthly. Not present anywhere in the app.",
+   "acceptanceCriteria": [
+    "New Script Report cp39_pcb_remittance with filters: Company, Month, Year",
+    "Columns: Employee TIN, IC/Passport Number, Employee Name, Gross Salary, PCB Amount, Period",
+    "CSV export in LHDN e-PCB portal compatible format",
+    "Sources only submitted Salary Slips (docstatus=1) with PCB deduction > 0",
+    "Test verifies output columns and row count"
+   ],
+   "technicalNotes": [
+    "New files: lhdn_payroll_integration/report/cp39_pcb_remittance/cp39_pcb_remittance.json + .py",
+    "Query tabSalary Slip joined to tabSalary Detail for PCB deductions",
+    "Report type: Script, is_standard: Yes"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-013",
+   "title": "Generate EA Form (Borang EA) for employees",
+   "priority": "high",
+   "description": "EA Form is mandatory annual employee tax statement that every employer must provide to employees by 28 February each year. Not present in the app.",
+   "acceptanceCriteria": [
+    "New Script Report ea_form with filters: Company, Employee (optional), Year",
+    "Aggregates all submitted Salary Slips for the year per employee",
+    "Output fields: Total Gross Remuneration, EPF Employee, SOCSO Employee, EIS Employee, PCB Total, Net Pay",
+    "HTML Print Format renders as LHDN-compatible EA Form layout",
+    "Test verifies aggregation accuracy across 12 months"
+   ],
+   "technicalNotes": [
+    "New files: lhdn_payroll_integration/report/ea_form/ea_form.json + .py",
+    "New print format: lhdn_payroll_integration/print_format/ea_form/ea_form.json + .html",
+    "Aggregate by employee across all salary slips for the year using SUM on deduction/earning amounts"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "large",
+   "passes": true
+  },
+  {
+   "id": "US-014",
+   "title": "Generate Borang E (Form E) employer annual return",
+   "priority": "high",
+   "description": "Borang E is mandatory employer annual return to LHDN due 31 March each year (Income Tax Act 1967, Section 83). Non-compliance carries penalty under Section 120. Company-level summary of all PCB, headcount, and total remuneration.",
+   "acceptanceCriteria": [
+    "New Script Report borang_e with filters: Company, Year",
+    "Output: company details, total employees, total gross remuneration, total PCB withheld, total EPF employer, total SOCSO employer",
+    "CP8D employee list (per-employee annual income + PCB) included as sub-table",
+    "Test verifies company-level totals match sum of individual EA Form data"
+   ],
+   "technicalNotes": [
+    "New files: lhdn_payroll_integration/report/borang_e/borang_e.json + .py",
+    "Aggregate all ea_form data across all employees for the company and year",
+    "Include per-employee breakdown as CP8D sub-section"
+   ],
+   "dependencies": [
+    "US-013"
+   ],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-015",
+   "title": "Generate EPF Borang A monthly contribution schedule",
+   "priority": "high",
+   "description": "EPF (KWSP) Borang A is mandatory monthly contribution remittance form listing each employee's contribution. No EPF reporting exists. Required for all employers registered with EPF.",
+   "acceptanceCriteria": [
+    "New Script Report epf_borang_a with filters: Company, Month, Year",
+    "Columns: Employee Name, NRIC, EPF Member Number, Wages, Employee EPF, Employer EPF, Total",
+    "New field custom_epf_member_number (Data) on Employee",
+    "CSV export compatible with EPF i-Akaun upload format",
+    "Test verifies contribution amounts per employee"
+   ],
+   "technicalNotes": [
+    "New files: lhdn_payroll_integration/report/epf_borang_a/epf_borang_a.json + .py",
+    "Add custom_epf_member_number (Data) to custom_field.json on Employee",
+    "Query tabSalary Slip + tabSalary Detail filtered by EPF component names"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-016",
+   "title": "Generate SOCSO Borang 8A monthly contribution schedule",
+   "priority": "high",
+   "description": "SOCSO (PERKESO) Borang 8A is mandatory monthly contribution schedule. No SOCSO reporting exists in the app.",
+   "acceptanceCriteria": [
+    "New Script Report socso_borang_8a with filters: Company, Month, Year",
+    "Columns: Employee Name, NRIC, SOCSO Number, Wages, Employee SOCSO, Employer SOCSO, Total",
+    "New field custom_socso_member_number (Data) on Employee",
+    "Test verifies amounts sourced from SOCSO deduction lines"
+   ],
+   "technicalNotes": [
+    "New files: lhdn_payroll_integration/report/socso_borang_8a/socso_borang_8a.json + .py",
+    "Add custom_socso_member_number (Data) to custom_field.json on Employee",
+    "Filter for SOCSO Employee and SOCSO - Employer salary components"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-017",
+   "title": "Generate EIS monthly contribution report",
+   "priority": "high",
+   "description": "EIS (Sistem Insurans Pekerjaan) monthly contributions filed separately via EIS portal. Employer must submit monthly schedule. No EIS report exists.",
+   "acceptanceCriteria": [
+    "New Script Report eis_monthly with filters: Company, Month, Year",
+    "Columns: Employee Name, NRIC, Wages, EIS Employee, EIS Employer, Total",
+    "Sources data from submitted Salary Slips with EIS deduction/earning lines",
+    "Test verifies correct EIS amounts per employee"
+   ],
+   "technicalNotes": [
+    "New files: lhdn_payroll_integration/report/eis_monthly/eis_monthly.json + .py",
+    "Filter for EIS Employee and EIS - Employer salary components"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-018",
+   "title": "Add bonus/irregular payment classification for PCB differentiation",
+   "priority": "high",
+   "description": "LHDN and PCB rules treat irregular payments (bonus, commissions, gratuity) differently from regular salary for PCB calculation. No flag or separate calculation path distinguishes these \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd causes incorrect PCB treatment.",
+   "acceptanceCriteria": [
+    "New field custom_is_irregular_payment (Check) on Salary Component",
+    "pcb_calculator.py accepts bonus_amount parameter; applies one-twelfth annualisation rule for bonus PCB per LHDN Schedule",
+    "Test verifies bonus PCB calculation differs from regular salary PCB for same income"
+   ],
+   "technicalNotes": [
+    "Files: custom_field.json, services/pcb_calculator.py",
+    "Add custom_is_irregular_payment (Check, default 0) to Salary Component in custom_field.json",
+    "In calculate_pcb(): if bonus_amount provided, annualise as (monthly_income * 12 + bonus_amount) then compute tax; subtract tax on monthly_income*12 alone"
+   ],
+   "dependencies": [
+    "US-004"
+   ],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-019",
+   "title": "Add non-resident flat-rate 30% tax flag and handling",
+   "priority": "high",
+   "description": "Non-resident employees (present in Malaysia fewer than 182 days in a calendar year) are taxed at flat 30%. No custom_is_non_resident flag and no flat-rate calculation path exists.",
+   "acceptanceCriteria": [
+    "New field custom_is_non_resident (Check) on Employee; distinct from custom_is_foreign_worker",
+    "pcb_calculator.py returns 30% flat rate when resident=False",
+    "PCB validation warning on Salary Slip uses flat rate for non-residents",
+    "Test covers non-resident 30% calculation vs progressive scale"
+   ],
+   "technicalNotes": [
+    "Files: custom_field.json, services/pcb_calculator.py",
+    "Add custom_is_non_resident (Check, default 0) to Employee in custom_field.json",
+    "In calculate_pcb(): if not resident return round(annual_income * 0.30, 2) / 12"
+   ],
+   "dependencies": [
+    "US-004"
+   ],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-020",
+   "title": "Distinguish director fee vs director salary at invoice level",
+   "priority": "high",
+   "description": "LHDN treats director fees (board service) and director salary (executive role) differently. Both use single custom_worker_type = Director with no sub-classification. Default classification code 036 applied uniformly.",
+   "acceptanceCriteria": [
+    "New field custom_director_payment_type (Select: Director Salary/Director Fee) on Employee, visible only when custom_worker_type = Director",
+    "get_default_classification_code() returns 036 for Director Fee, 004 for Director Salary",
+    "Test verifies correct classification codes per director payment type in generated XML"
+   ],
+   "technicalNotes": [
+    "Files: custom_field.json, services/exemption_filter.py",
+    "Add custom_director_payment_type with depends_on: eval:doc.custom_worker_type=='Director'",
+    "Update _WORKER_TYPE_CLASSIFICATION to check director sub-type from employee record"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-021",
+   "title": "Integrate LHDN TIN validation API before submission",
+   "priority": "high",
+   "description": "LHDN provides GET /api/v1.0/taxpayer/validate/{tin}/{idType}/{idValue}. App never calls it \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd incorrect TINs discovered only on submission rejection.",
+   "acceptanceCriteria": [
+    "New tin_validator.py with validate_tin_with_lhdn(company_name, tin, id_type, id_value) calling LHDN validation API",
+    "Called in enqueue_salary_slip_submission() before enqueuing \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd invalid TIN sets status Invalid with error, does not enqueue",
+    "Whitelisted validate_employee_tin(employee_name) callable from Employee form button",
+    "Test with mocked HTTP: valid TIN proceeds to enqueue; invalid TIN sets Invalid status"
+   ],
+   "technicalNotes": [
+    "New file: lhdn_payroll_integration/utils/tin_validator.py",
+    "LHDN endpoint: GET {base_url}/api/v1.0/taxpayer/validate/{tin}/{idType}/{idValue}",
+    "Map id_type NRIC\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2NRIC, Passport\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a0\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00be\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2PASSPORT etc. before calling API",
+    "In enqueue_salary_slip_submission(): call validate_tin_with_lhdn() synchronously before enqueuing"
+   ],
+   "dependencies": [
+    "US-003"
+   ],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-022",
+   "title": "Add submission failure email notification for HR Manager",
+   "priority": "high",
+   "description": "When Salary Slip marked Invalid after LHDN rejection, no notification reaches HR managers. Silent failures can result in months of non-compliance before detection.",
+   "acceptanceCriteria": [
+    "_write_response_to_doc() sends frappe.sendmail() to all users with role HR Manager when status set to Invalid",
+    "Email includes: document name, employee name, first 500 chars of error log, direct link to document",
+    "New Company field custom_lhdn_failure_email (Data) \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd if set, overrides role lookup",
+    "Email sending errors are swallowed and logged, not re-raised",
+    "Test verifies sendmail called on Invalid status write"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/submission_service.py",
+    "Add custom_lhdn_failure_email (Data) to Company in custom_field.json",
+    "In _write_response_to_doc() after setting Invalid status: call frappe.sendmail() in try/except"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-023",
+   "title": "Fix status poller to use per-document company for base_url and token",
+   "priority": "high",
+   "description": "poll_pending_documents() passes hardcoded empty string as base_url to _poll_single_document(). Multi-company setups poll against wrong endpoint. Token also uses default company credentials.",
+   "acceptanceCriteria": [
+    "poll_pending_documents() passes _get_base_url(doc.company) not empty string to each poll",
+    "_get_base_url() accepts company_name parameter; reads from that company's custom_sandbox_url/custom_production_url",
+    "Token fetched via get_access_token(doc.company) per document",
+    "Test verifies Company A documents polled against Company A endpoint, not Company B"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/status_poller.py",
+    "Change _get_base_url() signature to accept company_name",
+    "In poll_pending_documents() loop: pass _get_base_url(doc.company) and get_access_token(doc.company)"
+   ],
+   "dependencies": [
+    "US-003"
+   ],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-024",
+   "title": "Fix custom_id_type options to match LHDN schemeID vocabulary",
+   "priority": "high",
+   "description": "Option 'Business Registration Number' does not match LHDN schemeID value 'BRN'. When schemeID attribute added (US-001), inconsistent mapping causes XML errors.",
+   "acceptanceCriteria": [
+    "custom_id_type options updated to: NRIC, Passport, BRN, Army ID",
+    "Mapping dict in payload_builder.py: {\"NRIC\": \"NRIC\", \"Passport\": \"PASSPORT\", \"BRN\": \"BRN\", \"Army ID\": \"ARMY\"}",
+    "Migration note added to patches.txt for records with old value 'Business Registration Number'",
+    "Test verifies each id_type produces correct schemeID attribute in generated XML"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/fixtures/custom_field.json",
+    "Update Employee-custom_id_type options field",
+    "Add migration note to lhdn_payroll_integration/patches.txt"
+   ],
+   "dependencies": [
+    "US-001"
+   ],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-025",
+   "title": "Add full PostalAddress fields beyond state code only",
+   "priority": "high",
+   "description": "LHDN v1.1 requires full PostalAddress: AddressLine/Line, CityName, PostalZone, CountrySubentityCode, Country/IdentificationCode. App only emits CountrySubentityCode (state code). Full address required for production compliance.",
+   "acceptanceCriteria": [
+    "New Employee fields: custom_address_line1 (Data), custom_city (Data), custom_postcode (Data)",
+    "New Company fields (if absent): same three fields",
+    "_add_postal_address() emits: AddressLine/Line, CityName, PostalZone, CountrySubentityCode, Country/IdentificationCode = MYS",
+    "Test asserts all address sub-elements present in generated XML"
+   ],
+   "technicalNotes": [
+    "Files: custom_field.json, payload_builder.py",
+    "Add 6 new fields to custom_field.json (3 on Employee, 3 on Company)",
+    "Update _add_postal_address(party_elem, state_code, address_line1, city, postcode) signature"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-026",
+   "title": "Add Expense Claims to LHDN compliance report",
+   "priority": "high",
+   "description": "Compliance report queries only tabSalary Slip. Expense Claims with LHDN status entirely absent. HR managers have no unified view across both submission types.",
+   "acceptanceCriteria": [
+    "Report queries both Salary Slip and Expense Claim (UNION or separate sections)",
+    "Doctype column added to distinguish record types",
+    "All existing filters (Company, Status, Date range) apply to both doctypes",
+    "Test verifies Expense Claim rows appear in report output alongside Salary Slip rows"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/report/lhdn_payroll_compliance/lhdn_payroll_compliance.py",
+    "Add UNION ALL subquery for tabExpense Claim with same LHDN status fields",
+    "Add doctype column to output"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-027",
+   "title": "Build monthly LHDN submission summary report",
+   "priority": "high",
+   "description": "No aggregated monthly view exists. Auditors need total submissions per month, count by status (Valid/Invalid/Pending/Exempt), total invoice value MYR, deadline compliance status.",
+   "acceptanceCriteria": [
+    "New Script Report lhdn_monthly_summary with filters: Company, Year",
+    "One row per month (Jan-Dec); columns: Month, Total Submitted, Valid, Invalid, Pending, Exempt, Total Value MYR, Deadline Status",
+    "Deadline Status = On Time/Late/Pending based on 7-calendar-day rule",
+    "Covers both Salary Slips and Expense Claims",
+    "Test verifies monthly aggregation accuracy"
+   ],
+   "technicalNotes": [
+    "New files: lhdn_payroll_integration/report/lhdn_monthly_summary/lhdn_monthly_summary.json + .py",
+    "Group by MONTH(posting_date) with conditional COUNT per status",
+    "Use get_consolidation_deadline() from consolidation_service to compute Deadline Status"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-028",
+   "title": "Guard credit note against already-cancelled LHDN document",
+   "priority": "medium",
+   "description": "No check prevents issuing a credit note against an already-cancelled LHDN invoice. LHDN rejects credit notes referencing cancelled documents.",
+   "acceptanceCriteria": [
+    "Before building credit note XML, check source custom_lhdn_status != Cancelled",
+    "Raise frappe.ValidationError with descriptive message if source is Cancelled",
+    "Test verifies ValidationError thrown on credit note attempt against Cancelled document"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/credit_note_service.py",
+    "At start of credit note handler: load source doc, check custom_lhdn_status"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-029",
+   "title": "Make PaymentMeansCode configurable per employee",
+   "priority": "medium",
+   "description": "PaymentMeansCode hardcoded as 30 (credit transfer). LHDN supports 01 (cash), 03 (cheque), 30 (credit transfer), 42 (bank transfer), 48 (debit card). Contractors paid by cheque/cash incorrectly tagged.",
+   "acceptanceCriteria": [
+    "New field custom_payment_means_code (Select: 01 : Cash/03 : Cheque/30 : Credit Transfer/42 : Bank Transfer/48 : Debit Card) on Employee, default 30 : Credit Transfer",
+    "build_salary_slip_xml() reads this field; falls back to 30 if not set",
+    "Test verifies non-default payment means code appears in generated XML"
+   ],
+   "technicalNotes": [
+    "Files: custom_field.json, payload_builder.py",
+    "Add Employee-custom_payment_means_code to custom_field.json",
+    "In build_salary_slip_xml() PaymentMeans block: use employee.custom_payment_means_code or '30'"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-030",
+   "title": "Add TaxExemptionReasonCode when TaxCategory ID = E",
+   "priority": "medium",
+   "description": "When TaxCategory/ID = E (exempt), LHDN v1.1 requires TaxExemptionReasonCode. Element currently absent; causes validation failures on stricter LHDN validator configurations.",
+   "acceptanceCriteria": [
+    "_add_tax_and_totals() adds <cbc:TaxExemptionReasonCode>VATEX-MY-ES-43</cbc:TaxExemptionReasonCode> immediately after TaxCategory/ID = E",
+    "Test asserts TaxExemptionReasonCode element present in generated XML"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/payload_builder.py",
+    "In _add_tax_and_totals() after _sub(tax_cat, CBC_NS, 'ID', 'E') add _sub(tax_cat, CBC_NS, 'TaxExemptionReasonCode', 'VATEX-MY-ES-43')"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-031",
+   "title": "Generate CP8D annual employee remuneration return",
+   "priority": "medium",
+   "description": "CP8D is the annual return of private employees' remuneration submitted alongside Borang E \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd machine-readable employee income list for LHDN e-Filing. Not present in app.",
+   "acceptanceCriteria": [
+    "New Script Report cp8d with filters: Company, Year",
+    "Columns: Employee TIN, NRIC, Name, Annual Gross Income, Total PCB, EPF Employee",
+    "CSV export matching LHDN e-Filing CP8D column specification",
+    "Test verifies per-employee annual totals"
+   ],
+   "technicalNotes": [
+    "New files: lhdn_payroll_integration/report/cp8d/cp8d.json + .py",
+    "Aggregate salary slip data per employee per year",
+    "add_to_report_cache_for_download = 1 for CSV export"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-032",
+   "title": "Add CP21 workflow for employee cessation and departure from Malaysia",
+   "priority": "medium",
+   "description": "CP21 must be filed with LHDN at least 30 days before employee leaves Malaysia or ceases employment. Especially critical for custom_is_foreign_worker = 1 employees. No CP21 workflow exists.",
+   "acceptanceCriteria": [
+    "New Doctype LHDN CP21 linked to Employee with fields: employee, last_working_date, reason (Select: Termination/Resignation/Departure from Malaysia/Death)",
+    "Auto-created when Employee status set to Left with custom_is_foreign_worker = 1",
+    "Alert shown if last_working_date is less than 30 days from today",
+    "HTML Print Format generates LHDN-compatible CP21 document"
+   ],
+   "technicalNotes": [
+    "New doctype: lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_cp21/",
+    "Register Employee on_update hook in hooks.py to auto-create CP21",
+    "Print format: print_format/lhdn_cp21/lhdn_cp21.html"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-033",
+   "title": "Add CP22/CP22A handling for new hire and retirement notifications",
+   "priority": "medium",
+   "description": "CP22 must be filed within 30 days of new employee commencement. CP22A covers retirement/resignation for employees age 55+. Neither workflow exists.",
+   "acceptanceCriteria": [
+    "New Doctype LHDN CP22 auto-created on Employee creation when custom_requires_self_billed_invoice = 1",
+    "Alert shown if not submitted within 30 days of date_of_joining",
+    "LHDN CP22A created automatically for employees age >=55 on status change to Left"
+   ],
+   "technicalNotes": [
+    "New doctypes: lhdn_cp22 and lhdn_cp22a",
+    "Register Employee after_insert and on_update hooks in hooks.py",
+    "Calculate age from employee.date_of_birth to determine CP22A applicability"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-034",
+   "title": "Add HRDF levy validation and basic reporting",
+   "priority": "medium",
+   "description": "HRDF levy rates differ by employer size (0.5% for 10+ employees, 1% for 50+). App excludes HRDF from e-Invoice correctly but provides no levy calculation check or reporting.",
+   "acceptanceCriteria": [
+    "New field custom_hrdf_levy_rate (Select: 0.5%/1.0%) on Company",
+    "New Script Report hrdf_monthly_levy showing monthly HRDF liability per employee",
+    "Test verifies levy calculation at 0.5% and 1.0% rates against Company fixture"
+   ],
+   "technicalNotes": [
+    "Files: custom_field.json, new report hrdf_monthly_levy",
+    "Add Company-custom_hrdf_levy_rate to custom_field.json",
+    "Report queries HRDF Levy deduction lines and applies rate from Company"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-035",
+   "title": "Handle leave encashment and gratuity tax exemption in PCB calculation",
+   "priority": "medium",
+   "description": "Leave encashment and gratuity qualify for partial exemption under ITA 1967 Schedule 6 paragraph 25 (RM1,000 per year of service). Without flagging, treated as ordinary income in PCB calculation.",
+   "acceptanceCriteria": [
+    "New field custom_is_gratuity_or_leave_encashment (Check) on Salary Component",
+    "pcb_calculator.py applies Schedule 6 para 25 exemption when such component present",
+    "Exempt amount = RM1,000 x years of service; remainder taxable as normal income",
+    "Test verifies exemption reduces taxable income correctly"
+   ],
+   "technicalNotes": [
+    "Files: custom_field.json, services/pcb_calculator.py",
+    "Add custom_is_gratuity_or_leave_encashment (Check) to Salary Component in custom_field.json",
+    "calculate_pcb() accepts years_of_service and gratuity_amount parameters; applies RM1000/year exemption"
+   ],
+   "dependencies": [
+    "US-004"
+   ],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-036",
+   "title": "Handle mid-month proration for pay period PCB calculation",
+   "priority": "medium",
+   "description": "LHDN PCB rules require proration when employee joins or leaves mid-month. PCB calculation must use prorated annual income. InvoicePeriod (US-007) reflects actual worked days; PCB should match.",
+   "acceptanceCriteria": [
+    "pcb_calculator.py accepts worked_days and total_days_in_month parameters; prorates monthly income before annualising",
+    "PCB validation warning uses prorated income when worked_days < total_days_in_month",
+    "Test verifies prorated PCB for 15-day month vs full month same income"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/pcb_calculator.py",
+    "calculate_pcb() default worked_days=None, total_days=None; if provided, monthly_income *= worked_days/total_days before annualising"
+   ],
+   "dependencies": [
+    "US-004"
+   ],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-037",
+   "title": "Add bulk Submit to LHDN action on Salary Slip list view",
+   "priority": "medium",
+   "description": "No way to submit batch of Salary Slips simultaneously. 50-contractor payroll run requires waiting for individual on_submit hooks.",
+   "acceptanceCriteria": [
+    "New whitelisted bulk_enqueue_lhdn_submission(docnames, doctype) server method",
+    "List view action Submit to LHDN on Salary Slip list visible to HR Manager role",
+    "Action shows success count and failure count message",
+    "Test verifies all provided docnames are enqueued with Pending status"
+   ],
+   "technicalNotes": [
+    "New client script: lhdn_payroll_integration/public/js/salary_slip_list.js or similar",
+    "New whitelisted method in submission_service.py",
+    "Add list action via listview_settings in JS"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-038",
+   "title": "Implement LHDN portal document retrieval for audit verification",
+   "priority": "medium",
+   "description": "LHDN provides GET /api/v1.0/documents/{uuid}/raw to retrieve the validated XML stored on their portal. No mechanism to compare LHDN stored copy against ERPNext generated XML.",
+   "acceptanceCriteria": [
+    "New whitelisted retrieve_lhdn_document(docname, doctype) calling LHDN raw document endpoint",
+    "Response XML stored in new field custom_lhdn_raw_document (Text) on Salary Slip and Expense Claim",
+    "Dev Tools page has Retrieve from LHDN button invoking this function",
+    "Test with mocked HTTP verifies UUID used in URL and response stored"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/page/lhdn_dev_tools/lhdn_dev_tools.py",
+    "LHDN endpoint: GET {base_url}/api/v1.0/documents/{uuid}/raw",
+    "Add custom_lhdn_raw_document (Text) to both Salary Slip and Expense Claim in custom_field.json",
+    "Add button to Dev Tools JS page"
+   ],
+   "dependencies": [
+    "US-003"
+   ],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-039",
+   "title": "Add nationality field for foreign worker ISO country code",
+   "priority": "medium",
+   "description": "LHDN guidelines require ISO 3166-1 alpha-2 nationality code for foreign workers. The fixed TIN EI00000000010 is used for all foreign workers as a placeholder.",
+   "acceptanceCriteria": [
+    "New field custom_nationality_code (Data, 2 chars) on Employee, visible when custom_is_foreign_worker = 1",
+    "_build_invoice_skeleton() adds nationality code to party identification element for foreign workers",
+    "Test verifies nationality code appears in XML for foreign worker employee"
+   ],
+   "technicalNotes": [
+    "Files: custom_field.json, payload_builder.py",
+    "Add Employee-custom_nationality_code (Data, length=2) with depends_on: eval:doc.custom_is_foreign_worker"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-040",
+   "title": "Define custom_sst_registration_number on Employee in fixture",
+   "priority": "medium",
+   "description": "payload_builder.py reads employee.custom_sst_registration_number via getattr() but this field is NOT defined in custom_field.json. Field only works if myinvois_erpgulf coincidentally adds it.",
+   "acceptanceCriteria": [
+    "New entry in custom_field.json: Employee-custom_sst_registration_number (Data, optional, insert_after custom_state_code)",
+    "Field visible only when custom_requires_self_billed_invoice = 1",
+    "Test verifies SST number appears in PartyTaxScheme/RegistrationName when set"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/fixtures/custom_field.json",
+    "Add Employee-custom_sst_registration_number entry with depends_on: eval:doc.custom_requires_self_billed_invoice"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-041",
+   "title": "Build year-end PCB vs submission reconciliation report",
+   "priority": "medium",
+   "description": "No tool to compare total PCB withheld per employee vs CP39 remittances, or to reconcile submitted vs accepted invoices. Required for Borang E and EA Form verification.",
+   "acceptanceCriteria": [
+    "New Script Report lhdn_yearend_reconciliation with filters: Company, Year",
+    "Columns: Employee, Annual Gross Income, Total PCB Withheld, Invoices Submitted, Invoices Valid, Discrepancy Flag",
+    "Discrepancy Flag raised when PCB total deviates from LHDN-accepted amounts",
+    "Test verifies discrepancy detection logic across mock 12-month data"
+   ],
+   "technicalNotes": [
+    "New files: lhdn_payroll_integration/report/lhdn_yearend_reconciliation/lhdn_yearend_reconciliation.json + .py",
+    "Aggregate Salary Slip and Expense Claim data by employee for the year",
+    "Compare custom_lhdn_status = Valid count vs total docstatus=1 count"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "medium",
+   "passes": true
+  },
+  {
+   "id": "US-042",
+   "title": "Add audit log for manual LHDN resubmissions",
+   "priority": "medium",
+   "description": "resubmit_to_lhdn() is callable by any System Manager but leaves no audit trail (who triggered it, when, on which document).",
+   "acceptanceCriteria": [
+    "resubmit_to_lhdn() creates a new LHDN Resubmission Log doctype entry recording: user, timestamp, doctype, docname",
+    "Log entries viewable from Dev Tools page under Recent Submissions panel",
+    "Test verifies log entry created on manual resubmission"
+   ],
+   "technicalNotes": [
+    "Files: submission_service.py, new doctype lhdn_resubmission_log",
+    "New simple Doctype LHDN Resubmission Log with fields: user, timestamp, doctype, docname, notes",
+    "Insert record in resubmit_to_lhdn() using frappe.get_doc().insert()"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-043",
+   "title": "Fix alpha-only docnames producing duplicate codeNumber",
+   "priority": "low",
+   "description": "prepare_submission_wrapper() extracts digits from docname for codeNumber. All-alpha docnames fall back to '001' \u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u00a0\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00e2\u20ac\u00a6\u00c3\u201a\u00c2\u00a1\u00c3\u0192\u00c6\u2019\u00c3\u00a2\u00e2\u201a\u00ac\u00c5\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u2020\u00e2\u20ac\u2122\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00a2\u00c3\u0192\u00c2\u00a2\u00c3\u00a2\u00e2\u20ac\u0161\u00c2\u00ac\u00c3\u2026\u00c2\u00a1\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00ac\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00af\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bf\u00c3\u0192\u00e2\u20ac\u0161\u00c3\u201a\u00c2\u00bd duplicate codeNumber in batch submissions rejected by LHDN.",
+   "acceptanceCriteria": [
+    "Fallback uses hashlib.md5(docname.encode()).hexdigest()[:8] instead of '001' for no-digit docnames",
+    "Test verifies unique codeNumbers generated for multiple alpha-named documents"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/payload_builder.py",
+    "In prepare_submission_wrapper(): replace `or '001'` with `or hashlib.md5(docname.encode()).hexdigest()[:8]`",
+    "hashlib already imported at top of file"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-044",
+   "title": "Generate HRDF Borang PSMB/6 annual return",
+   "priority": "low",
+   "description": "HRDF annual return Borang PSMB/6 is due each January. Employers registered with HRDF must submit. Not present.",
+   "acceptanceCriteria": [
+    "New Script Report hrdf_borang_psmb6 with filters: Company, Year",
+    "Columns: Total Employees, Total Wages, Total Levy Paid",
+    "PDF-printable export format",
+    "Test verifies levy total matches sum of monthly levy reports"
+   ],
+   "technicalNotes": [
+    "New files: lhdn_payroll_integration/report/hrdf_borang_psmb6/hrdf_borang_psmb6.json + .py",
+    "Aggregate HRDF levy components across all salary slips for the year"
+   ],
+   "dependencies": [
+    "US-034"
+   ],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-045",
+   "title": "Add before_amend retention lock to Expense Claim",
+   "priority": "low",
+   "description": "Retention lock before_amend registered only on Salary Slip, not Expense Claim. Expense Claims with LHDN UUIDs can be amended after 7-year retention period. Retention archival job also only queries Salary Slips.",
+   "acceptanceCriteria": [
+    "hooks.py adds before_amend: check_retention_lock for Expense Claim",
+    "run_retention_archival() queries both Salary Slips and Expense Claims",
+    "Test verifies ValidationError thrown on before_amend for retention-locked Expense Claim"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/hooks.py, services/retention_service.py",
+    "Add 'before_amend' to Expense Claim doc_events in hooks.py",
+    "Add Expense Claim query to run_retention_archival()"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-046",
+   "title": "Add EIS, HRDF, and common allowance salary components to fixture",
+   "priority": "low",
+   "description": "Fixture seeds only 6 components. Missing: EIS Employee, EIS Employer, HRDF Levy, Transport Allowance, Housing Allowance. New installs require extensive manual setup.",
+   "acceptanceCriteria": [
+    "Add to salary_component.json: EIS Employee (Deduction), EIS - Employer (Deduction), HRDF Levy (Deduction), Transport Allowance (Earning), Housing Allowance (Earning)",
+    "Each has correct custom_lhdn_classification_code default and custom_is_pcb_component = 0",
+    "Test verifies all new components installed after fixture sync"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/fixtures/salary_component.json",
+    "EIS Employee: type Deduction, classification empty (not on invoice)",
+    "Transport Allowance: classification 022 (Others), custom_lhdn_exclude_from_invoice = 0"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-047",
+   "title": "Define custom_lhdn_archived field in custom_field.json fixture",
+   "priority": "low",
+   "description": "retention_service.py calls frappe.db.set_value(..., 'custom_lhdn_archived', 1) but this field is NOT defined in custom_field.json. Runtime error or silent failure on yearly archival job.",
+   "acceptanceCriteria": [
+    "New entry: Salary Slip-custom_lhdn_archived (Check, default 0, read_only, insert_after custom_error_log)",
+    "Same field added for Expense Claim",
+    "Test verifies retention archival job correctly sets the flag to 1"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/fixtures/custom_field.json",
+    "Add two entries: Salary Slip-custom_lhdn_archived and Expense Claim-custom_lhdn_archived"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-048",
+   "title": "Fix retention archival to include Submitted/Invalid records",
+   "priority": "low",
+   "description": "Archival filters by custom_lhdn_validated_datetime only. Records with status Submitted or Invalid (no validated_datetime) are never archived even after 7 years.",
+   "acceptanceCriteria": [
+    "run_retention_archival() uses COALESCE(custom_lhdn_validated_datetime, custom_lhdn_submission_datetime, creation) for 7-year age calculation",
+    "Records with status Submitted, Invalid, Valid all included in archival scan",
+    "Test verifies Submitted records older than 7 years are correctly archived"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/retention_service.py",
+    "Update query to use COALESCE in WHERE clause for date comparison",
+    "Use frappe.db.sql() with raw SQL for COALESCE support"
+   ],
+   "dependencies": [
+    "US-047"
+   ],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-049",
+   "title": "Generate standalone CP8D report with LHDN e-Filing format compliance",
+   "priority": "low",
+   "description": "CP8D as a standalone report needs its own column specification matching LHDN e-Filing CP8D format (separate from and in addition to the one included in Borang E).",
+   "acceptanceCriteria": [
+    "Standalone Script Report cp8d_efiling with CSV export matching LHDN e-Filing CP8D column specification precisely",
+    "Year filter, Company filter",
+    "Test verifies column headers match published LHDN CP8D spec"
+   ],
+   "technicalNotes": [
+    "New files: lhdn_payroll_integration/report/cp8d_efiling/cp8d_efiling.json + .py",
+    "Columns per LHDN CP8D spec: No., Name, NRIC/Passport, TIN, Gross Income, EPF, PCB",
+    "CSV download enabled"
+   ],
+   "dependencies": [
+    "US-031"
+   ],
+   "estimatedComplexity": "small",
+   "passes": true
+  },
+  {
+   "id": "US-050",
+   "title": "Add foreign currency conversion to Expense Claim XML builder",
+   "priority": "low",
+   "description": "build_expense_claim_xml() does not handle foreign currency. Salary slip builder has conversion_rate support; expense claim builder does not. Expense Claims in USD/SGD etc. produce incorrect MYR amounts.",
+   "acceptanceCriteria": [
+    "Builder reads doc.currency and doc.conversion_rate (default 1 for MYR)",
+    "All sanctioned_amount values converted to MYR before writing to XML",
+    "TaxCurrencyCode added when doc.currency != MYR",
+    "Test verifies USD Expense Claim produces correct converted MYR amounts in XML"
+   ],
+   "technicalNotes": [
+    "File: lhdn_payroll_integration/services/payload_builder.py",
+    "In build_expense_claim_xml(): mirror the foreign-currency pattern from build_salary_slip_xml() lines 215-226",
+    "Apply conv_rate to each expense.sanctioned_amount"
+   ],
+   "dependencies": [],
+   "estimatedComplexity": "small",
+   "passes": true
+  }
+ ]
 }
