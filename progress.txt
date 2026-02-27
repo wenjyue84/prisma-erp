@@ -3755,3 +3755,26 @@ Incomplete: Add EIS, HRDF, and common allowance salary components to fixture (ID
 ### Gotchas
 - First migrate attempt hit a lock file; must `rm -f sites/frontend/locks/bench_migrate.lock` before retry
 - Nested subdirectories inside doctype folders (from docker cp of dirs) cause Frappe to not recognize the DocType → orphan deletion
+## Iteration 15 - Fri, Feb 27, 2026  1:50:11 PM
+Incomplete: Add EIS, HRDF, and common allowance salary components to fixture (ID: US-046) — attempt 2/3
+
+## Iteration 16 — US-034: Add HRDF levy validation and basic reporting
+
+**Type:** IMPL (type: null in prd, treated as implementation)
+**TDD Phase:** GREEN (all 12 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_hrdf_levy`
+**Result:** PASS — 12/12 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `fixtures/custom_field.json` — Added `Company-custom_hrdf_levy_rate` (Select: 0.5%/1.0%)
+- `report/hrdf_monthly_levy/__init__.py` — New report package
+- `report/hrdf_monthly_levy/hrdf_monthly_levy.json` — Report metadata (Script Report, ref Salary Slip)
+- `report/hrdf_monthly_levy/hrdf_monthly_levy.py` — Report implementation: queries salary slips, applies HRDF rate from Company
+- `tests/test_hrdf_levy.py` — 12 tests: fixture validation, RATE_MAP, _get_levy_rate, levy calculation at 0.5%/1.0%, multi-employee, columns, execute
+
+### Patterns discovered
+- Report dir must exist in all nested paths (single/double/triple) due to container structure
+- `flt()` from `frappe.utils` is the standard way to round currency values
+
+### Gotchas
+- Triple-nested path issue (per progress.txt notes) requires copying report to all 3 nested report/ directories

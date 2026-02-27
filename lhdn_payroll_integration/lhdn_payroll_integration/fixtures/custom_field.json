@@ -482,13 +482,25 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Company-custom_hrdf_levy_rate",
+    "dt": "Company",
+    "fieldname": "custom_hrdf_levy_rate",
+    "fieldtype": "Select",
+    "label": "HRDF Levy Rate",
+    "options": "\n0.5%\n1.0%",
+    "description": "HRDF levy rate: 0.5% for 10-49 employees, 1.0% for 50+ employees",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_annual_revenue_tier"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Company-custom_address_line1",
     "dt": "Company",
     "fieldname": "custom_address_line1",
     "fieldtype": "Data",
     "label": "Address Line 1",
     "module": "LHDN Payroll Integration",
-    "insert_after": "custom_annual_revenue_tier"
+    "insert_after": "custom_hrdf_levy_rate"
   },
   {
     "doctype": "Custom Field",
