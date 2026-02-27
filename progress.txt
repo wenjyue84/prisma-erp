@@ -2988,3 +2988,32 @@ Completed: Wire build_consolidated_xml() into consolidation_service (ID: US-011)
 ## Iteration 8 - Fri, Feb 27, 2026 11:09:24 AM
 Incomplete: Generate CP39 monthly PCB remittance file (ID: US-012) — attempt 1/3
 
+## Iteration 6 - Fri, Feb 27, 2026 11:09:40 AM
+Completed: Wire build_consolidated_xml() into consolidation_service (ID: US-011) in 11m
+
+
+## Iteration 12 — US-012: Generate CP39 monthly PCB remittance file
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 13 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_cp39_report`
+**Result:** PASS — 13/13 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/cp39_pcb_remittance/__init__.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/cp39_pcb_remittance/cp39_pcb_remittance.json` — Report type: Script, ref_doctype: Salary Slip, is_standard: Yes
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/cp39_pcb_remittance/cp39_pcb_remittance.py` — Script report with filters (Company, Month, Year)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_cp39_report.py` — 13 tests covering columns + data shape
+
+### Key patterns
+- SQL joins: tabSalary Slip → tabEmployee (LEFT JOIN on employee) + tabSalary Detail (JOIN on parent/parenttype/parentfield='deductions') + tabSalary Component (JOIN custom_is_pcb_component=1)
+- GROUP BY ss.name, HAVING pcb_amount > 0 ensures only slips with actual PCB deductions appear
+- Employee TIN: `e.custom_lhdn_tin`, IC/Passport: `e.custom_id_value` (from custom_field.json fixture)
+- Gross salary: `ss.gross_pay` (standard ERPNext field)
+- Month filter uses `MONTH(ss.start_date)`, Year filter uses `YEAR(ss.start_date)`
+- Period column: `CONCAT(DATE_FORMAT(ss.start_date, '%%Y-%%m'), ' (', ss.start_date, ' - ', ss.end_date, ')')`
+- `%%Y-%%m` escaping needed inside frappe.db.sql format string to avoid Python % interpolation
+
+### Gotchas
+- In frappe.db.sql with `format()` string building, use `%%` for literal `%` in DATE_FORMAT calls, otherwise Python raises TypeError on `%Y`
+
