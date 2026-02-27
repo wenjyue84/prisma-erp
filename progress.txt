@@ -4143,3 +4143,30 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 2
 ### Gotchas
 - bench_migrate.lock may linger from previous sessions; safe to remove with rm -f
 - bench sync_fixtures command does not exist in this Frappe version; bench migrate is the correct approach
+## Iteration 1 - Fri, Feb 27, 2026  3:07:02 PM
+Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 1/3
+
+
+## Iteration N — US-047: Define custom_lhdn_archived field in custom_field.json fixture
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retention`
+**Result:** PASS — 8/8 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — Added 2 new Check fields:
+  - `Salary Slip-custom_lhdn_archived` (insert_after custom_lhdn_raw_document, read_only, default 0)
+  - `Expense Claim-custom_lhdn_archived` (insert_after custom_lhdn_raw_document, read_only, default 0)
+
+### Actions taken
+1. Copied fixture from container, added 2 new entries (52 → 54 total)
+2. Deployed updated fixture back to container
+3. Ran `bench migrate` to apply — NOTE: migrate deleted LHDN Payroll workspace (known orphan issue)
+4. Re-synced fixtures via `frappe.utils.fixtures.sync_fixtures` to restore workspace
+5. Verified both Custom Fields exist in DB via bench execute
+6. All 8 retention tests pass (existing test_retention.py already covered archived flag)
+
+### Gotchas
+- `bench migrate` deletes workspace fixtures as orphans — always re-run `frappe.utils.fixtures.sync_fixtures` after migrate
+- sync_fixtures correct path: `frappe.utils.fixtures.sync_fixtures` (not frappe.sync_fixtures or frappe.modules.utils.sync_fixtures)

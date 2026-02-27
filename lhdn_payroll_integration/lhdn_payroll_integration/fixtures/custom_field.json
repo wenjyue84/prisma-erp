@@ -579,5 +579,29 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_retry_count"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_lhdn_archived",
+    "dt": "Salary Slip",
+    "fieldname": "custom_lhdn_archived",
+    "fieldtype": "Check",
+    "label": "LHDN Archived",
+    "default": "0",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_raw_document"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Expense Claim-custom_lhdn_archived",
+    "dt": "Expense Claim",
+    "fieldname": "custom_lhdn_archived",
+    "fieldtype": "Check",
+    "label": "LHDN Archived",
+    "default": "0",
+    "read_only": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_raw_document"
   }
 ]
