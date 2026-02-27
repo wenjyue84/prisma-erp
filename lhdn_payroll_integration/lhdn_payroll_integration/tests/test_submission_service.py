@@ -338,3 +338,102 @@ class TestSubmissionService(FrappeTestCase):
             url_used,
             "POST URL should include the LHDN submissions endpoint",
         )
+
+
+class TestTokenExpiry(FrappeTestCase):
+    """Tests for get_access_token token expiry checking and error logging (US-003)."""
+
+    @patch("lhdn_payroll_integration.services.submission_service.frappe")
+    def test_valid_cached_token_returned_without_refresh(self, mock_frappe):
+        """When cached token has > 5 min remaining, returns it without calling taxpayerlogin."""
+        from datetime import datetime
+        from lhdn_payroll_integration.services.submission_service import get_access_token
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        company_doc = MagicMock()
+        company_doc.custom_bearer_token = "cached-valid-token"
+        company_doc.custom_token_expires_at = datetime(2026, 1, 1, 12, 10, 0)  # 10 min from now
+        mock_frappe.get_doc.return_value = company_doc
+        mock_frappe.utils.now_datetime.return_value = now
+
+        result = get_access_token("Test Co")
+
+        self.assertEqual(result, "cached-valid-token")
+
+    @patch("lhdn_payroll_integration.services.submission_service.frappe")
+    def test_token_within_5min_triggers_refresh(self, mock_frappe):
+        """When cached token expires within 5 min, calls taxpayerlogin for fresh token."""
+        import sys
+        from datetime import datetime
+        from lhdn_payroll_integration.services.submission_service import get_access_token
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        company_doc = MagicMock()
+        company_doc.custom_bearer_token = "expiring-token"
+        company_doc.custom_token_expires_at = datetime(2026, 1, 1, 12, 3, 0)  # only 3 min left
+        mock_frappe.get_doc.return_value = company_doc
+        mock_frappe.utils.now_datetime.return_value = now
+
+        mock_taxpayer = MagicMock()
+        mock_taxpayer.get_access_token.return_value = "fresh-token"
+
+        with patch.dict(sys.modules, {
+            "myinvois_erpgulf": MagicMock(),
+            "myinvois_erpgulf.myinvois_erpgulf": MagicMock(),
+            "myinvois_erpgulf.myinvois_erpgulf.taxpayerlogin": mock_taxpayer,
+        }):
+            result = get_access_token("Test Co")
+
+        self.assertEqual(result, "fresh-token")
+        mock_taxpayer.get_access_token.assert_called_once_with("Test Co")
+
+    @patch("lhdn_payroll_integration.services.submission_service.frappe")
+    def test_no_cached_token_calls_taxpayerlogin(self, mock_frappe):
+        """When no cached token exists, calls taxpayerlogin for a fresh token."""
+        import sys
+        from lhdn_payroll_integration.services.submission_service import get_access_token
+
+        company_doc = MagicMock()
+        company_doc.custom_bearer_token = None
+        company_doc.custom_token_expires_at = None
+        mock_frappe.get_doc.return_value = company_doc
+
+        mock_taxpayer = MagicMock()
+        mock_taxpayer.get_access_token.return_value = "brand-new-token"
+
+        with patch.dict(sys.modules, {
+            "myinvois_erpgulf": MagicMock(),
+            "myinvois_erpgulf.myinvois_erpgulf": MagicMock(),
+            "myinvois_erpgulf.myinvois_erpgulf.taxpayerlogin": mock_taxpayer,
+        }):
+            result = get_access_token("Test Co")
+
+        self.assertEqual(result, "brand-new-token")
+
+    @patch("lhdn_payroll_integration.services.submission_service.frappe")
+    def test_token_exception_logs_error_and_returns_empty(self, mock_frappe):
+        """When taxpayerlogin raises, frappe.log_error is called and '' is returned."""
+        import sys
+        from lhdn_payroll_integration.services.submission_service import get_access_token
+
+        company_doc = MagicMock()
+        company_doc.custom_bearer_token = None
+        company_doc.custom_token_expires_at = None
+        mock_frappe.get_doc.return_value = company_doc
+        mock_frappe.get_traceback.return_value = "Traceback ..."
+
+        mock_taxpayer = MagicMock()
+        mock_taxpayer.get_access_token.side_effect = Exception("Connection refused")
+
+        with patch.dict(sys.modules, {
+            "myinvois_erpgulf": MagicMock(),
+            "myinvois_erpgulf.myinvois_erpgulf": MagicMock(),
+            "myinvois_erpgulf.myinvois_erpgulf.taxpayerlogin": mock_taxpayer,
+        }):
+            result = get_access_token("Test Co")
+
+        self.assertEqual(result, "")
+        mock_frappe.log_error.assert_called_once()
+        call_kwargs = mock_frappe.log_error.call_args
+        title_arg = call_kwargs[1].get("title") or (call_kwargs[0][0] if call_kwargs[0] else "")
+        self.assertIn("Test Co", title_arg)

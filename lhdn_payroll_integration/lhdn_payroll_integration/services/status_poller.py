@@ -64,16 +64,21 @@ def _format_error_log(response):
     return "\n".join(lines)
 
 
-def _get_base_url():
-    """Get the LHDN API base URL from default Company configuration.
+def _get_base_url(company_name=None):
+    """Get the LHDN API base URL from Company configuration.
+
+    Args:
+        company_name: The Company name to look up. Falls back to the site
+            default company when not provided.
 
     Returns:
-        str: Base URL (sandbox or production).
+        str: Base URL (sandbox or production), or "" if not configured.
     """
-    default_company = frappe.defaults.get_defaults().get("company")
-    if not default_company:
+    if not company_name:
+        company_name = frappe.defaults.get_defaults().get("company")
+    if not company_name:
         return ""
-    company = frappe.get_doc("Company", default_company)
+    company = frappe.get_doc("Company", company_name)
     if company.custom_integration_type == "Sandbox":
         return company.custom_sandbox_url or ""
     return company.custom_production_url or ""
@@ -122,11 +127,12 @@ def poll_pending_documents():
     Fetches each document's current status from the LHDN API and
     updates accordingly.
 
+    The base URL and token are resolved per document using the document's
+    own Company, so multi-company setups are handled correctly.
+
     Processes max 100 documents per doctype per run.
     Individual document errors are caught and logged.
     """
-    token = get_access_token()
-
     for doctype in DOCTYPES_TO_POLL:
         documents = frappe.get_all(
             doctype,
@@ -134,15 +140,18 @@ def poll_pending_documents():
                 "custom_lhdn_status": "Submitted",
                 "custom_lhdn_uuid": ["!=", ""],
             },
-            fields=["name", "custom_lhdn_uuid", "custom_lhdn_status"],
+            fields=["name", "custom_lhdn_uuid", "custom_lhdn_status", "company"],
             limit_page_length=100,
         )
 
         for doc in documents:
             if not doc.get("custom_lhdn_uuid"):
                 continue
+            company_name = doc.get("company")
+            token = get_access_token(company_name) if company_name else ""
+            base_url = _get_base_url(company_name)
             try:
-                _poll_single_document(doctype, doc, token, "")
+                _poll_single_document(doctype, doc, token, base_url)
             except Exception:
                 frappe.log_error(
                     title=f"Status Poller: Error polling {doctype} {doc.name}",

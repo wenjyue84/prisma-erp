@@ -55,24 +55,44 @@ def _format_rejection_errors(error):
 def get_access_token(company_name):
     """Get LHDN MyInvois API bearer token for the given company.
 
-    Checks for a cached token on the Company doc first. If none,
-    delegates to myinvois_erpgulf's taxpayerlogin module.
+    Checks for a cached token on the Company doc first. Returns the cached
+    token only if it does not expire within the next 5 minutes. Otherwise
+    fetches a fresh token via myinvois_erpgulf. Exceptions are logged via
+    frappe.log_error() and an empty string is returned on failure.
 
     Args:
         company_name: The Company name to fetch token for.
 
     Returns:
-        str: Bearer token string.
+        str: Bearer token string, or "" on failure.
     """
+    from datetime import timedelta, datetime as _datetime
+
     company = frappe.get_doc("Company", company_name)
-    if company.custom_bearer_token:
-        return company.custom_bearer_token
+    bearer_token = company.custom_bearer_token
+    token_expires_at = company.custom_token_expires_at
+
+    # Return cached token only when it is a non-empty string with a known
+    # expiry that is more than 5 minutes away.  The isinstance guards
+    # prevent TypeError when called with mock objects in unit tests.
+    if (
+        isinstance(bearer_token, str)
+        and bearer_token
+        and isinstance(token_expires_at, _datetime)
+    ):
+        now = frappe.utils.now_datetime()
+        if now < (token_expires_at - timedelta(minutes=5)):
+            return bearer_token
     try:
         from myinvois_erpgulf.myinvois_erpgulf.taxpayerlogin import (
             get_access_token as _get_token,
         )
         return _get_token(company_name)
     except Exception:
+        frappe.log_error(
+            title=f"LHDN: Failed to get access token for {company_name}",
+            message=frappe.get_traceback(),
+        )
         return ""
 
 

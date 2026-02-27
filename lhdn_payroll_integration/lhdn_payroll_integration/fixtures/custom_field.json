@@ -393,5 +393,18 @@
     "default": "0",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_lhdn_exclude_from_invoice"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_token_expires_at",
+    "dt": "Company",
+    "fieldname": "custom_token_expires_at",
+    "fieldtype": "Datetime",
+    "label": "Token Expires At",
+    "description": "Expiry datetime of the cached LHDN bearer token. Auto-updated by get_access_token().",
+    "read_only": 1,
+    "hidden": 1,
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_bearer_token"
   }
 ]

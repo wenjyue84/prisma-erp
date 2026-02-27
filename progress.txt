@@ -2664,3 +2664,29 @@ Completed: Add schemeID attribute to PartyIdentification/ID elements (ID: US-001
 ## Iteration 2 - Fri, Feb 27, 2026
 Completed: Add AdditionalDocumentReference for registration ID in XML (ID: US-002)
 
+## Iteration 2 - Fri, Feb 27, 2026 10:16:53 AM
+Completed: Add AdditionalDocumentReference for registration ID in XML (ID: US-002) in 7m
+
+
+## Iteration 3 — US-003: Fix token expiry check and status poller base_url bug
+
+**Type:** IMPL
+**TDD Phase:** GREEN (11/11 submission tests + 7/7 status poller tests, 525 total pass)
+**Bench command:** `bench --site frontend run-tests --app lhdn_payroll_integration`
+**Result:** PASS — 525/525 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/services/submission_service.py` — Fixed `get_access_token()`: added `isinstance(str)` + `isinstance(_datetime)` guards before expiry comparison; added `frappe.log_error()` in except block; removed unconditional cached-token return
+- `lhdn_payroll_integration/services/status_poller.py` — Fixed `_get_base_url(company_name=None)`: added `company_name` parameter; fixed `poll_pending_documents()`: added "company" to fields list; moved token+base_url resolution inside the per-document loop using `doc.get("company")`
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added `Company-custom_token_expires_at` Datetime field (hidden, read_only, insert_after custom_bearer_token)
+- `lhdn_payroll_integration/tests/test_submission_service.py` — Added `TestTokenExpiry` class (4 tests: valid cached token, expiry within 5min triggers refresh, no cached token calls taxpayerlogin, exception logs error and returns "")
+
+### Patterns discovered
+- `MagicMock < MagicMock` raises `TypeError` in Python 3 — ALWAYS add `isinstance(obj, _datetime)` guards before datetime arithmetic in code that uses `frappe.get_doc()` return values
+- `isinstance(bearer_token, str)` guard is safe: Frappe Small Text fields always return str or None in production; MagicMocks are filtered out automatically in tests
+- `sys.modules` patch.dict works for inline `from ... import ...` inside function bodies — useful for mocking optional dependencies like myinvois_erpgulf
+- `poll_pending_documents()` must add "company" to the `fields` list in `frappe.get_all()` to enable per-document company resolution
+- Existing status_poller tests still pass because `doc.get("company")` returns None for mock docs → `if company_name else ""` branch safely skips get_access_token call
+
+### Gotchas
+- Old tests that patch frappe but NOT get_access_token (e.g. test_process_salary_slip_calls_xml_builder) would break if isinstance guard not added — MagicMock().custom_bearer_token is truthy, causing the datetime comparison path to be entered
