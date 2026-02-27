@@ -99,6 +99,37 @@ class TestSalarySlipXMLBuilder(FrappeTestCase):
         self.assertEqual(root.tag, f"{{{UBL_NS}}}Invoice")
 
     @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_issue_time_present_in_invoice_header(self, mock_frappe):
+        """IssueTime element is present in Invoice header immediately after IssueDate (LHDN v1.1)."""
+        import datetime
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-00001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+        mock_frappe.utils.now_datetime.return_value = datetime.datetime(2026, 1, 31, 14, 30, 0)
+        mock_frappe.db.get_value.return_value = 0
+
+        xml_string = build_salary_slip_xml("SAL-SLP-00001")
+        root = ET.fromstring(xml_string)
+
+        issue_time = root.find(f"{{{CBC_NS}}}IssueTime")
+        self.assertIsNotNone(issue_time, "IssueTime element not found in Invoice header")
+        self.assertEqual(issue_time.text, "14:30:00")
+
+        # Verify element order: IssueDate comes before IssueTime
+        children_tags = [child.tag for child in root]
+        issue_date_idx = children_tags.index(f"{{{CBC_NS}}}IssueDate")
+        issue_time_idx = children_tags.index(f"{{{CBC_NS}}}IssueTime")
+        invoice_type_idx = children_tags.index(f"{{{CBC_NS}}}InvoiceTypeCode")
+        self.assertLess(issue_date_idx, issue_time_idx, "IssueDate must come before IssueTime")
+        self.assertLess(issue_time_idx, invoice_type_idx, "IssueTime must come before InvoiceTypeCode")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
     def test_invoice_type_code_is_11(self, mock_frappe):
         """InvoiceTypeCode element contains '11' (self-billed invoice)."""
         doc = self._make_salary_slip_doc()

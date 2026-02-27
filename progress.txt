@@ -2789,3 +2789,24 @@ Completed: Implement NRIC format validation on Employee save (ID: US-005) in 8m
 ### Gotchas
 - Container had a more comprehensive test file from a previous session; don't docker cp test files blindly — check existing tests first
 - PyC cache timestamp issue is a recurring problem: always delete pyc after docker cp of Python files
+## Iteration 4 - Fri, Feb 27, 2026 10:45:06 AM
+Completed: Implement NRIC format validation on Employee save (ID: US-005) in 11m
+
+
+## Iteration N — US-006: Add IssueTime element to Invoice header
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 62/62 tests pass (including new test_issue_time_present_in_invoice_header)
+
+### Files created/modified
+- `lhdn_payroll_integration/services/payload_builder.py` — Added `_sub(root, CBC_NS, "IssueTime", frappe.utils.now_datetime().strftime("%H:%M:%S"))` in `_build_invoice_skeleton()` immediately after IssueDate
+- `lhdn_payroll_integration/tests/test_payload_builder.py` — Added `test_issue_time_present_in_invoice_header` to `TestSalarySlipXMLBuilder`
+
+### Patterns discovered
+- `frappe.utils.now_datetime()` accessed via mocked `frappe` — set `mock_frappe.utils.now_datetime.return_value = datetime.datetime(...)` for deterministic assertions
+- Element order in UBL 2.1 verified by index comparison on `[child.tag for child in root]`
+
+### Gotchas
+- `mock_frappe.db.get_value.return_value = 0` needed to prevent employer statutory components from triggering MagicMock truthy path in the exclusion filter
