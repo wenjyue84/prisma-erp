@@ -3371,3 +3371,16 @@ Implementation already existed from a previous session (submission_service.py + 
 ## Iteration 7 - Fri, Feb 27, 2026 12:36:14 PM
 Completed: Add submission failure email notification for HR Manager (ID: US-022) in 4m
 
+
+## Iteration N — US-023: Fix status poller to use per-document company for base_url and token
+
+**Type:** IMPL
+**TDD Phase:** GREEN (already implemented correctly)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_status_poller_base_url`
+**Result:** PASS — 4 tests pass + 7 test_status_poller tests pass
+
+### Files (already correct in container)
+- `services/status_poller.py` — `_get_base_url(company_name)` already accepts company param; `poll_pending_documents()` already uses `doc.get("company")` per document
+
+### Notes
+- Story was already implemented when picked up; verified via test run
