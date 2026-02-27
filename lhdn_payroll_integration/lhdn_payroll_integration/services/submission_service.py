@@ -115,11 +115,66 @@ def _get_submission_url(company):
     return f"{base_url.rstrip('/')}{SUBMISSION_ENDPOINT}"
 
 
+def _send_failure_notification(doctype, docname, employee_name, error_msg, company):
+    """Send email notification on LHDN submission failure.
+
+    Sends to the address in custom_lhdn_failure_email on Company (if set),
+    or falls back to all users with the HR Manager role.
+    Errors are swallowed so notification failure never blocks the main flow.
+
+    Args:
+        doctype: The Frappe doctype (e.g. 'Salary Slip').
+        docname: The document name.
+        employee_name: Employee full name for the email body.
+        error_msg: The error log text (first 500 chars will be included).
+        company: Company name used to look up custom_lhdn_failure_email.
+    """
+    try:
+        doc_url = frappe.utils.get_url(f"/app/{doctype.lower().replace(' ', '-')}/{docname}")
+        subject = f"[LHDN] Submission Failed: {docname}"
+        body = (
+            f"<p>Document <strong>{docname}</strong> ({employee_name}) was rejected by LHDN.</p>"
+            f"<p><strong>Error (first 500 chars):</strong></p>"
+            f"<pre>{(error_msg or '')[:500]}</pre>"
+            f"<p><a href='{doc_url}'>Open {docname}</a></p>"
+        )
+
+        # Determine recipients
+        recipients = []
+        if company:
+            failure_email = frappe.db.get_value(
+                "Company", company, "custom_lhdn_failure_email"
+            )
+            if failure_email:
+                recipients = [failure_email]
+
+        if not recipients:
+            hr_manager_users = frappe.db.sql(
+                """
+                SELECT DISTINCT u.email
+                FROM `tabUser` u
+                JOIN `tabHas Role` r ON r.parent = u.name
+                WHERE r.role = 'HR Manager'
+                  AND u.enabled = 1
+                  AND u.email IS NOT NULL
+                  AND u.email != ''
+                """,
+                as_dict=True,
+            )
+            recipients = [row["email"] for row in hr_manager_users]
+
+        if recipients:
+            frappe.sendmail(recipients=recipients, subject=subject, message=body)
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "LHDN failure notification error")
+
+
 def _write_response_to_doc(doctype, docname, response):
     """Parse LHDN 202 response and update the Frappe document.
 
     On acceptedDocuments: sets custom_lhdn_status='Submitted' and stores UUID.
-    On rejectedDocuments: sets custom_lhdn_status='Invalid' and logs error.
+    On rejectedDocuments: sets custom_lhdn_status='Invalid', logs error,
+    and sends failure email to HR Manager (US-022).
 
     Args:
         doctype: The Frappe doctype (e.g. 'Salary Slip').
@@ -141,6 +196,24 @@ def _write_response_to_doc(doctype, docname, response):
         error_msg = _format_rejection_errors(error_info)
         frappe.db.set_value(doctype, docname, "custom_lhdn_status", "Invalid")
         frappe.db.set_value(doctype, docname, "custom_error_log", error_msg)
+
+        # US-022: notify HR Manager of failure
+        try:
+            doc_fields = frappe.db.get_value(
+                doctype,
+                docname,
+                ["employee_name", "company"],
+                as_dict=True,
+            ) or {}
+        except Exception:
+            doc_fields = {}
+        _send_failure_notification(
+            doctype,
+            docname,
+            doc_fields.get("employee_name", ""),
+            error_msg,
+            doc_fields.get("company", ""),
+        )
 
 
 @frappe.whitelist()

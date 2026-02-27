@@ -6,6 +6,10 @@ to LHDN as a self-billed e-Invoice.
 Worker type gate:
 - Employee (contract of service) = always exempt per LHDN FAQ
 - Contractor / Director = in-scope when self-billed flag is set
+
+Director sub-classification (US-020):
+- Director Fee  (board service)     → classification code 036
+- Director Salary (executive role)  → classification code 004
 """
 import frappe
 
@@ -15,19 +19,35 @@ IN_SCOPE_WORKER_TYPES = frozenset({"Contractor", "Director"})
 # Default LHDN classification codes by worker type
 _WORKER_TYPE_CLASSIFICATION = {
     "Contractor": "037",
-    "Director": "036",
+    "Director": "036",  # default for Director Fee; Director Salary overrides to 004
+}
+
+# Director payment type → classification code override
+_DIRECTOR_PAYMENT_TYPE_CLASSIFICATION = {
+    "Director Fee": "036",
+    "Director Salary": "004",
 }
 
 
-def get_default_classification_code(worker_type: str) -> str:
+def get_default_classification_code(worker_type: str, employee=None) -> str:
     """Return the default LHDN classification code for a worker type.
+
+    For Directors, inspects ``employee.custom_director_payment_type`` to
+    distinguish between Director Fee (036) and Director Salary (004).
 
     Args:
         worker_type: 'Employee', 'Contractor', 'Director', or other.
+        employee: Optional Frappe Employee document.  When provided and
+                  worker_type is 'Director', the payment type field is
+                  consulted for a more specific code.
 
     Returns:
-        '037' for Contractor, '036' for Director, '022' for all others.
+        Classification code string, e.g. '036', '004', '037', '022'.
     """
+    if worker_type == "Director" and employee is not None:
+        payment_type = getattr(employee, "custom_director_payment_type", "") or ""
+        if payment_type in _DIRECTOR_PAYMENT_TYPE_CLASSIFICATION:
+            return _DIRECTOR_PAYMENT_TYPE_CLASSIFICATION[payment_type]
     return _WORKER_TYPE_CLASSIFICATION.get(worker_type, "022")
 
 
