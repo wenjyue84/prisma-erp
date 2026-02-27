@@ -3554,3 +3554,23 @@ Completed: Build monthly LHDN submission summary report (ID: US-027) in 5m
 - Use past year (2020) in tests to guarantee deadline has passed; use 2099 for future
 - `frappe.db.sql` mock with `return_value=[]` cleanly tests empty month behaviour
 - Month NAMES list is 1-indexed (empty string at index 0) to allow `MONTH_NAMES[m]` where m=1..12
+## Iteration 8 - Fri, Feb 27, 2026  1:08:43 PM
+Completed: Build monthly LHDN submission summary report (ID: US-027) in 7m
+
+
+## Iteration N — US-028: Guard credit note against already-cancelled LHDN document
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_credit_note`
+**Result:** PASS — 9/9 tests pass (8 existing + 1 new), 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/credit_note_service.py` — Added Cancelled status check after UUID check
+- `lhdn_payroll_integration/tests/test_credit_note.py` — Added `test_credit_note_raises_if_source_is_cancelled`
+
+### What was changed
+Added check in `build_credit_note_xml()` after the UUID check: if `doc.custom_lhdn_status == "Cancelled"`, raise `frappe.ValidationError` with descriptive message.
+
+### Patterns discovered
+- Existing tests mock `frappe.throw` via `mock_frappe.throw.side_effect = frappe.ValidationError(...)` to test throw-based validation

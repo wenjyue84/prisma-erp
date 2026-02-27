@@ -14,15 +14,15 @@
       "id": "US-001",
       "title": "Add schemeID attribute to PartyIdentification/ID elements",
       "priority": "critical",
-      "description": "Every cbc:ID inside cac:PartyIdentification is emitted without the mandatory schemeID attribute (LHDN v1.1 spec Â§6.2). All submissions currently fail LHDN schema validation. Employee has custom_id_type (NRIC/Passport/BRN/Army ID) stored but never mapped to schemeID in the XML.",
+      "description": "Every cbc:ID inside cac:PartyIdentification is emitted without the mandatory schemeID attribute (LHDN v1.1 spec \u00c2\u00a76.2). All submissions currently fail LHDN schema validation. Employee has custom_id_type (NRIC/Passport/BRN/Army ID) stored but never mapped to schemeID in the XML.",
       "acceptanceCriteria": [
         "_build_invoice_skeleton() emits <cbc:ID schemeID=\"TIN\"> for TIN on both Supplier (Employee) and Buyer (Company) parties",
-        "Employee id_type mapped: NRICâ†’NRIC, Passportâ†’PASSPORT, BRNâ†’BRN, Army IDâ†’ARMY",
+        "Employee id_type mapped: NRIC\u00e2\u2020\u2019NRIC, Passport\u00e2\u2020\u2019PASSPORT, BRN\u00e2\u2020\u2019BRN, Army ID\u00e2\u2020\u2019ARMY",
         "All existing tests pass; new test asserts schemeID attribute present in generated XML"
       ],
       "technicalNotes": [
         "File: lhdn_payroll_integration/services/payload_builder.py",
-        "Edit _build_invoice_skeleton() â€” add schemeID attr to all cbc:ID elements inside PartyIdentification",
+        "Edit _build_invoice_skeleton() \u00e2\u20ac\u201d add schemeID attr to all cbc:ID elements inside PartyIdentification",
         "Add mapping dict ID_TYPE_TO_SCHEME = {\"NRIC\": \"NRIC\", \"Passport\": \"PASSPORT\", \"BRN\": \"BRN\", \"Army ID\": \"ARMY\"}"
       ],
       "dependencies": [],
@@ -54,7 +54,7 @@
       "id": "US-003",
       "title": "Fix token expiry check and status poller base_url bug",
       "priority": "critical",
-      "description": "get_access_token() returns cached token unconditionally (LHDN tokens expire after 3600s). Exceptions silently return empty string. status_poller passes hardcoded empty string as base_url â€” all hourly polls fail with ConnectionError.",
+      "description": "get_access_token() returns cached token unconditionally (LHDN tokens expire after 3600s). Exceptions silently return empty string. status_poller passes hardcoded empty string as base_url \u00e2\u20ac\u201d all hourly polls fail with ConnectionError.",
       "acceptanceCriteria": [
         "Add custom_token_expires_at Datetime field to Company in custom_field.json",
         "Token refreshed if within 5 min of expiry; exceptions logged via frappe.log_error()",
@@ -100,7 +100,7 @@
       "description": "custom_id_value accepts any string up to 20 chars. Malaysian NRIC format is 12 digits (YYMMDDPBXXXX). Incorrectly entered NRICs silently pass through to LHDN causing rejections.",
       "acceptanceCriteria": [
         "validate_nric(value) in validation.py: exactly 12 digits, valid YYMMDD date portion, valid state/birth code (01-16 local, 21-59 foreign)",
-        "validate_id_value(id_type, id_value) dispatcher: NRICâ†’strict check, Passportâ†’length/alphanumeric, BRNâ†’12-digit numeric",
+        "validate_id_value(id_type, id_value) dispatcher: NRIC\u00e2\u2020\u2019strict check, Passport\u00e2\u2020\u2019length/alphanumeric, BRN\u00e2\u2020\u201912-digit numeric",
         "validate_document_for_lhdn(employee) called on Employee validate hook via hooks.py",
         "Tests cover valid/invalid NRIC, Passport, BRN inputs"
       ],
@@ -121,7 +121,7 @@
       "acceptanceCriteria": [
         "_build_invoice_skeleton() emits <cbc:IssueTime>HH:MM:SS</cbc:IssueTime> immediately after IssueDate",
         "Time uses frappe.utils.now_datetime() formatted as HH:MM:SS",
-        "Element order: ID â†’ IssueDate â†’ IssueTime â†’ InvoiceTypeCode â†’ DocumentCurrencyCode",
+        "Element order: ID \u00e2\u2020\u2019 IssueDate \u00e2\u2020\u2019 IssueTime \u00e2\u2020\u2019 InvoiceTypeCode \u00e2\u2020\u2019 DocumentCurrencyCode",
         "Test asserts IssueTime node present in generated XML"
       ],
       "technicalNotes": [
@@ -210,7 +210,7 @@
       "id": "US-011",
       "title": "Wire build_consolidated_xml() into consolidation_service",
       "priority": "high",
-      "description": "build_consolidated_xml() exists in payload_builder.py but is NEVER called. consolidation_service.py submits each document individually in a loop â€” defeats purpose of consolidated submission and makes the 7-day deadline logic meaningless.",
+      "description": "build_consolidated_xml() exists in payload_builder.py but is NEVER called. consolidation_service.py submits each document individually in a loop \u00e2\u20ac\u201d defeats purpose of consolidated submission and makes the 7-day deadline logic meaningless.",
       "acceptanceCriteria": [
         "Batch docs (<=RM10,000) submitted as ONE consolidated XML via build_consolidated_xml(batch_docnames, target_month)",
         "High-value (>RM10,000) documents continue to be submitted individually",
@@ -357,7 +357,7 @@
       "id": "US-018",
       "title": "Add bonus/irregular payment classification for PCB differentiation",
       "priority": "high",
-      "description": "LHDN and PCB rules treat irregular payments (bonus, commissions, gratuity) differently from regular salary for PCB calculation. No flag or separate calculation path distinguishes these â€” causes incorrect PCB treatment.",
+      "description": "LHDN and PCB rules treat irregular payments (bonus, commissions, gratuity) differently from regular salary for PCB calculation. No flag or separate calculation path distinguishes these \u00e2\u20ac\u201d causes incorrect PCB treatment.",
       "acceptanceCriteria": [
         "New field custom_is_irregular_payment (Check) on Salary Component",
         "pcb_calculator.py accepts bonus_amount parameter; applies one-twelfth annualisation rule for bonus PCB per LHDN Schedule",
@@ -419,17 +419,17 @@
       "id": "US-021",
       "title": "Integrate LHDN TIN validation API before submission",
       "priority": "high",
-      "description": "LHDN provides GET /api/v1.0/taxpayer/validate/{tin}/{idType}/{idValue}. App never calls it â€” incorrect TINs discovered only on submission rejection.",
+      "description": "LHDN provides GET /api/v1.0/taxpayer/validate/{tin}/{idType}/{idValue}. App never calls it \u00e2\u20ac\u201d incorrect TINs discovered only on submission rejection.",
       "acceptanceCriteria": [
         "New tin_validator.py with validate_tin_with_lhdn(company_name, tin, id_type, id_value) calling LHDN validation API",
-        "Called in enqueue_salary_slip_submission() before enqueuing â€” invalid TIN sets status Invalid with error, does not enqueue",
+        "Called in enqueue_salary_slip_submission() before enqueuing \u00e2\u20ac\u201d invalid TIN sets status Invalid with error, does not enqueue",
         "Whitelisted validate_employee_tin(employee_name) callable from Employee form button",
         "Test with mocked HTTP: valid TIN proceeds to enqueue; invalid TIN sets Invalid status"
       ],
       "technicalNotes": [
         "New file: lhdn_payroll_integration/utils/tin_validator.py",
         "LHDN endpoint: GET {base_url}/api/v1.0/taxpayer/validate/{tin}/{idType}/{idValue}",
-        "Map id_type NRICâ†’NRIC, Passportâ†’PASSPORT etc. before calling API",
+        "Map id_type NRIC\u00e2\u2020\u2019NRIC, Passport\u00e2\u2020\u2019PASSPORT etc. before calling API",
         "In enqueue_salary_slip_submission(): call validate_tin_with_lhdn() synchronously before enqueuing"
       ],
       "dependencies": [
@@ -446,7 +446,7 @@
       "acceptanceCriteria": [
         "_write_response_to_doc() sends frappe.sendmail() to all users with role HR Manager when status set to Invalid",
         "Email includes: document name, employee name, first 500 chars of error log, direct link to document",
-        "New Company field custom_lhdn_failure_email (Data) â€” if set, overrides role lookup",
+        "New Company field custom_lhdn_failure_email (Data) \u00e2\u20ac\u201d if set, overrides role lookup",
         "Email sending errors are swallowed and logged, not re-raised",
         "Test verifies sendmail called on Invalid status write"
       ],
@@ -580,7 +580,7 @@
       ],
       "dependencies": [],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-029",
@@ -622,7 +622,7 @@
       "id": "US-031",
       "title": "Generate CP8D annual employee remuneration return",
       "priority": "medium",
-      "description": "CP8D is the annual return of private employees' remuneration submitted alongside Borang E â€” machine-readable employee income list for LHDN e-Filing. Not present in app.",
+      "description": "CP8D is the annual return of private employees' remuneration submitted alongside Borang E \u00e2\u20ac\u201d machine-readable employee income list for LHDN e-Filing. Not present in app.",
       "acceptanceCriteria": [
         "New Script Report cp8d with filters: Company, Year",
         "Columns: Employee TIN, NRIC, Name, Annual Gross Income, Total PCB, EPF Employee",
@@ -860,7 +860,7 @@
       "id": "US-043",
       "title": "Fix alpha-only docnames producing duplicate codeNumber",
       "priority": "low",
-      "description": "prepare_submission_wrapper() extracts digits from docname for codeNumber. All-alpha docnames fall back to '001' â€” duplicate codeNumber in batch submissions rejected by LHDN.",
+      "description": "prepare_submission_wrapper() extracts digits from docname for codeNumber. All-alpha docnames fall back to '001' \u00e2\u20ac\u201d duplicate codeNumber in batch submissions rejected by LHDN.",
       "acceptanceCriteria": [
         "Fallback uses hashlib.md5(docname.encode()).hexdigest()[:8] instead of '001' for no-digit docnames",
         "Test verifies unique codeNumbers generated for multiple alpha-named documents"
