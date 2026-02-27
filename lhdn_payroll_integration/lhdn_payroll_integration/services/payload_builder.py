@@ -290,8 +290,12 @@ def build_salary_slip_xml(docname):
     bank_account = getattr(employee, 'custom_bank_account_number', '') or ''
     if bank_account:
         bank_account = str(bank_account)[:150]
+        raw_means = getattr(employee, 'custom_payment_means_code', '') or ''
+        payment_means_code = raw_means.split(':')[0].strip() if raw_means else '30'
+        if not payment_means_code:
+            payment_means_code = '30'
         payment_means = _sub(root, CAC_NS, "PaymentMeans")
-        _sub(payment_means, CBC_NS, "PaymentMeansCode", "30")
+        _sub(payment_means, CBC_NS, "PaymentMeansCode", payment_means_code)
         payee_account = _sub(payment_means, CAC_NS, "PayeeFinancialAccount")
         _sub(payee_account, CBC_NS, "ID", bank_account)
 

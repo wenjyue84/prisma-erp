@@ -3574,3 +3574,25 @@ Added check in `build_credit_note_xml()` after the UUID check: if `doc.custom_lh
 
 ### Patterns discovered
 - Existing tests mock `frappe.throw` via `mock_frappe.throw.side_effect = frappe.ValidationError(...)` to test throw-based validation
+## Iteration 12 - Fri, Feb 27, 2026  1:09:17 PM
+Incomplete: Fix alpha-only docnames producing duplicate codeNumber (ID: US-043) — attempt 1/3
+
+
+## Iteration N — US-029: Make PaymentMeansCode configurable per employee
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 61/61 tests pass (including 1 new test for configurable PaymentMeansCode)
+
+### Files created/modified
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added Employee-custom_payment_means_code (Select field with 5 options, default "30 : Credit Transfer")
+- `lhdn_payroll_integration/services/payload_builder.py` — PaymentMeans block now reads employee.custom_payment_means_code, splits on ':', strips whitespace; falls back to '30' if empty
+- `lhdn_payroll_integration/tests/test_payload_builder.py` — Updated _make_employee() to accept payment_means_code param (explicit='' avoids MagicMock auto-attr corruption); added test_non_default_payment_means_code_in_xml
+
+### Patterns discovered
+- MagicMock auto-creates any attribute as truthy — when testing Select/Data fields that affect logic, explicitly set mock attributes to '' or the expected value in _make_employee helper to prevent false-positive truthy evaluation
+- PaymentMeansCode stored as "03 : Cheque" in ERPNext Select field; extract code with `.split(':')[0].strip()`
+
+### Gotchas
+- Must add `emp.custom_payment_means_code = payment_means_code` to existing test helper `_make_employee()` or MagicMock auto-attribute will produce garbled XML text for PaymentMeansCode element, breaking existing tests

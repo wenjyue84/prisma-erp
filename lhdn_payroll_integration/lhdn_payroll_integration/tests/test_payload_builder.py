@@ -1226,7 +1226,7 @@ class TestPaymentMeans(FrappeTestCase):
         doc.net_pay = 5000
         return doc
 
-    def _make_employee(self, bank_account=None):
+    def _make_employee(self, bank_account=None, payment_means_code=''):
         emp = MagicMock()
         emp.custom_lhdn_tin = "IG12345678901"
         emp.custom_id_type = "NRIC"
@@ -1235,6 +1235,7 @@ class TestPaymentMeans(FrappeTestCase):
         emp.custom_is_foreign_worker = 0
         emp.custom_state_code = "01"
         emp.custom_bank_account_number = bank_account
+        emp.custom_payment_means_code = payment_means_code
         return emp
 
     def _make_company(self):
@@ -1344,6 +1345,34 @@ class TestPaymentMeans(FrappeTestCase):
             "PayeeFinancialAccount/ID must exist for long account")
         self.assertLessEqual(len(account_id.text), 150,
             f"Bank account must be truncated to 150 chars, got {len(account_id.text)}")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_non_default_payment_means_code_in_xml(self, mock_frappe):
+        """When employee.custom_payment_means_code is '03 : Cheque',
+        PaymentMeansCode in XML must be '03' (not '30')."""
+        doc = self._make_salary_slip()
+        emp = self._make_employee(bank_account="1234567890",
+                                  payment_means_code="03 : Cheque")
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-PM-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-PM-001")
+        root = ET.fromstring(xml_string)
+
+        payment_means = root.find(f".//{{{CAC_NS}}}PaymentMeans")
+        self.assertIsNotNone(payment_means,
+            "PaymentMeans element must exist when bank account is set")
+
+        means_code = payment_means.find(f"{{{CBC_NS}}}PaymentMeansCode")
+        self.assertIsNotNone(means_code,
+            "PaymentMeansCode must exist inside PaymentMeans")
+        self.assertEqual(means_code.text, "03",
+            f"PaymentMeansCode must be '03' (cheque), got '{means_code.text}'")
 
 
 class TestForeignCurrencyHandling(FrappeTestCase):

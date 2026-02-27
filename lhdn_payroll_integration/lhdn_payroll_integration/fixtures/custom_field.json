@@ -90,6 +90,18 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Employee-custom_payment_means_code",
+    "dt": "Employee",
+    "fieldname": "custom_payment_means_code",
+    "fieldtype": "Select",
+    "label": "Payment Means Code",
+    "options": "01 : Cash\n03 : Cheque\n30 : Credit Transfer\n42 : Bank Transfer\n48 : Debit Card",
+    "default": "30 : Credit Transfer",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_bank_account_number"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Salary Component-custom_lhdn_classification_code",
     "dt": "Salary Component",
     "fieldname": "custom_lhdn_classification_code",
