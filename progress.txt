@@ -2690,3 +2690,26 @@ Completed: Add AdditionalDocumentReference for registration ID in XML (ID: US-00
 
 ### Gotchas
 - Old tests that patch frappe but NOT get_access_token (e.g. test_process_salary_slip_calls_xml_builder) would break if isinstance guard not added — MagicMock().custom_bearer_token is truthy, causing the datetime comparison path to be entered
+## Iteration 1 - Fri, Feb 27, 2026 10:28:46 AM
+Completed: Add AdditionalDocumentReference for registration ID in XML (ID: US-002) in 14m
+
+
+## Iteration N — US-004: Implement PCB/MTD monthly calculation validation
+
+**Type:** IMPL
+**TDD Phase:** GREEN (19/19 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 19 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/pcb_calculator.py` — LHDN progressive tax bands + calculate_pcb() + @frappe.whitelist() validate_pcb_amount()
+- `lhdn_payroll_integration/tests/test_pcb_calculator.py` — 19 tests across 4 classes
+
+### Patterns discovered
+- Tax band tuple: (upper_limit, rate, cumulative_tax_at_lower_bound) with parallel _LOWER_BOUNDS list
+- Non-resident flat 30%, no reliefs, early return before band logic
+- validate_pcb_amount uses mock_frappe.get_doc.side_effect to distinguish Salary Slip vs Employee
+
+### Gotchas
+- Must use `assertAlmostEqual` for floating-point band calculations
+- `frappe.msgprint` call in validate_pcb_amount must be the mock_frappe.msgprint to assert calls
