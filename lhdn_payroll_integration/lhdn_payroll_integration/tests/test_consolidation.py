@@ -183,6 +183,32 @@ class TestConsolidationScheduler(FrappeTestCase):
 				self.assertEqual(filters["custom_lhdn_status"], "Pending")
 
 	@patch("lhdn_payroll_integration.services.consolidation_service.frappe")
+	def test_single_http_call_for_batch_of_5_eligible_slips(self, mock_frappe):
+		"""A batch of 5 eligible salary slips must trigger exactly ONE consolidated
+		submission (process_consolidated_batch called once with all 5 docnames),
+		not 5 individual process_salary_slip calls."""
+		slips = [self._make_salary_slip(f"SS-BATCH-{i:03d}", net_pay=3000) for i in range(1, 6)]
+		mock_frappe.get_all.side_effect = [slips, []]  # 5 batch slips, no expense claims
+		mock_frappe.utils.get_first_day.return_value = date(2026, 1, 1)
+		mock_frappe.utils.get_last_day.return_value = date(2026, 1, 31)
+		mock_frappe.utils.add_months.return_value = date(2026, 1, 15)
+		mock_frappe.utils.today.return_value = "2026-02-15"
+		mock_frappe.db = MagicMock()
+
+		with patch("lhdn_payroll_integration.services.consolidation_service.submission_service") as mock_sub:
+			run_monthly_consolidation()
+
+			# Must call process_consolidated_batch exactly ONCE (not 5 individual calls)
+			mock_sub.process_consolidated_batch.assert_called_once()
+			call_args = mock_sub.process_consolidated_batch.call_args
+			batch_docnames = call_args[0][0]  # first positional arg = docnames list
+			self.assertEqual(len(batch_docnames), 5,
+				f"All 5 eligible slips must be in one consolidated batch, got {len(batch_docnames)}")
+
+			# Must NOT submit batch slips individually
+			mock_sub.process_salary_slip.assert_not_called()
+
+	@patch("lhdn_payroll_integration.services.consolidation_service.frappe")
 	def test_empty_batch_completes_silently(self, mock_frappe):
 		"""When no documents match the criteria, run_monthly_consolidation
 		must complete without raising any exception."""

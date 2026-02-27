@@ -112,11 +112,14 @@ def run_monthly_consolidation():
 		submission_service.process_expense_claim(claim.name)
 		frappe.db.set_value("Expense Claim", claim.name, "custom_is_consolidated", 1)
 
-	# Submit remaining documents as consolidated batch
-	for slip in batch_slips:
-		submission_service.process_salary_slip(slip.name)
-		frappe.db.set_value("Salary Slip", slip.name, "custom_is_consolidated", 1)
+	# Submit batch salary slips as ONE consolidated XML (single HTTP call)
+	if batch_slips:
+		batch_docnames = [s.name for s in batch_slips]
+		submission_service.process_consolidated_batch(batch_docnames, target_month)
+		for slip in batch_slips:
+			frappe.db.set_value("Salary Slip", slip.name, "custom_is_consolidated", 1)
 
+	# Submit batch expense claims individually (build_consolidated_xml is Salary Slip-only)
 	for claim in batch_claims:
 		submission_service.process_expense_claim(claim.name)
 		frappe.db.set_value("Expense Claim", claim.name, "custom_is_consolidated", 1)

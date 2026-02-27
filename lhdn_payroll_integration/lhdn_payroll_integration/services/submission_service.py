@@ -13,6 +13,7 @@ from lhdn_payroll_integration.services.exemption_filter import should_submit_to_
 from lhdn_payroll_integration.services.payload_builder import (
     build_salary_slip_xml,
     build_expense_claim_xml,
+    build_consolidated_xml,
     prepare_submission_wrapper,
 )
 from lhdn_payroll_integration.utils.validation import validate_document_name_length
@@ -251,6 +252,73 @@ def enqueue_expense_claim_submission(doc, method):
         timeout=300,
         enqueue_after_commit=True,
     )
+
+
+def process_consolidated_batch(batch_docnames, target_month):
+    """Submit a batch of Salary Slip documents as ONE consolidated XML to LHDN.
+
+    Builds a single consolidated UBL XML for all batch_docnames, makes one HTTP
+    POST, and logs the returned UUID for audit trail. This replaces the
+    per-document loop for low-value salary slips during monthly consolidation.
+
+    Note: Expense Claims are not supported here — build_consolidated_xml is
+    Salary Slip-only.
+
+    Args:
+        batch_docnames: List of Salary Slip document names to consolidate.
+        target_month: Month string in 'YYYY-MM' format (e.g. '2026-01').
+
+    Returns:
+        str: UUID returned by LHDN on success, empty string on failure.
+    """
+    if not batch_docnames:
+        return ""
+
+    xml_string = build_consolidated_xml(batch_docnames, target_month)
+    code_number = f"CONSOL-{target_month}"
+    submission_data = prepare_submission_wrapper(xml_string, code_number)
+
+    first_doc = frappe.get_doc("Salary Slip", batch_docnames[0])
+    token = get_access_token(first_doc.company)
+    company = frappe.get_doc("Company", first_doc.company)
+    url = _get_submission_url(company)
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        response = requests.post(url, json=submission_data, headers=headers)
+
+        if response.status_code == 401:
+            token = get_access_token(first_doc.company)
+            headers["Authorization"] = f"Bearer {token}"
+            response = requests.post(url, json=submission_data, headers=headers)
+
+        data = response.json()
+        accepted = data.get("acceptedDocuments", [])
+        uuid = accepted[0].get("uuid", "") if accepted else ""
+
+        frappe.log_error(
+            message=(
+                f"LHDN consolidated batch submitted: {len(batch_docnames)} Salary Slip(s) "
+                f"for {target_month}. UUID: {uuid}. "
+                f"Docs: {', '.join(batch_docnames)}"
+            ),
+            title="LHDN Consolidation Log",
+        )
+        return uuid
+
+    except Exception as e:
+        frappe.log_error(
+            message=(
+                f"LHDN consolidated batch submission failed for {target_month}: {e}. "
+                f"Docs: {', '.join(batch_docnames)}"
+            ),
+            title="LHDN Consolidation Failed",
+        )
+        return ""
 
 
 def process_salary_slip(docname):

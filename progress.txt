@@ -2932,3 +2932,27 @@ Completed: Fix credit note to use LHDN TIN not ERPNext employee code for Supplie
 
 ### Notes
 - Existing `test_totals_sum_of_all_individual_amounts` still passes because mock earnings[0].amount == net_pay
+## Iteration 5 - Fri, Feb 27, 2026 10:58:13 AM
+Completed: Add IssueTime element to Invoice header (ID: US-006) in 13m
+
+
+## Iteration N — US-011: Wire build_consolidated_xml() into consolidation_service
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 12 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation`
+**Result:** PASS — 12/12 tests pass (11 existing + 1 new), 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/services/submission_service.py` — Added `process_consolidated_batch(batch_docnames, target_month)` + imported `build_consolidated_xml`
+- `lhdn_payroll_integration/services/consolidation_service.py` — Replaced per-slip loop with single `submission_service.process_consolidated_batch(batch_docnames, target_month)` call
+- `lhdn_payroll_integration/tests/test_consolidation.py` — Added `test_single_http_call_for_batch_of_5_eligible_slips`
+
+### Key changes
+- `process_consolidated_batch()`: builds consolidated UBL XML for all batch docnames, makes ONE HTTP POST, logs UUID via frappe.log_error
+- Batch expense claims still submitted individually (build_consolidated_xml is Salary Slip-only)
+- New test verifies `process_consolidated_batch` called ONCE for 5 eligible slips, `process_salary_slip` NOT called for batch docs
+
+### Patterns discovered
+- When patching `submission_service` at consolidation_service level, any call to `mock_sub.*` satisfies `mock_sub.called == True`
+- Use `assert_called_once()` + `assert_not_called()` to distinguish consolidated vs individual submission in tests
