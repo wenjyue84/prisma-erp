@@ -3193,3 +3193,27 @@ Completed: Generate SOCSO Borang 8A monthly contribution schedule (ID: US-016) i
 
 ### Gotchas
 - `bench migrate` needed after custom_field.json change to apply fixture to DB
+## Iteration 4 - Fri, Feb 27, 2026 12:11:08 PM
+Completed: Add bonus/irregular payment classification for PCB differentiation (ID: US-018) in 7m
+
+
+## Iteration N — US-019: Add non-resident flat-rate 30% tax flag and handling
+
+**Type:** IMPL
+**TDD Phase:** GREEN (28/28 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 28 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `tests/test_pcb_calculator.py` — Fixed: added `employee.custom_is_non_resident = 0` to all resident TestValidatePcbAmount mocks; added `test_non_resident_flag_triggers_flat_30_percent` test (US-019 acceptance criteria)
+- `fixtures/custom_field.json` — `custom_is_non_resident` (Check) on Employee already present from prior work
+- `services/pcb_calculator.py` — `validate_pcb_amount()` already reads `custom_is_non_resident` flag, prior code added it
+
+### Patterns discovered
+- MagicMock auto-creates ALL attributes — `hasattr(mock, "any_attr")` always returns True and the attr value is a truthy MagicMock
+- When adding new conditional code that checks mock attributes, must explicitly set the attribute on the mock to 0/False in existing tests or they will take the new branch unexpectedly
+- Setting `employee.custom_is_non_resident = 0` in mocks ensures resident path; `= 1` for non-resident path
+
+### Gotchas
+- Container test file was stale (missing explicit `custom_is_non_resident = 0` on mocks) → local file was already fixed → just needed a docker cp
+- The `validate_pcb_amount()` non-resident code was already in the container's pcb_calculator.py; only the tests needed updating

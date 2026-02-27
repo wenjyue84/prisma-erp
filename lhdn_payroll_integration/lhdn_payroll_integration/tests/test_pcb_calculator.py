@@ -163,6 +163,7 @@ class TestValidatePcbAmount(FrappeTestCase):
         slip.deductions = [self._make_deduction_row("Monthly Tax Deduction", 160.0)]
 
         employee = MagicMock()
+        employee.custom_is_non_resident = 0
         employee.custom_tax_resident_status = "Resident"
         employee.custom_marital_status = "Single"
         employee.custom_number_of_children = 0
@@ -191,6 +192,7 @@ class TestValidatePcbAmount(FrappeTestCase):
         slip.deductions = [self._make_deduction_row("Monthly Tax Deduction", actual_pcb)]
 
         employee = MagicMock()
+        employee.custom_is_non_resident = 0
         employee.custom_tax_resident_status = "Resident"
         employee.custom_marital_status = "Single"
         employee.custom_number_of_children = 0
@@ -216,6 +218,7 @@ class TestValidatePcbAmount(FrappeTestCase):
         slip.deductions = [self._make_deduction_row("Monthly Tax Deduction", actual_pcb)]
 
         employee = MagicMock()
+        employee.custom_is_non_resident = 0
         employee.custom_tax_resident_status = "Resident"
         employee.custom_marital_status = "Single"
         employee.custom_number_of_children = 0
@@ -237,6 +240,7 @@ class TestValidatePcbAmount(FrappeTestCase):
         slip.deductions = []
 
         employee = MagicMock()
+        employee.custom_is_non_resident = 0
         employee.custom_tax_resident_status = "Resident"
         employee.custom_marital_status = "Single"
         employee.custom_number_of_children = 0
@@ -249,6 +253,32 @@ class TestValidatePcbAmount(FrappeTestCase):
         self.assertFalse(result["warning"])
         self.assertEqual(result["expected_monthly_pcb"], 0.0)
         self.assertEqual(result["actual_pcb"], 0.0)
+
+    @patch("lhdn_payroll_integration.services.pcb_calculator.frappe")
+    def test_non_resident_flag_triggers_flat_30_percent(self, mock_frappe):
+        """custom_is_non_resident=1 causes validate_pcb_amount to use flat 30% rate."""
+        # Annual = 60,000; non-resident flat 30% → 1,500/month
+        annual = 60_000
+        monthly_gross = annual / 12  # 5,000
+        expected_non_resident_monthly = round(annual * 0.30 / 12, 2)  # 1,500.0
+
+        slip = MagicMock()
+        slip.gross_pay = monthly_gross
+        slip.employee = "EMP-002"
+        slip.deductions = [self._make_deduction_row("Monthly Tax Deduction", expected_non_resident_monthly)]
+
+        employee = MagicMock()
+        employee.custom_is_non_resident = 1  # non-resident flag set
+        employee.custom_marital_status = "Single"
+        employee.custom_number_of_children = 0
+
+        mock_frappe.get_doc.side_effect = lambda doctype, name: (
+            slip if doctype == "Salary Slip" else employee
+        )
+
+        result = validate_pcb_amount("SLIP-002")
+        self.assertAlmostEqual(result["expected_monthly_pcb"], expected_non_resident_monthly, places=2)
+        self.assertFalse(result["warning"])  # actual matches expected, no warning
 
 
 class TestCalculatePcbBonus(FrappeTestCase):
