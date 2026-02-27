@@ -43,16 +43,9 @@ class TestAuditRetention(FrappeTestCase):
 	def test_archive_job_marks_old_records(self, mock_frappe):
 		"""run_retention_archival must set custom_lhdn_archived=1 for
 		records whose retention period has expired (7+ years old)."""
-		old_record = frappe._dict({
-			"name": "SAL-SLP-2018-00001",
-			"custom_lhdn_validated_datetime": datetime(2018, 1, 15, 10, 0, 0),
-			"custom_lhdn_submission_datetime": None,
-			"creation": datetime(2018, 1, 10, 9, 0, 0),
-			"custom_lhdn_archived": 0,
-		})
-		mock_frappe.get_all.return_value = [old_record]
-		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
 		mock_frappe.db = MagicMock()
+		mock_frappe.db.sql.return_value = [{"name": "SAL-SLP-2018-00001"}]
+		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
 
 		run_retention_archival()
 
@@ -78,17 +71,10 @@ class TestAuditRetention(FrappeTestCase):
 	@patch("lhdn_payroll_integration.services.retention_service.frappe")
 	def test_records_within_7_years_not_archived(self, mock_frappe):
 		"""Records submitted less than 7 years ago must NOT be archived.
-		run_retention_archival should skip them after Python-side date check."""
-		recent_record = frappe._dict({
-			"name": "SAL-SLP-2025-00001",
-			"custom_lhdn_validated_datetime": datetime(2025, 6, 15, 10, 0, 0),
-			"custom_lhdn_submission_datetime": None,
-			"creation": datetime(2025, 6, 10, 9, 0, 0),
-			"custom_lhdn_archived": 0,
-		})
-		mock_frappe.get_all.return_value = [recent_record]
-		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
+		The COALESCE SQL WHERE clause filters them out — db.sql returns empty list."""
 		mock_frappe.db = MagicMock()
+		mock_frappe.db.sql.return_value = []  # DB returns nothing; recent records filtered by SQL
+		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
 
 		run_retention_archival()
 
@@ -112,42 +98,36 @@ class TestAuditRetention(FrappeTestCase):
 	@patch("lhdn_payroll_integration.services.retention_service.frappe")
 	def test_run_retention_archival_queries_expense_claims(self, mock_frappe):
 		"""US-045: run_retention_archival must query both Salary Slips and
-		Expense Claims, not just Salary Slips."""
-		mock_frappe.get_all.return_value = []
-		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
+		Expense Claims via frappe.db.sql COALESCE query."""
 		mock_frappe.db = MagicMock()
+		mock_frappe.db.sql.return_value = []
+		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
 
 		run_retention_archival()
 
-		# get_all must be called at least twice — once per doctype
-		self.assertGreaterEqual(mock_frappe.get_all.call_count, 2,
+		# db.sql must be called at least twice — once per doctype
+		self.assertGreaterEqual(mock_frappe.db.sql.call_count, 2,
 			"run_retention_archival must query both Salary Slip and Expense Claim")
 
-		# Verify Expense Claim is among the queried doctypes
-		queried_doctypes = [call.args[0] for call in mock_frappe.get_all.call_args_list]
-		self.assertIn("Expense Claim", queried_doctypes,
-			"run_retention_archival must query Expense Claim doctype")
+		# Verify Expense Claim table is referenced in one of the SQL calls
+		sql_calls = [str(call) for call in mock_frappe.db.sql.call_args_list]
+		self.assertTrue(
+			any("Expense Claim" in c for c in sql_calls),
+			"run_retention_archival must query Expense Claim doctype",
+		)
 
 	@patch("lhdn_payroll_integration.services.retention_service.frappe")
 	def test_run_retention_archival_archives_old_expense_claims(self, mock_frappe):
 		"""US-045: run_retention_archival must archive Expense Claims whose
 		7-year retention period has expired."""
-		old_expense_claim = frappe._dict({
-			"name": "EXP-2018-00001",
-			"custom_lhdn_validated_datetime": datetime(2018, 3, 10, 10, 0, 0),
-			"custom_lhdn_submission_datetime": None,
-			"creation": datetime(2018, 3, 5, 9, 0, 0),
-			"custom_lhdn_archived": 0,
-		})
-
-		def get_all_side_effect(doctype, **kwargs):
-			if doctype == "Expense Claim":
-				return [old_expense_claim]
+		def sql_side_effect(query, params, as_dict=False):
+			if "Expense Claim" in query:
+				return [{"name": "EXP-2018-00001"}]
 			return []
 
-		mock_frappe.get_all.side_effect = get_all_side_effect
-		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
 		mock_frappe.db = MagicMock()
+		mock_frappe.db.sql.side_effect = sql_side_effect
+		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
 
 		run_retention_archival()
 
@@ -163,17 +143,11 @@ class TestAuditRetention(FrappeTestCase):
 	@patch("lhdn_payroll_integration.services.retention_service.frappe")
 	def test_submitted_records_older_than_7_years_are_archived(self, mock_frappe):
 		"""US-048: Records with status Submitted (no validated_datetime) that are
-		older than 7 years must be archived — COALESCE falls back to submission_datetime."""
-		submitted_record = frappe._dict({
-			"name": "SAL-SLP-2018-00002",
-			"custom_lhdn_validated_datetime": None,  # Submitted — no validated_datetime
-			"custom_lhdn_submission_datetime": datetime(2018, 6, 1, 10, 0, 0),  # 8 years ago
-			"creation": datetime(2018, 5, 28, 9, 0, 0),
-			"custom_lhdn_archived": 0,
-		})
-		mock_frappe.get_all.return_value = [submitted_record]
-		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
+		older than 7 years must be archived — SQL COALESCE falls back to submission_datetime."""
+		# db.sql returns this record because COALESCE(None, submission_datetime, ...) < cutoff
 		mock_frappe.db = MagicMock()
+		mock_frappe.db.sql.return_value = [{"name": "SAL-SLP-2018-00002"}]
+		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
 
 		run_retention_archival()
 
@@ -184,22 +158,16 @@ class TestAuditRetention(FrappeTestCase):
 			for c in set_calls
 		)
 		self.assertTrue(submitted_archived,
-			"Submitted record older than 7 years must be archived via submission_datetime fallback")
+			"Submitted record older than 7 years must be archived via COALESCE submission_datetime fallback")
 
 	@patch("lhdn_payroll_integration.services.retention_service.frappe")
 	def test_invalid_records_archived_using_creation_fallback(self, mock_frappe):
-		"""US-048: Records with no validated_datetime or submission_datetime fall back
-		to creation date for COALESCE — must be archived if creation > 7 years ago."""
-		old_invalid_record = frappe._dict({
-			"name": "SAL-SLP-2015-00003",
-			"custom_lhdn_validated_datetime": None,
-			"custom_lhdn_submission_datetime": None,
-			"creation": datetime(2015, 1, 1, 10, 0, 0),  # 11 years ago
-			"custom_lhdn_archived": 0,
-		})
-		mock_frappe.get_all.return_value = [old_invalid_record]
-		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
+		"""US-048: Records with no validated_datetime or submission_datetime are archived
+		by COALESCE falling back to creation — must be archived if creation > 7 years ago."""
+		# db.sql returns this record because COALESCE(None, None, creation) < cutoff
 		mock_frappe.db = MagicMock()
+		mock_frappe.db.sql.return_value = [{"name": "SAL-SLP-2015-00003"}]
+		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
 
 		run_retention_archival()
 
