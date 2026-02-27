@@ -890,3 +890,45 @@ warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the
   ║  Remaining:  25 stories
   ║
   ║  Recently done:
+  ║    ✓ [US-023] Fix status poller to use per-document company for base_url and token
+  ║    ✓ [US-024] Fix custom_id_type options to match LHDN schemeID vocabulary
+  ║    ✓ [US-025] Add full PostalAddress fields beyond state code only
+  ║
+  ║  Up next:
+  ║    → [US-026] Add Expense Claims to LHDN compliance report
+  ║    → [US-027] Build monthly LHDN submission summary report
+  ║    → [US-043] Fix alpha-only docnames producing duplicate codeNumber
+  ╚══════════════════════════════════════════╝
+
+[2m[7:40][0m 💻 [36mBash[0m [2mcat >> lhdn_payroll_integration/lhdn_payroll_integration/tes...[0m
+[2m[7:44][0m 📖 [36mRead[0m [2mtest_payload_builder.py[0m
+[2m[8:16][0m ✏️ [36mWrite[0m [2mtmp_postal_test_append.py[0m
+[2m[8:20][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[8:29][0m [37mNow deploy all three files to the container:[0m
+[2m[8:32][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[8:44][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cp /home/frappe/fr...[0m
+[2m[8:55][0m 💻 [36mBash[0m [2mdocker exec -u root prisma-erp-backend-1 bash -c "cp /home/f...[0m
+[2m[9:03][0m [37mNow clear Python cache and run the new tests:[0m
+[2m[9:04][0m 💻 [36mBash[0m [2mdocker exec -u root prisma-erp-backend-1 bash -c "find /home...[0m
+[2m[9:14][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[9:28][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[9:39][0m [37mAll 4 new tests pass. Now let me verify the full test run count:[0m
+[2m[9:41][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[9:52][0m [37mAll 60 tests pass (including 4 new ones). Let me also run the full app test suite to verify no regre...[0m
+[2m[9:54][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:10][0m [37mThese failures are pre-existing (EPF/Borang A tests unrelated to my changes). Let me confirm test_pa...[0m
+[2m[10:12][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:30][0m [37mThe failures are all pre-existing (EPF/consolidation/hooks tests — unrelated to postal address chang...[0m
+[2m[10:33][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[10:43][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[11:04][0m 💻 [36mBash[0m [2mcat >> /c/Users/Jyue/Documents/1-projects/Projects/prisma-er...[0m
+[2m[11:13][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[11:22][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[11:32][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[11:42][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[11:51][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[12:11][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[12:27][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[13:11][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[13:43][0m [37mGood — US-025 was already committed in a previous run. My work this session added 4 new tests to the...[0m
+[2m[13:44][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
