@@ -4264,3 +4264,23 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 1
 ### Gotchas
 - `report/__init__.py` missing from inner path — not needed for Python imports, Frappe finds reports by JSON
 - test_levy_total_matches_monthly_levy_report skips if default company not found — acceptable (skipTest vs fail)
+
+## Iteration N — US-044: Generate HRDF Borang PSMB/6 annual return
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_hrdf_borang_psmb6`
+**Result:** PASS — 10 pass, 1 skip (test_levy_total_matches_monthly_levy_report skipped — no 2022 salary slips in test DB), 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/hrdf_borang_psmb6/hrdf_borang_psmb6.json` — Report metadata (Script Report, ref_doctype: Salary Slip)
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/hrdf_borang_psmb6/hrdf_borang_psmb6.py` — Aggregates HRDF levy deductions across Salary Slips grouped by month
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_hrdf_borang_psmb6.py` — 11 tests covering columns, filters, data shape, levy cross-validation
+
+### Patterns discovered
+- Bench module path for nested app structure: `lhdn_payroll_integration.tests.test_hrdf_borang_psmb6` (NOT the double-nested `lhdn_payroll_integration.lhdn_payroll_integration.tests.*`)
+- `_get_levy_for_slips` uses `GROUP_CONCAT` on salary slip names then queries `tabSalary Detail` with component filter
+- `test_levy_total_matches_monthly_levy_report` correctly uses `skipTest` when no test salary slips exist — acceptable for CI
+
+### Gotchas
+- Files were already present in both local repo and container — no docker cp needed, just run tests

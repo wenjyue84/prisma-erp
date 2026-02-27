@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>prisma-erp — Architecture Graph</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3a;
+      --accent: #6366f1;
+      --accent2: #22d3ee;
+      --accent3: #34d399;
+      --warn: #f59e0b;
+      --text: #e2e8f0;
+      --muted: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--surface);
+    }
+
+    .logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    header h1 { font-size: 1.2rem; font-weight: 600; }
+    header p  { font-size: 0.8rem; color: var(--muted); }
+
+    .badge {
+      margin-left: auto;
+      display: flex; gap: 0.5rem;
+    }
+
+    .pill {
+      padding: 0.2rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      border: 1px solid;
+    }
+    .pill.purple { color: var(--accent);  border-color: var(--accent);  background: #6366f115; }
+    .pill.cyan   { color: var(--accent2); border-color: var(--accent2); background: #22d3ee15; }
+    .pill.green  { color: var(--accent3); border-color: var(--accent3); background: #34d39915; }
+
+    nav {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav button {
+      padding: 0.75rem 1.25rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    nav button:hover { color: var(--text); }
+    nav button.active {
+      color: var(--accent2);
+      border-bottom-color: var(--accent2);
+    }
+
+    .stats {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 2rem;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      min-width: 130px;
+    }
+    .stat-card .val { font-size: 1.5rem; font-weight: 700; }
+    .stat-card .lbl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-card.purple .val { color: var(--accent); }
+    .stat-card.cyan   .val { color: var(--accent2); }
+    .stat-card.green  .val { color: var(--accent3); }
+    .stat-card.warn   .val { color: var(--warn); }
+
+    .tab-content { display: none; padding: 1.5rem 2rem; }
+    .tab-content.active { display: block; }
+
+    .diagram-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .diagram-card h2 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent2);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .diagram-card h2::before {
+      content: '';
+      display: inline-block;
+      width: 3px; height: 14px;
+      background: var(--accent2);
+      border-radius: 2px;
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+
+    .mermaid svg { max-width: 100%; height: auto; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+    .legend {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      margin-bottom: 1rem;
+      font-size: 0.75rem;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 3px;
+    }
+
+    .progress-bar-wrap {
+      background: var(--border);
+      border-radius: 999px;
+      height: 8px;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      color: var(--muted);
+      font-weight: 500;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+    }
+    td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #ffffff05; }
+
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      background: #ffffff10;
+      padding: 0.1em 0.4em;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔷</div>
+  <div>
+    <h1>prisma-erp</h1>
+    <p>ERPNext v16 · LHDN Malaysian Payroll Integration · Knowledge Graph</p>
+  </div>
+  <div class="badge">
+    <span class="pill purple">2,527 nodes</span>
+    <span class="pill cyan">6,495 edges</span>
+    <span class="pill green">150 flows</span>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="switchTab('overview')">Overview</button>
+  <button onclick="switchTab('app')">App Modules</button>
+  <button onclick="switchTab('flow')">Submission Flow</button>
+  <button onclick="switchTab('reports')">Reports & Forms</button>
+  <button onclick="switchTab('tests')">Test Coverage</button>
+</nav>
+
+<!-- STATS BAR -->
+<div class="stats">
+  <div class="stat-card purple"><span class="val">50</span><span class="lbl">PRD Stories</span></div>
+  <div class="stat-card green"><span class="val">31</span><span class="lbl">Completed</span></div>
+  <div class="stat-card warn"><span class="val">19</span><span class="lbl">Remaining</span></div>
+  <div class="stat-card cyan"><span class="val">237</span><span class="lbl">Tests</span></div>
+  <div class="stat-card purple"><span class="val">317</span><span class="lbl">Source Files</span></div>
+  <div class="stat-card cyan"><span class="val">1,577</span><span class="lbl">Functions</span></div>
+</div>
+
+<!-- ======================== TAB: OVERVIEW ======================== -->
+<div id="tab-overview" class="tab-content active">
+
+  <div class="diagram-card">
+    <h2>System Architecture — Docker Service Layout</h2>
+    <div class="mermaid">
+graph TB
+    subgraph INFRA["🐳 Docker Infrastructure (pwd-myinvois.yml)"]
+        direction TB
+        IMG["📦 Image: wenjyue/erpnext-myinvois:v16\nBuilt from Dockerfile.myinvois"]
+        FE["frontend\nnginx :8080"]
+        BE["backend\ngunicorn :8000"]
+        WS["websocket\nsocket.io :9000"]
+        SCH["scheduler"]
+        QL["queue-long\n(RQ worker)"]
+        QS["queue-short\n(RQ worker)"]
+        DB["MariaDB 10.6\n(db-data volume)"]
+        RD["Redis 6.2\n(redis-queue-data)"]
+        VOLS["Named Volumes\nsites · logs · db-data · redis-queue-data"]
+
+        IMG --> FE & BE & WS & SCH & QL & QS
+        FE --> BE
+        BE --> DB
+        BE --> RD
+        SCH --> RD
+        QL --> RD
+        QS --> RD
+        VOLS
+    end
+
+    USER["👤 Browser / API Client"] -->|HTTP :8080| FE
+
+    style INFRA fill:#1a1d27,stroke:#2a2d3a,color:#e2e8f0
+    style IMG fill:#6366f120,stroke:#6366f1,color:#a5b4fc
+    style FE fill:#22d3ee20,stroke:#22d3ee,color:#67e8f9
+    style BE fill:#22d3ee20,stroke:#22d3ee,color:#67e8f9
+    style WS fill:#1a1d27,stroke:#2a2d3a,color:#94a3b8
+    style SCH fill:#1a1d27,stroke:#2a2d3a,color:#94a3b8
+    style QL fill:#1a1d27,stroke:#2a2d3a,color:#94a3b8
+    style QS fill:#1a1d27,stroke:#2a2d3a,color:#94a3b8
+    style DB fill:#f59e0b20,stroke:#f59e0b,color:#fcd34d
+    style RD fill:#ef444420,stroke:#ef4444,color:#fca5a5
+    style VOLS fill:#34d39920,stroke:#34d399,color:#6ee7b7
+    style USER fill:#6366f120,stroke:#6366f1,color:#a5b4fc
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h2>High-Level Component Map</h2>
+    <div class="mermaid">
+graph LR
+    subgraph ERPNEXT["ERPNext v16 (Frappe Framework)"]
+        SS["Salary Slip"]
+        EMP["Employee"]
+        COMP["Company"]
+        SR["Salary Register"]
+    end
+
+    subgraph MYINVOIS["myinvois_erpgulf (v2.1)"]
+        MIH["Doc Event Hooks\nbefore/on/after_submit\non_cancel"]
+        LHDN_LOG["LHDN Success Log\n(audit trail)"]
+    end
+
+    subgraph LPI["lhdn_payroll_integration (custom app)"]
+        HOOKS["hooks.py\n(Salary Slip doc events)"]
+        SVC["Services Layer"]
+        UTILS["Utils Layer"]
+        REPORTS["Reports"]
+        PAGES["Dev Tools Page"]
+        DT["Custom Doctypes\nCP21 · CP22 · CP22A · MSIC"]
+        FIXTURES["Fixtures\ncustom_field.json\nsalary_component.json"]
+    end
+
+    subgraph LHDNAPI["☁️ LHDN MyInvois API"]
+        AUTH["Token Auth\ntaxpayerlogin"]
+        SUBMIT["Submit UBL XML"]
+        POLL["Status Poll"]
+    end
+
+    SS -->|on_submit| HOOKS
+    HOOKS --> SVC
+    SVC --> UTILS
+    SVC -->|POST| AUTH
+    AUTH --> SUBMIT
+    SUBMIT --> POLL
+    POLL -->|update status| SS
+
+    EMP --> HOOKS
+    COMP -->|client_id / secret| AUTH
+    FIXTURES -->|schema| EMP & COMP & SS
+
+    style ERPNEXT fill:#1e2235,stroke:#3b4263,color:#e2e8f0
+    style MYINVOIS fill:#1e2235,stroke:#3b4263,color:#e2e8f0
+    style LPI fill:#1a2535,stroke:#22d3ee,color:#e2e8f0
+    style LHDNAPI fill:#1e2535,stroke:#34d399,color:#e2e8f0
+    style HOOKS fill:#6366f130,stroke:#6366f1,color:#a5b4fc
+    style SVC fill:#22d3ee20,stroke:#22d3ee,color:#67e8f9
+    style AUTH fill:#34d39920,stroke:#34d399,color:#6ee7b7
+    style SUBMIT fill:#34d39920,stroke:#34d399,color:#6ee7b7
+    style POLL fill:#f59e0b20,stroke:#f59e0b,color:#fcd34d
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h2>PRD Implementation Progress</h2>
+    <div style="margin-bottom: 1rem;">
+      <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:0.3rem;">
+        <span>Stories completed</span><span style="color:var(--accent3)">31 / 50 (62%)</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:62%"></div></div>
+    </div>
+    <table>
+      <thead><tr><th>Range</th><th>Description</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><code>US-001–012</code></td><td>Core infrastructure, PCB engine, submission hooks, XML builder, LHDN API, reports, CP39</td><td style="color:var(--accent3)">✅ Done</td></tr>
+        <tr><td><code>US-013–031</code></td><td>EA Form, Borang E, EPF/SOCSO/EIS schedules, bonus/non-resident/director handling, TIN validation, notifications, fixes, compliance reports, CP8D</td><td style="color:var(--accent3)">✅ Done</td></tr>
+        <tr><td><code>US-032–050</code></td><td>CP21/CP22/CP22A workflows, HRDF, leave encashment, proration, bulk submit, audit retrieval, audit log, reconciliation, fixtures</td><td style="color:var(--warn)">⏳ In Progress</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ======================== TAB: APP MODULES ======================== -->
+<div id="tab-app" class="tab-content">
+
+  <div class="diagram-card">
+    <h2>lhdn_payroll_integration — Full Module Tree</h2>
+    <div class="mermaid">
+graph TD
+    ROOT["lhdn_payroll_integration/"]
+
+    ROOT --> HOOKS2["hooks.py\n(doc events registry)"]
+    ROOT --> INSTALL["install.py\n(app install hooks)"]
+    ROOT --> FIXTURES2["fixtures/\ncustom_field.json\nsalary_component.json\nworkspace.json"]
+
+    ROOT --> INNER["lhdn_payroll_integration/ (inner module)"]
+
+    INNER --> SVC2["services/"]
+    SVC2 --> SVC_SUBMIT["submission_service.py\n→ build + submit to LHDN"]
+    SVC2 --> SVC_CANCEL["cancellation_service.py\n→ cancel LHDN document"]
+    SVC2 --> SVC_CONSOL["consolidation_service.py\n→ consolidate multi-slip XML"]
+    SVC2 --> SVC_CN["credit_note_service.py\n→ LHDN credit note"]
+    SVC2 --> SVC_RETAIN["retention_service.py\n→ archive old submissions"]
+    SVC2 --> SVC_RETRY["retry_service.py\n→ auto-retry failed submissions"]
+    SVC2 --> SVC_POLL["status_poller.py\n→ poll LHDN status per company"]
+    SVC2 --> SVC_EXEMPT["exemption_filter.py\n→ skip exempt employees"]
+    SVC2 --> SVC_PB["payload_builder.py\n→ build UBL XML"]
+
+    INNER --> UTILS2["utils/"]
+    UTILS2 --> U_CFG["config.py\n(company settings)"]
+    UTILS2 --> U_TIN["tin_validator.py\n(LHDN TIN API)"]
+    UTILS2 --> U_DATE["date_utils.py"]
+    UTILS2 --> U_DEC["decimal_utils.py"]
+    UTILS2 --> U_QR["qr_utils.py"]
+    UTILS2 --> U_VAL["validation.py"]
+
+    INNER --> DT2["doctype/"]
+    DT2 --> DT_CP21["lhdn_cp21/\n(Employee Cessation)"]
+    DT2 --> DT_CP22["lhdn_cp22/\n(New Hire Notification)"]
+    DT2 --> DT_CP22A["lhdn_cp22a/\n(Retirement Notification)"]
+    DT2 --> DT_MSIC["lhdn_msic_code/\n(MSIC Reference Table)"]
+
+    INNER --> RPT2["report/"]
+    RPT2 --> R_CP39["cp39_pcb_remittance/\n(Monthly PCB → IRB)"]
+    RPT2 --> R_EPF["epf_borang_a/\n(EPF contributions)"]
+    RPT2 --> R_SOCSO["socso_borang_8a/\n(SOCSO contributions)"]
+    RPT2 --> R_EIS["eis_monthly/\n(EIS contributions)"]
+    RPT2 --> R_SUM["lhdn_monthly_summary/\n(Submission summary)"]
+    RPT2 --> R_COMP["lhdn_payroll_compliance/\n(Compliance report)"]
+
+    INNER --> PAGE2["page/lhdn_dev_tools/\n(Developer Tools UI)"]
+
+    style ROOT fill:#6366f130,stroke:#6366f1,color:#a5b4fc
+    style SVC2 fill:#22d3ee20,stroke:#22d3ee,color:#67e8f9
+    style UTILS2 fill:#34d39920,stroke:#34d399,color:#6ee7b7
+    style DT2 fill:#f59e0b20,stroke:#f59e0b,color:#fcd34d
+    style RPT2 fill:#a78bfa20,stroke:#a78bfa,color:#c4b5fd
+    style PAGE2 fill:#f472b620,stroke:#f472b6,color:#fbcfe8
+    style FIXTURES2 fill:#64748b20,stroke:#64748b,color:#94a3b8
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="diagram-card">
+      <h2>Services Dependencies</h2>
+      <div class="mermaid">
+graph TD
+    SUBMIT2["submission_service"]
+    PB2["payload_builder"]
+    TIN2["tin_validator"]
+    CFG2["config"]
+    EXEMPT2["exemption_filter"]
+    RETRY2["retry_service"]
+    POLL2["status_poller"]
+    CONSOL2["consolidation_service"]
+    CANCEL2["cancellation_service"]
+    CN2["credit_note_service"]
+    RETAIN2["retention_service"]
+
+    SUBMIT2 --> PB2
+    SUBMIT2 --> TIN2
+    SUBMIT2 --> CFG2
+    EXEMPT2 --> CFG2
+    RETRY2 --> SUBMIT2
+    POLL2 --> CFG2
+    CONSOL2 --> PB2
+    CN2 --> PB2
+    CN2 --> CANCEL2
+    RETAIN2 --> CFG2
+
+    style SUBMIT2 fill:#22d3ee20,stroke:#22d3ee,color:#67e8f9
+    style PB2 fill:#6366f120,stroke:#6366f1,color:#a5b4fc
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <h2>Hooks Registry (hooks.py)</h2>
+      <div class="mermaid">
+graph LR
+    H["hooks.py"]
+    H -->|before_submit| EX["exemption_filter\n.should_skip()"]
+    H -->|on_submit| SM["submission_service\n.submit()"]
+    H -->|after_submit| PL["status_poller\n.enqueue_poll()"]
+    H -->|on_cancel| CA["cancellation_service\n.cancel()"]
+    H -->|scheduler| PL2["status_poller\n.poll_all()"]
+
+    style H fill:#6366f130,stroke:#6366f1,color:#a5b4fc
+    style SM fill:#22d3ee20,stroke:#22d3ee,color:#67e8f9
+    style CA fill:#ef444420,stroke:#ef4444,color:#fca5a5
+    style PL fill:#f59e0b20,stroke:#f59e0b,color:#fcd34d
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== TAB: SUBMISSION FLOW ======================== -->
+<div id="tab-flow" class="tab-content">
+
+  <div class="diagram-card">
+    <h2>End-to-End Salary Slip Submission Flow</h2>
+    <div class="mermaid">
+sequenceDiagram
+    actor HR as HR Manager
+    participant SS as Salary Slip<br/>(ERPNext)
+    participant HK as hooks.py
+    participant EF as exemption_filter
+    participant SVC as submission_service
+    participant TIN as tin_validator
+    participant PB as payload_builder
+    participant LHDN as LHDN MyInvois API
+    participant POLL as status_poller
+    participant RETRY as retry_service
+
+    HR->>SS: Submit salary slip
+    SS->>HK: before_submit event
+
+    HK->>EF: should_skip(employee)?
+    alt Employee is exempt
+        EF-->>HK: skip = True
+        HK-->>SS: Skip (no LHDN submission)
+    else Employee is not exempt
+        EF-->>HK: skip = False
+        HK->>SVC: on_submit → submit()
+        SVC->>TIN: validate_tin(employee_tin)
+        TIN->>LHDN: GET /api/v1.0/taxpayer/validate/{tin}
+        LHDN-->>TIN: valid / invalid
+        alt TIN invalid
+            TIN-->>SVC: raise ValidationError
+            SVC-->>HR: ❌ TIN validation failed
+        else TIN valid
+            SVC->>PB: build_xml(salary_slip)
+            PB-->>SVC: UBL XML payload
+            SVC->>LHDN: POST /api/v1.0/documentsubmissions
+            alt Submission success
+                LHDN-->>SVC: uuid + status=Pending
+                SVC-->>SS: lhdn_status = Submitted
+                SS->>POLL: enqueue_poll(uuid, company)
+                loop Every 30s (background)
+                    POLL->>LHDN: GET /api/v1.0/documents/{uuid}/details
+                    LHDN-->>POLL: Valid / Invalid
+                    POLL-->>SS: update lhdn_status
+                end
+            else Submission failed
+                LHDN-->>SVC: 4xx / 5xx error
+                SVC->>RETRY: enqueue_retry(salary_slip)
+                RETRY-->>HR: 📧 Email notification (failure)
+                loop Max 3 retries
+                    RETRY->>SVC: resubmit()
+                end
+            end
+        end
+    end
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="diagram-card">
+      <h2>payload_builder.py — XML Build Flow</h2>
+      <div class="mermaid">
+flowchart TD
+    IN["Salary Slip\n(frappe doc)"]
+    IN --> META["Extract metadata\nemployee, company, period"]
+    META --> PCB["PCB calculation\npcb_calculator.py"]
+    META --> STAT["Statutory deductions\nEPF / SOCSO / EIS"]
+    META --> BONUS["Bonus/irregular flag\nbonus_type check"]
+    META --> NONRES["Non-resident flag\n30% flat tax"]
+    META --> DIRECT["Director fee/salary\ndistinction"]
+
+    PCB --> XML["Build UBL XML"]
+    STAT --> XML
+    BONUS --> XML
+    NONRES --> XML
+    DIRECT --> XML
+
+    XML --> QR["Attach QR code\nqr_utils.py"]
+    QR --> OUT["XML payload\n→ submission_service"]
+
+    style IN fill:#22d3ee20,stroke:#22d3ee,color:#67e8f9
+    style XML fill:#6366f120,stroke:#6366f1,color:#a5b4fc
+    style OUT fill:#34d39920,stroke:#34d399,color:#6ee7b7
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <h2>Consolidation Flow (multi-slip)</h2>
+      <div class="mermaid">
+flowchart TD
+    SLIPS["Multiple Salary Slips\n(same company, same month)"]
+    SLIPS --> CONSOL3["consolidation_service\n.build_consolidated_xml()"]
+    CONSOL3 --> PB3["payload_builder\n(per slip)"]
+    PB3 --> MERGE["Merge into single\nUBL XML document"]
+    MERGE --> SUBMIT3["submission_service\n.submit_consolidated()"]
+    SUBMIT3 --> LHDN3["LHDN API\n/documentsubmissions"]
+
+    style CONSOL3 fill:#a78bfa20,stroke:#a78bfa,color:#c4b5fd
+    style SUBMIT3 fill:#22d3ee20,stroke:#22d3ee,color:#67e8f9
+    style LHDN3 fill:#34d39920,stroke:#34d399,color:#6ee7b7
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== TAB: REPORTS ======================== -->
+<div id="tab-reports" class="tab-content">
+
+  <div class="diagram-card">
+    <h2>Reports & Statutory Forms Generated</h2>
+    <div class="mermaid">
+graph LR
+    subgraph IRBTAX["📋 IRB / Tax Forms"]
+        CP39["CP39 PCB Remittance\nMonthly PCB → IRB\ncp39_pcb_remittance.py"]
+        EA["EA Form (Borang EA)\nAnnual employee tax\nea_form.py"]
+        BORME["Borang E (Form E)\nEmployer annual return\nborang_e.py"]
+        CP8D["CP8D\nAnnual remuneration\nreturn (e-Filing)"]
+    end
+
+    subgraph STATUTORY["💰 Statutory Contribution Schedules"]
+        EPF["EPF Borang A\nMonthly EPF schedule\nepf_borang_a.py"]
+        SOCSO["SOCSO Borang 8A\nMonthly SOCSO\nsocso_borang_8a.py"]
+        EIS["EIS Monthly\nMonthly EIS\neis_monthly.py"]
+        HRDF["HRDF Borang PSMB/6\nAnnual HRDF return"]
+    end
+
+    subgraph LHDNRPT["📊 LHDN Integration Reports"]
+        SUM["LHDN Monthly Summary\nSubmission overview\nlhdn_monthly_summary.py"]
+        COMP["LHDN Payroll Compliance\nCompliance audit\nlhdn_payroll_compliance.py"]
+        RECON["PCB Reconciliation\nYear-end PCB vs submission"]
+    end
+
+    subgraph HRFORMS["👤 HR Notification Forms"]
+        CP21["CP21\nEmployee cessation\n+ Malaysia departure"]
+        CP22["CP22\nNew hire notification"]
+        CP22A["CP22A\nRetirement notification"]
+    end
+
+    style IRBTAX fill:#6366f115,stroke:#6366f1,color:#e2e8f0
+    style STATUTORY fill:#22d3ee15,stroke:#22d3ee,color:#e2e8f0
+    style LHDNRPT fill:#34d39915,stroke:#34d399,color:#e2e8f0
+    style HRFORMS fill:#f59e0b15,stroke:#f59e0b,color:#e2e8f0
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h2>Report Data Sources</h2>
+    <table>
+      <thead><tr><th>Report</th><th>Source Doctype</th><th>Key Fields</th><th>Output</th></tr></thead>
+      <tbody>
+        <tr><td><code>cp39_pcb_remittance</code></td><td>Salary Slip</td><td>pcb_amount, employee_tin, period</td><td>IRB CP39 fixed-width file</td></tr>
+        <tr><td><code>ea_form</code></td><td>Salary Slip + Employee</td><td>gross_pay, tax_deducted, allowances</td><td>EA Form PDF / HTML</td></tr>
+        <tr><td><code>borang_e</code></td><td>Salary Slip + Company</td><td>employee count, total remuneration</td><td>Borang E annual return</td></tr>
+        <tr><td><code>epf_borang_a</code></td><td>Salary Slip</td><td>epf_employee, epf_employer</td><td>EPF schedule CSV</td></tr>
+        <tr><td><code>socso_borang_8a</code></td><td>Salary Slip</td><td>socso_employee, socso_employer</td><td>SOCSO Borang 8A</td></tr>
+        <tr><td><code>eis_monthly</code></td><td>Salary Slip</td><td>eis_employee, eis_employer</td><td>EIS monthly schedule</td></tr>
+        <tr><td><code>lhdn_monthly_summary</code></td><td>Salary Slip</td><td>lhdn_status, submission_date</td><td>Dashboard summary</td></tr>
+        <tr><td><code>lhdn_payroll_compliance</code></td><td>Salary Slip + Expense Claim</td><td>lhdn_status, employee_tin</td><td>Compliance audit report</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ======================== TAB: TESTS ======================== -->
+<div id="tab-tests" class="tab-content">
+  <div class="diagram-card">
+    <h2>Test Suite — 237 Tests</h2>
+    <div class="mermaid">
+graph TD
+    TESTS["test suite\n237 tests total"]
+
+    TESTS --> T1["Payload Builder\ntest_payload_builder.py\ntest_payload_builder_combined.py\ntest_payload_builder_full.py"]
+    TESTS --> T2["Submission\ntest_submission_service.py\ntest_submission_hooks.py\ntest_intg_scenarios.py\n(T-01 → T-05 mocked HTTP)"]
+    TESTS --> T3["Statutory Deductions\ntest_statutory_exclusion.py\ntest_socso_borang_8a.py\ntest_pcb_calculator.py"]
+    TESTS --> T4["LHDN Status Poller\ntest_status_poller.py\ntest_poller_per_company.py"]
+    TESTS --> T5["Reports\ntest_cp39_report.py\ntest_monthly_summary.py\ntest_compliance_report.py"]
+    TESTS --> T6["Utils\ntest_tin_validator.py\ntest_date_utils.py\ntest_decimal_utils.py\ntest_qr_utils.py\ntest_error_parser.py"]
+    TESTS --> T7["Fixtures & Config\ntest_custom_fields.py\ntest_config.py\ntest_msic_code.py\ntest_workspace.py"]
+    TESTS --> T8["Other Features\ntest_cancellation.py\ntest_credit_note.py\ntest_retention.py\ntest_retry_service.py\ntest_rbac.py\ntest_dev_tools_page.py\ntest_exemption_filter.py"]
+
+    style TESTS fill:#6366f130,stroke:#6366f1,color:#a5b4fc
+    style T1 fill:#22d3ee15,stroke:#22d3ee,color:#67e8f9
+    style T2 fill:#22d3ee15,stroke:#22d3ee,color:#67e8f9
+    style T3 fill:#34d39915,stroke:#34d399,color:#6ee7b7
+    style T4 fill:#f59e0b15,stroke:#f59e0b,color:#fcd34d
+    style T5 fill:#a78bfa15,stroke:#a78bfa,color:#c4b5fd
+    style T6 fill:#64748b15,stroke:#64748b,color:#94a3b8
+    style T7 fill:#64748b15,stroke:#64748b,color:#94a3b8
+    style T8 fill:#f472b615,stroke:#f472b6,color:#fbcfe8
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h2>Run Tests</h2>
+    <table>
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>bench --site frontend run-tests --app lhdn_payroll_integration</code></td><td>Run all 237 tests in the container</td></tr>
+        <tr><td><code>bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_submission_service</code></td><td>Run a single test module</td></tr>
+        <tr><td><code>docker exec prisma-erp-backend-1 bash -c "cd /home/frappe/frappe-bench && bench --site frontend run-tests --app lhdn_payroll_integration"</code></td><td>Run from host terminal</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      background: '#1a1d27',
+      primaryColor: '#6366f1',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#4f46e5',
+      lineColor: '#475569',
+      secondaryColor: '#22d3ee',
+      tertiaryColor: '#34d399',
+      edgeLabelBackground: '#1a1d27',
+      fontSize: '13px'
+    },
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { actorMargin: 60, messageMargin: 30 }
+  });
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+
+    // Re-render mermaid diagrams in newly active tab
+    setTimeout(() => mermaid.run(), 50);
+  }
+</script>
+
+</body>
+</html>
