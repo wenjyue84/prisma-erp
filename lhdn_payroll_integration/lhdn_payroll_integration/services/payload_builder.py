@@ -39,6 +39,14 @@ EMPLOYER_STATUTORY_COMPONENTS = frozenset({
     'SIP - Employer', 'SIP Employer',
 })
 
+# LHDN v1.1 §6.2 — schemeID mapping for employee registration ID type
+ID_TYPE_TO_SCHEME = {
+    "NRIC": "NRIC",
+    "Passport": "PASSPORT",
+    "BRN": "BRN",
+    "Army ID": "ARMY",
+}
+
 
 def _quantize(value):
     """Quantize a value to 2 decimal places with ROUND_HALF_UP."""
@@ -149,7 +157,14 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     supplier_party = _sub(root, CAC_NS, "AccountingSupplierParty")
     supplier_inner = _sub(supplier_party, CAC_NS, "Party")
     supplier_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
-    _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin)
+    _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin, schemeID="TIN")
+    # Registration ID (NRIC / Passport / BRN / Army ID)
+    _emp_id_type = getattr(employee, "custom_id_type", None)
+    _emp_id_value = getattr(employee, "custom_id_value", None)
+    if isinstance(_emp_id_type, str) and _emp_id_type and isinstance(_emp_id_value, str) and _emp_id_value:
+        _scheme = ID_TYPE_TO_SCHEME.get(_emp_id_type, _emp_id_type)
+        _reg_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
+        _sub(_reg_id, CBC_NS, "ID", _emp_id_value, schemeID=_scheme)
     supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
     _sub(supplier_name_elem, CBC_NS, "Name", employee.employee_name)
     _add_postal_address(supplier_inner, supplier_state)
@@ -162,7 +177,7 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     customer_party = _sub(root, CAC_NS, "AccountingCustomerParty")
     customer_inner = _sub(customer_party, CAC_NS, "Party")
     customer_id = _sub(customer_inner, CAC_NS, "PartyIdentification")
-    _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number)
+    _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number, schemeID="TIN")
     customer_name_elem = _sub(customer_inner, CAC_NS, "PartyName")
     _sub(customer_name_elem, CBC_NS, "Name", company.name)
     _add_postal_address(customer_inner, buyer_state)
@@ -390,7 +405,14 @@ def build_consolidated_xml(docnames, target_month):
     supplier_party = _sub(root, CAC_NS, "AccountingSupplierParty")
     supplier_inner = _sub(supplier_party, CAC_NS, "Party")
     supplier_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
-    _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin)
+    _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin, schemeID="TIN")
+    # Registration ID (NRIC / Passport / BRN / Army ID)
+    _emp_id_type = getattr(employee, "custom_id_type", None)
+    _emp_id_value = getattr(employee, "custom_id_value", None)
+    if isinstance(_emp_id_type, str) and _emp_id_type and isinstance(_emp_id_value, str) and _emp_id_value:
+        _scheme = ID_TYPE_TO_SCHEME.get(_emp_id_type, _emp_id_type)
+        _reg_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
+        _sub(_reg_id, CBC_NS, "ID", _emp_id_value, schemeID=_scheme)
     supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
     _sub(supplier_name_elem, CBC_NS, "Name", employee.employee_name)
     _add_postal_address(supplier_inner, supplier_state)
@@ -400,7 +422,7 @@ def build_consolidated_xml(docnames, target_month):
     customer_party = _sub(root, CAC_NS, "AccountingCustomerParty")
     customer_inner = _sub(customer_party, CAC_NS, "Party")
     customer_id = _sub(customer_inner, CAC_NS, "PartyIdentification")
-    _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number)
+    _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number, schemeID="TIN")
     customer_name_elem = _sub(customer_inner, CAC_NS, "PartyName")
     _sub(customer_name_elem, CBC_NS, "Name", company.name)
     _add_postal_address(customer_inner, "17")

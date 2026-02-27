@@ -1859,3 +1859,129 @@ class TestSSTHandling(FrappeTestCase):
             "AccountingCustomerParty must have PartyTaxScheme/TaxScheme/ID")
         self.assertEqual(buyer_scheme.text, "SST",
             "SST-registered buyer TaxScheme/ID should be 'SST'")
+
+
+class TestSchemeIDAttributes(FrappeTestCase):
+    """Tests for LHDN v1.1 §6.2 schemeID on PartyIdentification/cbc:ID elements."""
+
+    def _make_doc(self):
+        doc = MagicMock()
+        doc.name = "SAL-SLP-SCH-001"
+        doc.employee = "HR-EMP-SCH-001"
+        doc.employee_name = "Ahmad bin Abdullah"
+        doc.net_pay = 5000
+        doc.company = "Test Co"
+        doc.posting_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
+        earning = MagicMock()
+        earning.salary_component = "Basic Salary"
+        earning.amount = 5000
+        earning.custom_lhdn_classification_code = "022 : Others"
+        doc.earnings = [earning]
+        doc.deductions = []
+        return doc
+
+    def _make_employee(self, id_type="NRIC", id_value="901201145678"):
+        emp = MagicMock()
+        emp.custom_lhdn_tin = "IG12345678901"
+        emp.custom_id_type = id_type
+        emp.custom_id_value = id_value
+        emp.employee_name = "Ahmad bin Abdullah"
+        emp.custom_is_foreign_worker = 0
+        emp.custom_state_code = "01"
+        emp.custom_bank_account_number = None
+        emp.custom_worker_type = "Employee"
+        return emp
+
+    def _make_company(self):
+        company = MagicMock()
+        company.custom_company_tin_number = "C12345678901"
+        company.name = "Test Co"
+        company.custom_state_code = "14"
+        return company
+
+    def _get_side_effect(self, doc, emp, company):
+        return lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-SCH-001"): doc,
+            ("Employee", "HR-EMP-SCH-001"): emp,
+            ("Company", "Test Co"): company,
+        }.get((dt, name), MagicMock())
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_supplier_tin_scheme_id_is_tin(self, mock_frappe):
+        """Supplier PartyIdentification for TIN has schemeID='TIN'."""
+        doc = self._make_doc()
+        emp = self._make_employee()
+        company = self._make_company()
+        mock_frappe.get_doc.side_effect = self._get_side_effect(doc, emp, company)
+        mock_frappe.db.get_value.return_value = 0
+
+        xml_string = build_salary_slip_xml("SAL-SLP-SCH-001")
+        root = ET.fromstring(xml_string)
+
+        supplier_party = root.find(f"{{{CAC_NS}}}AccountingSupplierParty/{{{CAC_NS}}}Party")
+        party_ids = supplier_party.findall(f"{{{CAC_NS}}}PartyIdentification")
+        id_elems = [p.find(f"{{{CBC_NS}}}ID") for p in party_ids if p.find(f"{{{CBC_NS}}}ID") is not None]
+        tin_elem = next((e for e in id_elems if e.text == "IG12345678901"), None)
+        self.assertIsNotNone(tin_elem, "Employee TIN not found in SupplierParty PartyIdentification")
+        self.assertEqual(tin_elem.get("schemeID"), "TIN",
+                         f"Expected schemeID='TIN' on employee TIN, got {tin_elem.get('schemeID')!r}")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_supplier_nric_scheme_id_is_nric(self, mock_frappe):
+        """Supplier has second PartyIdentification with schemeID='NRIC' for employee NRIC."""
+        doc = self._make_doc()
+        emp = self._make_employee(id_type="NRIC", id_value="901201145678")
+        company = self._make_company()
+        mock_frappe.get_doc.side_effect = self._get_side_effect(doc, emp, company)
+        mock_frappe.db.get_value.return_value = 0
+
+        xml_string = build_salary_slip_xml("SAL-SLP-SCH-001")
+        root = ET.fromstring(xml_string)
+
+        supplier_party = root.find(f"{{{CAC_NS}}}AccountingSupplierParty/{{{CAC_NS}}}Party")
+        party_ids = supplier_party.findall(f"{{{CAC_NS}}}PartyIdentification")
+        id_elems = [p.find(f"{{{CBC_NS}}}ID") for p in party_ids if p.find(f"{{{CBC_NS}}}ID") is not None]
+        nric_elem = next((e for e in id_elems if e.get("schemeID") == "NRIC"), None)
+        self.assertIsNotNone(nric_elem, "No PartyIdentification with schemeID='NRIC' found in SupplierParty")
+        self.assertEqual(nric_elem.text, "901201145678")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_customer_tin_scheme_id_is_tin(self, mock_frappe):
+        """Customer PartyIdentification for TIN has schemeID='TIN'."""
+        doc = self._make_doc()
+        emp = self._make_employee()
+        company = self._make_company()
+        mock_frappe.get_doc.side_effect = self._get_side_effect(doc, emp, company)
+        mock_frappe.db.get_value.return_value = 0
+
+        xml_string = build_salary_slip_xml("SAL-SLP-SCH-001")
+        root = ET.fromstring(xml_string)
+
+        customer_party = root.find(f"{{{CAC_NS}}}AccountingCustomerParty/{{{CAC_NS}}}Party")
+        party_ids = customer_party.findall(f"{{{CAC_NS}}}PartyIdentification")
+        id_elems = [p.find(f"{{{CBC_NS}}}ID") for p in party_ids if p.find(f"{{{CBC_NS}}}ID") is not None]
+        tin_elem = next((e for e in id_elems if e.text == "C12345678901"), None)
+        self.assertIsNotNone(tin_elem, "Company TIN not found in CustomerParty PartyIdentification")
+        self.assertEqual(tin_elem.get("schemeID"), "TIN",
+                         f"Expected schemeID='TIN' on company TIN, got {tin_elem.get('schemeID')!r}")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_passport_id_type_maps_to_passport_scheme(self, mock_frappe):
+        """Employee id_type='Passport' maps to schemeID='PASSPORT'."""
+        doc = self._make_doc()
+        emp = self._make_employee(id_type="Passport", id_value="A12345678")
+        company = self._make_company()
+        mock_frappe.get_doc.side_effect = self._get_side_effect(doc, emp, company)
+        mock_frappe.db.get_value.return_value = 0
+
+        xml_string = build_salary_slip_xml("SAL-SLP-SCH-001")
+        root = ET.fromstring(xml_string)
+
+        supplier_party = root.find(f"{{{CAC_NS}}}AccountingSupplierParty/{{{CAC_NS}}}Party")
+        party_ids = supplier_party.findall(f"{{{CAC_NS}}}PartyIdentification")
+        id_elems = [p.find(f"{{{CBC_NS}}}ID") for p in party_ids if p.find(f"{{{CBC_NS}}}ID") is not None]
+        passport_elem = next((e for e in id_elems if e.get("schemeID") == "PASSPORT"), None)
+        self.assertIsNotNone(passport_elem, "No PartyIdentification with schemeID='PASSPORT' found")
+        self.assertEqual(passport_elem.text, "A12345678")

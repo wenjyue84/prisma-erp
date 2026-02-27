@@ -2619,3 +2619,22 @@ Per Ralph stop condition: "INTG story missing LHDN sandbox credentials → docum
 ## Iteration 6 - Thu, Feb 26, 2026  8:50:28 PM
 Completed: All 5 mandatory LHDN integration test scenarios pass in sandbox (ID: US-022) in 12m
 
+
+## Iteration — US-001: Add schemeID attribute to PartyIdentification/ID elements
+
+**Type:** IMPL
+**TDD Phase:** GREEN (56/56 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS
+
+### Files created/modified
+- `lhdn_payroll_integration/services/payload_builder.py` — Added `ID_TYPE_TO_SCHEME` mapping dict; added `schemeID="TIN"` to both supplier and customer TIN `cbc:ID` elements in `_build_invoice_skeleton()` and `build_consolidated_xml()`; added second `PartyIdentification` for employee registration ID (NRIC/Passport/BRN/Army ID)
+- `lhdn_payroll_integration/tests/test_payload_builder.py` — Added `TestSchemeIDAttributes` class with 4 new tests asserting schemeID present on TIN elements and correct scheme mapping
+
+### Patterns discovered
+- `isinstance(str)` guard needed for MagicMock-based employee attributes in production code; Frappe doc attributes are always str/None but raw MagicMock returns MagicMock for any attribute access (truthy), causing invalid XML attribute values with `<>` characters
+- `schemeID` attribute added via `**attribs` kwarg in `_sub()` helper — no signature change needed
+- Employee gets TWO `PartyIdentification` elements: first for TIN (schemeID="TIN"), second for NRIC/Passport/BRN/Army ID only when both `custom_id_type` and `custom_id_value` are non-empty strings
+
+### Gotchas
+- MagicMock attribute values containing `<>` (e.g. `<MagicMock name='...'>`) cause invalid XML parse errors when used as attribute values
