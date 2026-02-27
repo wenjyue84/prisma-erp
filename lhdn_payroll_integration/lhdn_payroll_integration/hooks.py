@@ -33,6 +33,9 @@ doc_events = {
 		"on_submit": "lhdn_payroll_integration.services.submission_service.enqueue_expense_claim_submission",
 		"on_cancel": "lhdn_payroll_integration.services.cancellation_service.handle_expense_claim_cancel",
 	},
+	"Employee": {
+		"validate": "lhdn_payroll_integration.utils.validation.validate_document_for_lhdn",
+	},
 }
 
 # Scheduled Tasks

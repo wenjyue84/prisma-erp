@@ -2737,3 +2737,31 @@ Completed: Add AdditionalDocumentReference for registration ID in XML (ID: US-00
 ## Iteration 2 - Fri, Feb 27, 2026 10:33:35 AM
 Completed: Implement PCB/MTD monthly calculation validation (ID: US-004) in 4m
 
+## Iteration 3 - Fri, Feb 27, 2026 10:33:57 AM
+Completed: Fix token expiry check and status poller base_url bug (ID: US-003) in 17m
+
+
+## Iteration N — US-005: Implement NRIC format validation on Employee save
+
+**Type:** IMPL
+**TDD Phase:** GREEN (41/41 validation tests pass, 588/588 full suite pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_validation`
+**Result:** PASS — 41 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/validation.py` — Added `validate_nric()`, `validate_id_value()`, `validate_document_for_lhdn()`
+- `lhdn_payroll_integration/hooks.py` — Added Employee validate hook
+- `lhdn_payroll_integration/tests/test_validation.py` — Added 36 new tests across TestValidateNric, TestValidateIdValue, TestValidateDocumentForLhdn classes
+
+### Implementation
+- `validate_nric(value)`: fullmatch r"\d{12}", validates MM 01-12, DD 01-31, PB code in {1-16} ∪ {21-59}
+- `validate_id_value(id_type, id_value)`: NRIC→validate_nric, Passport→alphanumeric 1-20 chars, BRN→12-digit numeric
+- `validate_document_for_lhdn(doc, method=None)`: reads `doc.get("custom_id_type")` / `doc.get("custom_id_value")`, delegates to validate_id_value; no-ops when either is empty
+
+### Patterns discovered
+- Use `doc.get()` not `getattr(doc, ...)` in Employee validate hook — MagicMock.get() can be side_effect-mocked while getattr returns truthy MagicMock for all attributes
+- `re.fullmatch(r"\d{12}", value or "")` handles None input gracefully (returns "" before match attempt)
+- `_VALID_STATE_CODES = set(range(1, 17)) | set(range(21, 60))` — set lookup is O(1) vs two range() checks
+
+## Iteration N - Fri, Feb 27, 2026
+Completed: Implement NRIC format validation on Employee save (ID: US-005)
