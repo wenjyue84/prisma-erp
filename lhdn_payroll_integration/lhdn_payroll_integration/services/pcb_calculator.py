@@ -80,44 +80,60 @@ def calculate_pcb(
     married: bool = False,
     children: int = 0,
     bonus_amount: float = 0.0,
+    gratuity_amount: float = 0.0,
+    years_of_service: int = 0,
 ) -> float:
     """Calculate monthly PCB/MTD deduction amount.
 
     Applies standard reliefs for residents then uses LHDN progressive bands.
     Non-residents are taxed at flat 30% on gross income.
 
-    For irregular payments (bonus, commission, gratuity), pass bonus_amount.
+    For irregular payments (bonus, commission), pass bonus_amount.
     The function applies the one-twelfth annualisation rule per LHDN Schedule D:
     the returned value is the regular monthly PCB plus the incremental tax on
     the bonus, computed as:
         bonus_pcb = tax_on(annual_income + bonus_amount - reliefs)
                     - tax_on(annual_income - reliefs)
 
+    For gratuity / leave encashment, pass gratuity_amount and years_of_service.
+    Schedule 6 paragraph 25 of ITA 1967 provides a tax exemption of RM1,000
+    per completed year of service. Only the remainder above the exempt amount
+    is taxable (treated as an irregular payment using the annualisation rule).
+
     Args:
         annual_income: Gross annual employment income (RM).
         resident: True if employee is a tax resident of Malaysia.
         married: True if employee is married (spouse relief applies).
         children: Number of qualifying children (RM2,000 each).
-        bonus_amount: One-off irregular payment amount (RM) such as bonus,
-            commission, or gratuity. When provided, triggers LHDN Schedule D
+        bonus_amount: One-off irregular payment amount (RM) such as bonus
+            or commission. When provided, triggers LHDN Schedule D
             annualisation rule and adds incremental bonus PCB to the return value.
+        gratuity_amount: Gratuity or leave encashment amount (RM). Subject
+            to Schedule 6 para 25 exemption (RM1,000 x years_of_service).
+        years_of_service: Completed years of service for Schedule 6 para 25
+            exemption calculation.
 
     Returns:
         float: Monthly PCB amount (RM), rounded to 2 decimal places.
-               When bonus_amount > 0, includes both the regular monthly PCB
-               and the full incremental bonus PCB for that payment period.
-               Returns 0.0 for zero or negative income (with no bonus).
+               When bonus_amount or gratuity_amount > 0, includes both the
+               regular monthly PCB and the incremental irregular PCB.
+               Returns 0.0 for zero or negative income (with no irregular payments).
     """
-    if annual_income <= 0 and bonus_amount <= 0:
+    if annual_income <= 0 and bonus_amount <= 0 and gratuity_amount <= 0:
         return 0.0
+
+    # Schedule 6 para 25: RM1,000 per year of service exempt from gratuity
+    exempt_gratuity = min(gratuity_amount, years_of_service * 1_000) if gratuity_amount > 0 else 0.0
+    taxable_gratuity = max(0.0, gratuity_amount - exempt_gratuity)
+
+    # Total irregular amount = bonus + taxable portion of gratuity
+    total_irregular = bonus_amount + taxable_gratuity
 
     if not resident:
         # Non-resident: flat 30%, no reliefs
-        # Regular monthly PCB on annual income
         regular_monthly = (annual_income * 0.30) / 12 if annual_income > 0 else 0.0
-        # Bonus PCB is the full bonus taxed at 30% (lump sum, not divided by 12)
-        bonus_pcb = bonus_amount * 0.30 if bonus_amount > 0 else 0.0
-        return round(regular_monthly + bonus_pcb, 2)
+        irregular_pcb = total_irregular * 0.30 if total_irregular > 0 else 0.0
+        return round(regular_monthly + irregular_pcb, 2)
 
     # Resident: apply personal reliefs before tax computation
     total_relief = _SELF_RELIEF
@@ -129,14 +145,12 @@ def calculate_pcb(
     annual_tax = _compute_tax_on_chargeable_income(chargeable_income)
     regular_monthly_pcb = annual_tax / 12
 
-    if bonus_amount > 0:
+    if total_irregular > 0:
         # LHDN Schedule D one-twelfth annualisation rule:
-        # Annualise: monthly_salary * 12 + bonus = annual_income + bonus_amount
-        # Bonus PCB = tax_on(annual_income + bonus_amount) - tax_on(annual_income)
-        total_chargeable = max(0.0, annual_income + bonus_amount - total_relief)
-        tax_with_bonus = _compute_tax_on_chargeable_income(total_chargeable)
-        bonus_pcb = tax_with_bonus - annual_tax
-        return round(regular_monthly_pcb + bonus_pcb, 2)
+        total_chargeable = max(0.0, annual_income + total_irregular - total_relief)
+        tax_with_irregular = _compute_tax_on_chargeable_income(total_chargeable)
+        irregular_pcb = tax_with_irregular - annual_tax
+        return round(regular_monthly_pcb + irregular_pcb, 2)
 
     return round(regular_monthly_pcb, 2)
 

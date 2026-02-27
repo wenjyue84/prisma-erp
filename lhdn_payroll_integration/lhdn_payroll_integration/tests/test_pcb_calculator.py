@@ -1,4 +1,4 @@
-"""Tests for PCB/MTD calculator — US-004 and US-018.
+"""Tests for PCB/MTD calculator — US-004, US-018, and US-035.
 
 Covers:
 - Single resident: progressive tax bands
@@ -7,6 +7,7 @@ Covers:
 - Zero income: returns 0.0
 - validate_pcb_amount: returns warning dict
 - Bonus/irregular payment: one-twelfth annualisation rule (US-018)
+- Gratuity/leave encashment: Schedule 6 para 25 exemption (US-035)
 """
 from unittest.mock import MagicMock, patch
 
@@ -377,3 +378,159 @@ class TestCalculatePcbBonus(FrappeTestCase):
         with_bonus = calculate_pcb(annual, resident=True, bonus_amount=bonus)
         # Bonus alone should add at least RM 1,000 of additional PCB
         self.assertGreater(with_bonus - regular, 1_000)
+
+
+class TestCalculatePcbGratuityExemption(FrappeTestCase):
+    """Test calculate_pcb() with gratuity/leave encashment — US-035.
+
+    ITA 1967 Schedule 6 paragraph 25:
+    Gratuity / leave encashment is exempt RM1,000 per completed year of service.
+    Only the remainder above the exempt amount is taxable (irregular payment).
+    """
+
+    def test_full_exemption_no_tax_on_gratuity(self):
+        """Gratuity <= RM1,000 × years_of_service is fully exempt.
+
+        10 years × RM1,000 = RM10,000 exempt.
+        Gratuity of RM8,000 is fully exempt → no additional PCB.
+        """
+        annual = 60_000
+        regular = calculate_pcb(annual, resident=True)
+        with_gratuity = calculate_pcb(
+            annual, resident=True,
+            gratuity_amount=8_000, years_of_service=10,
+        )
+        self.assertAlmostEqual(regular, with_gratuity, places=2)
+
+    def test_partial_exemption_reduces_taxable_gratuity(self):
+        """Gratuity RM15,000 with 10 years service: exempt RM10,000, taxable RM5,000.
+
+        annual_income = 60,000; single resident; self-relief = 9,000
+        Regular chargeable = 51,000; annual_tax = 1,930
+        With taxable gratuity RM5,000:
+          total_chargeable = 60,000 + 5,000 - 9,000 = 56,000
+          tax:
+            0%  on  5,000 =     0
+            1%  on 15,000 =   150
+            3%  on 15,000 =   450
+            8%  on 15,000 = 1,200
+            13% on  6,000 =   780
+            Total = 2,580
+          irregular_pcb = 2,580 - 1,930 = 650
+          total = 1,930/12 + 650
+        """
+        annual = 60_000
+        result = calculate_pcb(
+            annual, resident=True,
+            gratuity_amount=15_000, years_of_service=10,
+        )
+        regular_monthly = 1_930 / 12
+        irregular_pcb = 2_580 - 1_930  # = 650
+        expected = round(regular_monthly + irregular_pcb, 2)
+        self.assertAlmostEqual(result, expected, places=2)
+
+    def test_zero_years_of_service_no_exemption(self):
+        """Zero years of service means no exemption — full gratuity is taxable.
+
+        Gratuity RM10,000 with 0 years = same as bonus RM10,000.
+        """
+        annual = 60_000
+        gratuity_result = calculate_pcb(
+            annual, resident=True,
+            gratuity_amount=10_000, years_of_service=0,
+        )
+        bonus_result = calculate_pcb(
+            annual, resident=True,
+            bonus_amount=10_000,
+        )
+        self.assertAlmostEqual(gratuity_result, bonus_result, places=2)
+
+    def test_exemption_capped_at_gratuity_amount(self):
+        """Exempt amount cannot exceed the gratuity itself.
+
+        20 years × RM1,000 = RM20,000 cap, but gratuity is only RM5,000.
+        Exempt = min(5,000, 20,000) = 5,000 → fully exempt.
+        """
+        annual = 60_000
+        regular = calculate_pcb(annual, resident=True)
+        with_gratuity = calculate_pcb(
+            annual, resident=True,
+            gratuity_amount=5_000, years_of_service=20,
+        )
+        self.assertAlmostEqual(regular, with_gratuity, places=2)
+
+    def test_gratuity_plus_bonus_combined(self):
+        """Gratuity and bonus in same period: both irregular amounts combined.
+
+        Gratuity RM15,000 (10 yrs → exempt RM10,000 → taxable RM5,000)
+        Bonus RM10,000
+        Total irregular = 5,000 + 10,000 = 15,000
+
+        annual = 60,000; single; relief = 9,000
+        Regular: chargeable = 51,000; tax = 1,930
+        With irregular 15,000:
+          total_chargeable = 60,000 + 15,000 - 9,000 = 66,000
+          tax:
+            0%  on  5,000 =     0
+            1%  on 15,000 =   150
+            3%  on 15,000 =   450
+            8%  on 15,000 = 1,200
+            13% on 16,000 = 2,080
+            Total = 3,880
+          irregular_pcb = 3,880 - 1,930 = 1,950
+          total = 1,930/12 + 1,950
+        """
+        annual = 60_000
+        result = calculate_pcb(
+            annual, resident=True,
+            bonus_amount=10_000,
+            gratuity_amount=15_000, years_of_service=10,
+        )
+        regular_monthly = 1_930 / 12
+        irregular_pcb = 3_880 - 1_930  # = 1,950
+        expected = round(regular_monthly + irregular_pcb, 2)
+        self.assertAlmostEqual(result, expected, places=2)
+
+    def test_non_resident_gratuity_exemption_applies(self):
+        """Non-resident: flat 30% on taxable gratuity (after exemption).
+
+        Gratuity RM15,000, 10 years → exempt RM10,000, taxable RM5,000.
+        Non-resident irregular PCB = 5,000 × 30% = 1,500.
+        """
+        annual = 60_000
+        result = calculate_pcb(
+            annual, resident=False,
+            gratuity_amount=15_000, years_of_service=10,
+        )
+        expected_regular = (annual * 0.30) / 12  # 1,500
+        expected_irregular = 5_000 * 0.30  # 1,500
+        expected = round(expected_regular + expected_irregular, 2)
+        self.assertAlmostEqual(result, expected, places=2)
+
+    def test_gratuity_exemption_reduces_taxable_vs_no_exemption(self):
+        """With exemption, PCB must be lower than treating full gratuity as bonus."""
+        annual = 60_000
+        gratuity = 20_000
+        years = 10  # exempt RM10,000
+
+        with_exemption = calculate_pcb(
+            annual, resident=True,
+            gratuity_amount=gratuity, years_of_service=years,
+        )
+        no_exemption = calculate_pcb(
+            annual, resident=True,
+            bonus_amount=gratuity,  # full amount as bonus, no exemption
+        )
+        self.assertLess(with_exemption, no_exemption)
+
+    def test_gratuity_only_no_regular_income(self):
+        """Gratuity with zero annual income — only taxable portion matters.
+
+        Gratuity RM15,000 with 10 years: exempt RM10,000, taxable RM5,000.
+        Chargeable = max(0, 0 + 5,000 - 9,000) = 0 → no tax.
+        """
+        result = calculate_pcb(
+            0, resident=True,
+            gratuity_amount=15_000, years_of_service=10,
+        )
+        self.assertAlmostEqual(result, 0.0, places=2)

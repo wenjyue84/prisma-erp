@@ -3778,3 +3778,34 @@ Incomplete: Add EIS, HRDF, and common allowance salary components to fixture (ID
 
 ### Gotchas
 - Triple-nested path issue (per progress.txt notes) requires copying report to all 3 nested report/ directories
+
+
+## Iteration — US-035: Handle leave encashment and gratuity tax exemption in PCB calculation
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 36 tests pass — 8 new + 28 existing)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 36/36 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `fixtures/custom_field.json` — Added `custom_is_gratuity_or_leave_encashment` (Check) field on Salary Component
+- `services/pcb_calculator.py` — Added `gratuity_amount` and `years_of_service` parameters to `calculate_pcb()` with Schedule 6 para 25 exemption (RM1,000 × years of service)
+- `tests/test_pcb_calculator.py` — Added `TestCalculatePcbGratuityExemption` class with 8 tests:
+  1. test_full_exemption_no_tax_on_gratuity — gratuity ≤ exempt amount → no additional PCB
+  2. test_partial_exemption_reduces_taxable_gratuity — partial exempt, taxable remainder computed
+  3. test_zero_years_of_service_no_exemption — 0 years → full gratuity taxable (= bonus)
+  4. test_exemption_capped_at_gratuity_amount — exempt cannot exceed gratuity itself
+  5. test_gratuity_plus_bonus_combined — bonus + taxable gratuity combined as irregular
+  6. test_non_resident_gratuity_exemption_applies — flat 30% on taxable gratuity for non-resident
+  7. test_gratuity_exemption_reduces_taxable_vs_no_exemption — with exemption PCB < without
+  8. test_gratuity_only_no_regular_income — no regular income + gratuity below relief → zero
+
+### Implementation details
+- Exempt amount = min(gratuity_amount, years_of_service × RM1,000)
+- Taxable gratuity = gratuity_amount - exempt amount
+- Taxable gratuity treated as irregular payment (same annualisation rule as bonus)
+- Works with existing bonus_amount — both combine into total_irregular for tax computation
+- Non-resident: flat 30% on taxable gratuity (same as bonus treatment)
+
+### Patterns discovered
+- Extending calculate_pcb() with new optional params preserves backward compatibility — all existing tests still pass

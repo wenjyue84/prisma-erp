@@ -442,6 +442,18 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Salary Component-custom_is_gratuity_or_leave_encashment",
+    "dt": "Salary Component",
+    "fieldname": "custom_is_gratuity_or_leave_encashment",
+    "fieldtype": "Check",
+    "label": "Is Gratuity / Leave Encashment",
+    "description": "Mark this component as gratuity or leave encashment (qualifies for Schedule 6 para 25 tax exemption: RM1,000 per year of service)",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_is_epf_employer"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Employee-custom_socso_member_number",
     "dt": "Employee",
     "fieldname": "custom_socso_member_number",
