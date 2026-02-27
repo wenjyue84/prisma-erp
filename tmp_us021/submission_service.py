@@ -17,6 +17,7 @@ from lhdn_payroll_integration.services.payload_builder import (
     prepare_submission_wrapper,
 )
 from lhdn_payroll_integration.utils.validation import validate_document_name_length
+from lhdn_payroll_integration.utils.tin_validator import validate_tin_with_lhdn
 
 SUBMISSION_ENDPOINT = "/api/v1.0/documentsubmissions"
 
@@ -295,27 +296,19 @@ def enqueue_salary_slip_submission(doc, method):
     validate_document_name_length(doc.name)
 
     # US-021: Validate employee TIN with LHDN API before enqueuing
-    try:
-        from lhdn_payroll_integration.utils.tin_validator import validate_tin_with_lhdn
+    employee = frappe.get_doc("Employee", doc.employee)
+    tin = employee.get("custom_lhdn_tin") or ""
+    id_type = employee.get("custom_id_type") or ""
+    id_value = employee.get("custom_id_value") or ""
 
-        employee = frappe.get_doc("Employee", doc.employee)
-        tin = employee.get("custom_tin") or ""
-        id_type = employee.get("custom_id_type") or ""
-        id_value = employee.get("custom_id_value") or ""
-
-        if tin and id_type and id_value:
-            is_valid, error_msg = validate_tin_with_lhdn(
-                doc.company, tin, id_type, id_value
-            )
-            if not is_valid:
-                frappe.db.set_value("Salary Slip", doc.name, "custom_lhdn_status", "Invalid")
-                frappe.db.set_value("Salary Slip", doc.name, "custom_error_log", error_msg)
-                return
-    except Exception:
-        frappe.log_error(
-            title=f"LHDN TIN Validation Error: {doc.name}",
-            message=frappe.get_traceback(),
+    if tin and id_type and id_value:
+        is_valid, error_msg = validate_tin_with_lhdn(
+            doc.company, tin, id_type, id_value
         )
+        if not is_valid:
+            frappe.db.set_value("Salary Slip", doc.name, "custom_lhdn_status", "Invalid")
+            frappe.db.set_value("Salary Slip", doc.name, "custom_error_log", error_msg)
+            return
 
     frappe.db.set_value("Salary Slip", doc.name, "custom_lhdn_status", "Pending")
     frappe.enqueue(

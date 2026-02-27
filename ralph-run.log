@@ -484,3 +484,96 @@ warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the
 [2m[9:25][0m 💻 [36mBash[0m [2mcat >> "/c/Users/Jyue/Documents/1-projects/Projects/prisma-e...[0m
 [2m[9:29][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
 [2m[9:33][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[9:37][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[9:43][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[9:47][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[9:51][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[10:00][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[10:04][0m [37mGood. Now let me commit the prd.json and progress.txt updates:[0m
+[2m[10:10][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+
+[32m[1m✓ Claude finished[0m [2m(79 tool calls in 10:12)[0m
+
+[2mStream ended (79 tool calls, 10:13 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 10m
+
+  [done] Story completed: Add bonus/irregular payment classification for PCB differentiation
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... SKIP (no bench module in acceptance criteria)
+  └────────────────────────────────────────────┘
+  ✓ Quality gates passed (bench check skipped)
+warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the next time Git touches it
+[feature/lhdn-gap-closure e9d0c9e] feat: US-018 - Add bonus/irregular payment classification for PCB differentiation
+ 1 file changed, 3 insertions(+)
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 5/60
+  Progress: [████████████░░░░░░░░░░░░░░░░░░] 20/50 (40%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       US-021
+  │ Title:    Integrate LHDN TIN validation API before submission
+  │ Priority: high
+  │ Deps:     US-003
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for US-021...
+  ─────── Claude Output Start ──────────
+[2m[0:36][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[0:38][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[0:52][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:01][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:05][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:09][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:14][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
+[2m[1:17][0m [37mGood — container is running. Let me look at the existing services to understand the current codebase...[0m
+[2m[1:18][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:19][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:23][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:25][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:34][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:35][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:51][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[2:08][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "python3 -c \"impor...[0m
+[2m[2:18][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'custom_lh...[0m
+[2m[2:40][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[5:03][0m [37mNow I have a full picture. Let me implement US-021: LHDN TIN validation API. I'll create `tin_valida...[0m
+[2m[5:03][0m 🔨 [36mTodoWrite[0m [2m[0m
+
+  ╔══════════════════════════════════════════╗
+  ║   📊 15-MIN PROGRESS REPORT — 12:23  ║
+  ╠══════════════════════════════════════════╣
+  ║  Completed:  20 / 50 stories
+  ║  Remaining:  30 stories
+  ║
+  ║  Recently done:
+  ║    ✓ [US-018] Add bonus/irregular payment classification for PCB differentiation
+  ║    ✓ [US-019] Add non-resident flat-rate 30% tax flag and handling
+  ║    ✓ [US-020] Distinguish director fee vs director salary at invoice level
+  ║
+  ║  Up next:
+  ║    → [US-021] Integrate LHDN TIN validation API before submission
+  ║    → [US-022] Add submission failure email notification for HR Manager
+  ║    → [US-023] Fix status poller to use per-document company for base_url and token
+  ╚══════════════════════════════════════════╝
+
+[2m[5:30][0m 💻 [36mBash[0m [2mmkdir -p /c/Users/Jyue/Documents/1-projects/Projects/prisma-...[0m
+[2m[6:23][0m ✏️ [36mWrite[0m [2mtin_validator.py[0m
+[2m[6:34][0m [37mNow write the test file:[0m
+[2m[7:17][0m ✏️ [36mWrite[0m [2mtest_tin_validator.py[0m
+[2m[7:25][0m [37mNow I need to update `submission_service.py` to add the TIN validation call. First let me read the c...[0m
+[2m[7:25][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'validate_...[0m
+[2m[8:07][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "sed -n '280,340p' ...[0m
+[2m[8:40][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[8:48][0m [37mThe outer utils already has `tin_validator.py`. Let me read it and also check the nested path:[0m
+[2m[8:49][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[9:14][0m [37mThe outer `tin_validator.py` already exists but has a bug (wrong field name: `custom_tin` vs `custom...[0m
+[2m[9:16][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "sed -n '1,25p' /ho...[0m
+[2m[9:45][0m [37mNow I understand the full picture. I need to: 1. Fix `tin_validator.py` field name (`custom_tin` → `...[0m
+[2m[9:47][0m 💻 [36mBash[0m [2mdocker cp prisma-erp-backend-1:/home/frappe/frappe-bench/app...[0m
