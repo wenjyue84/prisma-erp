@@ -297,9 +297,9 @@ def enqueue_salary_slip_submission(doc, method):
 
     # US-021: Validate employee TIN with LHDN API before enqueuing
     employee = frappe.get_doc("Employee", doc.employee)
-    tin = employee.get("custom_lhdn_tin") or ""
-    id_type = employee.get("custom_id_type") or ""
-    id_value = employee.get("custom_id_value") or ""
+    tin = getattr(employee, "custom_lhdn_tin", "") or ""
+    id_type = getattr(employee, "custom_id_type", "") or ""
+    id_value = getattr(employee, "custom_id_value", "") or ""
 
     if tin and id_type and id_value:
         is_valid, error_msg = validate_tin_with_lhdn(

@@ -53,9 +53,10 @@ class TestSubmissionHooks(FrappeTestCase):
         # Should NOT enqueue any job
         mock_frappe.enqueue.assert_not_called()
 
+    @patch("lhdn_payroll_integration.services.submission_service.validate_tin_with_lhdn", return_value=(True, None))
     @patch("lhdn_payroll_integration.services.submission_service.frappe")
     @patch("lhdn_payroll_integration.services.submission_service.should_submit_to_lhdn", return_value=True)
-    def test_contractor_slip_sets_pending_and_enqueues(self, mock_filter, mock_frappe):
+    def test_contractor_slip_sets_pending_and_enqueues(self, mock_filter, mock_frappe, mock_validate_tin):
         """Submitting a contractor Salary Slip sets custom_lhdn_status='Pending' and enqueues a job."""
         from lhdn_payroll_integration.services.submission_service import enqueue_salary_slip_submission
 
@@ -90,9 +91,10 @@ class TestSubmissionHooks(FrappeTestCase):
         # Should NOT enqueue any job
         mock_frappe.enqueue.assert_not_called()
 
+    @patch("lhdn_payroll_integration.services.submission_service.validate_tin_with_lhdn", return_value=(True, None))
     @patch("lhdn_payroll_integration.services.submission_service.frappe")
     @patch("lhdn_payroll_integration.services.submission_service.should_submit_to_lhdn", return_value=True)
-    def test_enqueue_called_with_after_commit_true(self, mock_filter, mock_frappe):
+    def test_enqueue_called_with_after_commit_true(self, mock_filter, mock_frappe, mock_validate_tin):
         """frappe.enqueue is called with enqueue_after_commit=True, queue='short', timeout=300."""
         from lhdn_payroll_integration.services.submission_service import enqueue_salary_slip_submission
 
@@ -106,9 +108,10 @@ class TestSubmissionHooks(FrappeTestCase):
         self.assertEqual(enqueue_kwargs[1].get("queue"), "short")
         self.assertEqual(enqueue_kwargs[1].get("timeout"), 300)
 
+    @patch("lhdn_payroll_integration.services.submission_service.validate_tin_with_lhdn", return_value=(True, None))
     @patch("lhdn_payroll_integration.services.submission_service.frappe")
     @patch("lhdn_payroll_integration.services.submission_service.should_submit_to_lhdn", return_value=True)
-    def test_document_name_length_validation(self, mock_filter, mock_frappe):
+    def test_document_name_length_validation(self, mock_filter, mock_frappe, mock_validate_tin):
         """Document name longer than 50 chars is gracefully truncated — submission still proceeds."""
         from lhdn_payroll_integration.services.submission_service import enqueue_salary_slip_submission
 

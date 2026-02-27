@@ -3344,3 +3344,27 @@ Implementation already existed from a previous session (submission_service.py + 
 ### Patterns confirmed
 - frappe.db.get_value.side_effect as a list: pops values in order — works for mocking different return values for consecutive calls
 - _send_failure_notification() is inside a try/except — so sendmail errors never propagate to caller
+
+## Iteration N — US-021: Integrate LHDN TIN validation API before submission
+
+**Type:** IMPL
+**TDD Phase:** GREEN (12/12 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_tin_validator`
+**Result:** PASS — 12 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `utils/tin_validator.py` — Created: `get_access_token()` module-level wrapper (patchable), `validate_tin_with_lhdn()`, `@frappe.whitelist() validate_employee_tin()`
+- `services/submission_service.py` — Added module-level `from ... import validate_tin_with_lhdn`; updated `enqueue_salary_slip_submission()` to call TIN validation before enqueuing; uses `getattr()` for field access (not `.get()` which returns MagicMock in tests)
+- `tests/test_tin_validator.py` — Created: 12 tests covering valid/invalid TIN responses, no-token guard, ID type mapping, network errors, and enqueue gate logic
+- `tests/test_submission_hooks.py` — Updated: Added `validate_tin_with_lhdn` patch to 3 existing tests that reach the TIN validation code path
+
+### Patterns discovered
+- `employee.get("field")` on a MagicMock returns another MagicMock (always truthy) → use `getattr(employee, "field", "") or ""` so tests can set empty string values on mock attributes
+- Module-level wrapper pattern: define `get_access_token()` in `tin_validator.py` as a thin wrapper with lazy import, so `@patch("lhdn_payroll_integration.utils.tin_validator.get_access_token")` works
+- Container had partial US-021 implementation with wrong field name (`custom_tin` vs `custom_lhdn_tin`) and lazy import inside try/except (not patchable) — needed both fixes
+- When adding TIN validation to `enqueue_salary_slip_submission()`, add module-level import of `validate_tin_with_lhdn` so it can be patched in submission hook tests
+
+### Gotchas
+- Field name in fixtures is `custom_lhdn_tin` not `custom_tin` — verify against fixtures when implementing validation
+- Existing `test_submission_hooks.py` needed `validate_tin_with_lhdn` added to 3 existing patches (tests with `should_submit_to_lhdn=True` now reach TIN validation code)
+- Circular import safely avoided: `submission_service.py` imports `tin_validator` at module level; `tin_validator.py` imports from `submission_service` only lazily (inside function body)

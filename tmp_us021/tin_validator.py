@@ -15,7 +15,27 @@ _ID_TYPE_MAP = {
     "Army ID": "ARMY",
 }
 
-TIN_VALIDATION_PATH = "/api/v1.0/taxpayer/validate/{tin}/{id_type}/{id_value}"
+TIN_VALIDATION_ENDPOINT = "/api/v1.0/taxpayer/validate"
+
+
+def get_access_token(company_name):
+    """Thin wrapper around submission_service.get_access_token.
+
+    Defined at module level so tests can patch
+    ``lhdn_payroll_integration.utils.tin_validator.get_access_token``.
+    Uses a lazy import to avoid a circular dependency between
+    tin_validator and submission_service.
+
+    Args:
+        company_name: The Company name.
+
+    Returns:
+        str: Bearer token, or empty string on failure.
+    """
+    from lhdn_payroll_integration.services.submission_service import (
+        get_access_token as _get,
+    )
+    return _get(company_name)
 
 
 def _get_base_url(company_name):
@@ -50,24 +70,23 @@ def validate_tin_with_lhdn(company_name, tin, id_type, id_value):
             is_valid=True, error_msg=None when TIN is valid.
             is_valid=False, error_msg=str when TIN is invalid or request fails.
     """
-    # Lazy import to avoid circular dependency with submission_service
-    from lhdn_payroll_integration.services.submission_service import get_access_token
-
     token = get_access_token(company_name)
     if not token:
-        return False, "Could not obtain LHDN access token for TIN validation"
+        return False, f"Could not obtain LHDN access token for company '{company_name}'"
 
     lhdn_id_type = _ID_TYPE_MAP.get(id_type, id_type)
     base_url = _get_base_url(company_name)
-    url = f"{base_url}/api/v1.0/taxpayer/validate/{tin}/{lhdn_id_type}/{id_value}"
+    if not base_url:
+        return False, f"LHDN base URL not configured for company '{company_name}'"
 
+    url = f"{base_url}{TIN_VALIDATION_ENDPOINT}/{tin}/{lhdn_id_type}/{id_value}"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
 
     try:
-        response = requests.get(url, headers=headers, timeout=30)
+        response = requests.get(url, headers=headers, timeout=15)
         if response.status_code == 200:
             return True, None
 
@@ -77,14 +96,18 @@ def validate_tin_with_lhdn(company_name, tin, id_type, id_value):
             err_msg = (
                 err_data.get("message")
                 or err_data.get("error")
-                or response.text
+                or response.text[:300]
             )
         except Exception:
-            err_msg = response.text or f"HTTP {response.status_code}"
+            err_msg = response.text[:300] or f"HTTP {response.status_code}"
 
         return False, f"LHDN TIN validation failed (HTTP {response.status_code}): {err_msg}"
 
     except requests.exceptions.RequestException as exc:
+        frappe.log_error(
+            title="LHDN TIN Validation Request Error",
+            message=str(exc),
+        )
         return False, f"LHDN TIN validation request error: {exc}"
 
 
@@ -103,10 +126,10 @@ def validate_employee_tin(employee_name):
     """
     employee = frappe.get_doc("Employee", employee_name)
 
-    tin = employee.get("custom_lhdn_tin") or ""
-    id_type = employee.get("custom_id_type") or ""
-    id_value = employee.get("custom_id_value") or ""
-    company = employee.get("company") or ""
+    tin = getattr(employee, "custom_lhdn_tin", "") or ""
+    id_type = getattr(employee, "custom_id_type", "") or ""
+    id_value = getattr(employee, "custom_id_value", "") or ""
+    company = getattr(employee, "company", "") or ""
 
     if not tin:
         return {"valid": False, "message": "Employee has no LHDN TIN set"}
@@ -119,5 +142,5 @@ def validate_employee_tin(employee_name):
 
     is_valid, err = validate_tin_with_lhdn(company, tin, id_type, id_value)
     if is_valid:
-        return {"valid": True, "message": "TIN is valid"}
+        return {"valid": True, "message": f"TIN '{tin}' is valid."}
     return {"valid": False, "message": err or "TIN validation failed"}
