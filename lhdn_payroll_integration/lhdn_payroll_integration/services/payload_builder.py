@@ -163,6 +163,7 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     root = ET.Element(f"{{{UBL_NS}}}Invoice")
     _sub(root, CBC_NS, "ID", docname)
     _sub(root, CBC_NS, "IssueDate", str(issue_date))
+    _sub(root, CBC_NS, "IssueTime", frappe.utils.now_datetime().strftime("%H:%M:%S"))
 
     type_code = _sub(root, CBC_NS, "InvoiceTypeCode", "11")
     type_code.set("listVersionID", "1.1")
