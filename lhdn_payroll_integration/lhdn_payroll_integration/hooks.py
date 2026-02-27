@@ -32,6 +32,7 @@ doc_events = {
 	"Expense Claim": {
 		"on_submit": "lhdn_payroll_integration.services.submission_service.enqueue_expense_claim_submission",
 		"on_cancel": "lhdn_payroll_integration.services.cancellation_service.handle_expense_claim_cancel",
+		"before_amend": "lhdn_payroll_integration.services.retention_service.check_retention_lock",
 	},
 	"Employee": {
 		"validate": "lhdn_payroll_integration.utils.validation.validate_document_for_lhdn",

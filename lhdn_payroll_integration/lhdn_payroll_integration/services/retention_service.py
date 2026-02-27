@@ -26,30 +26,31 @@ def get_retention_date(dt):
 def run_retention_archival():
 	"""Yearly scheduled job: archive LHDN records whose 7-year retention has expired.
 
-	Queries Salary Slips with custom_lhdn_archived=0 and checks whether
-	custom_lhdn_validated_datetime + 7 years < now. If so, sets
+	Queries Salary Slips and Expense Claims with custom_lhdn_archived=0 and checks
+	whether custom_lhdn_validated_datetime + 7 years < now. If so, sets
 	custom_lhdn_archived=1.
 	"""
 	now = frappe.utils.now_datetime()
 
-	records = frappe.get_all(
-		"Salary Slip",
-		filters={
-			"custom_lhdn_archived": 0,
-			"custom_lhdn_validated_datetime": ["is", "set"],
-		},
-		fields=["name", "doctype", "custom_lhdn_validated_datetime", "custom_lhdn_archived"],
-	)
+	for doctype in ("Salary Slip", "Expense Claim"):
+		records = frappe.get_all(
+			doctype,
+			filters={
+				"custom_lhdn_archived": 0,
+				"custom_lhdn_validated_datetime": ["is", "set"],
+			},
+			fields=["name", "doctype", "custom_lhdn_validated_datetime", "custom_lhdn_archived"],
+		)
 
-	for record in records:
-		validated_dt = record.get("custom_lhdn_validated_datetime")
-		if validated_dt and get_retention_date(validated_dt) < now:
-			frappe.db.set_value(
-				"Salary Slip",
-				record["name"],
-				"custom_lhdn_archived",
-				1,
-			)
+		for record in records:
+			validated_dt = record.get("custom_lhdn_validated_datetime")
+			if validated_dt and get_retention_date(validated_dt) < now:
+				frappe.db.set_value(
+					doctype,
+					record["name"],
+					"custom_lhdn_archived",
+					1,
+				)
 
 	frappe.db.commit()
 

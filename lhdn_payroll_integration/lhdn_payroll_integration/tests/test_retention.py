@@ -6,6 +6,7 @@ Tests verify that:
 - Archive job marks old records
 - Archived records cannot be amended
 - Records within 7 years are not archived
+- Expense Claims with LHDN UUIDs are also locked before_amend (US-045)
 """
 
 import frappe
@@ -95,3 +96,69 @@ class TestAuditRetention(FrappeTestCase):
 			for c in mock_frappe.db.set_value.call_args_list:
 				self.assertNotIn("SAL-SLP-2025-00001", str(c),
 					"Recent record (within 7 years) must not be archived")
+
+	@patch("lhdn_payroll_integration.services.retention_service.frappe")
+	def test_expense_claim_archived_cannot_be_amended(self, mock_frappe):
+		"""US-045: When an Expense Claim has custom_lhdn_archived=1, the
+		before_amend hook (check_retention_lock) must raise ValidationError."""
+		doc = MagicMock()
+		doc.custom_lhdn_archived = 1
+		doc.doctype = "Expense Claim"
+		mock_frappe.ValidationError = frappe.ValidationError
+		mock_frappe.throw.side_effect = frappe.ValidationError("Record is archived")
+
+		from lhdn_payroll_integration.services.retention_service import check_retention_lock
+		with self.assertRaises(frappe.ValidationError,
+			msg="Expense Claim with custom_lhdn_archived=1 must raise ValidationError on before_amend"):
+			check_retention_lock(doc)
+
+	@patch("lhdn_payroll_integration.services.retention_service.frappe")
+	def test_run_retention_archival_queries_expense_claims(self, mock_frappe):
+		"""US-045: run_retention_archival must query both Salary Slips and
+		Expense Claims, not just Salary Slips."""
+		mock_frappe.get_all.return_value = []
+		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
+		mock_frappe.db = MagicMock()
+
+		run_retention_archival()
+
+		# get_all must be called at least twice — once for each doctype
+		self.assertGreaterEqual(mock_frappe.get_all.call_count, 2,
+			"run_retention_archival must query both Salary Slip and Expense Claim")
+
+		# Verify Expense Claim is among the queried doctypes
+		queried_doctypes = [call.args[0] for call in mock_frappe.get_all.call_args_list]
+		self.assertIn("Expense Claim", queried_doctypes,
+			"run_retention_archival must query Expense Claim doctype")
+
+	@patch("lhdn_payroll_integration.services.retention_service.frappe")
+	def test_run_retention_archival_archives_old_expense_claims(self, mock_frappe):
+		"""US-045: run_retention_archival must archive Expense Claims whose
+		7-year retention period has expired."""
+		old_expense_claim = frappe._dict({
+			"name": "EXP-2018-00001",
+			"doctype": "Expense Claim",
+			"custom_lhdn_validated_datetime": datetime(2018, 3, 10, 10, 0, 0),
+			"custom_lhdn_archived": 0,
+		})
+
+		def get_all_side_effect(doctype, **kwargs):
+			if doctype == "Expense Claim":
+				return [old_expense_claim]
+			return []
+
+		mock_frappe.get_all.side_effect = get_all_side_effect
+		mock_frappe.utils.now_datetime.return_value = datetime(2026, 2, 1, 10, 0, 0)
+		mock_frappe.db = MagicMock()
+
+		run_retention_archival()
+
+		mock_frappe.db.set_value.assert_called()
+		# Verify Expense Claim was archived
+		set_value_calls = mock_frappe.db.set_value.call_args_list
+		expense_claim_archived = any(
+			"EXP-2018-00001" in str(c) and "custom_lhdn_archived" in str(c)
+			for c in set_value_calls
+		)
+		self.assertTrue(expense_claim_archived,
+			"run_retention_archival must archive the old Expense Claim")

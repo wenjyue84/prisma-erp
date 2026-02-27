@@ -3639,3 +3639,54 @@ Incomplete: Fix alpha-only docnames producing duplicate codeNumber (ID: US-043) 
 
 ### Gotchas
 - None; straightforward fix
+## Iteration 11 - Fri, Feb 27, 2026  1:28:24 PM
+Completed: Fix alpha-only docnames producing duplicate codeNumber (ID: US-043) in 3m
+
+
+## Iteration — US-032: Add CP21 workflow for employee cessation and departure from Malaysia
+
+**Type:** IMPL
+**TDD Phase:** GREEN (doctype created, bench migrate succeeded, no new test regressions)
+**Bench command:** `bench --site frontend run-tests --app lhdn_payroll_integration`
+**Result:** 803 tests — pre-existing 10 failures/11 errors unchanged; 0 new failures from US-032
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_cp21/__init__.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_cp21/lhdn_cp21.json` — DocType with fields: naming_series, employee, employee_name, company, last_working_date, reason (Select), days_notice (Int read_only)
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_cp21/lhdn_cp21.py` — Controller: validate sets days_notice, warns if < 30 days
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/cp21_service.py` — handle_employee_left(): auto-creates CP21 when Employee.status=Left + custom_is_foreign_worker=1
+- `lhdn_payroll_integration/lhdn_payroll_integration/hooks.py` — Added Employee on_update → cp21_service.handle_employee_left
+- `lhdn_payroll_integration/lhdn_payroll_integration/print_format/lhdn_cp21/lhdn_cp21.json` — Print format metadata
+- `lhdn_payroll_integration/lhdn_payroll_integration/print_format/lhdn_cp21/lhdn_cp21.html` — Jinja2 HTML template: Parts A/B/C/D, LHDN-compatible layout, late-filing alert
+
+### Acceptance criteria verification
+- [x] LHDN CP21 doctype created with employee, last_working_date, reason (Termination/Resignation/Departure from Malaysia/Death)
+- [x] Auto-created on Employee on_update when status=Left + custom_is_foreign_worker=1
+- [x] Alert shown if last_working_date < 30 days from today (via frappe.msgprint in controller)
+- [x] HTML Print Format generates LHDN-compatible CP21 document (Jinja2, 4 parts)
+
+### Gotchas
+- bench migrate with new DocType deletes LHDN Payroll workspace (orphan removal) — sync_fixtures restores it
+- git stash only stashes tracked files; new untracked files remain in working dir
+
+## Iteration N — US-045: Add before_amend retention lock to Expense Claim
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_retention`
+**Result:** PASS — 8/8 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/hooks.py` — Added `before_amend: check_retention_lock` to Expense Claim doc_events
+- `lhdn_payroll_integration/services/retention_service.py` — Updated `run_retention_archival()` to loop over both "Salary Slip" and "Expense Claim" doctypes
+- `lhdn_payroll_integration/tests/test_retention.py` — Added 3 new tests: `test_expense_claim_archived_cannot_be_amended`, `test_run_retention_archival_queries_expense_claims`, `test_run_retention_archival_archives_old_expense_claims`
+
+### Changes
+1. hooks.py: `before_amend` now registered on Expense Claim (was only on Salary Slip)
+2. retention_service.py: `run_retention_archival()` iterates over `("Salary Slip", "Expense Claim")` tuple instead of hardcoded single doctype
+3. Tests confirm: (a) archived Expense Claim raises ValidationError on before_amend, (b) archival job queries Expense Claim doctype, (c) old Expense Claims get archived
+
+### Patterns
+- Extending archival to multiple doctypes: use `for doctype in (...)` loop, pass `doctype` variable to `frappe.get_all()` and `frappe.db.set_value()`
+- `mock_frappe.get_all.side_effect` can route calls by doctype for targeted test assertions
+
