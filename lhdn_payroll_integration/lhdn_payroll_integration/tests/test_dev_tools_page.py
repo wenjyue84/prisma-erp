@@ -210,3 +210,109 @@ class TestDevToolsWorkspaceShortcut(FrappeTestCase):
             4,
             f"Expected ≥4 shortcuts after adding dev tools, found {len(shortcuts)}",
         )
+
+
+class TestRetrieveLhdnDocument(FrappeTestCase):
+    """retrieve_lhdn_document() calls LHDN raw endpoint using UUID and stores response."""
+
+    _MODULE = "lhdn_payroll_integration.lhdn_payroll_integration.page.lhdn_dev_tools.lhdn_dev_tools"
+
+    def _import_module(self):
+        import importlib
+        return importlib.import_module(self._MODULE)
+
+    def test_permission_guard_blocks_non_sm(self):
+        """Non-System Manager caller gets PermissionError."""
+        mod = self._import_module()
+        with patch(f"{self._MODULE}.frappe.get_roles", return_value=["Employee"]):
+            with self.assertRaises((frappe.PermissionError, PermissionError)):
+                mod.retrieve_lhdn_document("Sal Slip/Test/00001", "Salary Slip")
+
+    def test_returns_error_when_no_uuid(self):
+        """Returns {success: False} when document has no custom_lhdn_uuid."""
+        mod = self._import_module()
+
+        mock_doc = MagicMock()
+        mock_doc.custom_lhdn_uuid = None
+
+        with patch(f"{self._MODULE}.frappe.get_roles", return_value=["System Manager"]):
+            with patch(f"{self._MODULE}.frappe.get_doc", return_value=mock_doc):
+                result = mod.retrieve_lhdn_document("Sal Slip/Test/00001", "Salary Slip")
+
+        self.assertFalse(result["success"])
+        self.assertIn("UUID", result.get("error_detail", ""))
+
+    def test_uuid_used_in_request_url(self):
+        """The LHDN UUID from the document appears in the GET request URL."""
+        mod = self._import_module()
+
+        test_uuid = "abc-123-def-456"
+
+        mock_doc = MagicMock()
+        mock_doc.custom_lhdn_uuid = test_uuid
+
+        mock_company = MagicMock()
+        mock_company.custom_sandbox_url = "https://sandbox.myinvois.hasil.gov.my"
+        mock_company.custom_client_id = "test_client"
+        mock_company.custom_client_secret = "test_secret"
+
+        # Token response
+        mock_token_resp = MagicMock()
+        mock_token_resp.ok = True
+        mock_token_resp.json.return_value = {"access_token": "dummy_token"}
+
+        # Document response
+        mock_doc_resp = MagicMock()
+        mock_doc_resp.ok = True
+        mock_doc_resp.text = "<Invoice>test xml</Invoice>"
+
+        with patch(f"{self._MODULE}.frappe.get_roles", return_value=["System Manager"]):
+            with patch(f"{self._MODULE}.frappe.get_doc", side_effect=[mock_doc, mock_company]):
+                with patch(f"{self._MODULE}.frappe.db") as mock_db:
+                    mock_db.get_value.return_value = "Test Company"
+                    with patch(f"{self._MODULE}.requests.post", return_value=mock_token_resp):
+                        with patch(f"{self._MODULE}.requests.get", return_value=mock_doc_resp) as mock_get:
+                            result = mod.retrieve_lhdn_document("Sal Slip/Test/00001", "Salary Slip")
+
+        # UUID must appear in the GET request URL
+        call_url = mock_get.call_args[0][0]
+        self.assertIn(test_uuid, call_url, f"UUID '{test_uuid}' not found in GET URL: {call_url}")
+
+    def test_response_stored_in_custom_field(self):
+        """Raw XML response is saved to custom_lhdn_raw_document via db.set_value."""
+        mod = self._import_module()
+
+        test_uuid = "uuid-987"
+        expected_xml = "<Invoice>validated xml content</Invoice>"
+
+        mock_doc = MagicMock()
+        mock_doc.custom_lhdn_uuid = test_uuid
+
+        mock_company = MagicMock()
+        mock_company.custom_sandbox_url = "https://sandbox.myinvois.hasil.gov.my"
+        mock_company.custom_client_id = "cid"
+        mock_company.custom_client_secret = "csec"
+
+        mock_token_resp = MagicMock()
+        mock_token_resp.ok = True
+        mock_token_resp.json.return_value = {"access_token": "tok"}
+
+        mock_doc_resp = MagicMock()
+        mock_doc_resp.ok = True
+        mock_doc_resp.text = expected_xml
+
+        with patch(f"{self._MODULE}.frappe.get_roles", return_value=["System Manager"]):
+            with patch(f"{self._MODULE}.frappe.get_doc", side_effect=[mock_doc, mock_company]):
+                with patch(f"{self._MODULE}.frappe.db") as mock_db:
+                    mock_db.get_value.return_value = "Test Company"
+                    with patch(f"{self._MODULE}.requests.post", return_value=mock_token_resp):
+                        with patch(f"{self._MODULE}.requests.get", return_value=mock_doc_resp):
+                            result = mod.retrieve_lhdn_document("Sal Slip/Test/00001", "Salary Slip")
+
+        self.assertTrue(result["success"], f"Expected success but got: {result}")
+        self.assertEqual(result["raw_xml"], expected_xml)
+
+        # db.set_value must have been called with the raw XML
+        set_value_calls = [str(c) for c in mock_db.set_value.call_args_list]
+        xml_stored = any(expected_xml in c for c in set_value_calls)
+        self.assertTrue(xml_stored, f"Expected raw XML in db.set_value calls: {set_value_calls}")

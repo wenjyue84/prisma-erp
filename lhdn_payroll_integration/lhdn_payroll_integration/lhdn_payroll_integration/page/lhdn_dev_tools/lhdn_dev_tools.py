@@ -248,3 +248,69 @@ def get_recent_submissions(status_filter=None):
     combined = salary_slips + expense_claims
     combined.sort(key=lambda r: r.get("posting_date") or "", reverse=True)
     return combined[:20]
+
+
+@frappe.whitelist()
+def retrieve_lhdn_document(docname, doctype="Salary Slip"):
+    """Retrieve the validated XML for a document from the LHDN portal.
+
+    Calls GET {base_url}/api/v1.0/documents/{uuid}/raw with a bearer token
+    obtained from the company credentials, then stores the response in the
+    document's custom_lhdn_raw_document field.
+
+    Args:
+        docname: Document name (Salary Slip or Expense Claim).
+        doctype: 'Salary Slip' or 'Expense Claim' (default: 'Salary Slip').
+
+    Returns:
+        dict: {success, raw_xml} on success or {success, error_detail} on failure.
+    """
+    _assert_system_manager()
+
+    doc = frappe.get_doc(doctype, docname)
+    uuid = getattr(doc, "custom_lhdn_uuid", None)
+    if not uuid:
+        return {"success": False, "error_detail": f"No LHDN UUID on {doctype} {docname}"}
+
+    company_name = frappe.db.get_value("Company", {"is_group": 0}, "name")
+    if not company_name:
+        return {"success": False, "error_detail": "No company found"}
+
+    company = frappe.get_doc("Company", company_name)
+    base_url = (company.custom_sandbox_url or "").rstrip("/")
+    client_id = company.custom_client_id or ""
+    client_secret = company.custom_client_secret or ""
+
+    # Obtain bearer token
+    token_url = f"{base_url}/connect/token"
+    token_payload = {
+        "grant_type": "client_credentials",
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "scope": "InvoicingAPI",
+    }
+    try:
+        token_resp = requests.post(token_url, data=token_payload, timeout=10)
+        token_resp.raise_for_status()
+        access_token = token_resp.json().get("access_token", "")
+    except Exception as exc:
+        return {"success": False, "error_detail": f"Token fetch failed: {exc}"}
+
+    # Retrieve raw document XML
+    doc_url = f"{base_url}/api/v1.0/documents/{uuid}/raw"
+    try:
+        doc_resp = requests.get(
+            doc_url,
+            headers={"Authorization": f"Bearer {access_token}"},
+            timeout=15,
+        )
+        doc_resp.raise_for_status()
+        raw_xml = doc_resp.text
+    except Exception as exc:
+        return {"success": False, "error_detail": f"Document retrieval failed: {exc}"}
+
+    # Persist the raw XML on the document
+    frappe.db.set_value(doctype, docname, "custom_lhdn_raw_document", raw_xml)
+    frappe.db.commit()
+
+    return {"success": True, "raw_xml": raw_xml}

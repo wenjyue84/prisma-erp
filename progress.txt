@@ -3969,3 +3969,61 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 2
 
 ### Gotchas
 - `bench sync_fixtures` command does not exist; use `bench execute frappe.utils.fixtures.sync_fixtures`
+
+
+## Iteration — US-039 + US-040: Nationality field + SST registration field
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 67/67 tests pass, 0 failures, 0 errors
+
+### Files verified/synced
+- `custom_field.json` — Employee-custom_nationality_code (Data, len=2, depends_on: eval:doc.custom_is_foreign_worker) already present
+- `custom_field.json` — Employee-custom_sst_registration_number (Data, depends_on: eval:doc.custom_requires_self_billed_invoice) already present
+- `services/payload_builder.py` — nationality code logic already present (lines 178-181)
+- `tests/test_payload_builder.py` — nationality + SST tests already written (TestNationalityCode, TestSSTHandling)
+
+### Root cause of pre-existing failure
+- NESTED test file (`lhdn_payroll_integration/lhdn_payroll_integration/tests/`) was OUT OF SYNC with OUTER test file
+- Bench runs the NESTED test but imports OUTER payload_builder
+- NESTED test's TestPaymentMeans._make_employee() didn't set `custom_payment_means_code = ''`
+- OUTER payload_builder was updated to read custom_payment_means_code but NESTED test wasn't synced
+
+### Fix applied
+- Synced nested test file: docker cp outer → nested for test_payload_builder.py
+- Synced nested payload_builder.py: docker cp outer → nested
+- Synced nested custom_field.json: docker cp outer → nested
+- Cleared all pyc cache: find ... -name '*.pyc' -delete
+
+### Patterns discovered
+- The NESTED test and OUTER service diverge whenever only one path is updated
+- Must ALWAYS sync both paths — this is the #1 source of confusing test failures
+- Clear pyc cache after any sync to avoid stale compiled modules
+## Iteration 19 - Fri, Feb 27, 2026  2:40:48 PM
+Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 1/3
+
+
+## Iteration N — US-038: Implement LHDN portal document retrieval for audit verification
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_dev_tools_page`
+**Result:** PASS — 23 tests pass (including 4 new TestRetrieveLhdnDocument tests)
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/page/lhdn_dev_tools/lhdn_dev_tools.py` — Added `retrieve_lhdn_document(docname, doctype)` whitelisted method
+- `lhdn_payroll_integration/tests/test_dev_tools_page.py` — Added `TestRetrieveLhdnDocument` class (4 tests)
+
+### Implementation notes
+- JS panel (7 — Retrieve from LHDN) was already implemented in lhdn_dev_tools.js
+- `custom_lhdn_raw_document` fields already existed in custom_field.json fixture
+- Only backend Python method needed to be added
+- Flow: assert SM role → get doc UUID → get company auth token → GET /api/v1.0/documents/{uuid}/raw → db.set_value on custom_lhdn_raw_document
+
+### Patterns discovered
+- No change to custom_field.json required (fixture already had raw document fields)
+- No bench migrate needed since no new DocType/field changes
+
+### Gotchas
+- Outer tests path (`/lhdn_payroll_integration/lhdn_payroll_integration/tests/`) requires `docker exec -u root cp` to write
