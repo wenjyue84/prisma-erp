@@ -2734,3 +2734,6 @@ Completed: Add AdditionalDocumentReference for registration ID in XML (ID: US-00
 ### Gotchas
 - `custom_token_expires_at` field was already in the fixture (added in a prior session) — no schema migration needed
 - Existing process_salary_slip tests that mock frappe but NOT get_access_token needed the TypeError guard
+## Iteration 2 - Fri, Feb 27, 2026 10:33:35 AM
+Completed: Implement PCB/MTD monthly calculation validation (ID: US-004) in 4m
+
