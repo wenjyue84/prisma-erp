@@ -3043,3 +3043,31 @@ Completed: Generate CP39 monthly PCB remittance file (ID: US-012) in 7m
 ### Gotchas
 - Employee creation needs `date_of_birth` mandatory field
 - `_get_deduction_total` uses placeholder list + component name as positional SQL args
+
+## Iteration N — US-014: Generate Borang E (Form E) employer annual return
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_borang_e`
+**Result:** PASS — 7 pass, 7 skip (no submitted slips for _Test Company 2026), 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/borang_e/__init__.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/borang_e/borang_e.json` — Script Report definition
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/borang_e/borang_e.py` — Report logic
+- `lhdn_payroll_integration/tests/test_borang_e.py` — 14 tests
+
+### Design
+- Imports EA Form `get_data()` to avoid code duplication
+- Output: Row 0 = Summary (company totals), Rows 1+ = CP8D detail (per-employee)
+- `row_type` column distinguishes "Summary" vs "CP8D" rows
+- EPF Employer / SOCSO Employer totalled via `_get_employer_component_total()` (searches both earnings/deductions parentfields)
+- `total_employees`, `total_gross`, `total_pcb` in summary verified to match sum of EA Form data
+
+### Patterns discovered
+- Script Reports reuse existing report functions (e.g., EA Form `get_data`) directly
+- Reports must be registered via `bench migrate` after adding new .json fixture
+
+### Gotchas
+- Skipped tests (7/14) are expected: no submitted Salary Slips in `_Test Company` for 2026
+- All skips have explicit `skipTest()` calls with descriptive messages
