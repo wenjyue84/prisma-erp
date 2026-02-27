@@ -1,0 +1,143 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "naming_series:",
+  "creation": "2026-02-27 00:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "naming_series",
+    "employee",
+    "employee_name",
+    "company",
+    "date_of_birth",
+    "age_at_cessation",
+    "cessation_date",
+    "reason",
+    "status",
+    "remarks"
+  ],
+  "fields": [
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Series",
+      "options": "CP22A-.YYYY.-",
+      "default": "CP22A-.YYYY.-"
+    },
+    {
+      "fieldname": "employee",
+      "fieldtype": "Link",
+      "label": "Employee",
+      "options": "Employee",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "employee_name",
+      "fieldtype": "Data",
+      "label": "Employee Name",
+      "fetch_from": "employee.employee_name",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "label": "Company",
+      "options": "Company",
+      "fetch_from": "employee.company",
+      "read_only": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "date_of_birth",
+      "fieldtype": "Date",
+      "label": "Date of Birth",
+      "fetch_from": "employee.date_of_birth",
+      "read_only": 1
+    },
+    {
+      "fieldname": "age_at_cessation",
+      "fieldtype": "Int",
+      "label": "Age at Cessation",
+      "read_only": 1,
+      "in_list_view": 1,
+      "description": "Employee age in years at cessation date."
+    },
+    {
+      "fieldname": "cessation_date",
+      "fieldtype": "Date",
+      "label": "Cessation Date",
+      "reqd": 1,
+      "in_list_view": 1,
+      "description": "Date of retirement, resignation, or cessation of employment."
+    },
+    {
+      "fieldname": "reason",
+      "fieldtype": "Select",
+      "label": "Reason",
+      "options": "\nRetirement\nResignation\nRetrenchment\nDeath",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "label": "Status",
+      "options": "\nPending\nSubmitted",
+      "default": "Pending",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "remarks",
+      "fieldtype": "Small Text",
+      "label": "Remarks"
+    }
+  ],
+  "links": [],
+  "modified": "2026-02-27 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "LHDN Payroll Integration",
+  "name": "LHDN CP22A",
+  "naming_rule": "By \"Naming Series\" field",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "HR Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "read": 1,
+      "print": 1,
+      "role": "HR User"
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "title_field": "employee_name",
+  "track_changes": 1
+}

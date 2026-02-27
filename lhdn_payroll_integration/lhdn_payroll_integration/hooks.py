@@ -36,7 +36,11 @@ doc_events = {
 	},
 	"Employee": {
 		"validate": "lhdn_payroll_integration.utils.validation.validate_document_for_lhdn",
-		"on_update": "lhdn_payroll_integration.services.cp21_service.handle_employee_left",
+		"after_insert": "lhdn_payroll_integration.services.cp22_service.handle_employee_after_insert",
+		"on_update": [
+			"lhdn_payroll_integration.services.cp21_service.handle_employee_left",
+			"lhdn_payroll_integration.services.cp22_service.handle_employee_status_change",
+		],
 	},
 }
 
@@ -44,6 +48,9 @@ doc_events = {
 # ---------------
 
 scheduler_events = {
+	"daily": [
+		"lhdn_payroll_integration.services.cp22_service.check_overdue_cp22",
+	],
 	"hourly": [
 		"lhdn_payroll_integration.services.status_poller.poll_pending_documents",
 	],

@@ -3693,3 +3693,33 @@ Completed: Fix alpha-only docnames producing duplicate codeNumber (ID: US-043) i
 ## Iteration 12 - Fri, Feb 27, 2026  1:32:58 PM
 Completed: Add before_amend retention lock to Expense Claim (ID: US-045) in 4m
 
+## Iteration 14 - Fri, Feb 27, 2026  1:34:22 PM
+Completed: Fix alpha-only docnames producing duplicate codeNumber (ID: US-043) in 13m
+
+
+## Iteration — US-033: Add CP22/CP22A handling for new hire and retirement notifications
+
+**Type:** IMPL (gap closure)
+**TDD Phase:** GREEN (14/14 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_cp22`
+**Result:** PASS — 14/14 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/doctype/lhdn_cp22/` — New doctype (JSON, py, __init__)
+- `lhdn_payroll_integration/doctype/lhdn_cp22a/` — New doctype (JSON, py, __init__)
+- `services/cp22_service.py` — handle_employee_after_insert, handle_employee_status_change, check_overdue_cp22
+- `hooks.py` — Added Employee after_insert + extended on_update list + daily scheduler
+- `tests/test_cp22.py` — 14 tests: CP22 auto-creation (5), CP22A auto-creation (7), overdue check (2)
+
+### What was implemented
+1. **LHDN CP22** doctype auto-created on Employee insert when custom_requires_self_billed_invoice=1
+2. Filing deadline = date_of_joining + 30 days; overdue detection via daily scheduler
+3. **LHDN CP22A** doctype auto-created when employee aged >=55 set to Left
+4. Age calculated from date_of_birth vs relieving_date (or today)
+5. Duplicate prevention for both CP22 and CP22A
+6. Employee hooks: after_insert for CP22, on_update (list) for CP21 + CP22A
+
+### Gotchas
+- `doc.relieving_date` is a string in Frappe — must wrap with `getdate()` before accessing .year/.month/.day
+- Mock `frappe.get_all` returns regular dicts, not frappe._dict — use `record["name"]` not `record.name` for mock compatibility
+- `bench migrate` orphan-deletes the LHDN Payroll workspace (known issue) — workspace fixture must be re-synced separately
