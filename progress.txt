@@ -9,6 +9,7 @@
 - CRITICAL: Two copies of services/ exist in container: outer path (non-nested) and nested Frappe module path. Tests import from `lhdn_payroll_integration.lhdn_payroll_integration.services.*` which resolves to the NESTED path. Always update BOTH or use `docker exec -u root cp` to sync them.
 - MagicMock auto-creates any attribute as truthy — when testing employee flags (Check fields), explicitly set mock attributes (e.g., `employee.custom_is_non_resident = 0`) to prevent false-positive truthy evaluation.
 - `docker cp` on Windows/MINGW: use forward slashes (C:/...) for host paths
+- `docker cp` of entire directories into doctype folders creates nested subdirs (e.g., lhdn_cp22/lhdn_cp22/) that cause Frappe migrate to treat DocTypes as orphans. Copy individual files instead.
 
 ---
 
@@ -3723,3 +3724,34 @@ Completed: Fix alpha-only docnames producing duplicate codeNumber (ID: US-043) i
 - `doc.relieving_date` is a string in Frappe — must wrap with `getdate()` before accessing .year/.month/.day
 - Mock `frappe.get_all` returns regular dicts, not frappe._dict — use `record["name"]` not `record.name` for mock compatibility
 - `bench migrate` orphan-deletes the LHDN Payroll workspace (known issue) — workspace fixture must be re-synced separately
+## Iteration 13 - Fri, Feb 27, 2026  1:42:43 PM
+Incomplete: Add EIS, HRDF, and common allowance salary components to fixture (ID: US-046) — attempt 1/3
+
+
+## Iteration — US-033: Add CP22/CP22A handling for new hire and retirement notifications
+
+**Type:** IMPL (gap-closure)
+**TDD Phase:** GREEN (all 16 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cp22`
+**Result:** PASS — 16/16 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_cp22.py` — 16 tests across 4 test classes
+- `lhdn_payroll_integration/lhdn_payroll_integration/hooks.py` — Already had CP22 hooks registered (after_insert, on_update list, daily scheduler)
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/cp22_service.py` — Already existed with handle_employee_after_insert, handle_employee_status_change, check_overdue_cp22
+- DocTypes `LHDN CP22` and `LHDN CP22A` already existed with JSON/py definitions
+
+### Test coverage (16 tests)
+- TestCP22AutoCreation: CP22 creation when self_billed=1, no creation when =0, no creation without joining date, duplicate prevention, filing deadline 30 days
+- TestCP22AAutoCreation: CP22A creation for age>=55 Left, no creation for young, no creation when not Left, no creation without DOB, duplicate prevention, age boundary test
+- TestCP22OverdueCheck: overdue records marked, no commit when none overdue
+- TestCP22HooksRegistration: after_insert registered, on_update list includes CP22, daily scheduler includes overdue check
+
+### Patterns discovered
+- `docker cp` of entire directories creates nested subdirectories (e.g., lhdn_cp22/lhdn_cp22/) which causes Frappe migrate to treat DocTypes as orphans and delete them. Always copy individual files or verify directory structure after docker cp.
+- Frappe migrate orphan-deletes DocTypes that have unexpected nested directory structures in the doctype folder.
+- Use `docker exec -u root` for rm operations on files created by `docker cp` (owned by root).
+
+### Gotchas
+- First migrate attempt hit a lock file; must `rm -f sites/frontend/locks/bench_migrate.lock` before retry
+- Nested subdirectories inside doctype folders (from docker cp of dirs) cause Frappe to not recognize the DocType → orphan deletion
