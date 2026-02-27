@@ -3217,3 +3217,25 @@ Completed: Add bonus/irregular payment classification for PCB differentiation (I
 ### Gotchas
 - Container test file was stale (missing explicit `custom_is_non_resident = 0` on mocks) → local file was already fixed → just needed a docker cp
 - The `validate_pcb_amount()` non-resident code was already in the container's pcb_calculator.py; only the tests needed updating
+
+## Iteration N — US-020: Distinguish director fee vs director salary at invoice level
+
+**Type:** IMPL
+**TDD Phase:** GREEN (10/10 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_director_payment_type`
+**Result:** PASS — 10 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `fixtures/custom_field.json` — `custom_director_payment_type` (Select) on Employee already present
+- `services/exemption_filter.py` (outer) — `get_default_classification_code(employee=None)` already implemented
+- `lhdn_payroll_integration/services/exemption_filter.py` (nested) — synced from outer copy (was stale, missing `employee=None`)
+
+### Patterns discovered
+- The app has a NESTED duplicate directory: `apps/lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/`
+- Tests importing from `lhdn_payroll_integration.lhdn_payroll_integration.services.*` resolve to this nested path
+- The nested path files are root-owned (not writable by frappe user) — must use `docker cp` to update them
+- Always sync both copies when updating services that are imported via the double-path pattern
+
+### Gotchas
+- `exemption_filter.py` in nested dir was stale (original version without `employee` param)
+- `docker exec cp` fails with permission denied on root-owned nested files — use `docker cp` from host instead
