@@ -3170,3 +3170,26 @@ Completed: Generate EPF Borang A monthly contribution schedule (ID: US-015) in 7
 
 ## Iteration 4 - Fri, Feb 27, 2026
 Completed: Generate SOCSO Borang 8A monthly contribution schedule (ID: US-016)
+## Iteration 3 - Fri, Feb 27, 2026 12:08:20 PM
+Completed: Generate SOCSO Borang 8A monthly contribution schedule (ID: US-016) in 8m
+
+
+## Iteration N — US-018: Add bonus/irregular payment classification for PCB differentiation
+
+**Type:** IMPL
+**TDD Phase:** GREEN (27/27 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 27 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `fixtures/custom_field.json` — Added `Salary Component-custom_is_irregular_payment` (Check, default 0, insert_after custom_is_pcb_component)
+- `services/pcb_calculator.py` — Added `bonus_amount: float = 0.0` param; one-twelfth annualisation rule for residents; flat 30% lump for non-residents
+- `tests/test_pcb_calculator.py` — Added `TestCalculatePcbBonus` class (8 tests)
+
+### Patterns discovered
+- Non-resident bonus PCB = bonus * 30% (full lump, NOT divided by 12)
+- Resident bonus PCB = tax_on(annual + bonus - reliefs) - tax_on(annual - reliefs), added to regular monthly
+- Backward compatible: bonus_amount defaults to 0.0, existing calls unchanged
+
+### Gotchas
+- `bench migrate` needed after custom_field.json change to apply fixture to DB

@@ -17,6 +17,12 @@ Tax bands (Assessment Year 2024 — Jadual PCB):
     26%     : above 2,000,000
 
 Non-resident: flat 30% on gross income (no reliefs applied).
+
+Irregular payments (bonus, commission, gratuity):
+    PCB computed using one-twelfth annualisation rule per LHDN Schedule D:
+    bonus_pcb = tax_on(annual_income + bonus_amount - reliefs)
+                - tax_on(annual_income - reliefs)
+    Total PCB for that period = regular_monthly_pcb + bonus_pcb
 """
 import frappe
 
@@ -73,29 +79,45 @@ def calculate_pcb(
     resident: bool = True,
     married: bool = False,
     children: int = 0,
+    bonus_amount: float = 0.0,
 ) -> float:
     """Calculate monthly PCB/MTD deduction amount.
 
     Applies standard reliefs for residents then uses LHDN progressive bands.
     Non-residents are taxed at flat 30% on gross income.
 
+    For irregular payments (bonus, commission, gratuity), pass bonus_amount.
+    The function applies the one-twelfth annualisation rule per LHDN Schedule D:
+    the returned value is the regular monthly PCB plus the incremental tax on
+    the bonus, computed as:
+        bonus_pcb = tax_on(annual_income + bonus_amount - reliefs)
+                    - tax_on(annual_income - reliefs)
+
     Args:
         annual_income: Gross annual employment income (RM).
         resident: True if employee is a tax resident of Malaysia.
         married: True if employee is married (spouse relief applies).
         children: Number of qualifying children (RM2,000 each).
+        bonus_amount: One-off irregular payment amount (RM) such as bonus,
+            commission, or gratuity. When provided, triggers LHDN Schedule D
+            annualisation rule and adds incremental bonus PCB to the return value.
 
     Returns:
         float: Monthly PCB amount (RM), rounded to 2 decimal places.
-               Returns 0.0 for zero or negative income.
+               When bonus_amount > 0, includes both the regular monthly PCB
+               and the full incremental bonus PCB for that payment period.
+               Returns 0.0 for zero or negative income (with no bonus).
     """
-    if annual_income <= 0:
+    if annual_income <= 0 and bonus_amount <= 0:
         return 0.0
 
     if not resident:
         # Non-resident: flat 30%, no reliefs
-        annual_tax = annual_income * 0.30
-        return round(annual_tax / 12, 2)
+        # Regular monthly PCB on annual income
+        regular_monthly = (annual_income * 0.30) / 12 if annual_income > 0 else 0.0
+        # Bonus PCB is the full bonus taxed at 30% (lump sum, not divided by 12)
+        bonus_pcb = bonus_amount * 0.30 if bonus_amount > 0 else 0.0
+        return round(regular_monthly + bonus_pcb, 2)
 
     # Resident: apply personal reliefs before tax computation
     total_relief = _SELF_RELIEF
@@ -105,7 +127,18 @@ def calculate_pcb(
 
     chargeable_income = max(0.0, annual_income - total_relief)
     annual_tax = _compute_tax_on_chargeable_income(chargeable_income)
-    return round(annual_tax / 12, 2)
+    regular_monthly_pcb = annual_tax / 12
+
+    if bonus_amount > 0:
+        # LHDN Schedule D one-twelfth annualisation rule:
+        # Annualise: monthly_salary * 12 + bonus = annual_income + bonus_amount
+        # Bonus PCB = tax_on(annual_income + bonus_amount) - tax_on(annual_income)
+        total_chargeable = max(0.0, annual_income + bonus_amount - total_relief)
+        tax_with_bonus = _compute_tax_on_chargeable_income(total_chargeable)
+        bonus_pcb = tax_with_bonus - annual_tax
+        return round(regular_monthly_pcb + bonus_pcb, 2)
+
+    return round(regular_monthly_pcb, 2)
 
 
 @frappe.whitelist()

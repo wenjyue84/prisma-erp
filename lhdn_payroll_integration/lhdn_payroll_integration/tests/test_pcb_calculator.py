@@ -1,4 +1,4 @@
-"""Tests for PCB/MTD calculator — US-004.
+"""Tests for PCB/MTD calculator — US-004 and US-018.
 
 Covers:
 - Single resident: progressive tax bands
@@ -6,6 +6,7 @@ Covers:
 - Non-resident: flat 30%
 - Zero income: returns 0.0
 - validate_pcb_amount: returns warning dict
+- Bonus/irregular payment: one-twelfth annualisation rule (US-018)
 """
 from unittest.mock import MagicMock, patch
 
@@ -248,3 +249,101 @@ class TestValidatePcbAmount(FrappeTestCase):
         self.assertFalse(result["warning"])
         self.assertEqual(result["expected_monthly_pcb"], 0.0)
         self.assertEqual(result["actual_pcb"], 0.0)
+
+
+class TestCalculatePcbBonus(FrappeTestCase):
+    """Test calculate_pcb() with bonus_amount (US-018 — irregular payment PCB).
+
+    LHDN Schedule D one-twelfth annualisation rule:
+      bonus_pcb = tax_on(annual_income + bonus_amount - reliefs)
+                  - tax_on(annual_income - reliefs)
+      total_pcb = regular_monthly_pcb + bonus_pcb
+    """
+
+    def test_bonus_pcb_differs_from_regular_same_income(self):
+        """Bonus PCB for same annual income must be greater than regular monthly PCB."""
+        annual = 60_000
+        bonus = 5_000
+        regular = calculate_pcb(annual, resident=True)
+        with_bonus = calculate_pcb(annual, resident=True, bonus_amount=bonus)
+        self.assertGreater(with_bonus, regular)
+
+    def test_zero_bonus_equals_regular_pcb(self):
+        """Passing bonus_amount=0 must return same value as no bonus_amount."""
+        annual = 60_000
+        regular = calculate_pcb(annual, resident=True)
+        explicit_zero = calculate_pcb(annual, resident=True, bonus_amount=0.0)
+        self.assertAlmostEqual(regular, explicit_zero, places=2)
+
+    def test_bonus_pcb_annualisation_calculation_single_resident(self):
+        """Verify mathematical correctness of bonus PCB for single resident.
+
+        annual_income = 60,000; bonus = 10,000; self-relief = 9,000
+        Regular:
+          chargeable = 60,000 - 9,000 = 51,000
+          tax = 0 + 150 + 450 + 1200 + 130 = 1,930
+          monthly = 1,930 / 12
+
+        With bonus:
+          total = 70,000; chargeable = 70,000 - 9,000 = 61,000
+          tax:
+            0%  on  5,000  =     0
+            1%  on 15,000  =   150
+            3%  on 15,000  =   450
+            8%  on 15,000  = 1,200
+            13% on 11,000  = 1,430
+            Total = 3,230
+          bonus_pcb = 3,230 - 1,930 = 1,300
+          total_pcb = 1,930/12 + 1,300
+        """
+        annual = 60_000
+        bonus = 10_000
+        result = calculate_pcb(annual, resident=True, bonus_amount=bonus)
+
+        regular_monthly = 1_930 / 12
+        bonus_pcb = 3_230 - 1_930  # = 1,300
+        expected = round(regular_monthly + bonus_pcb, 2)
+        self.assertAlmostEqual(result, expected, places=2)
+
+    def test_bonus_pcb_higher_band_jumps(self):
+        """Large bonus pushing income into a higher tax band produces larger PCB."""
+        annual = 60_000
+        small_bonus = calculate_pcb(annual, resident=True, bonus_amount=5_000)
+        large_bonus = calculate_pcb(annual, resident=True, bonus_amount=50_000)
+        self.assertGreater(large_bonus, small_bonus)
+
+    def test_bonus_pcb_married_with_children_reduces_tax(self):
+        """Married-with-children reliefs also reduce bonus PCB vs single."""
+        annual = 60_000
+        bonus = 10_000
+        single_pcb = calculate_pcb(annual, resident=True, married=False, children=0, bonus_amount=bonus)
+        married_pcb = calculate_pcb(annual, resident=True, married=True, children=2, bonus_amount=bonus)
+        self.assertGreater(single_pcb, married_pcb)
+
+    def test_bonus_pcb_non_resident_flat_30(self):
+        """Non-resident bonus PCB = bonus * 30% (full flat rate, not divided by 12)."""
+        annual = 60_000
+        bonus = 10_000
+        result = calculate_pcb(annual, resident=False, bonus_amount=bonus)
+        expected_regular = (annual * 0.30) / 12
+        expected_bonus_pcb = bonus * 0.30
+        expected = round(expected_regular + expected_bonus_pcb, 2)
+        self.assertAlmostEqual(result, expected, places=2)
+
+    def test_bonus_only_no_regular_income(self):
+        """Bonus with zero annual income: only bonus tax applies."""
+        bonus = 10_000
+        result = calculate_pcb(0, resident=True, bonus_amount=bonus)
+        # chargeable = max(0, 0 + 10000 - 9000) = 1000; at 0% band → 0 tax
+        # regular_monthly = 0
+        # bonus_pcb = 0 - 0 = 0
+        self.assertAlmostEqual(result, 0.0, places=2)
+
+    def test_large_bonus_exceeds_regular_pcb_by_significant_amount(self):
+        """Bonus of RM 50,000 on RM 60,000 annual income produces substantial additional PCB."""
+        annual = 60_000
+        bonus = 50_000
+        regular = calculate_pcb(annual, resident=True)
+        with_bonus = calculate_pcb(annual, resident=True, bonus_amount=bonus)
+        # Bonus alone should add at least RM 1,000 of additional PCB
+        self.assertGreater(with_bonus - regular, 1_000)

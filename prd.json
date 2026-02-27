@@ -372,7 +372,7 @@
         "US-004"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-019",
