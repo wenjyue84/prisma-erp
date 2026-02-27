@@ -117,19 +117,87 @@
   │ [2/2] bench run-tests... SKIP (no bench module in acceptance criteria)
   └────────────────────────────────────────────┘
   ✓ Quality gates passed (bench check skipped)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   [2m[5:48][0m 🔧 [36mEdit[0m [2mtest_payload_builder.py[0m
-[2m[5:53][0m [37mNow copy both files to the container and run the tests:[0m
-[2m[5:56][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
-[2m[6:03][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m
-[2m[6:10][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-[2m[6:33][0m [37mAll tests pass, but let me verify the new `TestAdditionalDocumentReference` class specifically ran:[0m
-[2m[6:34][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-[2m[6:44][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-[2m[6:54][0m [37mAll 5 new tests pass. Now update `prd.json` to mark US-002 complete:[0m
-[2m[6:56][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
-[2m[7:01][0m [37mNow update `progress.txt`:[0m
-[2m[7:02][0m 📖 [36mRead[0m [2mprogress.txt[0m
-[2m[7:06][0m 💻 [36mBash[0m [2mtail -5 /c/Users/Jyue/Documents/1-projects/Projects/prisma-e...[0m
+[feature/lhdn-gap-closure 1464960] feat: US-002 - Add AdditionalDocumentReference for registration ID in XML
+ 2 files changed, 342 insertions(+)
+ create mode 100644 tmp_us003/submission_service.py
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 2/60
+  Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 3/50 (6%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       US-004
+  │ Title:    Implement PCB/MTD monthly calculation validation
+  │ Priority: critical
+  │ Deps:     none
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for US-004...
+  ─────── Claude Output Start ──────────
+
+  ╔══════════════════════════════════════════╗
+  ║   📊 15-MIN PROGRESS REPORT — 10:29  ║
+  ╠══════════════════════════════════════════╣
+  ║  Completed:  3 / 50 stories
+  ║  Remaining:  47 stories
+  ║
+  ║  Recently done:
+  ║    ✓ [US-001] Add schemeID attribute to PartyIdentification/ID elements
+  ║    ✓ [US-002] Add AdditionalDocumentReference for registration ID in XML
+  ║    ✓ [US-003] Fix token expiry check and status poller base_url bug
+  ║
+  ║  Up next:
+  ║    → [US-004] Implement PCB/MTD monthly calculation validation
+  ║    → [US-005] Implement NRIC format validation on Employee save
+  ║    → [US-006] Add IssueTime element to Invoice header
+  ╚══════════════════════════════════════════╝
+
+[2m[0:59][0m 💻 [36mBash[0m [2mhead -80 /c/Users/Jyue/Documents/1-projects/Projects/prisma-...[0m
+[2m[1:02][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:17][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:22][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:28][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:32][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
+[2m[1:39][0m [37mGood, container is running. Now let me check existing service files before implementing:[0m
+[2m[1:40][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:41][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:46][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:47][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:59][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[2:19][0m [37mNow I have a clear picture. Let me implement US-004:[0m
+[2m[2:19][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[2:52][0m ✏️ [36mWrite[0m [2mpcb_calculator.py[0m
+[2m[3:32][0m ✏️ [36mWrite[0m [2mtest_pcb_calculator.py[0m
+[2m[3:38][0m [37mNow copy both files into the container:[0m
+[2m[3:40][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[3:44][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:45][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[3:53][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[4:00][0m [37mAll 19 tests pass. Now mark US-004 complete and commit:[0m
+[2m[4:03][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[4:08][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[4:20][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[4:28][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[4:34][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[4:44][0m [37mUS-004 is done. Here's the summary:  ---  **US-004: PCB/MTD Monthly Calculation Validation — COMPLET...[0m
+
+[32m[1m✓ Claude finished[0m [2m(23 tool calls in 4:44)[0m
+
+[2mStream ended (23 tool calls, 4:47 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 4m
+
+  [done] Story completed: Implement PCB/MTD monthly calculation validation
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... SKIP (no bench module in acceptance criteria)
+  └────────────────────────────────────────────┘
+  ✓ Quality gates passed (bench check skipped)
+cuments/1-projects/Projects/prisma-e...[0m
 [2m[7:19][0m 🔧 [36mEdit[0m [2mprogress.txt[0m
 [2m[7:24][0m [37mNow commit:[0m
 [2m[7:25][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
@@ -197,3 +265,60 @@
 [2m[6:43][0m [37mNow I have all the information needed. Let me write the updated files:[0m
 [2m[6:44][0m 💻 [36mBash[0m [2mmkdir -p /tmp/us003[0m
 [2m[7:32][0m ✏️ [36mWrite[0m [2msubmission_service.py[0m
+[2m[7:59][0m ✏️ [36mWrite[0m [2mstatus_poller.py[0m
+[2m[8:11][0m [37mNow write the new tests. First, add new test class to `test_submission_service.py`:[0m
+[2m[8:38][0m ✏️ [36mWrite[0m [2mtest_token_expiry.py[0m
+[2m[8:42][0m [37mNow write new tests for `_get_base_url(company_name)`:[0m
+[2m[8:51][0m ✏️ [36mWrite[0m [2mtest_status_poller_base_url.py[0m
+[2m[8:54][0m [37mNow add `custom_token_expires_at` to the fixture. I'll append it to the JSON array:[0m
+[2m[8:59][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c " python3 -c \" imp...[0m
+[2m[9:06][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[9:53][0m [37mGood - `custom_token_expires_at` already exists in the fixture. Now copy the updated source files:[0m
+[2m[9:55][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[10:02][0m 💻 [36mBash[0m [2mAPP_PATH="/home/frappe/frappe-bench/apps/lhdn_payroll_integr...[0m
+[2m[10:11][0m 💻 [36mBash[0m [2mls /tmp/us003/ && pwd[0m
+[2m[10:21][0m 💻 [36mBash[0m [2mmkdir -p ./tmp_us003 && ls ./tmp_us003[0m
+[2m[11:10][0m ✏️ [36mWrite[0m [2msubmission_service.py[0m
+[2m[11:54][0m ✏️ [36mWrite[0m [2mstatus_poller.py[0m
+
+  ╔══════════════════════════════════════════╗
+  ║   📊 15-MIN PROGRESS REPORT — 10:28  ║
+  ╠══════════════════════════════════════════╣
+  ║  Completed:  3 / 50 stories
+  ║  Remaining:  47 stories
+  ║
+  ║  Recently done:
+  ║    ✓ [US-001] Add schemeID attribute to PartyIdentification/ID elements
+  ║    ✓ [US-002] Add AdditionalDocumentReference for registration ID in XML
+  ║    ✓ [US-003] Fix token expiry check and status poller base_url bug
+  ║
+  ║  Up next:
+  ║    → [US-004] Implement PCB/MTD monthly calculation validation
+  ║    → [US-005] Implement NRIC format validation on Employee save
+  ║    → [US-006] Add IssueTime element to Invoice header
+  ╚══════════════════════════════════════════╝
+
+[2m[12:19][0m ✏️ [36mWrite[0m [2mtest_token_expiry.py[0m
+[2m[12:40][0m ✏️ [36mWrite[0m [2mtest_status_poller_base_url.py[0m
+[2m[12:51][0m [37mNow copy all files to the container using Windows-compatible paths:[0m
+[2m[12:55][0m 💻 [36mBash[0m [2mAPP_PATH="/home/frappe/frappe-bench/apps/lhdn_payroll_integr...[0m
+[2m[13:02][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[13:12][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[13:17][0m [37mNow run the new tests first, then the full suite:[0m
+[2m[13:18][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[13:34][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[13:42][0m [37mAll new tests pass. Now run the full suite to verify no regressions:[0m
+[2m[13:43][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[14:43][0m [37mThere are test failures - the existing tests don't mock `get_access_token` so MagicMock arithmetic f...[0m
+[2m[14:46][0m 🔧 [36mEdit[0m [2msubmission_service.py[0m
+[2m[14:53][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[15:01][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[15:08][0m [37mGood. Now run the full suite:[0m
+[2m[15:09][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[15:18][0m [37m533/533 tests pass. Now update prd.json and commit:[0m
+[2m[15:20][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[15:29][0m [37mNow pull the updated files from the container back to the repo (so local repo matches container), th...[0m
+[2m[15:34][0m 💻 [36mBash[0m [2mAPP_PATH="/home/frappe/frappe-bench/apps/lhdn_payroll_integr...[0m
+[2m[15:40][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[15:45][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[15:54][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
