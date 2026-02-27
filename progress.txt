@@ -2956,3 +2956,32 @@ Completed: Add IssueTime element to Invoice header (ID: US-006) in 13m
 ### Patterns discovered
 - When patching `submission_service` at consolidation_service level, any call to `mock_sub.*` satisfies `mock_sub.called == True`
 - Use `assert_called_once()` + `assert_not_called()` to distinguish consolidated vs individual submission in tests
+## Iteration 7 - Fri, Feb 27, 2026 11:07:50 AM
+Completed: Wire build_consolidated_xml() into consolidation_service (ID: US-011) in 10m
+
+
+## Iteration N — US-011: Wire build_consolidated_xml() into consolidation_service
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 12 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_consolidation`
+**Result:** PASS — 12/12 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/consolidation_service.py` — Replaced individual batch loop with `_submit_consolidated_batch()` helper; imports `build_consolidated_xml`, `prepare_submission_wrapper`, `requests`
+- `lhdn_payroll_integration/tests/test_consolidation.py` — Updated 3 existing tests to patch `_submit_consolidated_batch`; added new `test_single_http_call_for_batch_of_five_slips` test
+
+### Key design decisions
+- Extracted `_submit_consolidated_batch(batch_docnames, target_month, company_name)` helper — testable in isolation; called once from `run_monthly_consolidation()`
+- Added "company" to `frappe.get_all` fields for salary_slips — avoids extra `frappe.get_doc` call in the main loop
+- Used `frappe.log_error(title="LHDN Consolidation Log", ...)` for UUID tracking — avoids DocType creation
+- Expense Claims still submitted individually (build_consolidated_xml only supports Salary Slips)
+
+### Test strategy for `test_single_http_call_for_batch_of_five_slips`
+- Patches `consolidation_service.build_consolidated_xml`, `prepare_submission_wrapper`, `requests`, `frappe`, `submission_service`
+- Verifies `build_consolidated_xml.call_count == 1` and `requests.post.call_count == 1`
+- Verifies all 5 slips get `frappe.db.set_value(..., "custom_is_consolidated", 1)`
+
+### Gotchas
+- Existing tests that had batch_slips needed `_submit_consolidated_batch` patched (otherwise it calls real `build_consolidated_xml` which uses the REAL frappe module, not the test mock)
+- Patch order for decorators is bottom-up for function parameters

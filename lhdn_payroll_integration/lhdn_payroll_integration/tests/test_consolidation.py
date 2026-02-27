@@ -21,6 +21,7 @@ class TestConsolidationScheduler(FrappeTestCase):
 			"name": name,
 			"doctype": "Salary Slip",
 			"net_pay": net_pay,
+			"company": "Test Company",
 			"custom_lhdn_status": status,
 			"custom_is_consolidated": is_consolidated,
 			"posting_date": posting_date or date(2026, 1, 15),
@@ -65,7 +66,8 @@ class TestConsolidationScheduler(FrappeTestCase):
 	@patch("lhdn_payroll_integration.services.consolidation_service.frappe")
 	def test_high_value_docs_excluded_from_batch(self, mock_frappe):
 		"""Documents with total > RM 10,000 must NOT be included in the
-		consolidated batch — they should be submitted individually."""
+		consolidated batch — they should be submitted individually via
+		submission_service, while normal-value slips go through the consolidated path."""
 		high_value_slip = self._make_salary_slip("SS-HV-001", net_pay=15000)
 		normal_slip = self._make_salary_slip("SS-NRM-001", net_pay=5000)
 		high_value_claim = self._make_expense_claim("EC-HV-001", total=12000)
@@ -77,27 +79,32 @@ class TestConsolidationScheduler(FrappeTestCase):
 		mock_frappe.utils.get_first_day.return_value = date(2026, 1, 1)
 		mock_frappe.utils.get_last_day.return_value = date(2026, 1, 31)
 		mock_frappe.utils.add_months.return_value = date(2026, 1, 15)
-		mock_frappe.utils.today.return_value = "2026-02-15"
+		mock_frappe.utils.today.return_value = "2026-02-05"
 		mock_frappe.db = MagicMock()
 
 		with patch("lhdn_payroll_integration.services.consolidation_service.submission_service") as mock_sub:
-			run_monthly_consolidation()
+			with patch("lhdn_payroll_integration.services.consolidation_service._submit_consolidated_batch") as mock_consol:
+				run_monthly_consolidation()
 
-			# High-value docs should be submitted individually
-			# The batch/consolidated call should NOT include high-value docs
-			# At minimum, we verify the function ran and made submission calls
-			individual_calls = [c for c in mock_sub.method_calls
-				if "individual" in str(c).lower() or "enqueue" in str(c).lower()]
-			# High-value docs must be handled separately from the batch
-			self.assertTrue(
-				mock_sub.called or mock_sub.method_calls,
-				"submission_service must be called for high-value documents"
-			)
+				# High-value slip must be submitted individually
+				mock_sub.process_salary_slip.assert_called_with("SS-HV-001")
+
+				# High-value claim must be submitted individually
+				mock_sub.process_expense_claim.assert_called_with("EC-HV-001")
+
+				# Normal slip must go through the consolidated batch path
+				mock_consol.assert_called_once()
+				consol_docnames = mock_consol.call_args[0][0]
+				self.assertIn("SS-NRM-001", consol_docnames,
+					"Normal-value slip must be in consolidated batch")
+				self.assertNotIn("SS-HV-001", consol_docnames,
+					"High-value slip must NOT be in consolidated batch")
 
 	@patch("lhdn_payroll_integration.services.consolidation_service.frappe")
 	def test_batch_submission_called_for_eligible_docs(self, mock_frappe):
-		"""Eligible (non-high-value, pending, not-yet-consolidated) documents
-		must be grouped into one consolidated submission."""
+		"""Eligible (non-high-value, pending, not-yet-consolidated) Salary Slips
+		must be grouped into ONE consolidated submission via _submit_consolidated_batch,
+		not submitted individually."""
 		slip1 = self._make_salary_slip("SS-001", net_pay=3000)
 		slip2 = self._make_salary_slip("SS-002", net_pay=7000)
 		claim1 = self._make_expense_claim("EC-001", total=2000)
@@ -109,17 +116,30 @@ class TestConsolidationScheduler(FrappeTestCase):
 		mock_frappe.utils.get_first_day.return_value = date(2026, 1, 1)
 		mock_frappe.utils.get_last_day.return_value = date(2026, 1, 31)
 		mock_frappe.utils.add_months.return_value = date(2026, 1, 15)
-		mock_frappe.utils.today.return_value = "2026-02-15"
+		mock_frappe.utils.today.return_value = "2026-02-05"
 		mock_frappe.db = MagicMock()
 
 		with patch("lhdn_payroll_integration.services.consolidation_service.submission_service") as mock_sub:
-			run_monthly_consolidation()
+			with patch("lhdn_payroll_integration.services.consolidation_service._submit_consolidated_batch") as mock_consol:
+				run_monthly_consolidation()
 
-			# Consolidated/batch submission must be called
-			self.assertTrue(
-				mock_sub.called or mock_sub.method_calls,
-				"submission_service must be invoked for consolidated batch submission"
-			)
+				# Consolidated batch must be called exactly once with both eligible slips
+				mock_consol.assert_called_once()
+				consol_docnames = mock_consol.call_args[0][0]
+				self.assertIn("SS-001", consol_docnames,
+					"SS-001 must be in the consolidated batch")
+				self.assertIn("SS-002", consol_docnames,
+					"SS-002 must be in the consolidated batch")
+				self.assertEqual(len(consol_docnames), 2,
+					"Exactly 2 slips must be in the consolidated batch")
+
+				# Individual process_salary_slip must NOT be called for batch slips
+				slip_individual_calls = [
+					c for c in mock_sub.method_calls
+					if "process_salary_slip" in str(c)
+				]
+				self.assertEqual(len(slip_individual_calls), 0,
+					"Batch slips must not be submitted individually")
 
 	@patch("lhdn_payroll_integration.services.consolidation_service.frappe")
 	def test_is_consolidated_set_after_successful_submission(self, mock_frappe):
@@ -135,11 +155,12 @@ class TestConsolidationScheduler(FrappeTestCase):
 		mock_frappe.utils.get_first_day.return_value = date(2026, 1, 1)
 		mock_frappe.utils.get_last_day.return_value = date(2026, 1, 31)
 		mock_frappe.utils.add_months.return_value = date(2026, 1, 15)
-		mock_frappe.utils.today.return_value = "2026-02-15"
+		mock_frappe.utils.today.return_value = "2026-02-05"
 		mock_frappe.db = MagicMock()
 
 		with patch("lhdn_payroll_integration.services.consolidation_service.submission_service"):
-			run_monthly_consolidation()
+			with patch("lhdn_payroll_integration.services.consolidation_service._submit_consolidated_batch"):
+				run_monthly_consolidation()
 
 		# frappe.db.set_value should be called to mark docs as consolidated
 		set_value_calls = mock_frappe.db.set_value.call_args_list
@@ -183,32 +204,6 @@ class TestConsolidationScheduler(FrappeTestCase):
 				self.assertEqual(filters["custom_lhdn_status"], "Pending")
 
 	@patch("lhdn_payroll_integration.services.consolidation_service.frappe")
-	def test_single_http_call_for_batch_of_5_eligible_slips(self, mock_frappe):
-		"""A batch of 5 eligible salary slips must trigger exactly ONE consolidated
-		submission (process_consolidated_batch called once with all 5 docnames),
-		not 5 individual process_salary_slip calls."""
-		slips = [self._make_salary_slip(f"SS-BATCH-{i:03d}", net_pay=3000) for i in range(1, 6)]
-		mock_frappe.get_all.side_effect = [slips, []]  # 5 batch slips, no expense claims
-		mock_frappe.utils.get_first_day.return_value = date(2026, 1, 1)
-		mock_frappe.utils.get_last_day.return_value = date(2026, 1, 31)
-		mock_frappe.utils.add_months.return_value = date(2026, 1, 15)
-		mock_frappe.utils.today.return_value = "2026-02-15"
-		mock_frappe.db = MagicMock()
-
-		with patch("lhdn_payroll_integration.services.consolidation_service.submission_service") as mock_sub:
-			run_monthly_consolidation()
-
-			# Must call process_consolidated_batch exactly ONCE (not 5 individual calls)
-			mock_sub.process_consolidated_batch.assert_called_once()
-			call_args = mock_sub.process_consolidated_batch.call_args
-			batch_docnames = call_args[0][0]  # first positional arg = docnames list
-			self.assertEqual(len(batch_docnames), 5,
-				f"All 5 eligible slips must be in one consolidated batch, got {len(batch_docnames)}")
-
-			# Must NOT submit batch slips individually
-			mock_sub.process_salary_slip.assert_not_called()
-
-	@patch("lhdn_payroll_integration.services.consolidation_service.frappe")
 	def test_empty_batch_completes_silently(self, mock_frappe):
 		"""When no documents match the criteria, run_monthly_consolidation
 		must complete without raising any exception."""
@@ -223,6 +218,92 @@ class TestConsolidationScheduler(FrappeTestCase):
 			run_monthly_consolidation()
 		except Exception as e:
 			self.fail(f"run_monthly_consolidation raised {type(e).__name__} on empty batch: {e}")
+
+	@patch("lhdn_payroll_integration.services.consolidation_service.submission_service")
+	@patch("lhdn_payroll_integration.services.consolidation_service.requests")
+	@patch("lhdn_payroll_integration.services.consolidation_service.prepare_submission_wrapper")
+	@patch("lhdn_payroll_integration.services.consolidation_service.build_consolidated_xml")
+	@patch("lhdn_payroll_integration.services.consolidation_service.frappe")
+	def test_single_http_call_for_batch_of_five_slips(
+		self, mock_frappe, mock_build_xml, mock_prepare, mock_requests, mock_sub
+	):
+		"""A batch of 5 eligible salary slips must result in ONE build_consolidated_xml
+		call and ONE HTTP POST to the LHDN API — not 5 individual calls.
+
+		US-011 acceptance criteria: Test verifies single HTTP call for a batch of
+		5 eligible salary slips.
+		"""
+		slips = [
+			self._make_salary_slip(f"SS-{i:03d}", net_pay=2000)
+			for i in range(1, 6)
+		]
+		mock_frappe.get_all.side_effect = [slips, []]  # 5 slips, 0 claims
+		mock_frappe.utils.get_first_day.return_value = date(2026, 1, 1)
+		mock_frappe.utils.get_last_day.return_value = date(2026, 1, 31)
+		mock_frappe.utils.add_months.return_value = date(2026, 1, 15)
+		mock_frappe.utils.today.return_value = "2026-02-05"
+		mock_frappe.db = MagicMock()
+
+		# Configure mock Company for URL building
+		mock_company_doc = MagicMock()
+		mock_company_doc.custom_integration_type = "Sandbox"
+		mock_company_doc.custom_sandbox_url = "https://preprod.myinvois.hasil.gov.my"
+		mock_frappe.get_doc.return_value = mock_company_doc
+
+		# Mock build_consolidated_xml to return a simple XML string
+		mock_build_xml.return_value = "<Invoice/>"
+
+		# Mock prepare_submission_wrapper
+		mock_prepare.return_value = {
+			"documents": [{
+				"format": "XML",
+				"document": "base64encodedxml",
+				"documentHash": "sha256hash",
+				"codeNumber": "001",
+			}]
+		}
+
+		# Mock requests.post response
+		mock_response = MagicMock()
+		mock_response.json.return_value = {
+			"acceptedDocuments": [{"uuid": "test-uuid-batch-123"}]
+		}
+		mock_requests.post.return_value = mock_response
+
+		# Mock get_access_token
+		mock_sub.get_access_token.return_value = "test-bearer-token"
+
+		run_monthly_consolidation()
+
+		# build_consolidated_xml must be called EXACTLY ONCE with all 5 docnames
+		mock_build_xml.assert_called_once()
+		build_call_docnames = mock_build_xml.call_args[0][0]
+		self.assertEqual(
+			len(build_call_docnames), 5,
+			f"All 5 salary slips must be consolidated into one XML, got {len(build_call_docnames)}"
+		)
+		expected_names = {f"SS-{i:03d}" for i in range(1, 6)}
+		self.assertEqual(set(build_call_docnames), expected_names,
+			"All 5 slip names must appear in the consolidated XML call")
+
+		# HTTP POST must be made EXACTLY ONCE (not 5 individual calls)
+		self.assertEqual(
+			mock_requests.post.call_count, 1,
+			f"Expected exactly 1 HTTP POST for the consolidated batch, "
+			f"got {mock_requests.post.call_count}"
+		)
+
+		# All 5 docs must be marked custom_is_consolidated=1
+		set_value_calls = mock_frappe.db.set_value.call_args_list
+		consolidated_calls = [
+			c for c in set_value_calls
+			if len(c[0]) >= 4 and c[0][2] == "custom_is_consolidated" and c[0][3] == 1
+		]
+		self.assertEqual(
+			len(consolidated_calls), 5,
+			f"Expected 5 set_value calls for custom_is_consolidated=1, "
+			f"got {len(consolidated_calls)}"
+		)
 
 
 class TestConsolidationDeadline(FrappeTestCase):
