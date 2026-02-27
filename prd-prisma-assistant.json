@@ -1,0 +1,172 @@
+{
+  "productName": "prisma_assistant",
+  "branchName": "feature/prisma-assistant-v2",
+  "overview": "Feature expansion for the Prisma AI chat widget embedded in ERPNext. All stories hot-deploy without a Docker image rebuild. CRITICAL hot-deploy rule: Python files go to the BACKEND container (prisma-erp-backend-1), JS/CSS static assets go to the FRONTEND container (prisma-erp-frontend-1) at /home/frappe/frappe-bench/sites/assets/prisma_assistant/. After every change: bench --site frontend clear-cache && docker compose -f pwd-myinvois.yml restart backend.",
+  "goals": [
+    "Make the chat widget professional-grade with proper markdown rendering",
+    "Add file attachment support (images + PDFs) with AI vision / text extraction",
+    "Improve daily usability: copy button, persistent history, ERPNext context injection"
+  ],
+  "userStories": [
+    {
+      "id": "US-PA-01",
+      "title": "Copy button on AI message bubbles",
+      "priority": 1,
+      "description": "Each AI response bubble shows a small clipboard icon on hover. Clicking it copies the raw text to the clipboard and briefly shows a 'Copied!' confirmation. This lets users paste AI answers into forms, emails, or documents without selecting text manually.",
+      "acceptanceCriteria": [
+        "A copy icon button is visible when hovering over any assistant message bubble",
+        "Click copies the plain text (no HTML) to clipboard via navigator.clipboard.writeText()",
+        "The icon changes to a checkmark for 1.5 seconds after copy, then reverts",
+        "Button is absolutely positioned top-right of the bubble, does not shift text layout",
+        "Works on all modern browsers (Chrome, Edge, Firefox)"
+      ],
+      "technicalNotes": [
+        "Edit: prisma_assistant/prisma_assistant/public/js/desk_widget.js",
+        "Edit: prisma_assistant/prisma_assistant/public/css/desk_widget.css",
+        "In append_message() when role === 'assistant': wrap bubble in pa-msg-wrapper with relative position and inject .pa-copy-btn button",
+        "Store raw text in data-raw attribute (escaped). Click handler decodes and writes to clipboard",
+        "CSS: .pa-msg-wrapper { position: relative; } .pa-copy-btn { position: absolute; top: 4px; right: 4px; opacity: 0; ... } .pa-msg-wrapper:hover .pa-copy-btn { opacity: 1; }",
+        "HOT-DEPLOY: docker cp desk_widget.js to frontend container assets/prisma_assistant/js/",
+        "HOT-DEPLOY: docker cp desk_widget.css to frontend container assets/prisma_assistant/css/"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": true
+    },
+    {
+      "id": "US-PA-02",
+      "title": "Proper markdown rendering in chat responses",
+      "priority": 2,
+      "description": "AI responses currently use a basic regex formatter that only handles **bold** and `inline code`. This story replaces it with a full inline markdown renderer so responses with headers, bullet lists, numbered lists, code blocks, and tables display as rich formatted HTML. No external dependencies — the renderer is written inline in desk_widget.js.",
+      "acceptanceCriteria": [
+        "## Headers render as <h2> with appropriate sizing",
+        "- bullet lists and * bullet lists render as <ul><li>",
+        "1. numbered lists render as <ol><li>",
+        "`inline code` renders as <code> with code background",
+        "Triple-backtick fenced code blocks render as <pre><code> with monospace font and scroll",
+        "**bold** and *italic* render correctly",
+        "Horizontal rules --- render as <hr>",
+        "Plain newlines (\\n\\n) become paragraph breaks",
+        "HTML in AI response is escaped before processing (XSS prevention)",
+        "No external CDN or library file needed — renderer is built into desk_widget.js"
+      ],
+      "technicalNotes": [
+        "Edit: prisma_assistant/prisma_assistant/public/js/desk_widget.js",
+        "Edit: prisma_assistant/prisma_assistant/public/css/desk_widget.css",
+        "_markdownToHtml(text): 12-step pipeline — escape HTML, code block placeholders, inline code, headers, bold+italic, bold, italic, HR, UL, OL, paragraph breaks, single newlines",
+        "Fenced code blocks extracted to array before other transforms, restored after (prevents double-processing)",
+        "CSS: .pa-msg-content h1-h6, ul, ol, li, pre, code, pre code, hr, p styles added"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "medium",
+      "passes": true
+    },
+    {
+      "id": "US-PA-03",
+      "title": "Persistent chat history via localStorage",
+      "priority": 3,
+      "description": "Chat history currently lives only in memory and is lost on every page reload. This story saves history to localStorage so conversations persist across reloads and navigation. History is keyed per ERPNext user. A 'New Chat' button lets users start a fresh conversation without reloading.",
+      "acceptanceCriteria": [
+        "On page reload or navigation, previous messages reappear in the chat widget",
+        "Maximum 50 messages are stored; older messages are pruned automatically",
+        "History is per-user (different users on the same browser get separate history)",
+        "A 'New Chat' button (+ icon) in the widget header clears history and resets to the greeting",
+        "Clear button (existing trash icon) continues to work and also clears localStorage",
+        "If localStorage is unavailable (private mode, storage full), chat works fine without persistence (silent fallback)"
+      ],
+      "technicalNotes": [
+        "Edit: prisma_assistant/prisma_assistant/public/js/desk_widget.js",
+        "get _storageKey(): returns 'prisma_ai_history_' + frappe.session.user",
+        "_load_history(): on init, parse and render saved messages with skipSave=true",
+        "_save_history(): slices to 50, wrapped in try/catch",
+        "append_message(role, text, skipSave=false): only pushes to history and saves when skipSave is false",
+        "New Chat button: id=lhdn-chat-newchat, plus icon in header, clears history+storage+DOM and calls _render_greeting()"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": true
+    },
+    {
+      "id": "US-PA-04",
+      "title": "ERPNext document context injection",
+      "priority": 4,
+      "description": "When a user is viewing a specific DocType form (e.g., Salary Slip, Sales Invoice, Employee record), a 'Add page context' chip appears in the chat input area. Clicking it prepends a structured summary of the current document into the textarea so the AI can answer questions about it without manual copy-paste.",
+      "acceptanceCriteria": [
+        "A small '📋 Add [DocType] context' chip appears below the textarea only when on a Form route",
+        "The chip updates dynamically when the user navigates to a different form",
+        "The chip is hidden when not on a Form page",
+        "Click prepends '[Document Context: DocType \"name\"]\\n{field: value, ...}\\n\\n' to the textarea content",
+        "Context includes DocType name, document name, and all fields with non-null/non-empty/non-zero scalar values",
+        "Context is NOT automatically sent — user must click Send",
+        "Chip is hidden on mobile viewports (< 480px)"
+      ],
+      "technicalNotes": [
+        "Edit: prisma_assistant/prisma_assistant/public/js/desk_widget.js",
+        "Edit: prisma_assistant/prisma_assistant/public/css/desk_widget.css",
+        "_setup_context_chip(): renders .pa-context-chip in #lhdn-context-chip-row; listens to frappe.router.on('change') and page-change events",
+        "_update_context_chip(): shows chip with label if route[0]==='Form' && route[1] && route[2]; hides otherwise",
+        "_inject_context(): builds field dump from frappe.get_doc(), filters null/empty/zero/object values, prepends to textarea"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "medium",
+      "passes": true
+    },
+    {
+      "id": "US-PA-05",
+      "title": "Image upload with AI vision",
+      "priority": 5,
+      "description": "Users can attach image files (JPEG, PNG, WebP, GIF) to chat messages. The image is base64-encoded and sent to the AI as a vision input alongside any text message. The AI can describe, analyze, extract text from, or answer questions about the image.",
+      "acceptanceCriteria": [
+        "A paperclip icon button appears in the input area beside the send button",
+        "Clicking it opens a file picker that accepts image/jpeg, image/png, image/webp, image/gif",
+        "Selected image shows a small thumbnail preview (max 60px tall) above the input area",
+        "User can remove the pending attachment by clicking an X on the thumbnail",
+        "On send, the image is included in the AI request as a multimodal content block",
+        "AI response addresses the image content",
+        "Works with all three providers: Anthropic (vision content block), OpenAI/Ollama (image_url), Gemini (inline_data)",
+        "Max file size 5MB enforced client-side with a clear error message",
+        "Timeout for vision requests is 120 seconds"
+      ],
+      "technicalNotes": [
+        "Edit: prisma_assistant/prisma_assistant/public/js/desk_widget.js",
+        "Edit: prisma_assistant/prisma_assistant/public/css/desk_widget.css",
+        "Edit: prisma_assistant/prisma_assistant/api/chat.py",
+        "Frontend: hidden <input type=file> + #lhdn-attach-btn (paperclip SVG icon)",
+        "_on_file_selected(): validates size, FileReader→base64, stores this.pendingFile={name,type,data}",
+        "_show_file_preview(): renders thumbnail or PDF icon + X button in #lhdn-file-preview-row",
+        "send(): appends files=JSON.stringify([this.pendingFile]) to frappe.call args",
+        "Backend: send_message(message, history, files='[]'); file_list passed to all _call_* functions",
+        "_call_anthropic: builds user_content array with text + image source blocks",
+        "_call_openai_compatible_with_tools: builds image_url content blocks",
+        "_call_gemini: appends inline_data parts to user_parts"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "large",
+      "passes": true
+    },
+    {
+      "id": "US-PA-06",
+      "title": "PDF upload with text extraction",
+      "priority": 6,
+      "description": "Extends US-PA-05 to handle PDF files. The backend extracts text from digital PDFs using pypdf. For scanned PDFs with no extractable text, the PDF is treated as an image and sent to the vision model.",
+      "acceptanceCriteria": [
+        "PDF files are accepted by the file picker (application/pdf)",
+        "A PDF icon with filename is shown in the preview area (not an image thumbnail)",
+        "On send, if PDF has extractable text (>=100 chars): text prepended to message as '[Attached PDF: filename]\\n{text}'",
+        "If PDF has no text (scanned): sent as image to vision model with media_type image/jpeg",
+        "On any extraction error: '[Could not extract text from filename]' is prepended and request continues",
+        "Max PDF size: 10MB (enforced client-side)"
+      ],
+      "technicalNotes": [
+        "Edit: prisma_assistant/prisma_assistant/api/chat.py",
+        "Edit: prisma_assistant/prisma_assistant/public/js/desk_widget.js (10MB limit for PDFs)",
+        "_extract_pdf_content(file_dict): base64-decode raw, pypdf.PdfReader, extract_text() on all pages",
+        "Returns {type:'text', content, name, page_count} if >=100 chars, else {type:'image', data, media_type:'image/jpeg', name}",
+        "In send_message(): process_files loop separates PDFs (text context) from images (vision dispatch)"
+      ],
+      "dependencies": ["US-PA-05"],
+      "estimatedComplexity": "medium",
+      "passes": true
+    }
+  ]
+}
