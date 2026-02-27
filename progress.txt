@@ -3499,3 +3499,6 @@ Completed: Fix custom_id_type options to match LHDN schemeID vocabulary (ID: US-
 ### Gotchas
 - Expense Claim has `total_claimed_amount` (not `total_amount`) for the claim total
 - Expense Claim has no `custom_lhdn_submission_datetime`/`custom_lhdn_validated_datetime` — must use NULL for those columns in the UNION
+## Iteration 7 - Fri, Feb 27, 2026  1:00:51 PM
+Completed: Add full PostalAddress fields beyond state code only (ID: US-025) in 14m
+
