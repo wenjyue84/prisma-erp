@@ -3071,3 +3071,36 @@ Completed: Generate CP39 monthly PCB remittance file (ID: US-012) in 7m
 ### Gotchas
 - Skipped tests (7/14) are expected: no submitted Salary Slips in `_Test Company` for 2026
 - All skips have explicit `skipTest()` calls with descriptive messages
+## Iteration 1 - Fri, Feb 27, 2026 11:35:31 AM
+Completed: Generate Borang E (Form E) employer annual return (ID: US-014) in 7m
+
+## Iteration 1 - Fri, Feb 27, 2026 11:54:20 AM
+Incomplete: Generate EPF Borang A monthly contribution schedule (ID: US-015) — attempt 1/3
+
+## Iteration 2 - Fri, Feb 27, 2026 11:56:17 AM
+Incomplete: Generate EPF Borang A monthly contribution schedule (ID: US-015) — attempt 2/3
+
+
+## Iteration N — US-015: Generate EPF Borang A monthly contribution schedule
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_epf_borang_a`
+**Result:** PASS — 17 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/epf_borang_a/__init__.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/epf_borang_a/epf_borang_a.json`
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/epf_borang_a/epf_borang_a.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_epf_borang_a.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — added custom_epf_member_number (Data) on Employee
+
+### Patterns discovered
+- Report directories sit at 3-level path: `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/` (matches import `lhdn_payroll_integration.lhdn_payroll_integration.report.*`)
+- EPF component names checked via IN clause built dynamically with named parameters (no SQL injection risk)
+- `HAVING (employee_epf > 0 OR employer_epf > 0)` filters to only rows with EPF contributions
+- `custom_epf_member_number` field on Employee stores KWSP membership number for Borang A
+
+### Gotchas
+- Report was already deployed from a prior partial attempt; tests passed on first run
+- 17 tests ran (including __pycache__ version with extra tests); all GREEN

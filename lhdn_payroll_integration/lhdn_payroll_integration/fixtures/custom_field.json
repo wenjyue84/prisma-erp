@@ -406,5 +406,51 @@
     "hidden": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_bearer_token"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_epf_member_number",
+    "dt": "Employee",
+    "fieldname": "custom_epf_member_number",
+    "fieldtype": "Data",
+    "label": "EPF Member Number",
+    "description": "KWSP/EPF membership number for Borang A contribution schedule",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_bank_account_number"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_socso_member_number",
+    "dt": "Employee",
+    "fieldname": "custom_socso_member_number",
+    "fieldtype": "Data",
+    "label": "SOCSO Member Number",
+    "description": "PERKESO/SOCSO membership number for Borang 8A contribution schedule",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_epf_member_number"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_director_payment_type",
+    "dt": "Employee",
+    "fieldname": "custom_director_payment_type",
+    "fieldtype": "Select",
+    "label": "Director Payment Type",
+    "options": "\nDirector Salary\nDirector Fee",
+    "description": "Distinguishes director salary (classification 004) from director fee (classification 036) for LHDN e-Invoice",
+    "depends_on": "eval:doc.custom_worker_type=='Director'",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_worker_type"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_lhdn_failure_email",
+    "dt": "Company",
+    "fieldname": "custom_lhdn_failure_email",
+    "fieldtype": "Data",
+    "label": "LHDN Failure Notification Email",
+    "description": "If set, overrides HR Manager role lookup for LHDN submission failure notifications",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_annual_revenue_tier"
   }
 ]
