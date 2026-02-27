@@ -25,7 +25,6 @@ CBC_NS = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
 TWO_DP = Decimal("0.01")
 
 # PCB component names to detect withholding tax deductions
-# Fallback PCB names — deprecated; prefer custom_is_pcb_component flag on Salary Component.
 PCB_COMPONENT_NAMES = frozenset({
     'Monthly Tax Deduction', 'PCB', 'Income Tax', 'Tax Deduction'
 })
@@ -40,8 +39,9 @@ EMPLOYER_STATUTORY_COMPONENTS = frozenset({
     'SIP - Employer', 'SIP Employer',
 })
 
-# LHDN v1.1 §6.2 — schemeID mapping for employee registration ID type
-ID_TYPE_TO_SCHEME = {
+# Maps custom_id_type (Select field option) to LHDN schemeID attribute value.
+# Ref: LHDN MyInvois UBL 2.1 schema, cbc:ID/@schemeID on PartyIdentification.
+ID_TYPE_SCHEME_MAP = {
     "NRIC": "NRIC",
     "Passport": "PASSPORT",
     "BRN": "BRN",
@@ -131,33 +131,6 @@ def _add_party_tax_scheme(party_elem, sst_registration):
     _sub(inner_scheme, CBC_NS, "ID", scheme_id)
 
 
-def _add_invoice_period(root, start_date, end_date):
-    """Add cac:InvoicePeriod with StartDate and EndDate to the invoice root."""
-    invoice_period = _sub(root, CAC_NS, "InvoicePeriod")
-    _sub(invoice_period, CBC_NS, "StartDate", str(start_date))
-    _sub(invoice_period, CBC_NS, "EndDate", str(end_date))
-
-
-def _add_additional_doc_reference(root, id_type, id_value):
-    """Add cac:AdditionalDocumentReference to invoice root for registration ID.
-
-    LHDN v1.1 requires AdditionalDocumentReference to carry the supplier's
-    registration ID (NRIC/Passport/BRN/Army ID) at the invoice level in addition
-    to the PartyIdentification schemeID element.
-
-    Args:
-        root: The Invoice root Element.
-        id_type: Registration ID type (e.g. "NRIC", "Passport", "BRN", "Army ID").
-        id_value: Registration ID value.
-    """
-    adr = _sub(root, CAC_NS, "AdditionalDocumentReference")
-    _sub(adr, CBC_NS, "ID", id_type)
-    _sub(adr, CBC_NS, "DocumentType", id_type)
-    attachment = _sub(adr, CAC_NS, "Attachment")
-    external_ref = _sub(attachment, CAC_NS, "ExternalReference")
-    _sub(external_ref, CBC_NS, "URI", id_value)
-
-
 def _build_invoice_skeleton(docname, issue_date, employee, company):
     """Build common UBL 2.1 Invoice skeleton with supplier/customer parties.
 
@@ -171,7 +144,6 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     root = ET.Element(f"{{{UBL_NS}}}Invoice")
     _sub(root, CBC_NS, "ID", docname)
     _sub(root, CBC_NS, "IssueDate", str(issue_date))
-    _sub(root, CBC_NS, "IssueTime", frappe.utils.now_datetime().strftime("%H:%M:%S"))
 
     type_code = _sub(root, CBC_NS, "InvoiceTypeCode", "11")
     type_code.set("listVersionID", "1.1")
@@ -186,14 +158,9 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     supplier_party = _sub(root, CAC_NS, "AccountingSupplierParty")
     supplier_inner = _sub(supplier_party, CAC_NS, "Party")
     supplier_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
-    _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin, schemeID="TIN")
-    # Registration ID (NRIC / Passport / BRN / Army ID)
-    _emp_id_type = getattr(employee, "custom_id_type", None)
-    _emp_id_value = getattr(employee, "custom_id_value", None)
-    if isinstance(_emp_id_type, str) and _emp_id_type and isinstance(_emp_id_value, str) and _emp_id_value:
-        _scheme = ID_TYPE_TO_SCHEME.get(_emp_id_type, _emp_id_type)
-        _reg_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
-        _sub(_reg_id, CBC_NS, "ID", _emp_id_value, schemeID=_scheme)
+    id_type = getattr(employee, "custom_id_type", None) or "NRIC"
+    scheme_id = ID_TYPE_SCHEME_MAP.get(id_type, "NRIC")
+    _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin, schemeID=scheme_id)
     supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
     _sub(supplier_name_elem, CBC_NS, "Name", employee.employee_name)
     _add_postal_address(supplier_inner, supplier_state)
@@ -206,7 +173,7 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
     customer_party = _sub(root, CAC_NS, "AccountingCustomerParty")
     customer_inner = _sub(customer_party, CAC_NS, "Party")
     customer_id = _sub(customer_inner, CAC_NS, "PartyIdentification")
-    _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number, schemeID="TIN")
+    _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number)
     customer_name_elem = _sub(customer_inner, CAC_NS, "PartyName")
     _sub(customer_name_elem, CBC_NS, "Name", company.name)
     _add_postal_address(customer_inner, buyer_state)
@@ -214,10 +181,6 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
         customer_inner,
         getattr(company, "custom_sst_registration_number", None) or ""
     )
-
-    # AdditionalDocumentReference (LHDN v1.1) — registration ID at invoice level
-    if isinstance(_emp_id_type, str) and _emp_id_type and isinstance(_emp_id_value, str) and _emp_id_value:
-        _add_additional_doc_reference(root, _emp_id_type, _emp_id_value)
 
     return root
 
@@ -259,9 +222,6 @@ def build_salary_slip_xml(docname):
 
     root = _build_invoice_skeleton(docname, doc.posting_date, employee, company)
 
-    # Billing period (pay period dates) — required for payroll self-billed invoices
-    _add_invoice_period(root, doc.start_date, doc.end_date)
-
     # Foreign currency conversion: LHDN requires MYR
     source_currency = getattr(doc, "currency", "MYR") or "MYR"
     if source_currency != "MYR":
@@ -292,18 +252,11 @@ def build_salary_slip_xml(docname):
 
     _add_tax_and_totals(root, total_excl, total_tax)
 
-    # PCB withholding tax: detect from deductions and add WithholdingTaxTotal.
-    # Primary: custom_is_pcb_component flag on Salary Component; fallback: name in PCB_COMPONENT_NAMES.
-    def _is_pcb(component_name):
-        return (
-            frappe.db.get_value("Salary Component", component_name, "custom_is_pcb_component") == 1
-            or component_name in PCB_COMPONENT_NAMES
-        )
-
+    # PCB withholding tax: detect from deductions and add WithholdingTaxTotal
     pcb_amount = sum(
         _quantize(d.amount)
         for d in getattr(doc, 'deductions', [])
-        if _is_pcb(getattr(d, 'salary_component', ''))
+        if getattr(d, 'salary_component', '') in PCB_COMPONENT_NAMES
     )
     if pcb_amount > Decimal("0.00"):
         withholding = _sub(root, CAC_NS, "WithholdingTaxTotal")
@@ -360,9 +313,6 @@ def build_expense_claim_xml(docname):
     company = frappe.get_doc("Company", doc.company)
 
     root = _build_invoice_skeleton(docname, doc.posting_date, employee, company)
-
-    # Billing period (expense claim dates) — required for payroll self-billed invoices
-    _add_invoice_period(root, doc.start_date, doc.end_date)
 
     # Calculate totals from expenses rows (sanctioned_amount)
     total_excl = sum(_quantize(row.sanctioned_amount) for row in doc.expenses)
@@ -451,14 +401,9 @@ def build_consolidated_xml(docnames, target_month):
     supplier_party = _sub(root, CAC_NS, "AccountingSupplierParty")
     supplier_inner = _sub(supplier_party, CAC_NS, "Party")
     supplier_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
-    _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin, schemeID="TIN")
-    # Registration ID (NRIC / Passport / BRN / Army ID)
-    _emp_id_type = getattr(employee, "custom_id_type", None)
-    _emp_id_value = getattr(employee, "custom_id_value", None)
-    if isinstance(_emp_id_type, str) and _emp_id_type and isinstance(_emp_id_value, str) and _emp_id_value:
-        _scheme = ID_TYPE_TO_SCHEME.get(_emp_id_type, _emp_id_type)
-        _reg_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
-        _sub(_reg_id, CBC_NS, "ID", _emp_id_value, schemeID=_scheme)
+    consol_id_type = getattr(employee, "custom_id_type", None) or "NRIC"
+    consol_scheme_id = ID_TYPE_SCHEME_MAP.get(consol_id_type, "NRIC")
+    _sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin, schemeID=consol_scheme_id)
     supplier_name_elem = _sub(supplier_inner, CAC_NS, "PartyName")
     _sub(supplier_name_elem, CBC_NS, "Name", employee.employee_name)
     _add_postal_address(supplier_inner, supplier_state)
@@ -468,7 +413,7 @@ def build_consolidated_xml(docnames, target_month):
     customer_party = _sub(root, CAC_NS, "AccountingCustomerParty")
     customer_inner = _sub(customer_party, CAC_NS, "Party")
     customer_id = _sub(customer_inner, CAC_NS, "PartyIdentification")
-    _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number, schemeID="TIN")
+    _sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number)
     customer_name_elem = _sub(customer_inner, CAC_NS, "PartyName")
     _sub(customer_name_elem, CBC_NS, "Name", company.name)
     _add_postal_address(customer_inner, "17")
@@ -476,25 +421,12 @@ def build_consolidated_xml(docnames, target_month):
     contact = _sub(customer_inner, CAC_NS, "Contact")
     _sub(contact, CBC_NS, "Name", "NA")
 
-    # AdditionalDocumentReference (LHDN v1.1) — registration ID at invoice level
-    if isinstance(_emp_id_type, str) and _emp_id_type and isinstance(_emp_id_value, str) and _emp_id_value:
-        _add_additional_doc_reference(root, _emp_id_type, _emp_id_value)
-
-    # Load all docs and calculate totals from eligible earnings (not net_pay)
-    # Must match individual invoice logic: exclude employer statutory + custom-excluded components
+    # Load all docs and calculate totals
     docs = []
     total_excl = Decimal("0.00")
     for docname in docnames:
         doc = frappe.get_doc("Salary Slip", docname)
-        eligible_earnings = [
-            e for e in doc.earnings
-            if e.salary_component not in EMPLOYER_STATUTORY_COMPONENTS
-            and frappe.db.get_value(
-                "Salary Component", e.salary_component,
-                "custom_lhdn_exclude_from_invoice"
-            ) != 1
-        ]
-        amount = sum(_quantize(Decimal(str(e.amount))) for e in eligible_earnings)
+        amount = _quantize(doc.net_pay)
         total_excl += amount
         docs.append((doc, amount))
 

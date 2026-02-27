@@ -50,7 +50,7 @@ class TestEmployeeCustomFields(FrappeTestCase):
 		self.assertIsNotNone(field, "custom_id_type field missing from Employee")
 		self.assertEqual(field.fieldtype, "Select")
 		options = (field.options or "").split("\n")
-		expected = ["NRIC", "Passport", "Business Registration Number", "Army ID"]
+		expected = ["NRIC", "Passport", "BRN", "Army ID"]
 		for opt in expected:
 			self.assertIn(opt, options, f"Option '{opt}' missing from custom_id_type")
 

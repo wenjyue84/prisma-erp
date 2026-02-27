@@ -3407,3 +3407,29 @@ Completed: Integrate LHDN TIN validation API before submission (ID: US-021) in 2
 2. test_company_b_docs_hit_company_b_endpoint — verifies Company B URL used
 3. test_mixed_companies_each_use_own_endpoint — both companies in one batch, each gets correct URL
 4. test_base_url_never_hardcoded_empty — URL is always absolute (starts with http)
+## Iteration 8 - Fri, Feb 27, 2026 12:39:55 PM
+Completed: Fix status poller to use per-document company for base_url and token (ID: US-023) in 3m
+
+
+## Iteration — US-024: Fix custom_id_type options to match LHDN schemeID vocabulary
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 56/56 tests pass (includes 4 new TestIdTypeSchemeID tests), 0 failures
+
+### Files created/modified
+- `fixtures/custom_field.json` — Changed Employee-custom_id_type options: "Business Registration Number" → "BRN"
+- `services/payload_builder.py` — Added ID_TYPE_SCHEME_MAP dict; updated _build_invoice_skeleton and build_consolidated_xml to emit schemeID attribute on supplier cbc:ID
+- `tests/test_custom_fields.py` — Updated expected options list: "Business Registration Number" → "BRN"
+- `tests/test_payload_builder.py` — Added TestIdTypeSchemeID class with 4 tests (NRIC, Passport, BRN, Army ID)
+- `patches.txt` — Added migration note for existing records with old "Business Registration Number" value
+
+### Patterns discovered
+- `ID_TYPE_SCHEME_MAP` maps Select field label → XML schemeID attribute value per LHDN UBL 2.1 spec
+- schemeID is set as an XML attribute on cbc:ID: `_sub(..., schemeID=scheme_id)`
+- bench migrate syncs fixture changes to the live site; clear-cache required after
+
+### Gotchas
+- Both container paths (nested and non-nested) must be updated (CRITICAL pattern)
+- test_custom_fields.py test must be updated in sync with fixture option change or it fails

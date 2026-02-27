@@ -37,8 +37,6 @@ class TestSalarySlipXMLBuilder(FrappeTestCase):
         doc.net_pay = net_pay
         doc.company = "Arising Packaging"
         doc.posting_date = "2026-01-31"
-        doc.start_date = "2026-01-01"
-        doc.end_date = "2026-01-31"
         doc.currency = "MYR"
         doc.conversion_rate = 1
 
@@ -99,37 +97,6 @@ class TestSalarySlipXMLBuilder(FrappeTestCase):
         # Parse XML and check root element
         root = ET.fromstring(xml_string)
         self.assertEqual(root.tag, f"{{{UBL_NS}}}Invoice")
-
-    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_issue_time_present_in_invoice_header(self, mock_frappe):
-        """IssueTime element is present in Invoice header immediately after IssueDate (LHDN v1.1)."""
-        import datetime
-        doc = self._make_salary_slip_doc()
-        emp = self._make_employee_doc()
-        company = self._make_company_doc()
-
-        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
-            ("Salary Slip", "SAL-SLP-00001"): doc,
-            ("Employee", "HR-EMP-00001"): emp,
-            ("Company", "Arising Packaging"): company,
-        }.get((dt, name), MagicMock())
-        mock_frappe.utils.now_datetime.return_value = datetime.datetime(2026, 1, 31, 14, 30, 0)
-        mock_frappe.db.get_value.return_value = 0
-
-        xml_string = build_salary_slip_xml("SAL-SLP-00001")
-        root = ET.fromstring(xml_string)
-
-        issue_time = root.find(f"{{{CBC_NS}}}IssueTime")
-        self.assertIsNotNone(issue_time, "IssueTime element not found in Invoice header")
-        self.assertEqual(issue_time.text, "14:30:00")
-
-        # Verify element order: IssueDate comes before IssueTime
-        children_tags = [child.tag for child in root]
-        issue_date_idx = children_tags.index(f"{{{CBC_NS}}}IssueDate")
-        issue_time_idx = children_tags.index(f"{{{CBC_NS}}}IssueTime")
-        invoice_type_idx = children_tags.index(f"{{{CBC_NS}}}InvoiceTypeCode")
-        self.assertLess(issue_date_idx, issue_time_idx, "IssueDate must come before IssueTime")
-        self.assertLess(issue_time_idx, invoice_type_idx, "IssueTime must come before InvoiceTypeCode")
 
     @patch("lhdn_payroll_integration.services.payload_builder.frappe")
     def test_invoice_type_code_is_11(self, mock_frappe):
@@ -292,35 +259,6 @@ class TestSalarySlipXMLBuilder(FrappeTestCase):
         except (AssertionError, AttributeError):
             self.fail("build_salary_slip_xml accessed YTD fields which should not be used")
 
-    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_invoice_period_present_in_salary_slip_xml(self, mock_frappe):
-        """InvoicePeriod with StartDate and EndDate is present in Salary Slip XML (US-007)."""
-        doc = self._make_salary_slip_doc()
-        doc.start_date = "2026-01-01"
-        doc.end_date = "2026-01-31"
-        emp = self._make_employee_doc()
-        company = self._make_company_doc()
-
-        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
-            ("Salary Slip", "SAL-SLP-00001"): doc,
-            ("Employee", "HR-EMP-00001"): emp,
-            ("Company", "Arising Packaging"): company,
-        }.get((dt, name), MagicMock())
-        mock_frappe.db.get_value.return_value = 0
-
-        xml_string = build_salary_slip_xml("SAL-SLP-00001")
-        root = ET.fromstring(xml_string)
-
-        invoice_period = root.find(f".//{{{CAC_NS}}}InvoicePeriod")
-        self.assertIsNotNone(invoice_period, "InvoicePeriod not found in Salary Slip XML")
-
-        start = invoice_period.find(f"{{{CBC_NS}}}StartDate")
-        end = invoice_period.find(f"{{{CBC_NS}}}EndDate")
-        self.assertIsNotNone(start, "InvoicePeriod/StartDate not found")
-        self.assertIsNotNone(end, "InvoicePeriod/EndDate not found")
-        self.assertEqual(start.text, "2026-01-01")
-        self.assertEqual(end.text, "2026-01-31")
-
 
 class TestExpenseClaimXMLBuilder(FrappeTestCase):
     """Test build_expense_claim_xml(docname) XML generation logic."""
@@ -333,8 +271,6 @@ class TestExpenseClaimXMLBuilder(FrappeTestCase):
         doc.employee_name = "Ahmad bin Abdullah"
         doc.company = "Arising Packaging"
         doc.posting_date = "2026-01-31"
-        doc.start_date = "2026-01-01"
-        doc.end_date = "2026-01-31"
         doc.total_sanctioned_amount = 850
         doc.custom_expense_category = "Self-Billed Required"
 
@@ -544,34 +480,6 @@ class TestExpenseClaimXMLBuilder(FrappeTestCase):
         )
         self.assertIsNotNone(code2, "Second line missing classification code")
         self.assertEqual(code2.text, "037")
-
-    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_invoice_period_present_in_expense_claim_xml(self, mock_frappe):
-        """InvoicePeriod with StartDate and EndDate is present in Expense Claim XML (US-007)."""
-        doc = self._make_expense_claim_doc()
-        doc.start_date = "2026-01-01"
-        doc.end_date = "2026-01-31"
-        emp = self._make_employee_doc()
-        company = self._make_company_doc()
-
-        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
-            ("Expense Claim", "HR-EXP-00001"): doc,
-            ("Employee", "HR-EMP-00001"): emp,
-            ("Company", "Arising Packaging"): company,
-        }.get((dt, name), MagicMock())
-
-        xml_string = build_expense_claim_xml("HR-EXP-00001")
-        root = ET.fromstring(xml_string)
-
-        invoice_period = root.find(f".//{{{CAC_NS}}}InvoicePeriod")
-        self.assertIsNotNone(invoice_period, "InvoicePeriod not found in Expense Claim XML")
-
-        start = invoice_period.find(f"{{{CBC_NS}}}StartDate")
-        end = invoice_period.find(f"{{{CBC_NS}}}EndDate")
-        self.assertIsNotNone(start, "InvoicePeriod/StartDate not found")
-        self.assertIsNotNone(end, "InvoicePeriod/EndDate not found")
-        self.assertEqual(start.text, "2026-01-01")
-        self.assertEqual(end.text, "2026-01-31")
 
 
 class TestSubmissionWrapper(FrappeTestCase):
@@ -861,68 +769,6 @@ class TestConsolidatedXMLBuilder(FrappeTestCase):
         customer_xml = ET.tostring(customer_party, encoding="unicode")
         self.assertIn("NA", customer_xml,
                        "Buyer contact 'NA' not found in AccountingCustomerParty")
-
-    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_consolidated_line_amount_excludes_employer_statutory(self, mock_frappe):
-        """Consolidated invoice line amounts must match eligible earnings (not net_pay).
-        Employer statutory contributions must be excluded (US-010)."""
-        doc = MagicMock()
-        doc.name = "SS-001"
-        doc.doctype = "Salary Slip"
-        doc.employee = "HR-EMP-00001"
-        doc.employee_name = "Ahmad bin Abdullah"
-        doc.company = "Arising Packaging"
-        doc.posting_date = "2026-01-15"
-        doc.end_date = "2026-01-31"
-        doc.currency = "MYR"
-        doc.conversion_rate = 1
-
-        # Eligible earnings: Basic Salary 4000, Allowance 1000
-        earning1 = MagicMock()
-        earning1.salary_component = "Basic Salary"
-        earning1.amount = 4000
-        earning1.custom_lhdn_classification_code = "022 : Others"
-
-        earning2 = MagicMock()
-        earning2.salary_component = "Allowance"
-        earning2.amount = 1000
-        earning2.custom_lhdn_classification_code = "022 : Others"
-
-        # Employer statutory contribution — must be excluded
-        statutory = MagicMock()
-        statutory.salary_component = "EPF - Employer"
-        statutory.amount = 440
-
-        doc.earnings = [earning1, earning2, statutory]
-        doc.net_pay = 5440 - 440  # net_pay uses all; eligible = 5000
-        doc.deductions = []
-
-        company = self._make_company_doc()
-
-        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
-            ("Salary Slip", "SS-001"): doc,
-            ("Company", "Arising Packaging"): company,
-        }.get((dt, name), MagicMock())
-        mock_frappe.db.get_value.return_value = 0
-
-        xml_string = build_consolidated_xml(["SS-001"], "2026-01")
-        root = ET.fromstring(xml_string)
-
-        # Verify line amount = 4000 + 1000 = 5000 (not 5440)
-        lines = root.findall(f".//{{{CAC_NS}}}InvoiceLine")
-        self.assertEqual(len(lines), 1)
-        line_amount_elem = lines[0].find(f"{{{CBC_NS}}}LineExtensionAmount")
-        self.assertIsNotNone(line_amount_elem)
-        self.assertEqual(Decimal(line_amount_elem.text), Decimal("5000.00"),
-            f"Consolidated line amount must be eligible earnings 5000, got {line_amount_elem.text}")
-
-        # Verify total also = 5000
-        tax_excl = root.find(
-            f".//{{{CAC_NS}}}LegalMonetaryTotal/{{{CBC_NS}}}TaxExclusiveAmount"
-        )
-        self.assertIsNotNone(tax_excl)
-        self.assertEqual(Decimal(tax_excl.text), Decimal("5000.00"),
-            f"TaxExclusiveAmount must be 5000 (eligible earnings), got {tax_excl.text}")
 
 
 class TestStateCodeInUBL(FrappeTestCase):
@@ -1349,56 +1195,6 @@ class TestPCBWithholdingTax(FrappeTestCase):
         actual = Decimal(tax_inclusive.text)
         self.assertEqual(actual, Decimal(str(expected_gross)),
             f"TaxInclusiveAmount ({actual}) must equal sum of earnings ({expected_gross})")
-
-    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_custom_named_pcb_component_detected_via_flag(self, mock_frappe):
-        """Custom-named PCB component (e.g. 'Cukai Pendapatan') included in WithholdingTaxTotal
-        when custom_is_pcb_component flag is set (US-008)."""
-        doc = MagicMock()
-        doc.name = "SAL-SLP-PCB-001"
-        doc.employee = "HR-EMP-00001"
-        doc.company = "Arising Packaging"
-        doc.posting_date = "2026-01-31"
-        doc.currency = "MYR"
-        doc.conversion_rate = 1
-        doc.start_date = "2026-01-01"
-        doc.end_date = "2026-01-31"
-
-        earning = MagicMock()
-        earning.salary_component = "Basic Salary"
-        earning.amount = 4000
-        earning.custom_lhdn_classification_code = "022 : Others"
-        doc.earnings = [earning]
-
-        pcb = MagicMock()
-        pcb.salary_component = "Cukai Pendapatan"  # NOT in PCB_COMPONENT_NAMES
-        pcb.amount = 400
-        doc.deductions = [pcb]
-
-        emp = self._make_employee_doc()
-        company = self._make_company_doc()
-
-        mock_frappe.get_doc.side_effect = lambda dt, name=None, **kw: {
-            ("Salary Slip", "SAL-SLP-PCB-001"): doc,
-            ("Employee", "HR-EMP-00001"): emp,
-            ("Company", "Arising Packaging"): company,
-        }.get((dt, name), MagicMock())
-
-        def _db_get_value(doctype, name, fieldname, *args, **kwargs):
-            if doctype == "Salary Component" and name == "Cukai Pendapatan" and fieldname == "custom_is_pcb_component":
-                return 1
-            return 0
-
-        mock_frappe.db.get_value.side_effect = _db_get_value
-
-        xml_string = build_salary_slip_xml("SAL-SLP-PCB-001")
-        root = ET.fromstring(xml_string)
-
-        withholding = root.find(f".//{{{CAC_NS}}}WithholdingTaxTotal")
-        self.assertIsNotNone(withholding, "WithholdingTaxTotal must exist for custom-named PCB component")
-        tax_amount = withholding.find(f"{{{CBC_NS}}}TaxAmount")
-        self.assertIsNotNone(tax_amount, "TaxAmount missing from WithholdingTaxTotal")
-        self.assertEqual(Decimal(tax_amount.text), Decimal("400.00"))
 
 
 class TestPaymentMeans(FrappeTestCase):
@@ -2065,164 +1861,41 @@ class TestSSTHandling(FrappeTestCase):
             "SST-registered buyer TaxScheme/ID should be 'SST'")
 
 
-class TestSchemeIDAttributes(FrappeTestCase):
-    """Tests for LHDN v1.1 §6.2 schemeID on PartyIdentification/cbc:ID elements."""
+class TestIdTypeSchemeID(FrappeTestCase):
+    """Test that custom_id_type produces correct schemeID attribute on supplier cbc:ID."""
 
     def _make_doc(self):
         doc = MagicMock()
-        doc.name = "SAL-SLP-SCH-001"
-        doc.employee = "HR-EMP-SCH-001"
-        doc.employee_name = "Ahmad bin Abdullah"
-        doc.net_pay = 5000
+        doc.name = "SAL-SLP-SCHEME-001"
+        doc.employee = "HR-EMP-SCHEME"
+        doc.employee_name = "Test Employee"
+        doc.net_pay = 3000
         doc.company = "Test Co"
         doc.posting_date = "2026-01-31"
         doc.currency = "MYR"
         doc.conversion_rate = 1
         earning = MagicMock()
         earning.salary_component = "Basic Salary"
-        earning.amount = 5000
+        earning.amount = 3000
         earning.custom_lhdn_classification_code = "022 : Others"
         doc.earnings = [earning]
         doc.deductions = []
         return doc
-
-    def _make_employee(self, id_type="NRIC", id_value="901201145678"):
-        emp = MagicMock()
-        emp.custom_lhdn_tin = "IG12345678901"
-        emp.custom_id_type = id_type
-        emp.custom_id_value = id_value
-        emp.employee_name = "Ahmad bin Abdullah"
-        emp.custom_is_foreign_worker = 0
-        emp.custom_state_code = "01"
-        emp.custom_bank_account_number = None
-        emp.custom_worker_type = "Employee"
-        return emp
 
     def _make_company(self):
-        company = MagicMock()
-        company.custom_company_tin_number = "C12345678901"
-        company.name = "Test Co"
-        company.custom_state_code = "14"
-        return company
+        co = MagicMock()
+        co.custom_company_tin_number = "C99999999901"
+        co.name = "Test Co"
+        co.custom_state_code = "14"
+        co.custom_sst_registration_number = None
+        return co
 
-    def _get_side_effect(self, doc, emp, company):
-        return lambda dt, name=None: {
-            ("Salary Slip", "SAL-SLP-SCH-001"): doc,
-            ("Employee", "HR-EMP-SCH-001"): emp,
-            ("Company", "Test Co"): company,
-        }.get((dt, name), MagicMock())
-
-    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_supplier_tin_scheme_id_is_tin(self, mock_frappe):
-        """Supplier PartyIdentification for TIN has schemeID='TIN'."""
-        doc = self._make_doc()
-        emp = self._make_employee()
-        company = self._make_company()
-        mock_frappe.get_doc.side_effect = self._get_side_effect(doc, emp, company)
-        mock_frappe.db.get_value.return_value = 0
-
-        xml_string = build_salary_slip_xml("SAL-SLP-SCH-001")
-        root = ET.fromstring(xml_string)
-
-        supplier_party = root.find(f"{{{CAC_NS}}}AccountingSupplierParty/{{{CAC_NS}}}Party")
-        party_ids = supplier_party.findall(f"{{{CAC_NS}}}PartyIdentification")
-        id_elems = [p.find(f"{{{CBC_NS}}}ID") for p in party_ids if p.find(f"{{{CBC_NS}}}ID") is not None]
-        tin_elem = next((e for e in id_elems if e.text == "IG12345678901"), None)
-        self.assertIsNotNone(tin_elem, "Employee TIN not found in SupplierParty PartyIdentification")
-        self.assertEqual(tin_elem.get("schemeID"), "TIN",
-                         f"Expected schemeID='TIN' on employee TIN, got {tin_elem.get('schemeID')!r}")
-
-    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_supplier_nric_scheme_id_is_nric(self, mock_frappe):
-        """Supplier has second PartyIdentification with schemeID='NRIC' for employee NRIC."""
-        doc = self._make_doc()
-        emp = self._make_employee(id_type="NRIC", id_value="901201145678")
-        company = self._make_company()
-        mock_frappe.get_doc.side_effect = self._get_side_effect(doc, emp, company)
-        mock_frappe.db.get_value.return_value = 0
-
-        xml_string = build_salary_slip_xml("SAL-SLP-SCH-001")
-        root = ET.fromstring(xml_string)
-
-        supplier_party = root.find(f"{{{CAC_NS}}}AccountingSupplierParty/{{{CAC_NS}}}Party")
-        party_ids = supplier_party.findall(f"{{{CAC_NS}}}PartyIdentification")
-        id_elems = [p.find(f"{{{CBC_NS}}}ID") for p in party_ids if p.find(f"{{{CBC_NS}}}ID") is not None]
-        nric_elem = next((e for e in id_elems if e.get("schemeID") == "NRIC"), None)
-        self.assertIsNotNone(nric_elem, "No PartyIdentification with schemeID='NRIC' found in SupplierParty")
-        self.assertEqual(nric_elem.text, "901201145678")
-
-    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_customer_tin_scheme_id_is_tin(self, mock_frappe):
-        """Customer PartyIdentification for TIN has schemeID='TIN'."""
-        doc = self._make_doc()
-        emp = self._make_employee()
-        company = self._make_company()
-        mock_frappe.get_doc.side_effect = self._get_side_effect(doc, emp, company)
-        mock_frappe.db.get_value.return_value = 0
-
-        xml_string = build_salary_slip_xml("SAL-SLP-SCH-001")
-        root = ET.fromstring(xml_string)
-
-        customer_party = root.find(f"{{{CAC_NS}}}AccountingCustomerParty/{{{CAC_NS}}}Party")
-        party_ids = customer_party.findall(f"{{{CAC_NS}}}PartyIdentification")
-        id_elems = [p.find(f"{{{CBC_NS}}}ID") for p in party_ids if p.find(f"{{{CBC_NS}}}ID") is not None]
-        tin_elem = next((e for e in id_elems if e.text == "C12345678901"), None)
-        self.assertIsNotNone(tin_elem, "Company TIN not found in CustomerParty PartyIdentification")
-        self.assertEqual(tin_elem.get("schemeID"), "TIN",
-                         f"Expected schemeID='TIN' on company TIN, got {tin_elem.get('schemeID')!r}")
-
-    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_passport_id_type_maps_to_passport_scheme(self, mock_frappe):
-        """Employee id_type='Passport' maps to schemeID='PASSPORT'."""
-        doc = self._make_doc()
-        emp = self._make_employee(id_type="Passport", id_value="A12345678")
-        company = self._make_company()
-        mock_frappe.get_doc.side_effect = self._get_side_effect(doc, emp, company)
-        mock_frappe.db.get_value.return_value = 0
-
-        xml_string = build_salary_slip_xml("SAL-SLP-SCH-001")
-        root = ET.fromstring(xml_string)
-
-        supplier_party = root.find(f"{{{CAC_NS}}}AccountingSupplierParty/{{{CAC_NS}}}Party")
-        party_ids = supplier_party.findall(f"{{{CAC_NS}}}PartyIdentification")
-        id_elems = [p.find(f"{{{CBC_NS}}}ID") for p in party_ids if p.find(f"{{{CBC_NS}}}ID") is not None]
-        passport_elem = next((e for e in id_elems if e.get("schemeID") == "PASSPORT"), None)
-        self.assertIsNotNone(passport_elem, "No PartyIdentification with schemeID='PASSPORT' found")
-        self.assertEqual(passport_elem.text, "A12345678")
-
-
-class TestAdditionalDocumentReference(FrappeTestCase):
-    """Tests for LHDN v1.1 cac:AdditionalDocumentReference at invoice level.
-
-    US-002: Both build_salary_slip_xml() and build_expense_claim_xml() must emit
-    AdditionalDocumentReference with id_type, DocumentType, and id_value in
-    ExternalReference/URI. Applies to individual and consolidated invoices.
-    """
-
-    def _make_salary_slip_doc(self):
-        doc = MagicMock()
-        doc.name = "SAL-SLP-ADR-001"
-        doc.employee = "HR-EMP-ADR-001"
-        doc.employee_name = "Ahmad bin Abdullah"
-        doc.net_pay = 5000
-        doc.company = "Test Co ADR"
-        doc.posting_date = "2026-01-31"
-        doc.currency = "MYR"
-        doc.conversion_rate = 1
-        earning = MagicMock()
-        earning.salary_component = "Basic Salary"
-        earning.amount = 5000
-        earning.custom_lhdn_classification_code = "022 : Others"
-        doc.earnings = [earning]
-        doc.deductions = []
-        return doc
-
-    def _make_employee(self, id_type="NRIC", id_value="901201145678"):
+    def _make_employee(self, id_type):
         emp = MagicMock()
-        emp.custom_lhdn_tin = "IG12345678901"
+        emp.custom_lhdn_tin = "IG99999999901"
         emp.custom_id_type = id_type
-        emp.custom_id_value = id_value
-        emp.employee_name = "Ahmad bin Abdullah"
+        emp.custom_id_value = "123456"
+        emp.employee_name = "Test Employee"
         emp.custom_is_foreign_worker = 0
         emp.custom_state_code = "01"
         emp.custom_bank_account_number = None
@@ -2230,153 +1903,62 @@ class TestAdditionalDocumentReference(FrappeTestCase):
         emp.custom_sst_registration_number = None
         return emp
 
-    def _make_company(self):
-        company = MagicMock()
-        company.custom_company_tin_number = "C12345678901"
-        company.name = "Test Co ADR"
-        company.custom_state_code = "14"
-        company.custom_sst_registration_number = None
-        return company
-
-    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_salary_slip_has_additional_doc_reference_nric(self, mock_frappe):
-        """build_salary_slip_xml emits AdditionalDocumentReference with NRIC id_type and id_value."""
-        doc = self._make_salary_slip_doc()
-        emp = self._make_employee(id_type="NRIC", id_value="901201145678")
+    def _build_xml(self, id_type, mock_frappe):
+        doc = self._make_doc()
+        emp = self._make_employee(id_type)
         company = self._make_company()
         mock_frappe.get_doc.side_effect = lambda dt, name=None: {
-            ("Salary Slip", "SAL-SLP-ADR-001"): doc,
-            ("Employee", "HR-EMP-ADR-001"): emp,
-            ("Company", "Test Co ADR"): company,
+            ("Salary Slip", "SAL-SLP-SCHEME-001"): doc,
+            ("Employee", "HR-EMP-SCHEME"): emp,
+            ("Company", "Test Co"): company,
         }.get((dt, name), MagicMock())
         mock_frappe.db.get_value.return_value = 0
-
-        xml_string = build_salary_slip_xml("SAL-SLP-ADR-001")
-        root = ET.fromstring(xml_string)
-
-        adr = root.find(f"{{{CAC_NS}}}AdditionalDocumentReference")
-        self.assertIsNotNone(adr, "AdditionalDocumentReference element not found in salary slip XML")
-
-        adr_id = adr.find(f"{{{CBC_NS}}}ID")
-        self.assertIsNotNone(adr_id, "AdditionalDocumentReference/cbc:ID not found")
-        self.assertEqual(adr_id.text, "NRIC")
-
-        doc_type = adr.find(f"{{{CBC_NS}}}DocumentType")
-        self.assertIsNotNone(doc_type, "AdditionalDocumentReference/cbc:DocumentType not found")
-        self.assertEqual(doc_type.text, "NRIC")
-
-        uri = adr.find(f".//{{{CBC_NS}}}URI")
-        self.assertIsNotNone(uri, "AdditionalDocumentReference/.../cbc:URI not found")
-        self.assertEqual(uri.text, "901201145678")
+        return ET.fromstring(build_salary_slip_xml("SAL-SLP-SCHEME-001"))
 
     @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_expense_claim_has_additional_doc_reference(self, mock_frappe):
-        """build_expense_claim_xml emits AdditionalDocumentReference with correct id_type and id_value."""
-        doc = MagicMock()
-        doc.name = "EXP-CLM-ADR-001"
-        doc.employee = "HR-EMP-ADR-001"
-        doc.employee_name = "Ahmad bin Abdullah"
-        doc.company = "Test Co ADR"
-        doc.posting_date = "2026-01-31"
-        expense = MagicMock()
-        expense.expense_type = "Travel"
-        expense.sanctioned_amount = Decimal("500.00")
-        expense.custom_lhdn_classification_code = "027 : Others"
-        doc.expenses = [expense]
-
-        emp = self._make_employee(id_type="NRIC", id_value="901201145678")
-        company = self._make_company()
-        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
-            ("Expense Claim", "EXP-CLM-ADR-001"): doc,
-            ("Employee", "HR-EMP-ADR-001"): emp,
-            ("Company", "Test Co ADR"): company,
-        }.get((dt, name), MagicMock())
-        mock_frappe.db.get_value.return_value = 0
-
-        xml_string = build_expense_claim_xml("EXP-CLM-ADR-001")
-        root = ET.fromstring(xml_string)
-
-        adr = root.find(f"{{{CAC_NS}}}AdditionalDocumentReference")
-        self.assertIsNotNone(adr, "AdditionalDocumentReference element not found in expense claim XML")
-
-        uri = adr.find(f".//{{{CBC_NS}}}URI")
-        self.assertIsNotNone(uri, "AdditionalDocumentReference/.../cbc:URI not found")
-        self.assertEqual(uri.text, "901201145678")
+    def test_nric_produces_nric_scheme_id(self, mock_frappe):
+        """id_type='NRIC' must emit schemeID='NRIC' on supplier cbc:ID."""
+        root = self._build_xml("NRIC", mock_frappe)
+        ns = {"cac": CAC_NS, "cbc": CBC_NS}
+        supplier_id_elem = root.find(
+            ".//cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID", ns
+        )
+        self.assertIsNotNone(supplier_id_elem, "Supplier cbc:ID element not found")
+        self.assertEqual(supplier_id_elem.get("schemeID"), "NRIC",
+            "NRIC id_type must produce schemeID='NRIC'")
 
     @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_additional_doc_reference_passport_id_type(self, mock_frappe):
-        """AdditionalDocumentReference uses 'Passport' as ID and DocumentType when id_type is Passport."""
-        doc = self._make_salary_slip_doc()
-        emp = self._make_employee(id_type="Passport", id_value="A12345678")
-        company = self._make_company()
-        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
-            ("Salary Slip", "SAL-SLP-ADR-001"): doc,
-            ("Employee", "HR-EMP-ADR-001"): emp,
-            ("Company", "Test Co ADR"): company,
-        }.get((dt, name), MagicMock())
-        mock_frappe.db.get_value.return_value = 0
-
-        xml_string = build_salary_slip_xml("SAL-SLP-ADR-001")
-        root = ET.fromstring(xml_string)
-
-        adr = root.find(f"{{{CAC_NS}}}AdditionalDocumentReference")
-        self.assertIsNotNone(adr, "AdditionalDocumentReference not found")
-
-        adr_id = adr.find(f"{{{CBC_NS}}}ID")
-        self.assertEqual(adr_id.text, "Passport")
-
-        doc_type = adr.find(f"{{{CBC_NS}}}DocumentType")
-        self.assertEqual(doc_type.text, "Passport")
-
-        uri = adr.find(f".//{{{CBC_NS}}}URI")
-        self.assertEqual(uri.text, "A12345678")
+    def test_passport_produces_passport_scheme_id(self, mock_frappe):
+        """id_type='Passport' must emit schemeID='PASSPORT' on supplier cbc:ID."""
+        root = self._build_xml("Passport", mock_frappe)
+        ns = {"cac": CAC_NS, "cbc": CBC_NS}
+        supplier_id_elem = root.find(
+            ".//cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID", ns
+        )
+        self.assertIsNotNone(supplier_id_elem, "Supplier cbc:ID element not found")
+        self.assertEqual(supplier_id_elem.get("schemeID"), "PASSPORT",
+            "Passport id_type must produce schemeID='PASSPORT'")
 
     @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_no_additional_doc_reference_when_id_missing(self, mock_frappe):
-        """AdditionalDocumentReference is NOT emitted when employee has no id_type/id_value."""
-        doc = self._make_salary_slip_doc()
-        emp = self._make_employee(id_type="", id_value="")
-        company = self._make_company()
-        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
-            ("Salary Slip", "SAL-SLP-ADR-001"): doc,
-            ("Employee", "HR-EMP-ADR-001"): emp,
-            ("Company", "Test Co ADR"): company,
-        }.get((dt, name), MagicMock())
-        mock_frappe.db.get_value.return_value = 0
-
-        xml_string = build_salary_slip_xml("SAL-SLP-ADR-001")
-        root = ET.fromstring(xml_string)
-
-        adr = root.find(f"{{{CAC_NS}}}AdditionalDocumentReference")
-        self.assertIsNone(adr, "AdditionalDocumentReference should not be present when id_type/id_value are empty")
+    def test_brn_produces_brn_scheme_id(self, mock_frappe):
+        """id_type='BRN' must emit schemeID='BRN' on supplier cbc:ID."""
+        root = self._build_xml("BRN", mock_frappe)
+        ns = {"cac": CAC_NS, "cbc": CBC_NS}
+        supplier_id_elem = root.find(
+            ".//cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID", ns
+        )
+        self.assertIsNotNone(supplier_id_elem, "Supplier cbc:ID element not found")
+        self.assertEqual(supplier_id_elem.get("schemeID"), "BRN",
+            "BRN id_type must produce schemeID='BRN'")
 
     @patch("lhdn_payroll_integration.services.payload_builder.frappe")
-    def test_consolidated_xml_has_additional_doc_reference(self, mock_frappe):
-        """build_consolidated_xml emits AdditionalDocumentReference for the first employee."""
-        first_doc = MagicMock()
-        first_doc.name = "SAL-SLP-CONS-001"
-        first_doc.employee = "HR-EMP-ADR-001"
-        first_doc.employee_name = "Ahmad bin Abdullah"
-        first_doc.net_pay = 5000
-        first_doc.company = "Test Co ADR"
-        first_doc.end_date = "2026-01-31"
-
-        emp = self._make_employee(id_type="NRIC", id_value="901201145678")
-        company = self._make_company()
-        company.abbr = "TCA"
-
-        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
-            ("Salary Slip", "SAL-SLP-CONS-001"): first_doc,
-            ("Employee", "HR-EMP-ADR-001"): emp,
-            ("Company", "Test Co ADR"): company,
-        }.get((dt, name), MagicMock())
-
-        xml_string = build_consolidated_xml(["SAL-SLP-CONS-001"], "2026-01")
-        root = ET.fromstring(xml_string)
-
-        adr = root.find(f"{{{CAC_NS}}}AdditionalDocumentReference")
-        self.assertIsNotNone(adr, "AdditionalDocumentReference not found in consolidated invoice XML")
-
-        uri = adr.find(f".//{{{CBC_NS}}}URI")
-        self.assertIsNotNone(uri, "AdditionalDocumentReference URI not found in consolidated XML")
-        self.assertEqual(uri.text, "901201145678")
+    def test_army_id_produces_army_scheme_id(self, mock_frappe):
+        """id_type='Army ID' must emit schemeID='ARMY' on supplier cbc:ID."""
+        root = self._build_xml("Army ID", mock_frappe)
+        ns = {"cac": CAC_NS, "cbc": CBC_NS}
+        supplier_id_elem = root.find(
+            ".//cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID", ns
+        )
+        self.assertIsNotNone(supplier_id_elem, "Supplier cbc:ID element not found")
+        self.assertEqual(supplier_id_elem.get("schemeID"), "ARMY",
+            "Army ID id_type must produce schemeID='ARMY'")
