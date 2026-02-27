@@ -3863,3 +3863,41 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 1
 - [x] Prorates monthly income before annualising
 - [x] PCB validation warning uses prorated income when worked_days < total_days
 - [x] Test verifies prorated PCB for 15-day month vs full month same income
+## Iteration 17 - Fri, Feb 27, 2026  2:04:50 PM
+Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 2/3
+
+
+## Iteration 18 — US-036: Handle mid-month proration for PCB calculation
+
+**Type:** IMPL (already implemented)
+**TDD Phase:** GREEN (all tests already pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 45/45 tests pass (proration was already implemented, only needed prd.json update)
+
+### Notes
+- Implementation and tests already existed in container from prior iteration
+- Marked passes:true in prd.json
+
+## Iteration 18 — US-037: Add bulk Submit to LHDN action on Salary Slip list view
+
+**Type:** IMPL
+**TDD Phase:** GREEN (10/10 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_bulk_submission`
+**Result:** PASS — 10/10 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/submission_service.py` — Added `bulk_enqueue_lhdn_submission()` whitelisted method
+- `lhdn_payroll_integration/public/js/salary_slip_list.js` — List view action "Submit to LHDN" for Salary Slip
+- `lhdn_payroll_integration/hooks.py` — Added `doctype_list_js` for Salary Slip
+- `lhdn_payroll_integration/tests/test_bulk_submission.py` — 10 tests for bulk submission
+
+### Implementation details
+- `bulk_enqueue_lhdn_submission(docnames, doctype)`: whitelisted, requires HR Manager or System Manager role
+- Skips documents already Pending/Submitted/Exempt
+- Returns `{success, failed, errors}` dict
+- Client JS adds "Submit to LHDN" action to Salary Slip list view page actions
+- Registered via `doctype_list_js` hook in hooks.py
+
+### Gotchas
+- When mocking `frappe.throw`, must set `side_effect` to actually raise the exception — MagicMock's throw() is a no-op by default
+- Linter auto-modified the implementation to use `frappe.has_permission` and `json.loads` — had to restore original role-check approach to match acceptance criteria

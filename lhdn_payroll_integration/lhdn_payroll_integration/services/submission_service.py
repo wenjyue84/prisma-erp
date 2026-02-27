@@ -262,6 +262,67 @@ def resubmit_to_lhdn(docname, doctype="Salary Slip"):
     )
 
 
+@frappe.whitelist()
+def bulk_enqueue_lhdn_submission(docnames, doctype="Salary Slip"):
+    """Enqueue multiple documents for LHDN submission in bulk.
+
+    Sets each document's custom_lhdn_status to 'Pending' and enqueues
+    the appropriate processing method. Skips documents that are already
+    Pending, Submitted, or Exempt. Returns a summary of success/failure counts.
+
+    Args:
+        docnames: JSON string or list of document names.
+        doctype: 'Salary Slip' or 'Expense Claim'.
+
+    Returns:
+        dict with keys:
+            - success (int): Number of documents enqueued.
+            - failed (int): Number of documents that could not be enqueued.
+            - errors (list): Error messages for failed documents.
+    """
+    if "HR Manager" not in frappe.get_roles() and "System Manager" not in frappe.get_roles():
+        frappe.throw(
+            "Only HR Manager or System Manager can bulk submit to LHDN.",
+            frappe.PermissionError,
+        )
+
+    if isinstance(docnames, str):
+        docnames = frappe.parse_json(docnames)
+
+    if doctype == "Salary Slip":
+        process_method = "lhdn_payroll_integration.services.submission_service.process_salary_slip"
+    else:
+        process_method = "lhdn_payroll_integration.services.submission_service.process_expense_claim"
+
+    skip_statuses = {"Pending", "Submitted", "Exempt"}
+    success = 0
+    failed = 0
+    errors = []
+
+    for docname in docnames:
+        try:
+            current_status = frappe.db.get_value(doctype, docname, "custom_lhdn_status")
+            if current_status in skip_statuses:
+                errors.append(f"{docname}: already {current_status}")
+                failed += 1
+                continue
+
+            frappe.db.set_value(doctype, docname, "custom_lhdn_status", "Pending")
+            frappe.enqueue(
+                method=process_method,
+                docname=docname,
+                queue="short",
+                timeout=300,
+                enqueue_after_commit=True,
+            )
+            success += 1
+        except Exception as e:
+            errors.append(f"{docname}: {str(e)}")
+            failed += 1
+
+    return {"success": success, "failed": failed, "errors": errors}
+
+
 def schedule_retry(doctype, docname, process_method):
     """Schedule a retry for a failed LHDN submission.
 
@@ -502,3 +563,64 @@ def process_expense_claim(docname):
     except Exception as e:
         frappe.db.set_value("Expense Claim", docname, "custom_lhdn_status", "Invalid")
         frappe.db.set_value("Expense Claim", docname, "custom_error_log", str(e))
+
+
+@frappe.whitelist()
+def bulk_enqueue_lhdn_submission(docnames, doctype="Salary Slip"):
+    """Enqueue multiple documents for LHDN submission in bulk.
+
+    Sets each document's custom_lhdn_status to 'Pending' and enqueues
+    the appropriate processing method. Skips documents that are already
+    Pending, Submitted, or Exempt. Returns a summary of success/failure counts.
+
+    Args:
+        docnames: JSON string or list of document names.
+        doctype: 'Salary Slip' or 'Expense Claim'.
+
+    Returns:
+        dict with keys:
+            - success (int): Number of documents enqueued.
+            - failed (int): Number of documents that could not be enqueued.
+            - errors (list): Error messages for failed documents.
+    """
+    if "HR Manager" not in frappe.get_roles() and "System Manager" not in frappe.get_roles():
+        frappe.throw(
+            "Only HR Manager or System Manager can bulk submit to LHDN.",
+            frappe.PermissionError,
+        )
+
+    if isinstance(docnames, str):
+        docnames = frappe.parse_json(docnames)
+
+    if doctype == "Salary Slip":
+        process_method = "lhdn_payroll_integration.services.submission_service.process_salary_slip"
+    else:
+        process_method = "lhdn_payroll_integration.services.submission_service.process_expense_claim"
+
+    skip_statuses = {"Pending", "Submitted", "Exempt"}
+    success = 0
+    failed = 0
+    errors = []
+
+    for docname in docnames:
+        try:
+            current_status = frappe.db.get_value(doctype, docname, "custom_lhdn_status")
+            if current_status in skip_statuses:
+                errors.append(f"{docname}: already {current_status}")
+                failed += 1
+                continue
+
+            frappe.db.set_value(doctype, docname, "custom_lhdn_status", "Pending")
+            frappe.enqueue(
+                method=process_method,
+                docname=docname,
+                queue="short",
+                timeout=300,
+                enqueue_after_commit=True,
+            )
+            success += 1
+        except Exception as e:
+            errors.append(f"{docname}: {str(e)}")
+            failed += 1
+
+    return {"success": success, "failed": failed, "errors": errors}

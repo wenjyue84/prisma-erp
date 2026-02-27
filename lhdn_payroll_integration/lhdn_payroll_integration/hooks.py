@@ -20,6 +20,13 @@ jinja = {
 	],
 }
 
+# Doctype JS
+# ----------
+
+doctype_list_js = {
+	"Salary Slip": "public/js/salary_slip_list.js",
+}
+
 # Document Events
 # ---------------
 
