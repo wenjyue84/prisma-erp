@@ -3242,3 +3242,54 @@ Completed: Add bonus/irregular payment classification for PCB differentiation (I
 ### Gotchas
 - `exemption_filter.py` in nested dir was stale (original version without `employee` param)
 - `docker exec cp` fails with permission denied on root-owned nested files — use `docker cp` from host instead
+## Iteration 5 - Fri, Feb 27, 2026 12:17:33 PM
+Completed: Add non-resident flat-rate 30% tax flag and handling (ID: US-019) in 6m
+
+
+## Iteration N — US-018: Add bonus/irregular payment classification for PCB differentiation
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 27/27 tests pass (all TestCalculatePcbBonus tests)
+
+### Files already implemented (pre-existing)
+- `services/pcb_calculator.py` — `bonus_amount` parameter and LHDN Schedule D annualisation rule
+- `fixtures/custom_field.json` — `custom_is_irregular_payment` (Check) on Salary Component
+- `tests/test_pcb_calculator.py` — `TestCalculatePcbBonus` class with 8 tests
+
+### Notes
+- Story was already complete when picked up; marked passes=True after verification
+
+## Iteration N — US-019: Add non-resident flat-rate 30% tax flag and handling
+
+**Type:** IMPL
+**TDD Phase:** GREEN (28/28 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS
+
+### Files created/modified
+- `fixtures/custom_field.json` — Added `custom_is_non_resident` (Check, default 0) on Employee after `custom_is_foreign_worker`
+- `services/pcb_calculator.py` — Updated `validate_pcb_amount` to check `custom_is_non_resident` first, fall back to `custom_tax_resident_status`
+- `tests/test_pcb_calculator.py` — Added `employee.custom_is_non_resident = 0` to all 4 resident mocks; added `test_non_resident_flag_triggers_flat_30_percent`
+
+### Gotchas
+- MagicMock attributes are always truthy — must explicitly set `custom_is_non_resident = 0` for resident employee mocks
+
+## Iteration N — US-020: Distinguish director fee vs director salary at invoice level
+
+**Type:** IMPL
+**TDD Phase:** GREEN (10/10 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_director_payment_type`
+**Result:** PASS
+
+### Files already implemented (pre-existing in outer path, needed sync to nested path)
+- `services/exemption_filter.py` — `get_default_classification_code()` with `employee=None` param and `_DIRECTOR_PAYMENT_TYPE_CLASSIFICATION` dict
+- `fixtures/custom_field.json` — `custom_director_payment_type` (Select) on Employee with depends_on
+
+### Critical gotcha — double services/ path
+The container has TWO copies of the services directory:
+- Outer: `apps/lhdn_payroll_integration/lhdn_payroll_integration/services/` (what `docker cp` updates)
+- Nested: `apps/lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/services/` (what bench tests import)
+
+Tests import `lhdn_payroll_integration.lhdn_payroll_integration.services.*` which resolves to the NESTED path. Must use `docker exec -u root cp` to sync nested copy after updating the outer one.
