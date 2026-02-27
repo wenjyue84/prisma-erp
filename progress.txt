@@ -2765,3 +2765,27 @@ Completed: Fix token expiry check and status poller base_url bug (ID: US-003) in
 
 ## Iteration N - Fri, Feb 27, 2026
 Completed: Implement NRIC format validation on Employee save (ID: US-005)
+## Iteration 3 - Fri, Feb 27, 2026 10:42:30 AM
+Completed: Implement NRIC format validation on Employee save (ID: US-005) in 8m
+
+
+## Iteration US-005 — Implement NRIC format validation on Employee save
+
+**Type:** IMPL
+**TDD Phase:** GREEN (41/41 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_validation`
+**Result:** PASS — 41 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/validation.py` — Added `validate_nric()`, `validate_id_value()`, `validate_document_for_lhdn()`; `_VALID_STATE_CODES` set (01-16 local, 21-59 foreign)
+- `lhdn_payroll_integration/hooks.py` — Added Employee validate hook: `lhdn_payroll_integration.utils.validation.validate_document_for_lhdn`
+
+### Patterns discovered
+- **Stale pyc gotcha**: Docker cp preserves old mtime from local fs; if pyc mtime > py mtime, Python loads stale pyc. Always `rm __pycache__/module.cpython-*.pyc` after docker cp before running tests
+- **Frappe doc API**: Use `doc.get("field_name")` not `getattr(doc, "field_name")` — consistent with Frappe's document API and test mocks using MagicMock with `side_effect`
+- **Malaysian NRIC state codes**: 01-16 (local states), 21-59 (foreign born). Codes 17-20 and 60+ are invalid/reserved
+- **Passport validation**: 1-20 alphanumeric (no special chars) per existing container tests
+
+### Gotchas
+- Container had a more comprehensive test file from a previous session; don't docker cp test files blindly — check existing tests first
+- PyC cache timestamp issue is a recurring problem: always delete pyc after docker cp of Python files
