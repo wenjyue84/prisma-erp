@@ -481,3 +481,6 @@ warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the
 [2m[8:54][0m [37mNow update progress.txt and commit:[0m
 [2m[8:56][0m 📖 [36mRead[0m [2mprogress.txt[0m
 [2m[9:06][0m 🔧 [36mEdit[0m [2mprogress.txt[0m
+[2m[9:25][0m 💻 [36mBash[0m [2mcat >> "/c/Users/Jyue/Documents/1-projects/Projects/prisma-e...[0m
+[2m[9:29][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[9:33][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
