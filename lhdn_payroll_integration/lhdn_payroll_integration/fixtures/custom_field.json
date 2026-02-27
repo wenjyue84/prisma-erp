@@ -80,13 +80,25 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Employee-custom_is_non_resident",
+    "dt": "Employee",
+    "fieldname": "custom_is_non_resident",
+    "fieldtype": "Check",
+    "label": "Is Non-Resident (Tax)",
+    "description": "Employee is a non-resident for tax purposes (present in Malaysia fewer than 182 days). Taxed at flat 30% — no reliefs apply. Distinct from Is Foreign Worker.",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_is_foreign_worker"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Employee-custom_bank_account_number",
     "dt": "Employee",
     "fieldname": "custom_bank_account_number",
     "fieldtype": "Data",
     "label": "Bank Account Number",
     "module": "LHDN Payroll Integration",
-    "insert_after": "custom_is_foreign_worker"
+    "insert_after": "custom_is_non_resident"
   },
   {
     "doctype": "Custom Field",

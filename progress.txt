@@ -6,6 +6,9 @@
 - `bench new-app` creates modules.txt with default module name automatically
 - Test file goes in `apps/<app>/<app>/tests/test_*.py`
 - FrappeTestCase import: `from frappe.tests.utils import FrappeTestCase`
+- CRITICAL: Two copies of services/ exist in container: outer path (non-nested) and nested Frappe module path. Tests import from `lhdn_payroll_integration.lhdn_payroll_integration.services.*` which resolves to the NESTED path. Always update BOTH or use `docker exec -u root cp` to sync them.
+- MagicMock auto-creates any attribute as truthy — when testing employee flags (Check fields), explicitly set mock attributes (e.g., `employee.custom_is_non_resident = 0`) to prevent false-positive truthy evaluation.
+- `docker cp` on Windows/MINGW: use forward slashes (C:/...) for host paths
 
 ---
 

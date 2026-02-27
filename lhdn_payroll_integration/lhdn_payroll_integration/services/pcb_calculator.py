@@ -172,7 +172,11 @@ def validate_pcb_amount(doc_name: str) -> dict:
     children = 0
 
     employee = frappe.get_doc("Employee", doc.employee)
-    if hasattr(employee, "custom_tax_resident_status"):
+    # custom_is_non_resident (Check, 1/0) is the canonical non-resident flag (US-019).
+    # Fall back to legacy custom_tax_resident_status if present.
+    if hasattr(employee, "custom_is_non_resident") and employee.custom_is_non_resident:
+        resident = False
+    elif hasattr(employee, "custom_tax_resident_status"):
         resident = (employee.custom_tax_resident_status or "Resident") == "Resident"
     if hasattr(employee, "custom_marital_status"):
         married = (employee.custom_marital_status or "") == "Married"
