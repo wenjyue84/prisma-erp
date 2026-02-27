@@ -3948,3 +3948,24 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 1
 
 ### Gotchas
 - MagicMock auto-creates attributes — always explicitly set numeric fields used in Decimal() conversion
+## Iteration 17 - Fri, Feb 27, 2026  2:25:19 PM
+Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 2/3
+
+
+## Iteration N — US-040: Define custom_sst_registration_number on Employee in fixture
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder --case TestSSTHandling`
+**Result:** PASS — 5/5 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — Added Employee-custom_sst_registration_number entry (Data, depends_on: eval:doc.custom_requires_self_billed_invoice, insert_after: custom_state_code)
+
+### Patterns discovered
+- Field was NOT in DB before (confirmed via frappe.db.get_value returning nothing) — fixture sync via `frappe.utils.fixtures.sync_fixtures` did insert it
+- `--case TestSSTHandling` selects by class name; `--test` selects by method name
+- Tests existed in test_payload_builder.py (TestSSTHandling) already — fixture was the only missing piece
+
+### Gotchas
+- `bench sync_fixtures` command does not exist; use `bench execute frappe.utils.fixtures.sync_fixtures`

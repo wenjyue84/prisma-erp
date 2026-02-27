@@ -363,6 +363,17 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Employee-custom_sst_registration_number",
+    "dt": "Employee",
+    "fieldname": "custom_sst_registration_number",
+    "fieldtype": "Data",
+    "label": "SST Registration Number",
+    "depends_on": "eval:doc.custom_requires_self_billed_invoice",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_state_code"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Company-custom_state_code",
     "dt": "Company",
     "fieldname": "custom_state_code",
