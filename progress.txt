@@ -2985,3 +2985,6 @@ Completed: Wire build_consolidated_xml() into consolidation_service (ID: US-011)
 ### Gotchas
 - Existing tests that had batch_slips needed `_submit_consolidated_batch` patched (otherwise it calls real `build_consolidated_xml` which uses the REAL frappe module, not the test mock)
 - Patch order for decorators is bottom-up for function parameters
+## Iteration 8 - Fri, Feb 27, 2026 11:09:24 AM
+Incomplete: Generate CP39 monthly PCB remittance file (ID: US-012) — attempt 1/3
+
