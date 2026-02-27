@@ -1,0 +1,127 @@
+{% set emp = frappe.get_doc("Employee", doc.employee) %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 11pt; color: #000; margin: 0; padding: 0; }
+    .header { text-align: center; margin-bottom: 18px; }
+    .header h2 { margin: 0; font-size: 14pt; text-transform: uppercase; }
+    .header h3 { margin: 4px 0 0; font-size: 12pt; }
+    table.form-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+    table.form-table td { padding: 5px 8px; vertical-align: top; }
+    table.form-table td.label { font-weight: bold; width: 40%; }
+    .section-title { background: #e8e8e8; font-weight: bold; padding: 4px 8px;
+                     border: 1px solid #aaa; margin-top: 14px; margin-bottom: 4px; }
+    .alert-box { background: #fff3cd; border: 1px solid #ffc107; padding: 8px 12px;
+                 margin: 12px 0; font-weight: bold; }
+    .signature-row { display: flex; justify-content: space-between; margin-top: 40px; }
+    .signature-block { width: 45%; border-top: 1px solid #000; padding-top: 6px; text-align: center; }
+    .footer-note { margin-top: 20px; font-size: 9pt; color: #555; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h2>Lembaga Hasil Dalam Negeri Malaysia</h2>
+    <h3>BORANG CP21</h3>
+    <p style="margin:2px 0; font-size:10pt;">
+      Notification of Departure from Malaysia / Cessation of Employment<br>
+      <em>(Notis Perlepasan / Pemberhentian Pekerjaan)</em>
+    </p>
+  </div>
+
+  {% set days = frappe.utils.date_diff(doc.last_working_date, frappe.utils.today()) %}
+  {% if days < 30 %}
+  <div class="alert-box">
+    &#9888; WARNING: CP21 should be filed at least 30 days before the last working date.
+    Only {{ days }} day(s) remaining. Please submit to LHDN immediately.
+  </div>
+  {% endif %}
+
+  <div class="section-title">Part A — Employer Information</div>
+  <table class="form-table">
+    <tr>
+      <td class="label">Company / Employer Name</td>
+      <td>{{ doc.company or "" }}</td>
+    </tr>
+    <tr>
+      <td class="label">Employer TIN</td>
+      <td>{{ frappe.db.get_value("Company", doc.company, "custom_company_tin_number") or "N/A" }}</td>
+    </tr>
+  </table>
+
+  <div class="section-title">Part B — Employee Information</div>
+  <table class="form-table">
+    <tr>
+      <td class="label">Employee Name</td>
+      <td>{{ doc.employee_name or "" }}</td>
+    </tr>
+    <tr>
+      <td class="label">Employee ID</td>
+      <td>{{ doc.employee or "" }}</td>
+    </tr>
+    <tr>
+      <td class="label">NRIC / Passport No.</td>
+      <td>{{ emp.passport_number or emp.get("custom_nric_number") or "N/A" }}</td>
+    </tr>
+    <tr>
+      <td class="label">Nationality</td>
+      <td>{{ emp.get("custom_nationality_iso") or emp.nationality or "N/A" }}</td>
+    </tr>
+    <tr>
+      <td class="label">Date of Birth</td>
+      <td>{{ frappe.format(emp.date_of_birth, {"fieldtype":"Date"}) if emp.date_of_birth else "N/A" }}</td>
+    </tr>
+  </table>
+
+  <div class="section-title">Part C — Cessation / Departure Details</div>
+  <table class="form-table">
+    <tr>
+      <td class="label">Last Working Date</td>
+      <td>{{ frappe.format(doc.last_working_date, {"fieldtype":"Date"}) }}</td>
+    </tr>
+    <tr>
+      <td class="label">Reason for Cessation</td>
+      <td>{{ doc.reason or "" }}</td>
+    </tr>
+    <tr>
+      <td class="label">Days Notice Remaining</td>
+      <td>{{ doc.days_notice if doc.days_notice is not none else days }} day(s)</td>
+    </tr>
+    <tr>
+      <td class="label">CP21 Reference No.</td>
+      <td>{{ doc.name }}</td>
+    </tr>
+    <tr>
+      <td class="label">Date of Filing</td>
+      <td>{{ frappe.format(frappe.utils.today(), {"fieldtype":"Date"}) }}</td>
+    </tr>
+  </table>
+
+  <div class="section-title">Part D — Declaration</div>
+  <p style="margin: 8px 0;">
+    I hereby declare that the particulars given above are true and correct to the best of my knowledge.
+    This notification is submitted in accordance with Section 83 of the Income Tax Act 1967.
+  </p>
+
+  <div class="signature-row">
+    <div class="signature-block">
+      Employer / Authorised Representative Signature<br>
+      <br>
+      Name: _______________________<br>
+      Date: _______________________
+    </div>
+    <div class="signature-block">
+      Official Stamp
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <strong>Note:</strong> This form must be submitted to LHDN at least 30 days before the
+    employee's last working date or departure from Malaysia, whichever is earlier, as required
+    under Section 83(3) of the Income Tax Act 1967.
+  </div>
+
+</body>
+</html>

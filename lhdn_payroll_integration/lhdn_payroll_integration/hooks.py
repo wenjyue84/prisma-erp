@@ -35,6 +35,7 @@ doc_events = {
 	},
 	"Employee": {
 		"validate": "lhdn_payroll_integration.utils.validation.validate_document_for_lhdn",
+		"on_update": "lhdn_payroll_integration.services.cp21_service.handle_employee_left",
 	},
 }
 
