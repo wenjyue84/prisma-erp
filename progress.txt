@@ -3901,3 +3901,27 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 2
 ### Gotchas
 - When mocking `frappe.throw`, must set `side_effect` to actually raise the exception — MagicMock's throw() is a no-op by default
 - Linter auto-modified the implementation to use `frappe.has_permission` and `json.loads` — had to restore original role-check approach to match acceptance criteria
+
+
+## Iteration — US-037: Add bulk Submit to LHDN action on Salary Slip list view
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 10 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_bulk_submission`
+**Result:** PASS — 10/10 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/submission_service.py` — Added `bulk_enqueue_lhdn_submission()` whitelisted method
+- `lhdn_payroll_integration/public/js/salary_slip_list.js` — List view client script (already existed)
+- `lhdn_payroll_integration/hooks.py` — `doctype_list_js` already registered
+
+### Key implementation details
+- Role check: `frappe.get_roles()` — HR Manager OR System Manager required
+- Permission denied: use `raise frappe.PermissionError(...)` NOT `frappe.throw(...)` — mocked tests need the direct raise
+- Status skipping: Pending/Submitted/Exempt docs are counted as failed with error message
+- `frappe.parse_json(docnames)` called when docnames is a string (Frappe whitelist wraps JS lists as JSON strings)
+- Returns `{"success": N, "failed": M, "errors": [...]}`
+
+### Gotchas
+- `frappe.throw(msg, frappe.PermissionError)` does NOT raise in mock context — must use `raise frappe.PermissionError(...)` directly
+- File had a duplicate function that needed cleanup (Edit tool added a second copy)
