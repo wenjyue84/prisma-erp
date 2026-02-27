@@ -2848,3 +2848,30 @@ Completed: Add IssueTime element to Invoice header (ID: US-006) in 4m
 
 ### Gotchas
 - None — straightforward helper + 2-line call in each builder
+## Iteration 5 - Fri, Feb 27, 2026 10:53:28 AM
+Completed: Add InvoicePeriod to individual Salary Slip and Expense Claim invoices (ID: US-007) in 5m
+
+
+
+## Iteration N — US-009: Fix credit note to use LHDN TIN not ERPNext employee code for Supplier
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_credit_note`
+**Result:** PASS — 8/8 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/credit_note_service.py` — Already fixed in container/local:
+  - Added `employee = frappe.get_doc("Employee", doc.employee)` to load employee doc
+  - Changed supplier ID from `doc.employee` (ERPNext code) to `employee.custom_lhdn_tin` with `schemeID="TIN"`
+  - Added `_add_postal_address()` helper and called on both supplier and buyer party elements
+  - Added `_add_party_tax_scheme()` helper and called on both supplier and buyer party elements
+- `lhdn_payroll_integration/tests/test_credit_note.py` — 8 tests including `test_credit_note_supplier_id_uses_lhdn_tin`
+
+### Patterns discovered
+- When Ralph restarts a session, the container may already have implementation completed from a prior session
+- Always check the container file AND local file for both implementation and test sync
+- `schemeID="TIN"` attribute passed as kwarg to `_sub()` — works because ET.SubElement accepts **attribs
+
+### Gotchas
+- US-009 was already implemented (both local and container matched) but prd.json was not updated — verified by reading container file then marking passes=true

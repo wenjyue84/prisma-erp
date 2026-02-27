@@ -862,6 +862,68 @@ class TestConsolidatedXMLBuilder(FrappeTestCase):
         self.assertIn("NA", customer_xml,
                        "Buyer contact 'NA' not found in AccountingCustomerParty")
 
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_consolidated_line_amount_excludes_employer_statutory(self, mock_frappe):
+        """Consolidated invoice line amounts must match eligible earnings (not net_pay).
+        Employer statutory contributions must be excluded (US-010)."""
+        doc = MagicMock()
+        doc.name = "SS-001"
+        doc.doctype = "Salary Slip"
+        doc.employee = "HR-EMP-00001"
+        doc.employee_name = "Ahmad bin Abdullah"
+        doc.company = "Arising Packaging"
+        doc.posting_date = "2026-01-15"
+        doc.end_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
+
+        # Eligible earnings: Basic Salary 4000, Allowance 1000
+        earning1 = MagicMock()
+        earning1.salary_component = "Basic Salary"
+        earning1.amount = 4000
+        earning1.custom_lhdn_classification_code = "022 : Others"
+
+        earning2 = MagicMock()
+        earning2.salary_component = "Allowance"
+        earning2.amount = 1000
+        earning2.custom_lhdn_classification_code = "022 : Others"
+
+        # Employer statutory contribution — must be excluded
+        statutory = MagicMock()
+        statutory.salary_component = "EPF - Employer"
+        statutory.amount = 440
+
+        doc.earnings = [earning1, earning2, statutory]
+        doc.net_pay = 5440 - 440  # net_pay uses all; eligible = 5000
+        doc.deductions = []
+
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SS-001"): doc,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+        mock_frappe.db.get_value.return_value = 0
+
+        xml_string = build_consolidated_xml(["SS-001"], "2026-01")
+        root = ET.fromstring(xml_string)
+
+        # Verify line amount = 4000 + 1000 = 5000 (not 5440)
+        lines = root.findall(f".//{{{CAC_NS}}}InvoiceLine")
+        self.assertEqual(len(lines), 1)
+        line_amount_elem = lines[0].find(f"{{{CBC_NS}}}LineExtensionAmount")
+        self.assertIsNotNone(line_amount_elem)
+        self.assertEqual(Decimal(line_amount_elem.text), Decimal("5000.00"),
+            f"Consolidated line amount must be eligible earnings 5000, got {line_amount_elem.text}")
+
+        # Verify total also = 5000
+        tax_excl = root.find(
+            f".//{{{CAC_NS}}}LegalMonetaryTotal/{{{CBC_NS}}}TaxExclusiveAmount"
+        )
+        self.assertIsNotNone(tax_excl)
+        self.assertEqual(Decimal(tax_excl.text), Decimal("5000.00"),
+            f"TaxExclusiveAmount must be 5000 (eligible earnings), got {tax_excl.text}")
+
 
 class TestStateCodeInUBL(FrappeTestCase):
     """Test Malaysian state code (CountrySubentityCode) in UBL address elements.

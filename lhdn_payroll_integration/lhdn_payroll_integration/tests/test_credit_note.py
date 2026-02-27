@@ -195,6 +195,50 @@ class TestSelfBilledCreditNote(FrappeTestCase):
 		self.assertIn("SAL-SLP-2026-00001", xml_str,
 			"Credit note XML must reference the original docname")
 
+	@patch("lhdn_payroll_integration.services.credit_note_service.frappe")
+	def test_credit_note_supplier_id_uses_lhdn_tin(self, mock_frappe):
+		"""Supplier party ID in credit note must use employee.custom_lhdn_tin, not doc.employee (US-009)."""
+		mock_doc = self._mock_original_doc()
+
+		mock_employee = MagicMock()
+		mock_employee.custom_lhdn_tin = "IG12345678901"
+		mock_employee.custom_id_type = "NRIC"
+		mock_employee.custom_id_value = "901201145678"
+		mock_employee.custom_is_foreign_worker = 0
+		mock_employee.custom_state_code = "01"
+		mock_employee.custom_sst_registration_number = None
+
+		mock_company = MagicMock()
+		mock_company.custom_company_tin_number = "C12345678901"
+		mock_company.name = "Test Company"
+		mock_company.custom_state_code = "14"
+		mock_company.custom_sst_registration_number = None
+
+		def _get_doc(doctype, name=None, **kw):
+			if doctype == "Salary Slip":
+				return mock_doc
+			if doctype == "Employee":
+				return mock_employee
+			return MagicMock()
+
+		mock_frappe.get_doc.side_effect = _get_doc
+		mock_frappe.get_cached_doc.return_value = mock_company
+		mock_frappe.conf.get.side_effect = lambda key, default=None: {
+			"lhdn_einvoice_version": "1.1",
+		}.get(key, default)
+
+		xml_str = build_credit_note_xml("SAL-SLP-2026-00001", "Correction")
+		root = ET.fromstring(xml_str)
+
+		supplier_id = root.find(
+			".//cac:AccountingSupplierParty//cac:PartyIdentification/cbc:ID", NS
+		)
+		self.assertIsNotNone(supplier_id, "Supplier PartyIdentification/ID must be present")
+		self.assertEqual(supplier_id.text, "IG12345678901",
+			f"Supplier ID must be LHDN TIN, got '{supplier_id.text}' (should not be ERPNext employee code)")
+		self.assertEqual(supplier_id.get("schemeID"), "TIN",
+			"Supplier ID schemeID must be 'TIN'")
+
 	def test_cancellation_error_includes_credit_note_instruction(self):
 		"""When cancellation_service rejects a cancellation (past 72 hours),
 		the ValidationError message must include credit note guidance."""

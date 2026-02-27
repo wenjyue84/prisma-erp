@@ -32,6 +32,22 @@ def _sub(parent, ns, tag, text=None, **attribs):
 	return elem
 
 
+def _add_postal_address(party_elem, state_code):
+	"""Add cac:PostalAddress with cbc:CountrySubentityCode to a Party element."""
+	postal = _sub(party_elem, CAC_NS, "PostalAddress")
+	_sub(postal, CBC_NS, "CountrySubentityCode", state_code)
+
+
+def _add_party_tax_scheme(party_elem, sst_registration):
+	"""Add cac:PartyTaxScheme to a Party element."""
+	reg_name = sst_registration if sst_registration else "NA"
+	scheme_id = "SST" if sst_registration else "NA"
+	tax_scheme_elem = _sub(party_elem, CAC_NS, "PartyTaxScheme")
+	_sub(tax_scheme_elem, CBC_NS, "RegistrationName", reg_name)
+	inner_scheme = _sub(tax_scheme_elem, CAC_NS, "TaxScheme")
+	_sub(inner_scheme, CBC_NS, "ID", scheme_id)
+
+
 def build_credit_note_xml(original_docname, reason=None):
 	"""Build UBL 2.1 Self-Billed Credit Note XML (type 12).
 
@@ -57,6 +73,7 @@ def build_credit_note_xml(original_docname, reason=None):
 			frappe.ValidationError,
 		)
 
+	employee = frappe.get_doc("Employee", doc.employee)
 	company = frappe.get_cached_doc("Company", doc.company)
 
 	# Register namespaces
@@ -87,21 +104,39 @@ def build_credit_note_xml(original_docname, reason=None):
 	_sub(invoice_doc_ref, CBC_NS, "ID", original_docname)
 	_sub(invoice_doc_ref, CBC_NS, "UUID", doc.custom_lhdn_uuid)
 
+	# Resolve state codes for postal addresses
+	supplier_state = (
+		"17" if getattr(employee, "custom_is_foreign_worker", 0)
+		else str(getattr(employee, "custom_state_code", None) or "01")
+	)
+	buyer_state = str(getattr(company, "custom_state_code", None) or "14")
+
 	# AccountingSupplierParty (Employee = Payee = Supplier in self-billed)
+	# Use LHDN TIN (not ERPNext employee code) as supplier identifier
 	supplier_party = _sub(root, CAC_NS, "AccountingSupplierParty")
 	supplier_inner = _sub(supplier_party, CAC_NS, "Party")
 	supplier_id = _sub(supplier_inner, CAC_NS, "PartyIdentification")
-	_sub(supplier_id, CBC_NS, "ID", doc.employee)
+	_sub(supplier_id, CBC_NS, "ID", employee.custom_lhdn_tin, schemeID="TIN")
 	supplier_name = _sub(supplier_inner, CAC_NS, "PartyName")
 	_sub(supplier_name, CBC_NS, "Name", doc.employee_name)
+	_add_postal_address(supplier_inner, supplier_state)
+	_add_party_tax_scheme(
+		supplier_inner,
+		getattr(employee, "custom_sst_registration_number", None) or ""
+	)
 
 	# AccountingCustomerParty (Company = Payer = Buyer in self-billed)
 	customer_party = _sub(root, CAC_NS, "AccountingCustomerParty")
 	customer_inner = _sub(customer_party, CAC_NS, "Party")
 	customer_id = _sub(customer_inner, CAC_NS, "PartyIdentification")
-	_sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number)
+	_sub(customer_id, CBC_NS, "ID", company.custom_company_tin_number, schemeID="TIN")
 	customer_name = _sub(customer_inner, CAC_NS, "PartyName")
 	_sub(customer_name, CBC_NS, "Name", doc.company)
+	_add_postal_address(customer_inner, buyer_state)
+	_add_party_tax_scheme(
+		customer_inner,
+		getattr(company, "custom_sst_registration_number", None) or ""
+	)
 
 	# Calculate reversed totals from earnings
 	total_excl = Decimal("0.00")

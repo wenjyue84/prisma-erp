@@ -480,12 +480,21 @@ def build_consolidated_xml(docnames, target_month):
     if isinstance(_emp_id_type, str) and _emp_id_type and isinstance(_emp_id_value, str) and _emp_id_value:
         _add_additional_doc_reference(root, _emp_id_type, _emp_id_value)
 
-    # Load all docs and calculate totals
+    # Load all docs and calculate totals from eligible earnings (not net_pay)
+    # Must match individual invoice logic: exclude employer statutory + custom-excluded components
     docs = []
     total_excl = Decimal("0.00")
     for docname in docnames:
         doc = frappe.get_doc("Salary Slip", docname)
-        amount = _quantize(doc.net_pay)
+        eligible_earnings = [
+            e for e in doc.earnings
+            if e.salary_component not in EMPLOYER_STATUTORY_COMPONENTS
+            and frappe.db.get_value(
+                "Salary Component", e.salary_component,
+                "custom_lhdn_exclude_from_invoice"
+            ) != 1
+        ]
+        amount = sum(_quantize(Decimal(str(e.amount))) for e in eligible_earnings)
         total_excl += amount
         docs.append((doc, amount))
 
