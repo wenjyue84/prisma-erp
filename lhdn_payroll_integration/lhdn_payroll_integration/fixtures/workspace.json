@@ -6,10 +6,11 @@
     "title": "LHDN Payroll",
     "type": "Workspace",
     "module": "LHDN Payroll Integration",
+    "parent_page": "Payroll",
     "icon": "accounting",
     "public": 1,
     "is_hidden": 0,
-    "content": "[]",
+    "content": "[{\"id\":\"lhdn-sc-1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Slip\",\"col\":4}},{\"id\":\"lhdn-sc-2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Expense Claim\",\"col\":4}},{\"id\":\"lhdn-sc-3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"LHDN Payroll Compliance\",\"col\":4}},{\"id\":\"lhdn-sc-4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"LHDN Developer Tools\",\"col\":4}}]",
     "shortcuts": [
       {
         "doctype": "Workspace Shortcut",

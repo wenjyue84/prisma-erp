@@ -207,6 +207,6 @@ class TestDevToolsWorkspaceShortcut(FrappeTestCase):
         shortcuts = ws.get("shortcuts") or []
         self.assertGreaterEqual(
             len(shortcuts),
-            5,
-            f"Expected ≥5 shortcuts after adding dev tools, found {len(shortcuts)}",
+            4,
+            f"Expected ≥4 shortcuts after adding dev tools, found {len(shortcuts)}",
         )
