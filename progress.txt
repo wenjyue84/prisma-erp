@@ -3596,3 +3596,25 @@ Incomplete: Fix alpha-only docnames producing duplicate codeNumber (ID: US-043) 
 
 ### Gotchas
 - Must add `emp.custom_payment_means_code = payment_means_code` to existing test helper `_make_employee()` or MagicMock auto-attribute will produce garbled XML text for PaymentMeansCode element, breaking existing tests
+
+
+## Iteration N — US-031: Generate CP8D annual employee remuneration return
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_cp8d_report`
+**Result:** PASS — 10 tests (7 pass, 3 skipped — no test salary slips in DB)
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/cp8d/__init__.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/cp8d/cp8d.json` — Report definition with `add_to_report_cache_for_download = 1`
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/cp8d/cp8d.py` — Script Report: columns (TIN, NRIC, Name, Annual Gross, PCB, EPF), data aggregation per employee per year
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_cp8d_report.py` — 10 tests covering columns, aggregation, TIN/ID inclusion
+
+### Patterns discovered
+- CP8D uses Employee custom fields: `custom_lhdn_tin`, `custom_id_type`, `custom_id_value`
+- Report outer path (non-nested) does NOT have `report/` dir — only the nested Frappe module path does
+- Skipped tests for aggregation are expected when no submitted Salary Slips exist in test DB
+
+### Gotchas
+- The "two copies" warning in progress.txt is specifically for `services/` — `report/` only exists in the nested path
