@@ -2638,3 +2638,29 @@ Completed: All 5 mandatory LHDN integration test scenarios pass in sandbox (ID: 
 
 ### Gotchas
 - MagicMock attribute values containing `<>` (e.g. `<MagicMock name='...'>`) cause invalid XML parse errors when used as attribute values
+## Iteration 1 - Fri, Feb 27, 2026 10:09:01 AM
+Completed: Add schemeID attribute to PartyIdentification/ID elements (ID: US-001) in 10m
+
+## Iteration 2 — US-002: Add AdditionalDocumentReference for registration ID in XML
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payload_builder`
+**Result:** PASS — 61/61 tests, 5 new TestAdditionalDocumentReference tests all pass
+
+### Files created/modified
+- `lhdn_payroll_integration/services/payload_builder.py` — Added `_add_additional_doc_reference()` helper; called in `_build_invoice_skeleton()` and `build_consolidated_xml()`
+- `lhdn_payroll_integration/tests/test_payload_builder.py` — Added `TestAdditionalDocumentReference` class (5 tests)
+
+### Implementation
+- `_add_additional_doc_reference(root, id_type, id_value)` emits `cac:AdditionalDocumentReference` with `cbc:ID`, `cbc:DocumentType`, and `cac:Attachment/cac:ExternalReference/cbc:URI`
+- Called at end of `_build_invoice_skeleton()` using same `_emp_id_type`/`_emp_id_value` vars already in scope
+- Called in `build_consolidated_xml()` after customer party block using same vars
+- Element is omitted when `id_type` or `id_value` are empty/None
+
+### Patterns discovered
+- `_emp_id_type` / `_emp_id_value` vars already exist in `_build_invoice_skeleton()` scope from PartyIdentification block — can reuse in the AdditionalDocumentReference guard at end of function
+
+## Iteration 2 - Fri, Feb 27, 2026
+Completed: Add AdditionalDocumentReference for registration ID in XML (ID: US-002)
+

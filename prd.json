@@ -48,7 +48,7 @@
         "US-001"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-003",

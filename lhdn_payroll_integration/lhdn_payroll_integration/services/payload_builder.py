@@ -130,6 +130,26 @@ def _add_party_tax_scheme(party_elem, sst_registration):
     _sub(inner_scheme, CBC_NS, "ID", scheme_id)
 
 
+def _add_additional_doc_reference(root, id_type, id_value):
+    """Add cac:AdditionalDocumentReference to invoice root for registration ID.
+
+    LHDN v1.1 requires AdditionalDocumentReference to carry the supplier's
+    registration ID (NRIC/Passport/BRN/Army ID) at the invoice level in addition
+    to the PartyIdentification schemeID element.
+
+    Args:
+        root: The Invoice root Element.
+        id_type: Registration ID type (e.g. "NRIC", "Passport", "BRN", "Army ID").
+        id_value: Registration ID value.
+    """
+    adr = _sub(root, CAC_NS, "AdditionalDocumentReference")
+    _sub(adr, CBC_NS, "ID", id_type)
+    _sub(adr, CBC_NS, "DocumentType", id_type)
+    attachment = _sub(adr, CAC_NS, "Attachment")
+    external_ref = _sub(attachment, CAC_NS, "ExternalReference")
+    _sub(external_ref, CBC_NS, "URI", id_value)
+
+
 def _build_invoice_skeleton(docname, issue_date, employee, company):
     """Build common UBL 2.1 Invoice skeleton with supplier/customer parties.
 
@@ -185,6 +205,10 @@ def _build_invoice_skeleton(docname, issue_date, employee, company):
         customer_inner,
         getattr(company, "custom_sst_registration_number", None) or ""
     )
+
+    # AdditionalDocumentReference (LHDN v1.1) — registration ID at invoice level
+    if isinstance(_emp_id_type, str) and _emp_id_type and isinstance(_emp_id_value, str) and _emp_id_value:
+        _add_additional_doc_reference(root, _emp_id_type, _emp_id_value)
 
     return root
 
@@ -429,6 +453,10 @@ def build_consolidated_xml(docnames, target_month):
     # Buyer contact = 'NA' (allowed during grace period consolidation)
     contact = _sub(customer_inner, CAC_NS, "Contact")
     _sub(contact, CBC_NS, "Name", "NA")
+
+    # AdditionalDocumentReference (LHDN v1.1) — registration ID at invoice level
+    if isinstance(_emp_id_type, str) and _emp_id_type and isinstance(_emp_id_value, str) and _emp_id_value:
+        _add_additional_doc_reference(root, _emp_id_type, _emp_id_value)
 
     # Load all docs and calculate totals
     docs = []

@@ -1985,3 +1985,194 @@ class TestSchemeIDAttributes(FrappeTestCase):
         passport_elem = next((e for e in id_elems if e.get("schemeID") == "PASSPORT"), None)
         self.assertIsNotNone(passport_elem, "No PartyIdentification with schemeID='PASSPORT' found")
         self.assertEqual(passport_elem.text, "A12345678")
+
+
+class TestAdditionalDocumentReference(FrappeTestCase):
+    """Tests for LHDN v1.1 cac:AdditionalDocumentReference at invoice level.
+
+    US-002: Both build_salary_slip_xml() and build_expense_claim_xml() must emit
+    AdditionalDocumentReference with id_type, DocumentType, and id_value in
+    ExternalReference/URI. Applies to individual and consolidated invoices.
+    """
+
+    def _make_salary_slip_doc(self):
+        doc = MagicMock()
+        doc.name = "SAL-SLP-ADR-001"
+        doc.employee = "HR-EMP-ADR-001"
+        doc.employee_name = "Ahmad bin Abdullah"
+        doc.net_pay = 5000
+        doc.company = "Test Co ADR"
+        doc.posting_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
+        earning = MagicMock()
+        earning.salary_component = "Basic Salary"
+        earning.amount = 5000
+        earning.custom_lhdn_classification_code = "022 : Others"
+        doc.earnings = [earning]
+        doc.deductions = []
+        return doc
+
+    def _make_employee(self, id_type="NRIC", id_value="901201145678"):
+        emp = MagicMock()
+        emp.custom_lhdn_tin = "IG12345678901"
+        emp.custom_id_type = id_type
+        emp.custom_id_value = id_value
+        emp.employee_name = "Ahmad bin Abdullah"
+        emp.custom_is_foreign_worker = 0
+        emp.custom_state_code = "01"
+        emp.custom_bank_account_number = None
+        emp.custom_worker_type = "Employee"
+        emp.custom_sst_registration_number = None
+        return emp
+
+    def _make_company(self):
+        company = MagicMock()
+        company.custom_company_tin_number = "C12345678901"
+        company.name = "Test Co ADR"
+        company.custom_state_code = "14"
+        company.custom_sst_registration_number = None
+        return company
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_salary_slip_has_additional_doc_reference_nric(self, mock_frappe):
+        """build_salary_slip_xml emits AdditionalDocumentReference with NRIC id_type and id_value."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee(id_type="NRIC", id_value="901201145678")
+        company = self._make_company()
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-ADR-001"): doc,
+            ("Employee", "HR-EMP-ADR-001"): emp,
+            ("Company", "Test Co ADR"): company,
+        }.get((dt, name), MagicMock())
+        mock_frappe.db.get_value.return_value = 0
+
+        xml_string = build_salary_slip_xml("SAL-SLP-ADR-001")
+        root = ET.fromstring(xml_string)
+
+        adr = root.find(f"{{{CAC_NS}}}AdditionalDocumentReference")
+        self.assertIsNotNone(adr, "AdditionalDocumentReference element not found in salary slip XML")
+
+        adr_id = adr.find(f"{{{CBC_NS}}}ID")
+        self.assertIsNotNone(adr_id, "AdditionalDocumentReference/cbc:ID not found")
+        self.assertEqual(adr_id.text, "NRIC")
+
+        doc_type = adr.find(f"{{{CBC_NS}}}DocumentType")
+        self.assertIsNotNone(doc_type, "AdditionalDocumentReference/cbc:DocumentType not found")
+        self.assertEqual(doc_type.text, "NRIC")
+
+        uri = adr.find(f".//{{{CBC_NS}}}URI")
+        self.assertIsNotNone(uri, "AdditionalDocumentReference/.../cbc:URI not found")
+        self.assertEqual(uri.text, "901201145678")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_expense_claim_has_additional_doc_reference(self, mock_frappe):
+        """build_expense_claim_xml emits AdditionalDocumentReference with correct id_type and id_value."""
+        doc = MagicMock()
+        doc.name = "EXP-CLM-ADR-001"
+        doc.employee = "HR-EMP-ADR-001"
+        doc.employee_name = "Ahmad bin Abdullah"
+        doc.company = "Test Co ADR"
+        doc.posting_date = "2026-01-31"
+        expense = MagicMock()
+        expense.expense_type = "Travel"
+        expense.sanctioned_amount = Decimal("500.00")
+        expense.custom_lhdn_classification_code = "027 : Others"
+        doc.expenses = [expense]
+
+        emp = self._make_employee(id_type="NRIC", id_value="901201145678")
+        company = self._make_company()
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Expense Claim", "EXP-CLM-ADR-001"): doc,
+            ("Employee", "HR-EMP-ADR-001"): emp,
+            ("Company", "Test Co ADR"): company,
+        }.get((dt, name), MagicMock())
+        mock_frappe.db.get_value.return_value = 0
+
+        xml_string = build_expense_claim_xml("EXP-CLM-ADR-001")
+        root = ET.fromstring(xml_string)
+
+        adr = root.find(f"{{{CAC_NS}}}AdditionalDocumentReference")
+        self.assertIsNotNone(adr, "AdditionalDocumentReference element not found in expense claim XML")
+
+        uri = adr.find(f".//{{{CBC_NS}}}URI")
+        self.assertIsNotNone(uri, "AdditionalDocumentReference/.../cbc:URI not found")
+        self.assertEqual(uri.text, "901201145678")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_additional_doc_reference_passport_id_type(self, mock_frappe):
+        """AdditionalDocumentReference uses 'Passport' as ID and DocumentType when id_type is Passport."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee(id_type="Passport", id_value="A12345678")
+        company = self._make_company()
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-ADR-001"): doc,
+            ("Employee", "HR-EMP-ADR-001"): emp,
+            ("Company", "Test Co ADR"): company,
+        }.get((dt, name), MagicMock())
+        mock_frappe.db.get_value.return_value = 0
+
+        xml_string = build_salary_slip_xml("SAL-SLP-ADR-001")
+        root = ET.fromstring(xml_string)
+
+        adr = root.find(f"{{{CAC_NS}}}AdditionalDocumentReference")
+        self.assertIsNotNone(adr, "AdditionalDocumentReference not found")
+
+        adr_id = adr.find(f"{{{CBC_NS}}}ID")
+        self.assertEqual(adr_id.text, "Passport")
+
+        doc_type = adr.find(f"{{{CBC_NS}}}DocumentType")
+        self.assertEqual(doc_type.text, "Passport")
+
+        uri = adr.find(f".//{{{CBC_NS}}}URI")
+        self.assertEqual(uri.text, "A12345678")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_no_additional_doc_reference_when_id_missing(self, mock_frappe):
+        """AdditionalDocumentReference is NOT emitted when employee has no id_type/id_value."""
+        doc = self._make_salary_slip_doc()
+        emp = self._make_employee(id_type="", id_value="")
+        company = self._make_company()
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-ADR-001"): doc,
+            ("Employee", "HR-EMP-ADR-001"): emp,
+            ("Company", "Test Co ADR"): company,
+        }.get((dt, name), MagicMock())
+        mock_frappe.db.get_value.return_value = 0
+
+        xml_string = build_salary_slip_xml("SAL-SLP-ADR-001")
+        root = ET.fromstring(xml_string)
+
+        adr = root.find(f"{{{CAC_NS}}}AdditionalDocumentReference")
+        self.assertIsNone(adr, "AdditionalDocumentReference should not be present when id_type/id_value are empty")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_consolidated_xml_has_additional_doc_reference(self, mock_frappe):
+        """build_consolidated_xml emits AdditionalDocumentReference for the first employee."""
+        first_doc = MagicMock()
+        first_doc.name = "SAL-SLP-CONS-001"
+        first_doc.employee = "HR-EMP-ADR-001"
+        first_doc.employee_name = "Ahmad bin Abdullah"
+        first_doc.net_pay = 5000
+        first_doc.company = "Test Co ADR"
+        first_doc.end_date = "2026-01-31"
+
+        emp = self._make_employee(id_type="NRIC", id_value="901201145678")
+        company = self._make_company()
+        company.abbr = "TCA"
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Salary Slip", "SAL-SLP-CONS-001"): first_doc,
+            ("Employee", "HR-EMP-ADR-001"): emp,
+            ("Company", "Test Co ADR"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_consolidated_xml(["SAL-SLP-CONS-001"], "2026-01")
+        root = ET.fromstring(xml_string)
+
+        adr = root.find(f"{{{CAC_NS}}}AdditionalDocumentReference")
+        self.assertIsNotNone(adr, "AdditionalDocumentReference not found in consolidated invoice XML")
+
+        uri = adr.find(f".//{{{CBC_NS}}}URI")
+        self.assertIsNotNone(uri, "AdditionalDocumentReference URI not found in consolidated XML")
+        self.assertEqual(uri.text, "901201145678")
