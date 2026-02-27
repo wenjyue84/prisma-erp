@@ -437,3 +437,119 @@ class TestTokenExpiry(FrappeTestCase):
         call_kwargs = mock_frappe.log_error.call_args
         title_arg = call_kwargs[1].get("title") or (call_kwargs[0][0] if call_kwargs[0] else "")
         self.assertIn("Test Co", title_arg)
+
+
+class TestFailureNotification(FrappeTestCase):
+    """Tests for US-022: sendmail on LHDN submission failure (Invalid status)."""
+
+    def _make_rejected_response(self):
+        resp = MagicMock()
+        resp.json.return_value = {
+            "acceptedDocuments": [],
+            "rejectedDocuments": [
+                {
+                    "invoiceCodeNumber": "SAL-001",
+                    "error": {
+                        "code": "E001",
+                        "message": "Validation failed",
+                        "details": [
+                            {"code": "E001", "target": "TIN", "message": "Invalid TIN"}
+                        ],
+                    },
+                }
+            ],
+        }
+        return resp
+
+    @patch("lhdn_payroll_integration.services.submission_service.frappe")
+    def test_sendmail_called_on_invalid_status_write(self, mock_frappe):
+        """_write_response_to_doc calls sendmail when status is set to Invalid."""
+        from lhdn_payroll_integration.services.submission_service import _write_response_to_doc
+
+        mock_frappe.db.get_value.side_effect = [
+            {"employee_name": "Ahmad", "company": "Test Co"},  # employee_name+company lookup
+            "hr@test.com",  # custom_lhdn_failure_email on Company
+        ]
+        mock_frappe.utils.get_url.return_value = "http://localhost/app/salary-slip/SAL-001"
+
+        _write_response_to_doc("Salary Slip", "SAL-001", self._make_rejected_response())
+
+        mock_frappe.sendmail.assert_called_once()
+        call_kwargs = mock_frappe.sendmail.call_args
+        recipients = call_kwargs[1].get("recipients") or (call_kwargs[0][0] if call_kwargs[0] else [])
+        self.assertIn("hr@test.com", recipients)
+
+    @patch("lhdn_payroll_integration.services.submission_service.frappe")
+    def test_sendmail_subject_contains_docname(self, mock_frappe):
+        """Email subject contains the document name."""
+        from lhdn_payroll_integration.services.submission_service import _write_response_to_doc
+
+        mock_frappe.db.get_value.side_effect = [
+            {"employee_name": "Siti", "company": "Test Co"},
+            "notify@test.com",
+        ]
+        mock_frappe.utils.get_url.return_value = "http://localhost/app/salary-slip/SAL-002"
+
+        _write_response_to_doc("Salary Slip", "SAL-002", self._make_rejected_response())
+
+        call_kwargs = mock_frappe.sendmail.call_args
+        subject = call_kwargs[1].get("subject") or ""
+        self.assertIn("SAL-002", subject)
+
+    @patch("lhdn_payroll_integration.services.submission_service.frappe")
+    def test_company_failure_email_overrides_hr_manager_role_lookup(self, mock_frappe):
+        """When Company has custom_lhdn_failure_email, sql HR Manager query is NOT used."""
+        from lhdn_payroll_integration.services.submission_service import _write_response_to_doc
+
+        mock_frappe.db.get_value.side_effect = [
+            {"employee_name": "Ahmad", "company": "Test Co"},
+            "override@test.com",  # Company override email
+        ]
+        mock_frappe.utils.get_url.return_value = "http://localhost/app/salary-slip/SAL-001"
+
+        _write_response_to_doc("Salary Slip", "SAL-001", self._make_rejected_response())
+
+        # sql should NOT be called (no role lookup needed)
+        mock_frappe.db.sql.assert_not_called()
+        mock_frappe.sendmail.assert_called_once()
+
+    @patch("lhdn_payroll_integration.services.submission_service.frappe")
+    def test_falls_back_to_hr_manager_when_no_company_email(self, mock_frappe):
+        """When no custom_lhdn_failure_email, queries HR Manager role for recipients."""
+        from lhdn_payroll_integration.services.submission_service import _write_response_to_doc
+
+        mock_frappe.db.get_value.side_effect = [
+            {"employee_name": "Ahmad", "company": "Test Co"},
+            None,  # no custom_lhdn_failure_email
+        ]
+        mock_frappe.db.sql.return_value = [{"email": "hrmanager@test.com"}]
+        mock_frappe.utils.get_url.return_value = "http://localhost/app/salary-slip/SAL-001"
+
+        _write_response_to_doc("Salary Slip", "SAL-001", self._make_rejected_response())
+
+        mock_frappe.db.sql.assert_called_once()
+        mock_frappe.sendmail.assert_called_once()
+        call_kwargs = mock_frappe.sendmail.call_args
+        recipients = call_kwargs[1].get("recipients") or (call_kwargs[0][0] if call_kwargs[0] else [])
+        self.assertIn("hrmanager@test.com", recipients)
+
+    @patch("lhdn_payroll_integration.services.submission_service.frappe")
+    def test_sendmail_error_swallowed_and_logged(self, mock_frappe):
+        """If sendmail raises, the error is swallowed and logged — not re-raised."""
+        from lhdn_payroll_integration.services.submission_service import _write_response_to_doc
+
+        mock_frappe.db.get_value.side_effect = [
+            {"employee_name": "Ahmad", "company": "Test Co"},
+            "hr@test.com",
+        ]
+        mock_frappe.utils.get_url.return_value = "http://localhost/app/salary-slip/SAL-001"
+        mock_frappe.sendmail.side_effect = Exception("SMTP connection refused")
+        mock_frappe.get_traceback.return_value = "Traceback ..."
+
+        # Should NOT raise
+        try:
+            _write_response_to_doc("Salary Slip", "SAL-001", self._make_rejected_response())
+        except Exception as exc:
+            self.fail(f"_write_response_to_doc raised unexpectedly: {exc}")
+
+        mock_frappe.log_error.assert_called()

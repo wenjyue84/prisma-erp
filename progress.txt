@@ -3317,3 +3317,30 @@ Completed: Add bonus/irregular payment classification for PCB differentiation (I
 ### Gotchas
 - Initial patch path `lhdn_payroll_integration.utils.tin_validator.get_access_token` failed because `get_access_token` was only a local name inside the function body (lazy import), not a module attribute. Solution: add a module-level wrapper.
 - Regression check: `test_submission_service.py` still passes 11/11 after submission_service.py modification.
+## Iteration 6 - Fri, Feb 27, 2026 12:32:07 PM
+Completed: Integrate LHDN TIN validation API before submission (ID: US-021) in 14m
+
+
+## Iteration — US-022: Add submission failure email notification for HR Manager
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_submission_service`
+**Result:** PASS — 16/16 tests pass (5 new TestFailureNotification + 11 existing)
+
+### Files created/modified
+- `lhdn_payroll_integration/tests/test_submission_service.py` — Added TestFailureNotification class (5 tests)
+- `lhdn_payroll_integration/services/submission_service.py` — Already had _send_failure_notification() and _write_response_to_doc() with sendmail logic
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Already had custom_lhdn_failure_email Data field on Company
+
+### What was needed
+Implementation already existed from a previous session (submission_service.py + fixture). Missing piece was the test class verifying sendmail is called on Invalid status — added TestFailureNotification with 5 tests covering:
+1. sendmail called on Invalid status write
+2. email subject contains docname
+3. Company failure_email overrides HR Manager role lookup (no db.sql call)
+4. Falls back to HR Manager role when no Company email
+5. sendmail errors are swallowed and logged
+
+### Patterns confirmed
+- frappe.db.get_value.side_effect as a list: pops values in order — works for mocking different return values for consecutive calls
+- _send_failure_notification() is inside a try/except — so sendmail errors never propagate to caller
