@@ -273,6 +273,8 @@ class TestExpenseClaimXMLBuilder(FrappeTestCase):
         doc.posting_date = "2026-01-31"
         doc.total_sanctioned_amount = 850
         doc.custom_expense_category = "Self-Billed Required"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
 
         # Expenses rows (Expense Claim child table)
         expense1 = MagicMock()
@@ -2451,3 +2453,141 @@ class TestForeignWorkerNationalityCode(FrappeTestCase):
             "NATIONALITY PartyIdentification must exist even when code is blank")
         self.assertEqual(nationality_ids[0].find(f"{{{CBC_NS}}}ID").text, "MY",
             "Blank nationality_code must default to 'MY'")
+
+
+class TestExpenseClaimForeignCurrency(FrappeTestCase):
+    """Test US-050: foreign currency conversion in build_expense_claim_xml().
+
+    Verifies:
+    - USD Expense Claim amounts are multiplied by conversion_rate before XML output
+    - TaxCurrencyCode is added when currency != MYR
+    - Missing conversion rate raises ValidationError
+    - MYR expense claims are unchanged (conv_rate=1)
+    """
+
+    def _make_expense_claim_doc(self, currency="MYR", conversion_rate=1):
+        doc = MagicMock()
+        doc.name = "HR-EXP-FX-001"
+        doc.employee = "HR-EMP-00001"
+        doc.employee_name = "Ahmad bin Abdullah"
+        doc.company = "Arising Packaging"
+        doc.posting_date = "2026-01-31"
+        doc.currency = currency
+        doc.conversion_rate = conversion_rate
+        doc.custom_expense_category = "Self-Billed Required"
+
+        expense = MagicMock()
+        expense.expense_type = "Travel"
+        expense.sanctioned_amount = 100
+        expense.custom_lhdn_classification_code = "036 : Self-billed - Others"
+        doc.expenses = [expense]
+        return doc
+
+    def _make_employee_doc(self):
+        emp = MagicMock()
+        emp.custom_lhdn_tin = "IG12345678901"
+        emp.custom_id_type = "NRIC"
+        emp.custom_id_value = "901201145678"
+        emp.employee_name = "Ahmad bin Abdullah"
+        emp.custom_is_foreign_worker = 0
+        emp.custom_state_code = "01"
+        emp.custom_bank_account_number = None
+        emp.custom_worker_type = "Employee"
+        return emp
+
+    def _make_company_doc(self):
+        company = MagicMock()
+        company.custom_company_tin_number = "C12345678901"
+        company.name = "Arising Packaging"
+        company.company_name = "Arising Packaging Sdn Bhd"
+        company.custom_state_code = "14"
+        return company
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_usd_expense_claim_converts_to_myr(self, mock_frappe):
+        """USD Expense Claim with conversion_rate=4.5 must produce amounts * 4.5 in XML."""
+        doc = self._make_expense_claim_doc(currency="USD", conversion_rate=4.5)
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Expense Claim", "HR-EXP-FX-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+        mock_frappe.ValidationError = Exception
+
+        xml_string = build_expense_claim_xml("HR-EXP-FX-001")
+        root = ET.fromstring(xml_string)
+
+        line_amount = root.find(f".//{{{CAC_NS}}}InvoiceLine/{{{CBC_NS}}}LineExtensionAmount")
+        self.assertIsNotNone(line_amount, "LineExtensionAmount must exist")
+        self.assertEqual(line_amount.text, "450.00",
+            f"USD 100 * 4.5 = MYR 450.00, got '{line_amount.text}'")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_tax_currency_code_added_for_foreign_currency(self, mock_frappe):
+        """TaxCurrencyCode must be added to XML when expense claim currency is not MYR."""
+        doc = self._make_expense_claim_doc(currency="USD", conversion_rate=4.5)
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Expense Claim", "HR-EXP-FX-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+        mock_frappe.ValidationError = Exception
+
+        xml_string = build_expense_claim_xml("HR-EXP-FX-001")
+        root = ET.fromstring(xml_string)
+
+        tax_currency = root.find(f"{{{CBC_NS}}}TaxCurrencyCode")
+        self.assertIsNotNone(tax_currency,
+            "TaxCurrencyCode must be present for non-MYR expense claims")
+        self.assertEqual(tax_currency.text, "USD",
+            f"TaxCurrencyCode must be 'USD', got '{tax_currency.text}'")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_myr_expense_claim_no_conversion(self, mock_frappe):
+        """MYR Expense Claim amounts must be unchanged (conv_rate=1, no TaxCurrencyCode)."""
+        doc = self._make_expense_claim_doc(currency="MYR", conversion_rate=1)
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Expense Claim", "HR-EXP-FX-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+        mock_frappe.ValidationError = Exception
+
+        xml_string = build_expense_claim_xml("HR-EXP-FX-001")
+        root = ET.fromstring(xml_string)
+
+        line_amount = root.find(f".//{{{CAC_NS}}}InvoiceLine/{{{CBC_NS}}}LineExtensionAmount")
+        self.assertEqual(line_amount.text, "100.00",
+            f"MYR 100 must be unchanged, got '{line_amount.text}'")
+
+        tax_currency = root.find(f"{{{CBC_NS}}}TaxCurrencyCode")
+        self.assertIsNone(tax_currency,
+            "TaxCurrencyCode must NOT be present for MYR expense claims")
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_missing_conversion_rate_raises_validation_error(self, mock_frappe):
+        """Foreign currency expense claim with conversion_rate=0 must raise ValidationError."""
+        doc = self._make_expense_claim_doc(currency="SGD", conversion_rate=0)
+        emp = self._make_employee_doc()
+        company = self._make_company_doc()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name=None: {
+            ("Expense Claim", "HR-EXP-FX-001"): doc,
+            ("Employee", "HR-EMP-00001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+        mock_frappe.ValidationError = frappe.ValidationError
+        mock_frappe.throw.side_effect = frappe.ValidationError("Exchange rate required")
+
+        with self.assertRaises(frappe.ValidationError,
+                msg="Missing exchange rate must raise ValidationError"):
+            build_expense_claim_xml("HR-EXP-FX-001")

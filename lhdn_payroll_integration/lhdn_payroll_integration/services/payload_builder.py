@@ -347,8 +347,21 @@ def build_expense_claim_xml(docname):
 
     root = _build_invoice_skeleton(docname, doc.posting_date, employee, company)
 
-    # Calculate totals from expenses rows (sanctioned_amount)
-    total_excl = sum(_quantize(row.sanctioned_amount) for row in doc.expenses)
+    # Foreign currency conversion: LHDN requires MYR
+    source_currency = getattr(doc, "currency", "MYR") or "MYR"
+    if source_currency != "MYR":
+        conv_rate = Decimal(str(getattr(doc, "conversion_rate", 0) or 0))
+        if conv_rate == Decimal("0"):
+            frappe.throw(
+                "Exchange rate required for foreign currency expense claim",
+                frappe.ValidationError,
+            )
+        _sub(root, CBC_NS, "TaxCurrencyCode", source_currency)
+    else:
+        conv_rate = Decimal("1")
+
+    # Calculate totals from expenses rows (sanctioned_amount converted to MYR)
+    total_excl = sum(_quantize(Decimal(str(row.sanctioned_amount)) * conv_rate) for row in doc.expenses)
     total_tax = Decimal("0.00")
 
     _add_tax_and_totals(root, total_excl, total_tax)
@@ -359,7 +372,7 @@ def build_expense_claim_xml(docname):
         _sub(line, CBC_NS, "ID", str(idx))
         _sub(line, CBC_NS, "InvoicedQuantity", "1", unitCode="C62")
 
-        amount = _quantize(expense.sanctioned_amount)
+        amount = _quantize(Decimal(str(expense.sanctioned_amount)) * conv_rate)
         _sub(line, CBC_NS, "LineExtensionAmount", str(amount), currencyID="MYR")
 
         item = _sub(line, CAC_NS, "Item")
