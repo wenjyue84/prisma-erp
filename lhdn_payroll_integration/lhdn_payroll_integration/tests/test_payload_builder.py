@@ -2204,3 +2204,79 @@ class TestFullPostalAddress(FrappeTestCase):
                           "CityName should be absent when custom_city is empty")
         self.assertIsNone(supplier_postal.find(f"{{{CBC_NS}}}PostalZone"),
                           "PostalZone should be absent when custom_postcode is empty")
+
+
+class TestTaxExemptionReasonCode(FrappeTestCase):
+    """Test TaxExemptionReasonCode is added when TaxCategory/ID = E.
+
+    Verifies:
+    - TaxExemptionReasonCode element present with value VATEX-MY-ES-43
+    """
+
+    def _make_salary_slip(self):
+        doc = MagicMock()
+        doc.name = "SAL-SLP-TAXEXEMPT-001"
+        doc.employee = "HR-EMP-TAXEXEMPT-001"
+        doc.employee_name = "Ahmad bin Abdullah"
+        doc.company = "Arising Packaging"
+        doc.posting_date = "2026-01-31"
+        doc.currency = "MYR"
+        doc.conversion_rate = 1
+        earning = MagicMock()
+        earning.salary_component = "Basic Salary"
+        earning.amount = 5000
+        earning.custom_lhdn_classification_code = "022 : Others"
+        doc.earnings = [earning]
+        doc.deductions = []
+        doc.net_pay = 5000
+        return doc
+
+    def _make_employee(self):
+        emp = MagicMock()
+        emp.custom_lhdn_tin = "IG12345678901"
+        emp.custom_id_type = "NRIC"
+        emp.custom_id_value = "901201145678"
+        emp.employee_name = "Ahmad bin Abdullah"
+        emp.custom_is_foreign_worker = 0
+        emp.custom_state_code = "01"
+        emp.custom_bank_account_number = None
+        emp.custom_payment_means_code = ""
+        return emp
+
+    def _make_company(self):
+        company = MagicMock()
+        company.custom_company_tin_number = "C12345678901"
+        company.name = "Arising Packaging"
+        company.company_name = "Arising Packaging Sdn Bhd"
+        company.custom_state_code = "14"
+        return company
+
+    @patch("lhdn_payroll_integration.services.payload_builder.frappe")
+    def test_tax_exemption_reason_code_present(self, mock_frappe):
+        """TaxCategory must include TaxExemptionReasonCode = VATEX-MY-ES-43
+        immediately after ID = E per LHDN v1.1 requirements."""
+        doc = self._make_salary_slip()
+        emp = self._make_employee()
+        company = self._make_company()
+
+        mock_frappe.get_doc.side_effect = lambda dt, name: {
+            ("Salary Slip", "SAL-SLP-TAXEXEMPT-001"): doc,
+            ("Employee", "HR-EMP-TAXEXEMPT-001"): emp,
+            ("Company", "Arising Packaging"): company,
+        }.get((dt, name), MagicMock())
+
+        xml_string = build_salary_slip_xml("SAL-SLP-TAXEXEMPT-001")
+        root = ET.fromstring(xml_string)
+
+        tax_cat = root.find(f".//{{{CAC_NS}}}TaxCategory")
+        self.assertIsNotNone(tax_cat, "TaxCategory must exist in XML")
+
+        tax_id = tax_cat.find(f"{{{CBC_NS}}}ID")
+        self.assertIsNotNone(tax_id, "TaxCategory/ID must exist")
+        self.assertEqual(tax_id.text, "E", "TaxCategory/ID must be E")
+
+        reason_code = tax_cat.find(f"{{{CBC_NS}}}TaxExemptionReasonCode")
+        self.assertIsNotNone(reason_code,
+            "TaxExemptionReasonCode must be present when TaxCategory/ID = E")
+        self.assertEqual(reason_code.text, "VATEX-MY-ES-43",
+            f"TaxExemptionReasonCode must be VATEX-MY-ES-43, got {reason_code.text!r}")

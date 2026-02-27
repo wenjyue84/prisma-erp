@@ -222,6 +222,7 @@ def _add_tax_and_totals(root, total_excl, total_tax):
     _sub(tax_subtotal_elem, CBC_NS, "TaxAmount", str(total_tax), currencyID="MYR")
     tax_cat = _sub(tax_subtotal_elem, CAC_NS, "TaxCategory")
     _sub(tax_cat, CBC_NS, "ID", "E")
+    _sub(tax_cat, CBC_NS, "TaxExemptionReasonCode", "VATEX-MY-ES-43")
     tax_scheme = _sub(tax_cat, CAC_NS, "TaxScheme")
     _sub(tax_scheme, CBC_NS, "ID", "OTH")
 
