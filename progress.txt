@@ -3502,3 +3502,29 @@ Completed: Fix custom_id_type options to match LHDN schemeID vocabulary (ID: US-
 ## Iteration 7 - Fri, Feb 27, 2026  1:00:51 PM
 Completed: Add full PostalAddress fields beyond state code only (ID: US-025) in 14m
 
+## Iteration 10 - Fri, Feb 27, 2026  1:00:53 PM
+Completed: Add Expense Claims to LHDN compliance report (ID: US-026) in 6m
+
+
+## Iteration N — US-027: Build monthly LHDN submission summary report
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_monthly_summary`
+**Result:** PASS — 16/16 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/lhdn_monthly_summary/__init__.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/lhdn_monthly_summary/lhdn_monthly_summary.json`
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/lhdn_monthly_summary/lhdn_monthly_summary.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_monthly_summary.py`
+
+### Key design decisions
+- Generates 12 rows always (Jan-Dec), filling zero counts for missing months
+- Uses subquery UNION ALL (Salary Slip + Expense Claim) grouped by MONTH()
+- Imports `get_consolidation_deadline()` from consolidation_service for 7-day rule
+- Deadline Status: Pending (within window), On Time (past+no pending), Late (past+has pending)
+
+### Patterns discovered
+- `frappe.db.sql` mock patches cleanly with `return_value=[]` for empty-month tests
+- Use past year (2020) in tests to force "Late"/"On Time" status; future year (2035) forces "Pending"
