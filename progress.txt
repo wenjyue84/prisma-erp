@@ -4095,3 +4095,27 @@ Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 1
 
 ## Iteration 22 - $(date)
 Completed: Add audit log for manual LHDN resubmissions (ID: US-042)
+## Iteration 20 - Fri, Feb 27, 2026  3:00:51 PM
+Incomplete: Generate HRDF Borang PSMB/6 annual return (ID: US-044) — attempt 2/3
+
+
+## Iteration N — US-042: Add audit log for manual LHDN resubmissions
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_resubmit_action`
+**Result:** PASS — 7/7 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/submission_service.py` — Added audit log block in `resubmit_to_lhdn()`: creates LHDN Resubmission Log entry recording user, timestamp, doctype, docname
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_resubmission_log/` — New doctype: LHDN Resubmission Log (fields: user, timestamp, reference_doctype, docname, notes; System Manager write, HR Manager read)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_resubmit_action.py` — Added TestResubmitAuditLog class verifying log entry created on resubmission
+
+### Implementation
+- `resubmit_to_lhdn()` now inserts a LHDN Resubmission Log doc after resetting status to Pending
+- Log records: session user, current timestamp, reference_doctype, docname, fixed notes string
+- `insert(ignore_permissions=True)` used so the action itself (not the log insert) enforces auth
+
+### Gotchas
+- Container had the audit log code already in the nested path; local submission_service.py was missing it — sync both paths
+- Doctype was already migrated in the site; lhdn_resubmission_log dir was untracked in git

@@ -249,6 +249,17 @@ def resubmit_to_lhdn(docname, doctype="Salary Slip"):
 
     frappe.db.set_value(doctype, docname, "custom_lhdn_status", "Pending")
 
+    # Audit log: record who triggered the manual resubmission
+    log = frappe.get_doc({
+        "doctype": "LHDN Resubmission Log",
+        "user": frappe.session.user,
+        "timestamp": frappe.utils.now_datetime(),
+        "reference_doctype": doctype,
+        "docname": docname,
+        "notes": "Manual resubmission triggered via resubmit_to_lhdn()",
+    })
+    log.insert(ignore_permissions=True)
+
     if doctype == "Salary Slip":
         method = "lhdn_payroll_integration.services.submission_service.process_salary_slip"
     else:
