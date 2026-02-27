@@ -73,6 +73,13 @@ def build_credit_note_xml(original_docname, reason=None):
 			frappe.ValidationError,
 		)
 
+	if doc.custom_lhdn_status == "Cancelled":
+		frappe.throw(
+			f"Cannot issue credit note: {original_docname} has already been cancelled on LHDN. "
+			"LHDN rejects credit notes that reference a cancelled document.",
+			frappe.ValidationError,
+		)
+
 	employee = frappe.get_doc("Employee", doc.employee)
 	company = frappe.get_cached_doc("Company", doc.company)
 

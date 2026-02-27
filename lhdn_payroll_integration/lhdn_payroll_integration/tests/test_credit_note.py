@@ -239,6 +239,18 @@ class TestSelfBilledCreditNote(FrappeTestCase):
 		self.assertEqual(supplier_id.get("schemeID"), "TIN",
 			"Supplier ID schemeID must be 'TIN'")
 
+	@patch("lhdn_payroll_integration.services.credit_note_service.frappe")
+	def test_credit_note_raises_if_source_is_cancelled(self, mock_frappe):
+		"""build_credit_note_xml must raise ValidationError when source custom_lhdn_status == Cancelled."""
+		mock_doc = self._mock_original_doc()
+		mock_doc.custom_lhdn_status = "Cancelled"
+		mock_frappe.get_doc.return_value = mock_doc
+		mock_frappe.ValidationError = frappe.ValidationError
+		mock_frappe.throw.side_effect = frappe.ValidationError("Cannot issue credit note")
+
+		with self.assertRaises(frappe.ValidationError):
+			build_credit_note_xml("SAL-SLP-2026-00001", "Correction")
+
 	def test_cancellation_error_includes_credit_note_instruction(self):
 		"""When cancellation_service rejects a cancellation (past 72 hours),
 		the ValidationError message must include credit note guidance."""
