@@ -96,10 +96,61 @@ def _get_settings() -> dict:
     }
 
 
+# ── PDF text extraction (US-PA-06) ────────────────────────────────────────────
+def _extract_pdf_content(file_dict: dict) -> dict:
+    """
+    Extract text from a PDF file. Returns:
+      {"type": "text", "content": str, "name": str, "page_count": int}  — digital PDF
+      {"type": "image", "data": str, "media_type": "image/jpeg", "name": str} — scanned/empty
+    """
+    import base64
+    import io
+
+    raw = base64.b64decode(file_dict["data"])
+    name = file_dict.get("name", "document.pdf")
+
+    try:
+        try:
+            import pypdf
+            PdfReader = pypdf.PdfReader
+        except ImportError:
+            import PyPDF2 as pypdf  # type: ignore[no-redef]
+            PdfReader = pypdf.PdfReader
+
+        reader = PdfReader(io.BytesIO(raw))
+        pages = reader.pages
+        text = "\n".join((page.extract_text() or "") for page in pages).strip()
+
+        if len(text) >= 100:
+            return {
+                "type": "text",
+                "content": text,
+                "name": name,
+                "page_count": len(pages),
+            }
+
+        # Fewer than 100 chars — likely scanned; fall through to image path
+        return {
+            "type": "image",
+            "data": file_dict["data"],  # raw PDF as "image" for vision model
+            "media_type": "image/jpeg",
+            "name": name,
+        }
+
+    except Exception:  # noqa: BLE001
+        # Cannot extract — return a safe error text so the message still goes through
+        return {
+            "type": "text",
+            "content": f"[Could not extract text from {name}]",
+            "name": name,
+            "page_count": 0,
+        }
+
+
 # ── Main whitelisted function ─────────────────────────────────────────────────
 @frappe.whitelist()
-def send_message(message: str, history: str = "[]") -> dict:
-    """Send a user message to the configured LLM and return the reply."""
+def send_message(message: str, history: str = "[]", files: str = "[]") -> dict:
+    """Send a user message (with optional file attachments) to the configured LLM."""
     s = _get_settings()
     provider = s["provider"]
     api_key = s["api_key"]
@@ -126,15 +177,50 @@ def send_message(message: str, history: str = "[]") -> dict:
 
     parsed_history = parsed_history[-10:]
 
-    def _dispatch(mdl, key=None):
+    # ── Process file attachments (US-PA-05 / US-PA-06) ─────────────────────
+    try:
+        raw_file_list = json.loads(files) if files else []
+    except (ValueError, TypeError):
+        raw_file_list = []
+
+    processed_files = []   # image files for vision dispatch
+    text_context_parts = []  # extracted text from digital PDFs
+
+    for f in raw_file_list:
+        if f.get("type") == "application/pdf":
+            result = _extract_pdf_content(f)
+            if result["type"] == "text":
+                text_context_parts.append(
+                    f"[Attached PDF: {result['name']}]\n{result['content']}"
+                )
+            else:
+                # Scanned PDF — send as image to vision model
+                processed_files.append({
+                    "name": f["name"],
+                    "type": "image/jpeg",
+                    "data": result["data"],
+                })
+        else:
+            # Images pass through as-is
+            processed_files.append(f)
+
+    # Prepend any PDF text to the message so the LLM sees it
+    if text_context_parts:
+        message = "\n\n".join(text_context_parts) + "\n\n" + message
+
+    file_list = processed_files  # only image files remain for vision dispatch
+
+    # ── Dispatch ────────────────────────────────────────────────────────────
+    def _dispatch(mdl, key=None, fl=None):
         k = key or api_key
+        fl = fl if fl is not None else file_list
         if provider == "anthropic":
-            return _call_anthropic(k, mdl, message, parsed_history, base_url, system_prompt)
+            return _call_anthropic(k, mdl, message, parsed_history, base_url, system_prompt, fl)
         elif provider in ("openai", "ollama"):
             url = base_url or _PROVIDER_DEFAULTS[provider]["url"]
-            return _call_openai_compatible_with_tools(k, mdl, message, parsed_history, url, system_prompt)
+            return _call_openai_compatible_with_tools(k, mdl, message, parsed_history, url, system_prompt, fl)
         elif provider == "gemini":
-            return _call_gemini(k, mdl, message, parsed_history, base_url, system_prompt)
+            return _call_gemini(k, mdl, message, parsed_history, base_url, system_prompt, fl)
 
     try:
         return _dispatch(model)
@@ -142,7 +228,6 @@ def send_message(message: str, history: str = "[]") -> dict:
         if fallback_model:
             try:
                 result = _dispatch(fallback_model, key=fallback_api_key)
-                # Prepend a soft notice so the user knows fallback was used
                 if result.get("reply"):
                     result["reply"] = f"*(Using fallback model: {fallback_model})*\n\n" + result["reply"]
                 return result
@@ -155,12 +240,32 @@ def send_message(message: str, history: str = "[]") -> dict:
 # ── Anthropic ─────────────────────────────────────────────────────────────────
 def _call_anthropic(
     api_key: str, model: str, message: str, history: list,
-    base_url: str = "", system_prompt: str = ""
+    base_url: str = "", system_prompt: str = "", file_list: list = None
 ) -> dict:
     import urllib.request
 
-    messages = _history_to_messages(history, message)
+    file_list = file_list or []
     url = base_url or _PROVIDER_DEFAULTS["anthropic"]["url"]
+
+    # Build message history (text-only for prior turns)
+    messages = _history_to_messages(history, None)  # no current message yet
+
+    # Build the user content: text + images
+    if file_list:
+        user_content = [{"type": "text", "text": message}]
+        for f in file_list:
+            if f.get("type", "").startswith("image/"):
+                user_content.append({
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": f["type"],
+                        "data": f["data"],
+                    },
+                })
+        messages.append({"role": "user", "content": user_content})
+    else:
+        messages.append({"role": "user", "content": message})
 
     payload = json.dumps({
         "model": model,
@@ -180,7 +285,9 @@ def _call_anthropic(
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=60) as resp:
+    # Vision requests need more time
+    timeout = 120 if file_list else 60
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
         data = json.loads(resp.read())
 
     reply = data["content"][0]["text"]
@@ -258,17 +365,32 @@ def _execute_fac_tool(name: str, arguments: dict) -> str:
 
 def _call_openai_compatible_with_tools(
     api_key: str, model: str, message: str, history: list,
-    url: str, system_prompt: str = ""
+    url: str, system_prompt: str = "", file_list: list = None
 ) -> dict:
     """
     Agentic loop: attach FAC tools to each OpenAI call and handle tool_calls
     until the model returns a final text response (or 5 rounds exhausted).
+    Supports multimodal content blocks when file_list contains images.
     """
     import urllib.request
 
+    file_list = file_list or []
     tools = _get_fac_tools_openai()
     messages = [{"role": "system", "content": system_prompt or _DEFAULT_SYSTEM_PROMPT}]
-    messages += _history_to_messages(history, message)
+    messages += _history_to_messages(history, None)  # no current message yet
+
+    # Build user content: text + images
+    if file_list:
+        user_content = [{"type": "text", "text": message}]
+        for f in file_list:
+            if f.get("type", "").startswith("image/"):
+                user_content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:{f['type']};base64,{f['data']}"},
+                })
+        messages.append({"role": "user", "content": user_content})
+    else:
+        messages.append({"role": "user", "content": message})
 
     for _round in range(5):
         extra = {}
@@ -293,7 +415,8 @@ def _call_openai_compatible_with_tools(
             },
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        timeout = 120 if file_list else 120
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = json.loads(resp.read())
 
         choice = data["choices"][0]
@@ -348,15 +471,28 @@ def _call_openai_compatible(
 # ── Gemini ────────────────────────────────────────────────────────────────────
 def _call_gemini(
     api_key: str, model: str, message: str, history: list,
-    base_url: str = "", system_prompt: str = ""
+    base_url: str = "", system_prompt: str = "", file_list: list = None
 ) -> dict:
     import urllib.request
+
+    file_list = file_list or []
 
     contents = []
     for turn in history:
         role = "user" if turn.get("role") == "user" else "model"
         contents.append({"role": role, "parts": [{"text": turn.get("content", "")}]})
-    contents.append({"role": "user", "parts": [{"text": message}]})
+
+    # Build current user parts: text + inline images
+    user_parts = [{"text": message}]
+    for f in file_list:
+        if f.get("type", "").startswith("image/"):
+            user_parts.append({
+                "inline_data": {
+                    "mime_type": f["type"],
+                    "data": f["data"],
+                }
+            })
+    contents.append({"role": "user", "parts": user_parts})
 
     payload = json.dumps({
         "system_instruction": {"parts": [{"text": system_prompt or _DEFAULT_SYSTEM_PROMPT}]},
@@ -375,7 +511,8 @@ def _call_gemini(
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=60) as resp:
+    timeout = 120 if file_list else 60
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
         data = json.loads(resp.read())
 
     reply = data["candidates"][0]["content"]["parts"][0]["text"]
@@ -432,13 +569,18 @@ def reveal_api_key(field_name: str = "api_key") -> dict:
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-def _history_to_messages(history: list, current_message: str) -> list:
-    """Convert stored history to OpenAI/Anthropic message format."""
+def _history_to_messages(history: list, current_message: str | None) -> list:
+    """
+    Convert stored history to OpenAI/Anthropic message format.
+    If current_message is None, only the history turns are returned
+    (caller appends the current message manually for multimodal support).
+    """
     messages = []
     for turn in history:
         role = turn.get("role", "user")
         content = turn.get("content", "")
         if role in ("user", "assistant") and content:
             messages.append({"role": role, "content": content})
-    messages.append({"role": "user", "content": current_message})
+    if current_message is not None:
+        messages.append({"role": "user", "content": current_message})
     return messages
