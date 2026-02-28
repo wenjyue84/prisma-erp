@@ -5075,3 +5075,28 @@ Completed: Fix SEC-06 CSRF enforcement test â€” incorrect test design (ID: 
 ### Gotchas
 - bench migrate deleted the LHDN Payroll workspace as an orphan — normal; re-synced via after_migrate hook.
 - `docker cp` from Windows MINGW requires Windows-compatible path on host side (C:/..., not /tmp/...). Write tool creates files at Windows path; use C:/Users/... paths for all docker cp operations.
+## Iteration 27 - Sat, Feb 28, 2026  6:44:41 PM
+Completed: Implement Foreign Worker Levy Tracking (FWCMS / Multi-Tier Levy Model) (ID: US-070) in 15m
+
+
+## Iteration N — US-071: Implement Payroll Bank Disbursement File Generator (Maybank + CIMB + DuitNow)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (43 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_bank_disbursement`
+**Result:** PASS — 43 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/bank_disbursement_service.py` — New service with Maybank M2E, CIMB BizChannel, DuitNow Bulk generators
+- `lhdn_payroll_integration/tests/test_bank_disbursement.py` — 43 tests across 7 classes
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added 5 new fields: Company.custom_maybank_org_code, Company.custom_cimb_org_code, Employee.custom_bank_name, Employee.custom_bank_code, Employee.custom_account_type
+
+### Patterns discovered
+- Format generators (_generate_maybank_file, _generate_cimb_file) must accept org_code directly (not company name) to remain pure/testable — DB lookup happens at generate_bank_file level
+- Maybank M2E: Header is ORG|DATE, Details are ORG|DATE|NAME|NRIC|ACCOUNT|AMOUNT (6 fields)
+- CIMB: H|date|org + D|name|account|amount + T|count|total (standard Header/Detail/Footer)
+- DuitNow Bulk: ISO 20022 pain.001.001.03 XML with SALA purpose code, MYR currency
+- bench migrate needed after fixture update to apply custom_maybank_org_code/custom_cimb_org_code to DB
+
+### Gotchas
+- deploy service to BOTH paths: outer (lhdn_payroll_integration/services/) AND nested (lhdn_payroll_integration/lhdn_payroll_integration/services/) — tests import from nested path
