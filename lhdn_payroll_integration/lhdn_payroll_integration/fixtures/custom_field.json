@@ -1129,5 +1129,18 @@
   "description": "HMAC-SHA256 secret for validating X-LHDN-Signature headers from MyInvois webhook callbacks.",
   "module": "LHDN Payroll Integration",
   "insert_after": "custom_digital_cert_password"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-custom_labour_jurisdiction",
+  "dt": "Employee",
+  "fieldname": "custom_labour_jurisdiction",
+  "fieldtype": "Select",
+  "label": "Labour Jurisdiction",
+  "options": "\nPeninsular Malaysia\nSabah\nSarawak",
+  "default": "Peninsular Malaysia",
+  "description": "Applicable employment ordinance jurisdiction. Peninsular Malaysia = EA 1955; Sabah = Labour Ordinance Cap. 67; Sarawak = Labour Ordinance Cap. 76. Auto-set from State Code.",
+  "module": "LHDN Payroll Integration",
+  "insert_after": "custom_approved_pension_scheme"
  }
 ]

@@ -44,6 +44,7 @@ doc_events = {
 		"before_delete": "lhdn_payroll_integration.services.retention_service.check_deletion_lock",
 	},
 	"Employee": {
+		"validate": "lhdn_payroll_integration.lhdn_payroll_integration.services.jurisdiction_service.auto_set_labour_jurisdiction",
 		"on_update": [
 			"lhdn_payroll_integration.services.cp107_service.handle_foreign_employee_left",
 			"lhdn_payroll_integration.services.socso_service.handle_employee_termination_socso",

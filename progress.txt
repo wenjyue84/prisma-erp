@@ -5905,3 +5905,25 @@ Incomplete: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee (ID: US-093) 
 ### Gotchas
 - `bench run-tests` discovers from NESTED path only — outer path copy is for Frappe module resolution at runtime
 - check_deletion_lock only blocks when custom_lhdn_archived==1 (yearly archival job handles marking); simpler and avoids race conditions
+## Iteration 48 - Sat, Feb 28, 2026 10:24:06 PM
+Incomplete: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee (ID: US-093) — attempt 2/3
+
+
+## Iteration N — US-093: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_labour_jurisdiction`
+**Result:** PASS — 19/19 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added Employee-custom_labour_jurisdiction Select field (Peninsular Malaysia/Sabah/Sarawak)
+- `lhdn_payroll_integration/hooks.py` — Added Employee.validate hook for auto_set_labour_jurisdiction
+- `lhdn_payroll_integration/services/jurisdiction_service.py` — Already implemented (SABAH_CODES, SARAWAK_CODES, SABAH_ORDINANCE_RULES, SARAWAK_ORDINANCE_RULES, PENINSULAR_EA_RULES, get_jurisdiction_rules, auto_set_labour_jurisdiction)
+
+### Patterns discovered
+- jurisdiction_service.py and test_labour_jurisdiction.py were already pre-implemented; only the fixture field + hook registration were missing
+- Employee validate hook uses full nested module path: `lhdn_payroll_integration.lhdn_payroll_integration.services.jurisdiction_service.auto_set_labour_jurisdiction`
+
+### Gotchas
+- custom_labour_jurisdiction field was not in custom_field.json — test_jurisdiction_field_exists_in_fixture would fail without this addition
