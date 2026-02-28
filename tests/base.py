@@ -11,6 +11,7 @@ Every test class should extend ERPNextTestCase which provides:
 """
 
 import json
+import re
 import time
 import unittest
 from typing import Any
@@ -41,8 +42,16 @@ class ERPNextSession:
         data = resp.json()
         if data.get("message") not in ("Logged In", "logged_in", None):
             raise RuntimeError(f"Login failed: {data}")
-        # Grab CSRF token from response header
-        self._csrf_token = resp.headers.get("X-Frappe-CSRF-Token") or data.get("csrf_token")
+        # The login endpoint does NOT return the CSRF token in its body or headers.
+        # The token is only available by parsing frappe.boot from the /app page.
+        boot_resp = self.session.get(f"{self.base_url}/app", timeout=TIMEOUT)
+        # frappe.csrf_token = "...hex..."; (JS assignment, not JSON)
+        m = re.search(r'frappe\.csrf_token\s*=\s*"([a-f0-9]+)"', boot_resp.text)
+        if m:
+            self._csrf_token = m.group(1)
+        else:
+            # Fallback: read header if boot parse fails
+            self._csrf_token = boot_resp.headers.get("X-Frappe-CSRF-Token") or resp.headers.get("X-Frappe-CSRF-Token") or data.get("csrf_token") or ""
 
     def _headers(self, extra: dict | None = None) -> dict:
         h = {"X-Frappe-CSRF-Token": self._csrf_token or ""}

@@ -4319,3 +4319,33 @@ Completed: Generate HRDF Borang PSMB/6 annual return (ID: US-044) in 7m
 ## Iteration 22 - Fri, Feb 27, 2026  3:30:13 PM
 Completed: Generate HRDF Borang PSMB/6 annual return (ID: US-044) in 14m
 
+## Iteration 1 - Sat, Feb 28, 2026  2:14:54 PM
+Completed: Add PCB Category Code (1/2/3) on Employee with CP39 and EA Form integration (ID: US-051) in 16m
+
+
+## Iteration N — US-096: Fix CSRF token acquisition in test suite ERPNextSession login
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `.venv-tests/Scripts/python.exe tests/run_tests.py --suite unit:prisma_ai`
+**Result:** PASS — 16/16 tests, 0 failures; smoke suite 10/10
+
+### Files created/modified
+- `tests/base.py` — Fixed `_login()` CSRF token acquisition
+
+### Root cause
+The Frappe login endpoint does not return the CSRF token in its response body or headers. The token is only available in the `/app` page, embedded as JavaScript: `frappe.csrf_token = "...hex..."`.
+
+The original code tried `resp.headers.get("X-Frappe-CSRF-Token")` which always returns `None`.
+
+### Fix
+1. Added `import re` at top
+2. After login POST, fetch `/app` with the authenticated session
+3. Extract token via regex: `frappe\.csrf_token\s*=\s*"([a-f0-9]+)"` (JS assignment format, not JSON format)
+4. Fallback to headers if regex fails
+
+### Gotchas
+- The PRD technical note says `"csrf_token"\s*:\s*"([a-f0-9]{32})"` (JSON format, 32 chars) — this is WRONG
+- Actual format in Frappe HTML: `frappe.csrf_token = "...56-char hex...";` (JS format, ~56 chars, varies)
+- The regex `[a-f0-9]{32}` would never match (token is 56-58 chars, not 32)
+- Use `[a-f0-9]+` to handle any hex length
