@@ -5492,3 +5492,32 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 
 ### Gotchas
 - The import `lhdn_payroll_integration.services.esos_service` resolves to the OUTER services path; tests must copy to outer path too
+## Iteration 2 - Sat, Feb 28, 2026  9:08:21 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 1/3
+
+
+## Iteration N — US-084: Implement ESOS/Share Option Gain Calculation and EA Form B10
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 19 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_esos`
+**Result:** PASS — 19/19 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_share_option_exercise/__init__.py` — Empty package init
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_share_option_exercise/employee_share_option_exercise.json` — DocType: employee, grant_date, exercise_date, exercise_price, market_price_on_exercise, shares_exercised, taxable_gain (auto-calc)
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_share_option_exercise/employee_share_option_exercise.py` — Controller: validate() auto-calculates taxable_gain = (market_price - exercise_price) * shares; clamped to >=0
+- `lhdn_payroll_integration/services/esos_service.py` — get_esos_gain_for_month(), get_esos_gain_for_year() DB query helpers
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_esos.py` — 19 tests: 7 unit (calc), 5 month queries, 3 year queries, 4 EA Form B10 integration
+
+### Key Implementation Details
+- ITA 1967 s.25 / Public Ruling No. 1/2021: ESOS gain taxable as employment income in year of exercise
+- Acceptance criterion: 1,000 shares @ RM2 exercise, RM5 market → RM3,000 taxable gain ✓
+- EA Form B10: already had ESOS stub in ea_form.py (lazy import from esos_service) — no update needed
+- DocType uses naming series "ESOS-.YYYY.-"; title_field = employee_name; track_changes = 1
+- DB table created by bench migrate
+
+### Patterns discovered
+- EA form ea_form.py already had B10 ESOS stub for lazy import — previous iteration pre-wired it
+- esos_service.py uses keyword dict params %(employee)s for named params, not positional tuple
+- Tests use `patch("frappe.db.sql")` for DB isolation; call_args[0][1] is the dict of named params
