@@ -32,6 +32,9 @@ def handle_employee_after_insert(doc, method):
 		indicator="blue",
 	)
 
+	# TP3 reminder: if employee joins in February or later they may have prior employer income
+	_maybe_remind_tp3_collection(doc)
+
 
 def handle_employee_status_change(doc, method):
 	"""Auto-create LHDN CP22A when employee age >=55 is set to Left.
@@ -72,6 +75,34 @@ def handle_employee_status_change(doc, method):
 		f"(age {age} at cessation).",
 		title="CP22A Created",
 		indicator="blue",
+	)
+
+
+def _maybe_remind_tp3_collection(doc):
+	"""Display TP3 collection reminder when an employee joins mid-year.
+
+	If an employee joins in February (month 2) or later, they may have received
+	income and had PCB deducted by a previous employer in the same calendar year.
+	The new employer must collect Borang TP3 to ensure correct PCB computation.
+
+	Args:
+		doc: Employee document being inserted.
+	"""
+	if not doc.date_of_joining:
+		return
+
+	joining_date = getdate(doc.date_of_joining)
+	if joining_date.month == 1:
+		# January joiner — no prior employer income in this tax year
+		return
+
+	frappe.msgprint(
+		f"<b>Action Required — Borang TP3 Collection</b><br/>"
+		f"{doc.employee_name} joined in month {joining_date.month} ({joining_date.year}). "
+		f"Please request and record the employee's prior employer YTD income and PCB details "
+		f"via <b>Employee TP3 Declaration</b> to ensure accurate PCB deduction for the year.",
+		title="TP3 Required",
+		indicator="orange",
 	)
 
 

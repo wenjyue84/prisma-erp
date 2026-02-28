@@ -5154,3 +5154,36 @@ Completed: Implement Age-Based EPF/SOCSO/EIS Statutory Rate Transitions at Age 6
 ### Gotchas
 - bench migrate removes orphaned DocTypes including LHDN CP107 and workspace; use sync_fixtures separately if needed
 - DocType's `_table_fieldnames` cached_property requires `self.doctype` attribute — cannot instantiate with `__new__` and then call `append()` directly without mocking it
+## Iteration 30 - Sat, Feb 28, 2026  7:23:39 PM
+Completed: Implement Salary Advance Loan Module with Employment Act S.22/24 50% Deduction Cap (ID: US-101) in 13m
+
+
+## Iteration N — US-077: TP3 Carry-Forward Declaration for New Hires (Prior Employer YTD)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 14 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_tp3_declaration`
+**Result:** PASS — 14/14 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `doctype/employee_tp3_declaration/` — New DocType (JSON + py + __init__): employee, tax_year, previous_employer_name, previous_employer_tin, prior_gross_income, prior_epf_deducted, prior_pcb_deducted, joining_month
+- `services/tp3_service.py` — New: get_tp3_for_employee(employee, tax_year) → dict{prior_gross, prior_pcb, prior_epf, joining_month}; requires_tp3_collection(employee, tax_year) → bool
+- `services/pcb_calculator.py` — Modified calculate_pcb_method2(): added tp3_prior_gross=0.0 and tp3_prior_pcb=0.0 params; combined_ytd_gross = ytd_gross + tp3_prior_gross; combined_ytd_pcb = ytd_pcb_deducted + tp3_prior_pcb
+- `services/cp22_service.py` — Modified handle_employee_after_insert(): calls _maybe_remind_tp3_collection(doc) after CP22 creation; reminder shows when joining_month > 1 (Feb or later)
+- `tests/test_tp3_declaration.py` — New: 14 tests across 4 classes (TestGetTP3ForEmployee, TestCalculatePCBMethod2WithTP3, TestRequiresTP3Collection, TestCP22TP3Reminder)
+
+### Key test: employee joining July with RM30,000 prior income
+- combined YTD = 5,000 (current) + 30,000 (TP3) = 35,000
+- annualised = 35,000 * 12 / 7 = 60,000
+- chargeable = 60,000 - 9,000 = 51,000 → tax RM1,930
+- prior PCB = 1,500 → remaining = 1,930 - 1,500 = 430
+- PCB this month = 430 / 6 = 71.67
+
+### Patterns discovered
+- DocType naming rule "format:TP3-{employee}-{tax_year}" creates predictable names
+- bench migrate creates the DocType table; do NOT need to re-install the app
+- outer path services sync: `docker exec -u root` needed for permission-restricted files
+
+### Gotchas
+- bench migrate deletes the LHDN Payroll workspace (known issue from memory) — workspace re-deploy needed separately via fixture sync, not related to this story
+- Two copies of services/ exist (inner nested + outer); sync both for consistency

@@ -1,0 +1,161 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "format:TP3-{employee}-{tax_year}",
+ "creation": "2026-02-28 00:00:00.000000",
+ "docstatus": 0,
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "tax_year",
+  "column_break_1",
+  "joining_month",
+  "company",
+  "section_previous_employer",
+  "previous_employer_name",
+  "previous_employer_tin",
+  "section_prior_income",
+  "prior_gross_income",
+  "prior_epf_deducted",
+  "prior_pcb_deducted"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "fetch_from": "employee.employee_name",
+   "fetch_if_empty": 1,
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "tax_year",
+   "fieldtype": "Int",
+   "label": "Tax Year",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "default": "2024"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "joining_month",
+   "fieldtype": "Int",
+   "label": "Joining Month (1-12)",
+   "reqd": 1,
+   "description": "Month when employee joined this employer (1=January, 12=December). Used to determine TP3 collection requirement.",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "fetch_from": "employee.company",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "section_previous_employer",
+   "fieldtype": "Section Break",
+   "label": "Previous Employer Details"
+  },
+  {
+   "fieldname": "previous_employer_name",
+   "fieldtype": "Data",
+   "label": "Previous Employer Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "previous_employer_tin",
+   "fieldtype": "Data",
+   "label": "Previous Employer TIN",
+   "description": "LHDN Tax Identification Number of the previous employer."
+  },
+  {
+   "fieldname": "section_prior_income",
+   "fieldtype": "Section Break",
+   "label": "Prior Income & Deductions (RM)"
+  },
+  {
+   "fieldname": "prior_gross_income",
+   "fieldtype": "Currency",
+   "label": "Prior Gross Income (RM)",
+   "reqd": 1,
+   "default": "0",
+   "description": "Total gross income earned from previous employer(s) in this tax year."
+  },
+  {
+   "fieldname": "prior_epf_deducted",
+   "fieldtype": "Currency",
+   "label": "Prior EPF Deducted (RM)",
+   "default": "0",
+   "description": "Total EPF contributions deducted by previous employer(s) in this tax year."
+  },
+  {
+   "fieldname": "prior_pcb_deducted",
+   "fieldtype": "Currency",
+   "label": "Prior PCB Deducted (RM)",
+   "reqd": 1,
+   "default": "0",
+   "description": "Total PCB/MTD tax deducted by previous employer(s) in this tax year."
+  }
+ ],
+ "links": [],
+ "modified": "2026-02-28 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LHDN Payroll Integration",
+ "name": "Employee TP3 Declaration",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "print": 1,
+   "role": "HR User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

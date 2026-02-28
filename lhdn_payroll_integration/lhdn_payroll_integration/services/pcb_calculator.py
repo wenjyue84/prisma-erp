@@ -424,6 +424,8 @@ def calculate_pcb_method2(
     category: int = None,
     annual_zakat: float = 0.0,
     resident: bool = True,
+    tp3_prior_gross: float = 0.0,
+    tp3_prior_pcb: float = 0.0,
 ) -> float:
     """Calculate monthly PCB using Method 2 (Year-to-Date Recalculation).
 
@@ -436,6 +438,13 @@ def calculate_pcb_method2(
 
     For constant-income employees, Method 2 produces the same annual total as Method 1.
 
+    TP3 (Prior Employer YTD) integration:
+        When an employee joins mid-year with prior employer income, pass tp3_prior_gross
+        and tp3_prior_pcb. These are added to ytd_gross and ytd_pcb_deducted respectively
+        before annualisation, ensuring the combined income is correctly annualised and
+        PCB already paid to the prior employer is not double-deducted.
+        Regulatory basis: LHDN Borang TP3 (prior employment income declaration).
+
     Args:
         ytd_gross: Year-to-date gross pay INCLUDING current month (RM).
         ytd_pcb_deducted: Total PCB deducted in months BEFORE current month (RM).
@@ -444,14 +453,20 @@ def calculate_pcb_method2(
         category: PCB category (1=single, 2=non-working spouse, 3=single parent).
         annual_zakat: Annual Zakat paid by employee (RM, ringgit-for-ringgit credit).
         resident: True if employee is a tax resident (default True).
+        tp3_prior_gross: Prior employer gross income from Borang TP3 (RM, default 0).
+        tp3_prior_pcb: Prior employer PCB deducted from Borang TP3 (RM, default 0).
 
     Returns:
         float: Monthly PCB deduction for current month (RM), rounded to 2 decimal places.
     """
     month_number = max(1, min(12, int(month_number)))
 
-    # Annualise the YTD gross income
-    annualised_income = float(ytd_gross or 0) * 12.0 / month_number
+    # Incorporate TP3 prior employer data into YTD figures
+    combined_ytd_gross = float(ytd_gross or 0) + float(tp3_prior_gross or 0)
+    combined_ytd_pcb = float(ytd_pcb_deducted or 0) + float(tp3_prior_pcb or 0)
+
+    # Annualise the combined YTD gross income
+    annualised_income = combined_ytd_gross * 12.0 / month_number
 
     if not resident:
         # Non-resident: flat 30%, no reliefs or rebates
@@ -459,7 +474,7 @@ def calculate_pcb_method2(
         if annual_zakat:
             annual_tax = max(0.0, annual_tax - float(annual_zakat))
         remaining_months = 13 - month_number
-        pcb = max(0.0, (annual_tax - float(ytd_pcb_deducted or 0)) / remaining_months)
+        pcb = max(0.0, (annual_tax - combined_ytd_pcb) / remaining_months)
         return round(pcb, 2)
 
     # Resident: compute total reliefs (same logic as Method 1)
@@ -485,8 +500,7 @@ def calculate_pcb_method2(
 
     # Spread remaining tax liability over remaining months (including current month)
     remaining_months = 13 - month_number
-    ytd_deducted = float(ytd_pcb_deducted or 0)
-    pcb = max(0.0, (annual_tax - ytd_deducted) / remaining_months)
+    pcb = max(0.0, (annual_tax - combined_ytd_pcb) / remaining_months)
     return round(pcb, 2)
 
 
