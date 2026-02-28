@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Prisma ERP Test Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; font-weight: 700; }
+  .card { background: #1e293b; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  details summary::-webkit-details-marker { display: none; }
+</style>
+</head>
+<body>
+
+<div class="card" style="display:flex;justify-content:space-between;align-items:center">
+  <div>
+    <h1>🧪 Prisma ERP Test Report</h1>
+    <p style="color:#64748b;font-size:13px;margin-top:4px">Generated 2026-02-28T10:28:18.365783+00:00</p>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:32px;font-weight:800;color:#22c55e">100.0%</div>
+    <div style="color:#64748b;font-size:12px">pass rate</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#e2e8f0">14</div>
+    <div style="color:#64748b;font-size:12px">Total</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#22c55e">14</div>
+    <div style="color:#64748b;font-size:12px">Passed</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#ef4444">0</div>
+    <div style="color:#64748b;font-size:12px">Failed</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#f97316">0</div>
+    <div style="color:#64748b;font-size:12px">Errors</div>
+  </div>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr style="border-bottom:2px solid #334155">
+        <th style="padding:8px 12px;text-align:left;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:200px">Test ID</th>
+        <th style="padding:8px 12px;text-align:left;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase">Description</th>
+        <th style="padding:8px 12px;text-align:right;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:100px">Duration</th>
+        <th style="padding:8px 12px;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:80px">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr style="background:#1e293b;">
+          <td colspan="4" style="padding:8px 12px;font-weight:700;color:#94a3b8;font-size:12px;letter-spacing:.5px;text-transform:uppercase">
+            SECURITY &nbsp; (14/14 passed)
+          </td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec01_anon_cannot_get_logged_user</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec01_anon_cannot_get_logged_user</div>
+            <div style="color:#64748b;font-size:11px">SEC-01: Anonymous GET to frappe.auth.get_logged_user → not 200.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">12.95 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec02_anon_cannot_list_salary_slips</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec02_anon_cannot_list_salary_slips</div>
+            <div style="color:#64748b;font-size:11px">SEC-02: Anonymous GET to Salary Slip list → 403 or redirect.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">40.0 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec03_anon_cannot_call_send_message</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec03_anon_cannot_call_send_message</div>
+            <div style="color:#64748b;font-size:11px">SEC-03: Anonymous call to send_message → not 200.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">11.01 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec04_anon_cannot_read_prisma_settings</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec04_anon_cannot_read_prisma_settings</div>
+            <div style="color:#64748b;font-size:11px">SEC-04: Anonymous GET to Prisma AI Settings → not 200.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">15.9 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec05_anon_cannot_access_employee_data</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec05_anon_cannot_access_employee_data</div>
+            <div style="color:#64748b;font-size:11px">SEC-05: Anonymous GET to Employee list → not 200.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">13.42 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec06_post_without_csrf_fails</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec06_post_without_csrf_fails</div>
+            <div style="color:#64748b;font-size:11px">SEC-06: Unauthenticated POST to set_value is blocked (401/403).
+
+Frappe v16 does not always reject absent CSRF headers for authenticated
+sessions, but it DOES block unauthenticated mutating requests.  Testing
+the latter gives a reliable, non-destructive security signal.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">36.54 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec07_csrf_token_not_in_error_response</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec07_csrf_token_not_in_error_response</div>
+            <div style="color:#64748b;font-size:11px">SEC-07: Error responses do not leak CSRF tokens in body.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">69.74 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec08_api_key_not_in_error_logs</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec08_api_key_not_in_error_logs</div>
+            <div style="color:#64748b;font-size:11px">SEC-08: Error responses from chat API don't contain API keys.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">6494.08 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec09_sql_injection_in_filter</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec09_sql_injection_in_filter</div>
+            <div style="color:#64748b;font-size:11px">SEC-09: SQL injection in filter parameter doesn't dump data.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">27.79 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec10_sql_injection_in_search</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec10_sql_injection_in_search</div>
+            <div style="color:#64748b;font-size:11px">SEC-10: SQL injection in search_term is escaped.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">192.99 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec11_xss_in_chat_message</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec11_xss_in_chat_message</div>
+            <div style="color:#64748b;font-size:11px">SEC-11: XSS payloads in chat message are handled without 500 error.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">22024.68 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec12_path_traversal_in_resource</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec12_path_traversal_in_resource</div>
+            <div style="color:#64748b;font-size:11px">SEC-12: Path traversal in resource name is blocked.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">7.88 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec13_user_password_not_in_response</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec13_user_password_not_in_response</div>
+            <div style="color:#64748b;font-size:11px">SEC-13: GET User/Administrator does not expose password hash.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">11.01 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_sec14_api_key_fields_masked_in_settings</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_sec14_api_key_fields_masked_in_settings</div>
+            <div style="color:#64748b;font-size:11px">SEC-14: GET Prisma AI Settings does not expose plaintext API key.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">7.86 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="margin-top:12px;color:#475569;font-size:12px;text-align:center">
+  Prisma ERP Test Suite &mdash; Prisma ERP Test Suite
+</div>
+
+<script>
+  // Embed raw JSON for machine reading
+  window.testReport = {"suite": "Prisma ERP Test Suite", "generated_at": "2026-02-28T10:28:18.365783+00:00", "summary": {"total": 14, "passed": 14, "failed": 0, "errored": 0, "skipped": 0, "pass_rate": "100.0%"}, "categories": {"security": {"total": 14, "passed": 14, "failed": 0, "tests": [{"id": "tests.security.test_security.TestAuthEnforcement.test_sec01_anon_cannot_get_logged_user", "name": "test_sec01_anon_cannot_get_logged_user", "description": "SEC-01: Anonymous GET to frappe.auth.get_logged_user \u2192 not 200.", "category": "security", "status": "PASS", "duration_ms": 12.95, "error": null}, {"id": "tests.security.test_security.TestAuthEnforcement.test_sec02_anon_cannot_list_salary_slips", "name": "test_sec02_anon_cannot_list_salary_slips", "description": "SEC-02: Anonymous GET to Salary Slip list \u2192 403 or redirect.", "category": "security", "status": "PASS", "duration_ms": 40.0, "error": null}, {"id": "tests.security.test_security.TestAuthEnforcement.test_sec03_anon_cannot_call_send_message", "name": "test_sec03_anon_cannot_call_send_message", "description": "SEC-03: Anonymous call to send_message \u2192 not 200.", "category": "security", "status": "PASS", "duration_ms": 11.01, "error": null}, {"id": "tests.security.test_security.TestAuthEnforcement.test_sec04_anon_cannot_read_prisma_settings", "name": "test_sec04_anon_cannot_read_prisma_settings", "description": "SEC-04: Anonymous GET to Prisma AI Settings \u2192 not 200.", "category": "security", "status": "PASS", "duration_ms": 15.9, "error": null}, {"id": "tests.security.test_security.TestAuthEnforcement.test_sec05_anon_cannot_access_employee_data", "name": "test_sec05_anon_cannot_access_employee_data", "description": "SEC-05: Anonymous GET to Employee list \u2192 not 200.", "category": "security", "status": "PASS", "duration_ms": 13.42, "error": null}, {"id": "tests.security.test_security.TestCSRFProtection.test_sec06_post_without_csrf_fails", "name": "test_sec06_post_without_csrf_fails", "description": "SEC-06: Unauthenticated POST to set_value is blocked (401/403).\n\nFrappe v16 does not always reject absent CSRF headers for authenticated\nsessions, but it DOES block unauthenticated mutating requests.  Testing\nthe latter gives a reliable, non-destructive security signal.", "category": "security", "status": "PASS", "duration_ms": 36.54, "error": null}, {"id": "tests.security.test_security.TestCSRFProtection.test_sec07_csrf_token_not_in_error_response", "name": "test_sec07_csrf_token_not_in_error_response", "description": "SEC-07: Error responses do not leak CSRF tokens in body.", "category": "security", "status": "PASS", "duration_ms": 69.74, "error": null}, {"id": "tests.security.test_security.TestCSRFProtection.test_sec08_api_key_not_in_error_logs", "name": "test_sec08_api_key_not_in_error_logs", "description": "SEC-08: Error responses from chat API don't contain API keys.", "category": "security", "status": "PASS", "duration_ms": 6494.08, "error": null}, {"id": "tests.security.test_security.TestInjectionAttacks.test_sec09_sql_injection_in_filter", "name": "test_sec09_sql_injection_in_filter", "description": "SEC-09: SQL injection in filter parameter doesn't dump data.", "category": "security", "status": "PASS", "duration_ms": 27.79, "error": null}, {"id": "tests.security.test_security.TestInjectionAttacks.test_sec10_sql_injection_in_search", "name": "test_sec10_sql_injection_in_search", "description": "SEC-10: SQL injection in search_term is escaped.", "category": "security", "status": "PASS", "duration_ms": 192.99, "error": null}, {"id": "tests.security.test_security.TestInjectionAttacks.test_sec11_xss_in_chat_message", "name": "test_sec11_xss_in_chat_message", "description": "SEC-11: XSS payloads in chat message are handled without 500 error.", "category": "security", "status": "PASS", "duration_ms": 22024.68, "error": null}, {"id": "tests.security.test_security.TestInjectionAttacks.test_sec12_path_traversal_in_resource", "name": "test_sec12_path_traversal_in_resource", "description": "SEC-12: Path traversal in resource name is blocked.", "category": "security", "status": "PASS", "duration_ms": 7.88, "error": null}, {"id": "tests.security.test_security.TestSensitiveDataExposure.test_sec13_user_password_not_in_response", "name": "test_sec13_user_password_not_in_response", "description": "SEC-13: GET User/Administrator does not expose password hash.", "category": "security", "status": "PASS", "duration_ms": 11.01, "error": null}, {"id": "tests.security.test_security.TestSensitiveDataExposure.test_sec14_api_key_fields_masked_in_settings", "name": "test_sec14_api_key_fields_masked_in_settings", "description": "SEC-14: GET Prisma AI Settings does not expose plaintext API key.", "category": "security", "status": "PASS", "duration_ms": 7.86, "error": null}]}}, "all_results": [{"id": "tests.security.test_security.TestAuthEnforcement.test_sec01_anon_cannot_get_logged_user", "name": "test_sec01_anon_cannot_get_logged_user", "description": "SEC-01: Anonymous GET to frappe.auth.get_logged_user \u2192 not 200.", "category": "security", "status": "PASS", "duration_ms": 12.95, "error": null}, {"id": "tests.security.test_security.TestAuthEnforcement.test_sec02_anon_cannot_list_salary_slips", "name": "test_sec02_anon_cannot_list_salary_slips", "description": "SEC-02: Anonymous GET to Salary Slip list \u2192 403 or redirect.", "category": "security", "status": "PASS", "duration_ms": 40.0, "error": null}, {"id": "tests.security.test_security.TestAuthEnforcement.test_sec03_anon_cannot_call_send_message", "name": "test_sec03_anon_cannot_call_send_message", "description": "SEC-03: Anonymous call to send_message \u2192 not 200.", "category": "security", "status": "PASS", "duration_ms": 11.01, "error": null}, {"id": "tests.security.test_security.TestAuthEnforcement.test_sec04_anon_cannot_read_prisma_settings", "name": "test_sec04_anon_cannot_read_prisma_settings", "description": "SEC-04: Anonymous GET to Prisma AI Settings \u2192 not 200.", "category": "security", "status": "PASS", "duration_ms": 15.9, "error": null}, {"id": "tests.security.test_security.TestAuthEnforcement.test_sec05_anon_cannot_access_employee_data", "name": "test_sec05_anon_cannot_access_employee_data", "description": "SEC-05: Anonymous GET to Employee list \u2192 not 200.", "category": "security", "status": "PASS", "duration_ms": 13.42, "error": null}, {"id": "tests.security.test_security.TestCSRFProtection.test_sec06_post_without_csrf_fails", "name": "test_sec06_post_without_csrf_fails", "description": "SEC-06: Unauthenticated POST to set_value is blocked (401/403).\n\nFrappe v16 does not always reject absent CSRF headers for authenticated\nsessions, but it DOES block unauthenticated mutating requests.  Testing\nthe latter gives a reliable, non-destructive security signal.", "category": "security", "status": "PASS", "duration_ms": 36.54, "error": null}, {"id": "tests.security.test_security.TestCSRFProtection.test_sec07_csrf_token_not_in_error_response", "name": "test_sec07_csrf_token_not_in_error_response", "description": "SEC-07: Error responses do not leak CSRF tokens in body.", "category": "security", "status": "PASS", "duration_ms": 69.74, "error": null}, {"id": "tests.security.test_security.TestCSRFProtection.test_sec08_api_key_not_in_error_logs", "name": "test_sec08_api_key_not_in_error_logs", "description": "SEC-08: Error responses from chat API don't contain API keys.", "category": "security", "status": "PASS", "duration_ms": 6494.08, "error": null}, {"id": "tests.security.test_security.TestInjectionAttacks.test_sec09_sql_injection_in_filter", "name": "test_sec09_sql_injection_in_filter", "description": "SEC-09: SQL injection in filter parameter doesn't dump data.", "category": "security", "status": "PASS", "duration_ms": 27.79, "error": null}, {"id": "tests.security.test_security.TestInjectionAttacks.test_sec10_sql_injection_in_search", "name": "test_sec10_sql_injection_in_search", "description": "SEC-10: SQL injection in search_term is escaped.", "category": "security", "status": "PASS", "duration_ms": 192.99, "error": null}, {"id": "tests.security.test_security.TestInjectionAttacks.test_sec11_xss_in_chat_message", "name": "test_sec11_xss_in_chat_message", "description": "SEC-11: XSS payloads in chat message are handled without 500 error.", "category": "security", "status": "PASS", "duration_ms": 22024.68, "error": null}, {"id": "tests.security.test_security.TestInjectionAttacks.test_sec12_path_traversal_in_resource", "name": "test_sec12_path_traversal_in_resource", "description": "SEC-12: Path traversal in resource name is blocked.", "category": "security", "status": "PASS", "duration_ms": 7.88, "error": null}, {"id": "tests.security.test_security.TestSensitiveDataExposure.test_sec13_user_password_not_in_response", "name": "test_sec13_user_password_not_in_response", "description": "SEC-13: GET User/Administrator does not expose password hash.", "category": "security", "status": "PASS", "duration_ms": 11.01, "error": null}, {"id": "tests.security.test_security.TestSensitiveDataExposure.test_sec14_api_key_fields_masked_in_settings", "name": "test_sec14_api_key_fields_masked_in_settings", "description": "SEC-14: GET Prisma AI Settings does not expose plaintext API key.", "category": "security", "status": "PASS", "duration_ms": 7.86, "error": null}]};
+</script>
+</body>
+</html>

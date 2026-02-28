@@ -1,0 +1,142 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "naming_series:",
+  "creation": "2026-02-28 00:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "naming_series",
+    "employee",
+    "employee_name",
+    "company",
+    "date_of_termination",
+    "reason",
+    "last_wage",
+    "filing_deadline",
+    "status",
+    "remarks"
+  ],
+  "fields": [
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Series",
+      "options": "SOCSO-B4-.YYYY.-",
+      "default": "SOCSO-B4-.YYYY.-"
+    },
+    {
+      "fieldname": "employee",
+      "fieldtype": "Link",
+      "label": "Employee",
+      "options": "Employee",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "employee_name",
+      "fieldtype": "Data",
+      "label": "Employee Name",
+      "fetch_from": "employee.employee_name",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "label": "Company",
+      "options": "Company",
+      "fetch_from": "employee.company",
+      "read_only": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "date_of_termination",
+      "fieldtype": "Date",
+      "label": "Date of Termination",
+      "reqd": 1,
+      "in_list_view": 1,
+      "description": "Date employee's employment was terminated (date_of_leaving)."
+    },
+    {
+      "fieldname": "reason",
+      "fieldtype": "Select",
+      "label": "Reason for Termination",
+      "options": "\nResignation\nTermination\nRetirement\nDeath\nContract End",
+      "in_list_view": 1,
+      "description": "Reason for employee termination as required by PERKESO Borang 4."
+    },
+    {
+      "fieldname": "last_wage",
+      "fieldtype": "Currency",
+      "label": "Last Wage (RM)",
+      "description": "Final monthly wage of the employee at time of termination."
+    },
+    {
+      "fieldname": "filing_deadline",
+      "fieldtype": "Date",
+      "label": "Filing Deadline (30 days from termination)",
+      "read_only": 1,
+      "in_list_view": 1,
+      "description": "Borang 4 must be submitted to PERKESO within 30 days of termination (SOCSO Act 1969 S.19)."
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "label": "Status",
+      "options": "\nPending\nSubmitted\nOverdue",
+      "default": "Pending",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "remarks",
+      "fieldtype": "Small Text",
+      "label": "Remarks"
+    }
+  ],
+  "links": [],
+  "modified": "2026-02-28 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "LHDN Payroll Integration",
+  "name": "SOCSO Borang 4",
+  "naming_rule": "By \"Naming Series\" field",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "HR Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "read": 1,
+      "print": 1,
+      "role": "HR User"
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "title_field": "employee_name",
+  "track_changes": 1
+}
