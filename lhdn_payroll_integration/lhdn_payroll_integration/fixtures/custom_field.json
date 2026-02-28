@@ -1142,5 +1142,17 @@
   "description": "Applicable employment ordinance jurisdiction. Peninsular Malaysia = EA 1955; Sabah = Labour Ordinance Cap. 67; Sarawak = Labour Ordinance Cap. 76. Auto-set from State Code.",
   "module": "LHDN Payroll Integration",
   "insert_after": "custom_approved_pension_scheme"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Company-custom_is_statutory_employer",
+  "dt": "Company",
+  "fieldname": "custom_is_statutory_employer",
+  "fieldtype": "Check",
+  "label": "Statutory / Government Body Employer",
+  "default": "0",
+  "description": "ITA 1967 Section 83A: statutory bodies, GLCs, and government-linked companies must issue Borang EC instead of Borang EA. When enabled, EC Form generation is used by default.",
+  "module": "LHDN Payroll Integration",
+  "insert_after": "custom_lhdn_webhook_secret"
  }
 ]

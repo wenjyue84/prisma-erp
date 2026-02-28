@@ -5927,3 +5927,23 @@ Incomplete: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee (ID: US-093) 
 
 ### Gotchas
 - custom_labour_jurisdiction field was not in custom_field.json — test_jurisdiction_field_exists_in_fixture would fail without this addition
+
+## Iteration N+1 — US-094: Add EC Form Variant for Statutory/Government Body Employers
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_ec_form`
+**Result:** PASS — 14/14 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `report/ec_form/ec_form.json` — Report fixture (Script Report, ref_doctype: Salary Slip)
+- `report/ec_form/ec_form.py` — EC Form report delegating to ea_form.py with EC-specific Section A label
+- `fixtures/custom_field.json` — Added Company-custom_is_statutory_employer Check field
+- `tests/test_ec_form.py` — 14 tests: fixture field validation, report structure, EC vs EA label differentiation
+
+### Patterns discovered
+- EC Form reuses EA Form logic entirely via import; only column label differs (Section A header)
+- Nested fixtures path must also be synced (docker cp to nested `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/`) since tests resolve via dirname(dirname(__file__))
+
+### Gotchas
+- Two fixture copies exist in container: outer and nested path — always update both when test files are in nested location
