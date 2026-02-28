@@ -35,7 +35,10 @@ doc_events = {
 		"on_cancel": "lhdn_payroll_integration.services.cancellation_service.handle_expense_claim_cancel",
 	},
 	"Employee": {
-		"on_update": "lhdn_payroll_integration.services.cp107_service.handle_foreign_employee_left",
+		"on_update": [
+			"lhdn_payroll_integration.services.cp107_service.handle_foreign_employee_left",
+			"lhdn_payroll_integration.services.socso_service.handle_employee_termination_socso",
+		],
 		"after_insert": "lhdn_payroll_integration.services.socso_service.handle_new_employee_socso",
 	},
 }
@@ -49,6 +52,7 @@ scheduler_events = {
 	],
 	"daily": [
 		"lhdn_payroll_integration.services.socso_service.check_overdue_socso_borang3",
+		"lhdn_payroll_integration.services.socso_service.check_overdue_socso_borang4",
 	],
 	"monthly": [
 		"lhdn_payroll_integration.services.consolidation_service.run_monthly_consolidation",

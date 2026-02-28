@@ -4896,3 +4896,29 @@ Completed: Fix fields parameter encoding in ERPNextSession.resource() helper (ID
 ### Gotchas
 - Frappe converts "SOCSO Borang 3" → module path `socso_borang_3` (underscore before '3', NOT 'socso_borang3')
 - bench migrate may delete LHDN Payroll workspace as orphan — fixture re-sync needed if workspace fixture exists
+## Iteration 21 - Sat, Feb 28, 2026  5:47:51 PM
+Incomplete: Fix SEC-06 CSRF enforcement test â€” incorrect test design (ID: US-099) — attempt 1/3
+
+
+## Iteration — US-066: Implement SOCSO Borang 4 — Employee Termination Notification to PERKESO
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_socso_borang4`
+**Result:** PASS — 15/15 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/socso_borang_4/socso_borang_4.json` — New DocType with fields: employee, date_of_termination, reason, last_wage, filing_deadline, status, remarks
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/socso_borang_4/socso_borang_4.py` — Empty controller (pass)
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/socso_borang_4/__init__.py` — Package init
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/socso_service.py` — Extended with handle_employee_termination_socso() and check_overdue_socso_borang4()
+- `lhdn_payroll_integration/lhdn_payroll_integration/hooks.py` — Employee on_update changed to list (cp107 + socso termination); check_overdue_socso_borang4 added to daily scheduler
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_socso_borang4.py` — 15 tests (auto-creation, eligibility, duplicate prevention, filing deadline, overdue scheduler)
+
+### Patterns discovered
+- Frappe doc_events support list of handlers: `"on_update": ["handler1", "handler2"]` — existing single-string is also valid but must be converted to list when adding a second handler
+- SOCSO Borang 4 mirrors Borang 3 pattern: duplicate check covers "previous status != Left" case naturally
+
+### Gotchas
+- bench migrate needed after adding new DocType JSON
+- Both inner and outer copies of hooks.py and socso_service.py must be updated
