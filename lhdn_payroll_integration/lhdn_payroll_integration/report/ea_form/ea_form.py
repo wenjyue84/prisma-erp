@@ -5,7 +5,7 @@ by 28 February each year.
 
 Aggregates all submitted Salary Slips (docstatus=1) for the year per employee.
 Output: Total Gross Remuneration, EPF Employee, SOCSO Employee, EIS Employee,
-        PCB Total, Net Pay.
+        PCB Total, Zakat (Section C5), Net Pay.
 """
 import frappe
 
@@ -71,6 +71,13 @@ def get_columns():
             "fieldtype": "Currency",
             "options": "MYR",
             "width": 160,
+        },
+        {
+            "label": "Annual Zakat — Section C5 (MYR)",
+            "fieldname": "annual_zakat",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 200,
         },
         {
             "label": "Net Pay (MYR)",
@@ -162,6 +169,7 @@ def get_data(filters=None):
     where, values = _build_conditions(filters)
 
     # Aggregate gross_pay and net_pay per employee
+    # Join Employee to get custom_annual_zakat for Section C5
     sql = f"""
         SELECT
             ss.employee                                AS employee,
@@ -170,11 +178,12 @@ def get_data(filters=None):
             COALESCE(e.custom_pcb_category, '1')       AS pcb_category,
             SUM(ss.gross_pay)                          AS total_gross,
             SUM(ss.net_pay)                            AS net_pay,
+            COALESCE(e.custom_annual_zakat, 0)         AS annual_zakat,
             GROUP_CONCAT(ss.name)                      AS slip_names
         FROM `tabSalary Slip` ss
         LEFT JOIN `tabEmployee` e ON e.name = ss.employee
         {where}
-        GROUP BY ss.employee, ss.employee_name, YEAR(ss.start_date), e.custom_pcb_category
+        GROUP BY ss.employee, ss.employee_name, YEAR(ss.start_date), e.custom_pcb_category, e.custom_annual_zakat
         ORDER BY ss.employee_name ASC
     """
 
@@ -202,6 +211,7 @@ def get_data(filters=None):
                     "socso_employee": socso,
                     "eis_employee": eis,
                     "pcb_total": pcb,
+                    "annual_zakat": float(row.annual_zakat or 0),
                     "net_pay": float(row.net_pay or 0),
                 }
             )

@@ -18,6 +18,8 @@ REQUIRED_FIELDNAMES = {
     "employee_name",
     "gross_salary",
     "pcb_amount",
+    "pcb_amount",
+    "zakat_amount",
     "period",
 }
 

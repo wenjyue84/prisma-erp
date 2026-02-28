@@ -531,6 +531,18 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Employee-custom_annual_zakat",
+    "dt": "Employee",
+    "fieldname": "custom_annual_zakat",
+    "fieldtype": "Currency",
+    "label": "Annual Zakat (RM)",
+    "default": "0",
+    "description": "Annual Zakat paid by employee. Under ITA 1967 s.6A(3), Zakat reduces PCB payable ringgit-for-ringgit (net_pcb = gross_pcb - annual_zakat/12). Also reported in CP39 CSV and EA Form Section C5.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_pcb_category"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Company-custom_hrdf_levy_rate",
     "dt": "Company",
     "fieldname": "custom_hrdf_levy_rate",

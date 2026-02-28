@@ -86,6 +86,7 @@ def calculate_pcb(
     total_days: int = None,
     category: int = None,
     tp1_total_reliefs: float = 0.0,
+    annual_zakat: float = 0.0,
 ) -> float:
     """Calculate monthly PCB/MTD deduction amount.
 
@@ -121,6 +122,12 @@ def calculate_pcb(
         These are subtracted from chargeable income AFTER the standard personal/child
         reliefs, reducing PCB proportionally. Non-residents ignore TP1 reliefs.
 
+    Zakat PCB Offset (US-053 — ITA 1967 s.6A(3)):
+        Pass annual_zakat to offset PCB payable ringgit-for-ringgit.
+        net_pcb = max(0, gross_monthly_pcb - annual_zakat / 12)
+        This is a direct tax credit applied AFTER progressive tax computation,
+        NOT a reduction in chargeable income. Result is floored at 0.
+
     Args:
         annual_income: Gross annual employment income (RM).
         resident: True if employee is a tax resident of Malaysia.
@@ -143,12 +150,16 @@ def calculate_pcb(
         tp1_total_reliefs: Additional annual reliefs from employee Borang TP1 declaration
             (e.g. life insurance, medical insurance, education fees, SSPN, EPF, SOCSO).
             These are subtracted from chargeable income to reduce PCB. Default 0.0.
+        annual_zakat: Annual Zakat paid by Muslim employee (RM). Under ITA 1967 s.6A(3),
+            Zakat is a ringgit-for-ringgit offset applied after tax computation:
+            net_pcb = max(0, gross_monthly_pcb - annual_zakat / 12). Default 0.0.
 
     Returns:
         float: Monthly PCB amount (RM), rounded to 2 decimal places.
                When bonus_amount or gratuity_amount > 0, includes both the
                regular monthly PCB and the incremental irregular PCB.
                Returns 0.0 for zero or negative income (with no irregular payments).
+               Zakat offset is applied last; result is floored at 0.
     """
     # Mid-month proration: if worked_days < total_days, prorate monthly
     # income before annualising (LHDN PCB proration for mid-month join/leave)
@@ -168,11 +179,18 @@ def calculate_pcb(
     # Total irregular amount = bonus + taxable portion of gratuity
     total_irregular = bonus_amount + taxable_gratuity
 
+    # Compute monthly Zakat offset (ITA 1967 s.6A(3) — ringgit-for-ringgit credit)
+    monthly_zakat = float(annual_zakat or 0) / 12 if annual_zakat else 0.0
+
     if not resident:
         # Non-resident: flat 30%, no reliefs
         regular_monthly = (annual_income * 0.30) / 12 if annual_income > 0 else 0.0
         irregular_pcb = total_irregular * 0.30 if total_irregular > 0 else 0.0
-        return round(regular_monthly + irregular_pcb, 2)
+        gross_monthly = regular_monthly + irregular_pcb
+        # Apply Zakat offset (ringgit-for-ringgit, floored at 0)
+        if monthly_zakat > 0:
+            gross_monthly = max(0.0, gross_monthly - monthly_zakat)
+        return round(gross_monthly, 2)
 
     # Resident: apply personal reliefs before tax computation.
     # Resolve spouse/single-parent relief from category or legacy married flag.
@@ -198,9 +216,15 @@ def calculate_pcb(
         total_chargeable = max(0.0, annual_income + total_irregular - total_relief)
         tax_with_irregular = _compute_tax_on_chargeable_income(total_chargeable)
         irregular_pcb = tax_with_irregular - annual_tax
-        return round(regular_monthly_pcb + irregular_pcb, 2)
+        gross_monthly = regular_monthly_pcb + irregular_pcb
+    else:
+        gross_monthly = regular_monthly_pcb
 
-    return round(regular_monthly_pcb, 2)
+    # ITA 1967 s.6A(3): Zakat is ringgit-for-ringgit PCB offset (not a relief)
+    if monthly_zakat > 0:
+        gross_monthly = max(0.0, gross_monthly - monthly_zakat)
+
+    return round(gross_monthly, 2)
 
 
 @frappe.whitelist()

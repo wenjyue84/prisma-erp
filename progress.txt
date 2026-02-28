@@ -4379,3 +4379,31 @@ Completed: Fix CSRF token acquisition in test suite ERPNextSession login (ID: US
 - TestEmployeeTP1ReliefCaps (4 tests): _CAPS constants match LHDN limits, zakat excluded from _RELIEF_FIELDS
 - TestEmployeeTP1ReliefController (5 tests): cap enforcement, total calculation, unique constraint
 - TestGetEmployeeTP1Reliefs (3 tests): no-record case, correct values, string tax_year coercion
+## Iteration 3 - Sat, Feb 28, 2026  2:30:17 PM
+Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (ID: US-097) — attempt 1/3
+
+
+## Iteration N — US-053: Implement Zakat PCB Offset (Ringgit-for-Ringgit Deduction)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 55/55 tests pass (includes 10 new Zakat tests)
+**CP39 tests:** PASS — 13/13 (zakat_amount column verified)
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — Added `custom_annual_zakat` Currency field on Employee (insert_after: custom_pcb_category)
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/pcb_calculator.py` — Added `annual_zakat=0.0` param to `calculate_pcb()`; ITA s.6A(3) offset: `net_pcb = max(0, gross_pcb - annual_zakat/12)` applied AFTER progressive tax; both resident and non-resident paths updated
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/cp39_pcb_remittance/cp39_pcb_remittance.py` — Added `zakat_amount` column (COALESCE(e.custom_annual_zakat / 12, 0)); SQL now JOINs Employee for zakat
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/ea_form/ea_form.py` — Added `annual_zakat` column (Section C5); SQL JOINs Employee for `custom_annual_zakat`; GROUP BY updated
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_pcb_calculator.py` — Added `TestCalculatePcbZakatOffset` class with 10 test methods
+
+### Patterns discovered
+- **ITA s.6A(3) Zakat is a PCB credit, NOT a relief** — applies after tax computation, not to chargeable income
+- `max(0, gross_pcb - monthly_zakat)` floors at 0 so PCB is never negative
+- CP39 shows monthly_zakat = annual_zakat/12 per row (remittance is monthly)
+- EA Form Section C5 shows full annual_zakat per employee
+
+### Gotchas
+- `bench migrate` deleted LHDN Payroll workspace and Desktop Icon as "orphans" — ran `execute lhdn_payroll_integration.install.after_migrate` to restore
+- Windows cp1252 encoding issue when reading prd.json via Python — must specify `encoding='utf-8'`
