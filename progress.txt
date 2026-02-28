@@ -5418,3 +5418,23 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 ### Gotchas
 - Test first tried lhdn_payroll_integration.lhdn_payroll_integration.tests.* (wrong); use lhdn_payroll_integration.tests.* (short path)
 - Nested path imports from lhdn_payroll_integration.lhdn_payroll_integration.utils.* — always sync both paths
+## Iteration 39 - Sat, Feb 28, 2026  8:49:52 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 1/3
+
+
+## Iteration 40 — US-083: Implement Expatriate Gross-Up Calculator and DTA Country Table
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_expatriate_service`
+**Result:** PASS — 25/25 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/expatriate_service.py` — New service with DTA_COUNTRIES dict, calculate_gross_up() iterative solver, is_resident(), get_dta_country()
+- `lhdn_payroll_integration/tests/test_expatriate_service.py` — 25 tests across 3 test classes
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added 4 new Employee fields: custom_expatriate_section, custom_is_tax_equalised, custom_dta_country, custom_malaysia_presence_days
+
+### Patterns discovered
+- Fixed-point iteration gross = desired_net + pcb(gross * 12) converges for all Malaysian tax rates (max 26% marginal, < 100%)
+- Non-resident gross-up uses flat 30% on gross (no reliefs) — always higher gross than resident equivalent
+- DTA_COUNTRIES uses key 'country' (not 'country_name') per test expectations
