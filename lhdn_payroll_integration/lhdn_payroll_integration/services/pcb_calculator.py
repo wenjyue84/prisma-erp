@@ -28,6 +28,31 @@ import datetime
 
 import frappe
 
+# BIK integration (US-060) — lazy import to avoid circular dependency
+def _get_bik_for_employee(employee: str, slip_date) -> float:
+    """Return monthly BIK for an employee based on the salary slip date.
+
+    Args:
+        employee: Employee document name.
+        slip_date: Date object or string with the salary slip period date.
+
+    Returns:
+        float: Monthly BIK amount to add to gross income (RM). 0.0 if no record.
+    """
+    try:
+        if slip_date:
+            if hasattr(slip_date, "year"):
+                year = slip_date.year
+            else:
+                import datetime as _dt
+                year = _dt.date.fromisoformat(str(slip_date)[:10]).year
+        else:
+            year = int(frappe.utils.nowdate()[:4])
+        from lhdn_payroll_integration.services.bik_calculator import calculate_monthly_bik_total
+        return calculate_monthly_bik_total(employee, year)
+    except Exception:
+        return 0.0
+
 # LHDN progressive tax bands: (upper_limit, rate_percent, cumulative_tax_at_lower_bound)
 # For each band: tax = cumulative_at_lower + (income - lower_bound) * rate
 _TAX_BANDS = [
@@ -303,6 +328,10 @@ def validate_pcb_amount(doc_name: str) -> dict:
 
     # Extract annual income from the slip
     monthly_gross = float(doc.gross_pay or 0)
+
+    # BIK (US-060): add monthly BIK to gross income before annualising
+    monthly_gross += _get_bik_for_employee(doc.employee, doc.start_date or doc.end_date)
+
     annual_income = monthly_gross * 12
 
     # Determine resident status (custom field, defaults to resident)

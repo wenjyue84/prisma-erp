@@ -1,0 +1,199 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "format:BIK-{employee}-{payroll_period_year}",
+ "creation": "2026-02-28 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "payroll_period_year",
+  "column_break_basics",
+  "company",
+  "section_car_benefits",
+  "car_purchase_price",
+  "car_bik_annual",
+  "column_break_car",
+  "fuel_bik_monthly",
+  "driver_bik_monthly",
+  "section_other_benefits",
+  "accommodation_bik_monthly",
+  "club_membership_annual",
+  "column_break_other",
+  "other_bik_annual",
+  "section_totals",
+  "total_annual_bik",
+  "total_monthly_bik"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "fetch_from": "employee.employee_name",
+   "fetch_if_empty": 1,
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "payroll_period_year",
+   "fieldtype": "Int",
+   "label": "Payroll Period Year",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "default": "2024"
+  },
+  {
+   "fieldname": "column_break_basics",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "fetch_from": "employee.company",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "section_car_benefits",
+   "fieldtype": "Section Break",
+   "label": "Car & Transport Benefits"
+  },
+  {
+   "fieldname": "car_purchase_price",
+   "fieldtype": "Currency",
+   "label": "Car Purchase Price (RM)",
+   "default": "0",
+   "description": "Original purchase price of company car. Used to look up prescribed annual BIK per LHDN Public Ruling 3/2013."
+  },
+  {
+   "fieldname": "car_bik_annual",
+   "fieldtype": "Currency",
+   "label": "Car BIK Annual (RM)",
+   "default": "0",
+   "description": "Prescribed annual BIK value for company car. Auto-populated when Car Purchase Price is set, or enter manually."
+  },
+  {
+   "fieldname": "column_break_car",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "fuel_bik_monthly",
+   "fieldtype": "Currency",
+   "label": "Fuel BIK Monthly (RM)",
+   "default": "0",
+   "description": "Monthly fuel BIK. LHDN prescribed: RM 300/month."
+  },
+  {
+   "fieldname": "driver_bik_monthly",
+   "fieldtype": "Currency",
+   "label": "Driver BIK Monthly (RM)",
+   "default": "0",
+   "description": "Monthly driver BIK. LHDN prescribed: RM 600/month."
+  },
+  {
+   "fieldname": "section_other_benefits",
+   "fieldtype": "Section Break",
+   "label": "Other Benefits"
+  },
+  {
+   "fieldname": "accommodation_bik_monthly",
+   "fieldtype": "Currency",
+   "label": "Accommodation BIK Monthly (RM)",
+   "default": "0",
+   "description": "Monthly accommodation BIK. LHDN prescribes 30% of gross income per month."
+  },
+  {
+   "fieldname": "club_membership_annual",
+   "fieldtype": "Currency",
+   "label": "Club Membership Annual (RM)",
+   "default": "0",
+   "description": "Annual club membership fees paid by employer (actual amount)."
+  },
+  {
+   "fieldname": "column_break_other",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "other_bik_annual",
+   "fieldtype": "Currency",
+   "label": "Other BIK Annual (RM)",
+   "default": "0",
+   "description": "Other annual BIK items not categorised above."
+  },
+  {
+   "fieldname": "section_totals",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "total_annual_bik",
+   "fieldtype": "Currency",
+   "label": "Total Annual BIK (RM)",
+   "read_only": 1,
+   "description": "Auto-calculated total annual BIK. Used for EA Form B7 and PCB income base."
+  },
+  {
+   "fieldname": "total_monthly_bik",
+   "fieldtype": "Currency",
+   "label": "Total Monthly BIK (RM)",
+   "read_only": 1,
+   "description": "Total Annual BIK / 12. Added to monthly gross income for PCB computation."
+  }
+ ],
+ "links": [],
+ "modified": "2026-02-28 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LHDN Payroll Integration",
+ "name": "Employee BIK Record",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "print": 1,
+   "role": "HR User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "employee_name",
+ "track_changes": 1
+}

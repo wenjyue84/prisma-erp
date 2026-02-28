@@ -399,6 +399,18 @@ def get_data(filters=None):
             section_b[fn] = val
             b_tagged_total += val
 
+        # BIK (US-060): add Employee BIK Record annual total to B7
+        # This handles BIK values entered via the Employee BIK Record DocType
+        # (separate from salary component-tagged BIK earnings)
+        try:
+            from lhdn_payroll_integration.services.bik_calculator import get_annual_bik_for_ea_form
+            bik_record_annual = get_annual_bik_for_ea_form(emp, int(row.year or 0))
+            if bik_record_annual > 0:
+                section_b["b7_bik"] = section_b.get("b7_bik", 0.0) + bik_record_annual
+                b_tagged_total += bik_record_annual
+        except Exception:
+            pass
+
         # Untagged earnings go into b12 but not into any specific Bn bucket
         untagged = emp_earnings.get("", 0.0)
         b12 = b_tagged_total + untagged
