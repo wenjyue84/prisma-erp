@@ -5,6 +5,7 @@ This module provides:
 - get_retention_date(dt): calculate retention expiry (submission + 7 years)
 - run_retention_archival(): yearly scheduler to mark expired records as archived
 - check_retention_lock(doc): before_amend hook to prevent amending archived records
+- check_deletion_lock(doc): before_delete hook to prevent deleting archived records
 """
 
 import frappe
@@ -70,5 +71,28 @@ def check_retention_lock(doc, method=None):
 	if getattr(doc, "custom_lhdn_archived", 0) == 1:
 		frappe.throw(
 			"This LHDN record is archived for the 7-year audit period and cannot be amended",
+			frappe.ValidationError,
+		)
+
+
+def check_deletion_lock(doc, method=None):
+	"""Before-delete hook: block permanent deletion of archived LHDN records.
+
+	Records marked with custom_lhdn_archived=1 must be retained for audit purposes
+	under Income Tax Act 1967 Section 82 (7-year retention) and Employment Act 1955
+	Section 61 (6-year retention). Once archived, such records cannot be permanently
+	deleted from the system.
+
+	Args:
+		doc: the document being deleted
+		method: Frappe hook method name (unused)
+
+	Raises:
+		frappe.ValidationError: if the document is archived
+	"""
+	if getattr(doc, "custom_lhdn_archived", 0) == 1:
+		frappe.throw(
+			f"This LHDN record ({doc.name}) is archived under the 7-year audit retention "
+			"policy (Income Tax Act 1967, Section 82) and cannot be permanently deleted.",
 			frappe.ValidationError,
 		)

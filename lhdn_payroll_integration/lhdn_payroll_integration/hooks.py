@@ -28,6 +28,7 @@ doc_events = {
 		"on_submit": "lhdn_payroll_integration.services.submission_service.enqueue_salary_slip_submission",
 		"on_cancel": "lhdn_payroll_integration.services.cancellation_service.handle_salary_slip_cancel",
 		"before_amend": "lhdn_payroll_integration.services.retention_service.check_retention_lock",
+		"before_delete": "lhdn_payroll_integration.services.retention_service.check_deletion_lock",
 		"validate": [
 			"lhdn_payroll_integration.services.cp107_service.check_salary_slip_cp107_warning",
 			"lhdn_payroll_integration.services.currency_converter.apply_myr_conversion",
@@ -40,6 +41,7 @@ doc_events = {
 	"Expense Claim": {
 		"on_submit": "lhdn_payroll_integration.services.submission_service.enqueue_expense_claim_submission",
 		"on_cancel": "lhdn_payroll_integration.services.cancellation_service.handle_expense_claim_cancel",
+		"before_delete": "lhdn_payroll_integration.services.retention_service.check_deletion_lock",
 	},
 	"Employee": {
 		"on_update": [

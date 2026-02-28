@@ -5873,3 +5873,35 @@ Completed: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) in 9m
 
 ### Gotchas
 - Both files (impl + tests) were pre-created but tests were broken due to the LocalProxy patching issue.
+## Iteration 47 - Sat, Feb 28, 2026 10:12:22 PM
+Completed: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) in 8m
+
+## Iteration 9 - Sat, Feb 28, 2026 10:21:27 PM
+Incomplete: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee (ID: US-093) — attempt 1/3
+
+
+## Iteration N — US-107: Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_wage_register`
+**Result:** PASS — 18/18 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/report/payroll_wage_register/payroll_wage_register.json` — Script Report definition (ref_doctype=Salary Slip)
+- `lhdn_payroll_integration/report/payroll_wage_register/payroll_wage_register.py` — Report: get_columns, get_data (single SQL JOIN), execute
+- `lhdn_payroll_integration/services/retention_service.py` — Added check_deletion_lock (before_delete hook)
+- `lhdn_payroll_integration/hooks.py` — Added before_delete for Salary Slip and Expense Claim
+- `lhdn_payroll_integration/fixtures/workspace.json` — Added Payroll Wage Register shortcut
+- `tests/test_wage_register.py` — 18 tests: columns, data, deletion lock
+
+### Patterns discovered
+- Reports also live in NESTED path: `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/`
+- Must mkdir in BOTH paths: outer (`/report/payroll_wage_register/`) AND nested (`/lhdn_payroll_integration/report/payroll_wage_register/`)
+- mkdir in container requires -u root; chown back to frappe:frappe after
+- Single SQL query with conditional SUM(CASE WHEN) for statutory deductions avoids N+1 calls
+- Patch target for nested report: `lhdn_payroll_integration.lhdn_payroll_integration.report.payroll_wage_register.payroll_wage_register.frappe`
+
+### Gotchas
+- `bench run-tests` discovers from NESTED path only — outer path copy is for Frappe module resolution at runtime
+- check_deletion_lock only blocks when custom_lhdn_archived==1 (yearly archival job handles marking); simpler and avoids race conditions

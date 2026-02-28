@@ -2338,7 +2338,7 @@
         "Define custom_lhdn_archived field in custom_field.json fixture"
       ],
       "estimatedComplexity": "medium",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-108",
