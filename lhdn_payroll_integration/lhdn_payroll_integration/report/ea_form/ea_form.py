@@ -369,7 +369,7 @@ def get_data(filters=None):
         SELECT
             ss.employee,
             COALESCE(sc.custom_ea_section, '') AS ea_section,
-            SUM(sd.amount)                      AS total
+            SUM(sd.amount * COALESCE(NULLIF(ss.custom_exchange_rate_to_myr, 0), 1.0)) AS total
         FROM `tabSalary Detail` sd
         JOIN `tabSalary Slip` ss ON sd.parent = ss.name
         LEFT JOIN `tabSalary Component` sc ON sc.name = sd.salary_component

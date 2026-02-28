@@ -5761,3 +5761,32 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 ### Patterns confirmed
 - Always `docker cp` to BOTH paths in container for utils files
 - Verify nested path has correct content before running tests
+## Iteration 45 - Sat, Feb 28, 2026  9:50:40 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 1/3
+
+
+## Iteration — US-111: Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
+
+**Type:** IMPL
+**TDD Phase:** GREEN (21/21 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_multi_currency_salary`
+**Result:** PASS — 21 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `services/currency_converter.py` — New service: get_exchange_rate(), get_gross_myr_for_slip(), apply_myr_conversion() hook
+- `fixtures/custom_field.json` — 4 new Salary Slip fields: custom_forex_section, custom_salary_currency, custom_exchange_rate_to_myr, custom_gross_myr
+- `hooks.py` — Changed Salary Slip validate from string to list, added apply_myr_conversion hook
+- `services/pcb_calculator.py` — validate_pcb_amount uses custom_gross_myr for non-MYR slips (ITA s.13)
+- `report/cp39_pcb_remittance/cp39_pcb_remittance.py` — SQL: COALESCE(NULLIF(ss.custom_gross_myr,0), ss.gross_pay) for gross_remuneration
+- `report/ea_form/ea_form.py` — Earnings SQL multiplies sd.amount by COALESCE(NULLIF(ss.custom_exchange_rate_to_myr,0),1.0)
+- `tests/test_multi_currency_salary.py` — 21 tests covering all 6 acceptance criteria
+
+### Patterns discovered
+- Salary Slip validate can accept list of handlers (was previously a string); list format already used by before_submit
+- COALESCE(NULLIF(field, 0), fallback) pattern handles zero/null custom_gross_myr gracefully in SQL
+- Both outer and nested module paths must be synced: outer = apps/lhdn_payroll_integration/lhdn_payroll_integration/, nested = apps/lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/
+
+### Architecture
+- Custom fields auto-computed on validate via hook (no manual computation needed by HR)
+- Exchange rate auto-fetched from ERPNext Currency Exchange DocType if not manually set
+- Backward compatible: MYR slips unaffected (exchange_rate=1.0, gross_myr=gross_pay)

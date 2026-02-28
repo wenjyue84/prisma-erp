@@ -1071,5 +1071,52 @@
     "description": "Password for the PFX/P12 certificate file. Leave blank if using a PEM key without password.",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_digital_cert_path"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_forex_section",
+    "dt": "Salary Slip",
+    "fieldname": "custom_forex_section",
+    "fieldtype": "Section Break",
+    "label": "Foreign Currency Salary",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_archived",
+    "collapsible": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_salary_currency",
+    "dt": "Salary Slip",
+    "fieldname": "custom_salary_currency",
+    "fieldtype": "Link",
+    "label": "Salary Currency",
+    "options": "Currency",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_forex_section",
+    "description": "Leave blank or set MYR for standard Ringgit slips. Set to foreign currency (USD, SGD, etc.) for expatriate employees."
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_exchange_rate_to_myr",
+    "dt": "Salary Slip",
+    "fieldname": "custom_exchange_rate_to_myr",
+    "fieldtype": "Float",
+    "label": "Exchange Rate to MYR",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_salary_currency",
+    "default": "1.0",
+    "description": "Exchange rate at date of payment (BNM middle rate). Auto-fetched if Currency Exchange records exist. For MYR slips, always 1.0."
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Slip-custom_gross_myr",
+    "dt": "Salary Slip",
+    "fieldname": "custom_gross_myr",
+    "fieldtype": "Currency",
+    "label": "Gross Pay (MYR Equivalent)",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_exchange_rate_to_myr",
+    "read_only": 1,
+    "description": "Gross pay converted to MYR. Used for PCB, EA Form, and CP39 reporting (ITA 1967 s.13 / LHDN PCB Spec)."
   }
 ]

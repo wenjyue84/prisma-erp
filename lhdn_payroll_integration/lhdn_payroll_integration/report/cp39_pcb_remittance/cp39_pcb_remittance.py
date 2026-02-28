@@ -180,7 +180,7 @@ def get_data(filters=None):
             COALESCE(e.custom_id_value, '')                 AS employee_nric,
             COALESCE(e.custom_pcb_category, '1')            AS pcb_category,
             ss.company                                       AS company,
-            ss.gross_pay                                     AS gross_remuneration,
+            COALESCE(NULLIF(ss.custom_gross_myr, 0), ss.gross_pay) AS gross_remuneration,
             DATE_FORMAT(ss.start_date, '%%m/%%Y')           AS month_year,
             SUM(
                 CASE WHEN sc.custom_is_pcb_component = 1

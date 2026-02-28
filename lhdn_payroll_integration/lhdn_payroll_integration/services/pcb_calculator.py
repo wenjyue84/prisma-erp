@@ -350,8 +350,13 @@ def validate_pcb_amount(doc_name: str) -> dict:
     """
     doc = frappe.get_doc("Salary Slip", doc_name)
 
-    # Extract annual income from the slip
-    monthly_gross = float(doc.gross_pay or 0)
+    # Multi-currency support (US-111): use MYR-equivalent gross when salary
+    # currency is non-MYR (ITA 1967 s.13; LHDN PCB Spec: all income in RM).
+    slip_currency = getattr(doc, "custom_salary_currency", None) or "MYR"
+    if slip_currency != "MYR" and getattr(doc, "custom_gross_myr", None):
+        monthly_gross = float(doc.custom_gross_myr)
+    else:
+        monthly_gross = float(doc.gross_pay or 0)
 
     # BIK (US-060): add monthly BIK to gross income before annualising
     monthly_gross += _get_bik_for_employee(doc.employee, doc.start_date or doc.end_date)
