@@ -1,0 +1,179 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "format:SAL-ADV-{employee}-{YYYY}-{MM}-{###}",
+ "creation": "2026-02-28 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "advance_date",
+  "column_break_1",
+  "company",
+  "status",
+  "section_amounts",
+  "amount",
+  "repayment_amount_per_period",
+  "column_break_2",
+  "outstanding_balance",
+  "projected_clearance_date",
+  "section_notes",
+  "notes",
+  "section_history",
+  "repayment_history"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "fetch_from": "employee.employee_name",
+   "fetch_if_empty": 1,
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "advance_date",
+   "fieldtype": "Date",
+   "label": "Advance Date",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "fetch_from": "employee.company",
+   "fetch_if_empty": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nFully Repaid\nCancelled",
+   "default": "Active",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "section_amounts",
+   "fieldtype": "Section Break",
+   "label": "Advance & Repayment"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Advance Amount (RM)",
+   "reqd": 1,
+   "description": "Total advance amount granted to the employee (Employment Act S.22 interest-free)."
+  },
+  {
+   "fieldname": "repayment_amount_per_period",
+   "fieldtype": "Currency",
+   "label": "Monthly Repayment (RM)",
+   "reqd": 1,
+   "description": "Agreed monthly deduction per wage period. Subject to 50% deduction cap (EA S.24)."
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "outstanding_balance",
+   "fieldtype": "Currency",
+   "label": "Outstanding Balance (RM)",
+   "read_only": 1,
+   "description": "Remaining balance after all deductions applied."
+  },
+  {
+   "fieldname": "projected_clearance_date",
+   "fieldtype": "Date",
+   "label": "Projected Clearance Date",
+   "read_only": 1,
+   "description": "Estimated date when advance will be fully repaid."
+  },
+  {
+   "fieldname": "section_notes",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "section_history",
+   "fieldtype": "Section Break",
+   "label": "Repayment History"
+  },
+  {
+   "fieldname": "repayment_history",
+   "fieldtype": "Table",
+   "label": "Repayment History",
+   "options": "Salary Advance Repayment",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-02-28 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LHDN Payroll Integration",
+ "name": "Salary Advance Loan",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "print": 1,
+   "role": "HR User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "employee_name",
+ "track_changes": 1
+}
