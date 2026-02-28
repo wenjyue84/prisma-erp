@@ -5728,3 +5728,36 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 ### Gotchas
 - `test_wage_payment_compliance.py` had a top-level ImportError blocking all tests; created a stub `utils/wage_payment_compliance.py` with NotImplementedError stubs so the import works (tests still fail = red phase preserved)
 - lxml is NOT available in the container — use `xml.etree.ElementTree` (stdlib) for XML parsing in tests
+
+
+## Iteration — US-106: Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 30 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_wage_payment_compliance`
+**Result:** PASS — 30/30 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/utils/wage_payment_compliance.py` — New utility module
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_wage_payment_compliance.py` — 30 tests
+- `lhdn_payroll_integration/lhdn_payroll_integration/hooks.py` — Added `send_wage_payment_alerts` to daily scheduler
+
+### Implementation details
+- `compute_payment_deadlines(wage_period_end)` → `{normal_due: +7d, overtime_due: +10d}` (EA S.19)
+- `get_payroll_compliance_status(payroll_entry_name, reference_date)` → `{status, days_remaining, ...}`
+  - Status: "On-Time" (all submitted OR >2 days away), "At Risk" (0–2 days, unsubmitted), "Overdue" (<0 days)
+- `send_wage_payment_alerts()` → daily background job; emails HR Managers for At Risk/Overdue entries
+- `_get_hr_manager_emails()` → queries users with HR Manager role
+
+### Gotchas
+- CRITICAL: Container has TWO utils/ paths. Python resolves `lhdn_payroll_integration.lhdn_payroll_integration.utils.*`
+  to the NESTED path: `apps/lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/utils/`
+  Must copy new files to BOTH: outer path AND nested path in container.
+- A stub file for this module already existed in the nested path (from a previous partial implementation).
+  docker cp first went to outer path; had to explicitly copy to nested path to overwrite the stub.
+- Test file copied as `.bak` initially — needed `docker exec -u root cp` to rename.
+- `docker cp` on MINGW may add `.bak` extension when a same-named file already exists (even stubs).
+
+### Patterns confirmed
+- Always `docker cp` to BOTH paths in container for utils files
+- Verify nested path has correct content before running tests
