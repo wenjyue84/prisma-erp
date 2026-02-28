@@ -560,10 +560,21 @@
     "fieldname": "custom_hrdf_levy_rate",
     "fieldtype": "Select",
     "label": "HRDF Levy Rate",
-    "options": "\n0.5%\n1.0%",
-    "description": "HRDF levy rate: 0.5% for 10-49 employees, 1.0% for 50+ employees",
+    "options": "\n0.5% (Voluntary - 5-9 employees)\n1.0% (Mandatory - 10+ employees)",
+    "description": "HRD Corp levy rate: 1.0% mandatory for all employers with 10+ Malaysian employees in mandatory sectors (HRD Act 2001 amended 2021). 0.5% voluntary only for 5-9 employee companies.",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_annual_revenue_tier"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_hrdf_mandatory_sector",
+    "dt": "Company",
+    "fieldname": "custom_hrdf_mandatory_sector",
+    "fieldtype": "Check",
+    "label": "HRDF Mandatory Sector",
+    "description": "Check if company operates in a mandatory HRD Corp sector (manufacturing, services, mining, etc.). When checked with 10+ employees, 1.0% levy applies.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_hrdf_levy_rate"
   },
   {
     "doctype": "Custom Field",

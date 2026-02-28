@@ -4648,3 +4648,27 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 - ≤RM150k: RM5,000/yr | ≤RM200k: RM7,500/yr | ≤RM250k: RM10,000/yr
 - ≤RM350k: RM15,000/yr | ≤RM500k: RM20,000/yr | ≤RM750k: RM25,000/yr
 - >RM750k: RM50,000/yr (max)
+## Iteration 13 - Sat, Feb 28, 2026  4:29:04 PM
+Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (ID: US-097) — attempt 2/3
+
+
+## Iteration N — US-072: Fix HRDF Levy Rate — 1% Mandatory for All Employers with 10+ Employees
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_hrdf_levy`
+**Result:** PASS — 26/26 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Updated custom_hrdf_levy_rate options to "0.5% (Voluntary - 5-9 employees)"/"1.0% (Mandatory - 10+ employees)"; added custom_hrdf_mandatory_sector Check field on Company
+- `lhdn_payroll_integration/report/hrdf_monthly_levy/hrdf_monthly_levy.py` — Updated RATE_MAP with new option strings; added get_rate_mismatch_warning() function; added rate_warning column
+- `lhdn_payroll_integration/tests/test_hrdf_levy.py` — Added TestHrdfRateMismatchWarning class (7 tests); added fixture/column tests for US-072
+
+### Patterns discovered
+- Nested path sync required: cp to all 3 nested copies of report files (outer, inner, double-inner) as root user
+- RATE_MAP backward compat: add new keys for descriptive strings while keeping old short keys so existing mocked tests still pass
+- get_rate_mismatch_warning() takes (rate_str, is_mandatory_sector, employee_count) — no DB calls, easy to unit test
+
+### Gotchas
+- `docker cp` only updates the outermost copy; must also `docker exec -u root cp` to sync inner nested copies
+- prd.json has unicode chars — always open with encoding='utf-8'
