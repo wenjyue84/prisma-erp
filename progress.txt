@@ -4765,3 +4765,38 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 - Auto-created when Employee with custom_is_foreign_worker=1 status set to Left
 - Salary Slip validate hook warns if foreign worker has open CP107
 - HTML Print Format: CP107 uses standard DocType print layout (no custom print format needed at this stage)
+
+
+## Iteration N — US-100: Generate Employment Act S.61 Compliant Payslip
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 21 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_ea_s61_payslip`
+**Result:** PASS — 21/21 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/print_format/ea_s61_payslip/ea_s61_payslip.json` — Print format metadata (doc_type=Salary Slip, standard=Yes, Jinja)
+- `lhdn_payroll_integration/print_format/ea_s61_payslip/ea_s61_payslip.html` — Jinja template with all EA S.61 mandatory fields
+- `lhdn_payroll_integration/api/payslip_bulk.py` — Bulk payslip generation API (ZIP archive, whitelisted)
+- `lhdn_payroll_integration/tests/test_ea_s61_payslip.py` — 21 tests across 3 classes
+
+### EA S.61 Mandatory Fields Implemented
+1. Employee full name (employee_name)
+2. NRIC/ID type + value (custom_id_type, custom_id_value)
+3. Gender (emp.gender)
+4. Citizenship status (custom_is_foreign_worker → "Foreign Worker" / "Malaysian Citizen / PR")
+5. Employment type (custom_employment_type)
+6. Wage period (start_date, end_date)
+7. Payment date (posting_date)
+8. Place of employment (branch or company city)
+9. Employer name + address (doc.company, company_doc)
+10. Itemized gross earnings (doc.earnings loop + gross_pay)
+11. Itemized deductions (doc.deductions loop + total_deduction)
+12. Net pay (net_pay)
+13. Employer statutory contributions (EPF/SOCSO/EIS)
+14. EA S.61 compliance reference in footer
+
+### Patterns discovered
+- Print format files (JSON+HTML) in `print_format/<name>/` are picked up by Frappe on `bench migrate`
+- api/ directory must be manually created in nested path — not auto-created
+- The nested path doesn't have api/ by default; must create + copy __init__.py separately
