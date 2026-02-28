@@ -185,16 +185,22 @@ class TestEmployeeTP1ReliefCaps(FrappeTestCase):
     """_CAPS and _RELIEF_FIELDS constants are correct."""
 
     def test_caps_contain_all_capped_fields(self):
-        """All expected fields have caps defined."""
+        """All expected fields have caps defined.
+
+        _CAPS is the YA2024 default cap table. YA2025 updates (disability cap
+        increases, housing loan interest) live in _CAPS_YA2025 — tested in
+        test_ya2025_reliefs.py.
+        """
         expected_capped = {
             "life_insurance", "medical_insurance", "education_fees_self",
             "sspn", "childcare_fees", "lifestyle_expenses", "prs_contribution",
             "serious_illness_expenses", "parents_medical", "epf_employee",
+            "disability_self", "disability_spouse",
         }
         self.assertEqual(set(_CAPS.keys()), expected_capped)
 
     def test_cap_values_match_lhdn_limits(self):
-        """Cap amounts match LHDN TP1 declared limits."""
+        """Cap amounts match LHDN TP1 declared limits (YA2024 default caps)."""
         self.assertEqual(_CAPS["life_insurance"], 3_000)
         self.assertEqual(_CAPS["medical_insurance"], 3_000)
         self.assertEqual(_CAPS["education_fees_self"], 7_000)
@@ -205,6 +211,9 @@ class TestEmployeeTP1ReliefCaps(FrappeTestCase):
         self.assertEqual(_CAPS["serious_illness_expenses"], 10_000)
         self.assertEqual(_CAPS["parents_medical"], 8_000)
         self.assertEqual(_CAPS["epf_employee"], 4_000)
+        # YA2024 disability caps (before Budget 2025 increase)
+        self.assertEqual(_CAPS["disability_self"], 6_000)
+        self.assertEqual(_CAPS["disability_spouse"], 5_000)
 
     def test_relief_fields_excludes_zakat(self):
         """annual_zakat is NOT in _RELIEF_FIELDS (it's a tax rebate, not a relief)."""

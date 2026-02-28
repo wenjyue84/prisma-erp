@@ -5221,3 +5221,29 @@ Incomplete: Implement Director Fee-Only MTD Lump-Sum Formula (Recipients Without
   use delta=1.0 instead of places=2 to allow for legitimate rounding differences
 - Both inner (lhdn_payroll_integration/lhdn_payroll_integration/services/) and
   outer (lhdn_payroll_integration/services/) paths must be updated in container
+## Iteration 32 - Sat, Feb 28, 2026  7:43:18 PM
+Completed: Implement Director Fee-Only MTD Lump-Sum Formula (Recipients Without Monthly Salary) (ID: US-103) in 10m
+
+
+## Iteration N — US-104: Update PCB TP1 Relief Tables for YA2025
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_ya2025_reliefs`
+**Result:** PASS — 33 tests pass, 0 failures; test_tp1_relief.py 26/26 still green
+
+### Files created/modified
+- `lhdn_payroll_integration/doctype/employee_tp1_relief/employee_tp1_relief.json` — Added 6 new fields: `section_housing_loan_relief`, `spa_date`, `housing_loan_interest_500k`, `housing_loan_interest_750k`, `disability_spouse`; updated `disability_self` label (RM7k YA2025); updated default tax_year to 2025
+- `lhdn_payroll_integration/doctype/employee_tp1_relief/employee_tp1_relief.py` — Added `_CAPS_DEFAULT`, `_CAPS_YA2025`, `_CAPS_BY_YEAR`, `_get_caps_for_year(year)` helper; updated `_apply_caps()` to use year-versioned caps; added `_validate_spa_date()` (SPA must be 2025-01-01 to 2027-12-31); added housing_loan_interest_500k/750k and disability_spouse to `_RELIEF_FIELDS`; maintained `_CAPS` as backward-compat alias for `_CAPS_DEFAULT`
+- `lhdn_payroll_integration/tests/test_ya2025_reliefs.py` — NEW: 33 tests covering year-versioned caps, disability cap updates, housing loan interest caps, SPA date validation, backward compatibility
+- `lhdn_payroll_integration/tests/test_tp1_relief.py` — Updated `test_caps_contain_all_capped_fields` to include `disability_self` and `disability_spouse`; updated `test_cap_values_match_lhdn_limits` with YA2024 disability cap values
+
+### Patterns discovered
+- Year-versioned cap dict with `_get_caps_for_year(year)` is the cleanest pattern for Budget-year cap updates
+- `_CAPS` backward-compat alias prevents breaking existing test imports after a refactor
+- `frappe.utils.getdate()` handles string-to-date conversion in validation methods
+- `bench migrate` deletes orphaned WorkspaceLinks — the LHDN Payroll workspace was reloaded from fixtures in the same migration pass (no manual re-fixture needed)
+
+### Gotchas
+- `bench --site frontend run-tests --module A --module B` seems to run only the last `--module` in some Frappe versions; run each module separately to confirm
+- When adding `disability_self`/`disability_spouse` to `_CAPS_DEFAULT`, the existing test `test_caps_contain_all_capped_fields` must also be updated
