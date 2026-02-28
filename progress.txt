@@ -5821,3 +5821,32 @@ TestEaFormExchangeRate (3 tests) — exchange_rate in SQL, custom fields in fixt
 - Test was pre-existing (test_multi_currency_salary.py) expecting currency_converter module — created module to match expected API
 - Key gotcha: assert_called_once_with() is strict about positional vs keyword args — use positional args when calling get_exchange_rate() from within the module
 - custom_gross_myr field name (not custom_gross_pay_myr) must match the existing test expectations
+
+
+## Iteration N — US-092: Implement LHDN MyInvois Webhook Callback Handler
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 15 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_lhdn_webhook`
+**Result:** PASS — 15/15 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/api/lhdn_webhook.py` — New webhook endpoint
+- `lhdn_payroll_integration/tests/test_lhdn_webhook.py` — 15 tests (3 classes)
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added Company-custom_lhdn_webhook_secret (Password)
+
+### Implementation summary
+- Endpoint: `@frappe.whitelist(allow_guest=True)` POST handler
+- HMAC-SHA256 signature verified via `hmac.compare_digest`
+- Document lookup by `custom_lhdn_uuid` across Salary Slip + Expense Claim
+- Status mapping: Valid→Submitted, Invalid→Invalid, Cancelled→Cancelled
+
+### Patterns discovered
+- `frappe.request` is a LocalProxy that's unbound in test context (Python 3.14)
+- Direct `@patch("...frappe.request")` raises RuntimeError during mock introspection
+- Fix: extract request access into private `_read_raw_body()` and `_read_signature_header()` helpers, patch those instead
+- `frappe.response["http_status_code"]` (dict-style) works better than `frappe.response.http_status_code` attribute style in tests
+
+### Gotchas
+- Python 3.14: `_is_async_obj()` in mock calls `hasattr(obj, '__func__')` which triggers LocalProxy.__getattr__ → RuntimeError
+- Patching small helpers that wrap LocalProxy objects avoids this entirely
