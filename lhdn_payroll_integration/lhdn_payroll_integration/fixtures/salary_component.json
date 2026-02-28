@@ -97,7 +97,9 @@
     "type": "Earning",
     "custom_lhdn_exclude_from_invoice": 0,
     "custom_is_pcb_component": 0,
-    "custom_lhdn_classification_code": "022"
+    "custom_lhdn_classification_code": "022",
+    "custom_exemption_type": "Transport",
+    "custom_annual_exemption_ceiling": 6000
   },
   {
     "doctype": "Salary Component",

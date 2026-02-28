@@ -4689,3 +4689,26 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 - Proactively included SOCSO table and EIS rules in statutory_rates.py to avoid creating multiple files for US-074/075
 - 5% tolerance for EPF rate deviation catches real errors without false positives for rounding
 - utils/ has both outer and nested copies; must sync both
+
+
+## Iteration N — US-061: Implement Perquisite Exemption Thresholds on Salary Components
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 16 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_exemption_calculator`
+**Result:** PASS — 16/16 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `utils/exemption_calculator.py` — New: calculate_taxable_component(component_name, annual_amount, exemption_type, ceiling)
+- `tests/test_exemption_calculator.py` — New: 16 tests covering transport/childcare/medical/group insurance/mobile phone exemptions + fixture checks
+- `fixtures/custom_field.json` — Added: custom_exemption_type (Select) and custom_annual_exemption_ceiling (Currency) on Salary Component
+- `fixtures/salary_component.json` — Updated: Transport Allowance now has custom_exemption_type=Transport, custom_annual_exemption_ceiling=6000
+
+### Patterns discovered
+- `bench --site frontend execute frappe.utils.fixtures.sync_fixtures --kwargs '{"app": "lhdn_payroll_integration"}'` is the correct way to sync fixtures post-migrate
+- After `bench migrate`, orphaned Workspaces and Desktop Icons get deleted — need to re-sync workspace fixture
+- ceiling=0 means fully exempt (unlimited); taxable = max(0, amount - ceiling) for partial exemptions
+
+### Gotchas
+- `bench migrate` orphan-deletes LHDN Payroll workspace — always re-sync fixtures after migrate
+- sync_fixtures is in `frappe.utils.fixtures`, not `frappe.modules.utils`

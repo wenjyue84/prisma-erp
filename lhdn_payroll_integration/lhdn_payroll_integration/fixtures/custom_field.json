@@ -744,5 +744,30 @@
     "description": "Year-to-date PCB deducted from prior submitted salary slips (same year). Auto-populated on submit for Method 2 PCB calculation.",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_ytd_gross"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Component-custom_exemption_type",
+    "dt": "Salary Component",
+    "fieldname": "custom_exemption_type",
+    "fieldtype": "Select",
+    "label": "Perquisite Exemption Type",
+    "description": "ITA s.13(1)(a) / PR 5/2019 exemption category. Controls whether this component is partially or fully exempt from PCB income calculation.",
+    "options": "\nNone\nTransport\nChildcare\nGroup Insurance\nMedical\nMobile Phone\nOther",
+    "default": "None",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_ea_section"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Component-custom_annual_exemption_ceiling",
+    "dt": "Salary Component",
+    "fieldname": "custom_annual_exemption_ceiling",
+    "fieldtype": "Currency",
+    "label": "Annual Exemption Ceiling (RM)",
+    "description": "Annual exemption ceiling in RM. Set to 0 for fully exempt components (e.g. medical, group insurance, mobile phone). The taxable amount = max(0, annual_amount - ceiling).",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_exemption_type"
   }
 ]
