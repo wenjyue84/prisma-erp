@@ -4,12 +4,47 @@ Daily scheduler: detect foreign workers with levy overdue or due within 30 days
 and create a Frappe notification/alert.
 
 US-070: Foreign Worker Levy Tracking.
+US-095: Multi-Tier Levy Model (MTLM) rate calculation.
 """
 import frappe
 from frappe.utils import flt, getdate, today, add_days
 
 
 OVERDUE_WINDOW_DAYS = 30
+
+# MTLM_TIERS: {tier_name: (ratio_low, ratio_high, annual_levy_myr)}
+# Effective January 2025 per Multi-Tier Levy Model.
+# dependency_ratio = foreign_headcount / (local_headcount + foreign_headcount)
+MTLM_TIERS = {
+    "Tier 1": (0.0, 0.15, 410),
+    "Tier 2": (0.15, 0.30, 1230),
+    "Tier 3": (0.30, 1.0, 2500),
+}
+
+
+def calculate_fw_levy_tier(local_headcount, foreign_headcount, sector=None):
+    """Return (tier_name, annual_levy_per_worker) based on MTLM dependency ratio.
+
+    Args:
+        local_headcount (int): Number of local (Malaysian) employees.
+        foreign_headcount (int): Number of foreign workers.
+        sector (str | None): Reserved for future sector-specific rates. Unused now.
+
+    Returns:
+        tuple: (tier_name: str, annual_levy_myr: int)
+    """
+    total = int(local_headcount or 0) + int(foreign_headcount or 0)
+    if total == 0 or int(foreign_headcount or 0) == 0:
+        return "Tier 1", MTLM_TIERS["Tier 1"][2]
+
+    ratio = int(foreign_headcount) / total
+
+    for tier_name, (low, high, rate) in MTLM_TIERS.items():
+        if low <= ratio < high:
+            return tier_name, rate
+
+    # ratio >= 1.0 (all foreign) — falls into Tier 3
+    return "Tier 3", MTLM_TIERS["Tier 3"][2]
 
 
 def _get_overdue_employees(threshold_date):

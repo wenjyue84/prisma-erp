@@ -8,9 +8,11 @@ January 2025: RM410-RM2,500/year per foreign worker depending on sector
 and nationality / local-to-foreign ratio.
 
 US-070: Foreign Worker Levy Tracking.
+US-095: MTLM tier calculation added to report columns.
 """
 import frappe
 from frappe.utils import flt, getdate, today, add_days
+from lhdn_payroll_integration.lhdn_payroll_integration.services.fw_levy_service import calculate_fw_levy_tier
 
 
 OVERDUE_WINDOW_DAYS = 30
@@ -74,6 +76,19 @@ def get_columns():
             "fieldname": "levy_status",
             "fieldtype": "Data",
             "width": 120,
+        },
+        {
+            "label": "MTLM Tier",
+            "fieldname": "levy_tier",
+            "fieldtype": "Data",
+            "width": 100,
+        },
+        {
+            "label": "MTLM Annual Levy (MYR)",
+            "fieldname": "mtlm_annual_levy",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 170,
         },
     ]
 
