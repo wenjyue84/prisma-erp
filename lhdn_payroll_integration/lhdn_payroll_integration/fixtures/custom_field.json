@@ -596,6 +596,17 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Company-custom_lhdn_branch_code",
+    "dt": "Company",
+    "fieldname": "custom_lhdn_branch_code",
+    "fieldtype": "Data",
+    "label": "LHDN Branch Code (Cawangan)",
+    "description": "LHDN cawangan (branch) code for Borang E submissions",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_employer_e_number"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Salary Slip-custom_lhdn_raw_document",
     "dt": "Salary Slip",
     "fieldname": "custom_lhdn_raw_document",

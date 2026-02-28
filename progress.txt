@@ -4532,3 +4532,29 @@ if chargeable_income <= _REBATE_INCOME_LIMIT:
 - Rebates apply only to RESIDENTS (non-residents still get flat 30%)
 - Rebates are a direct tax credit on `annual_tax`, NOT a reduction in chargeable income
 - The rebate is applied BEFORE the Zakat offset (both stack independently)
+## Iteration 9 - Sat, Feb 28, 2026  3:42:11 PM
+Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (ID: US-097) — attempt 1/3
+
+
+## Iteration N — US-062: Add Borang E Mandatory Header Fields (Employer E-Number, Branch Code, Director Section)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (22/22 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_borang_e_us062`
+**Result:** PASS — 22 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — Added Company-custom_lhdn_branch_code field (Data type, insert_after custom_employer_e_number)
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/borang_e/borang_e.py` — Added: employer_e_number, lhdn_branch_code, cat1/2/3_employees, total_zakat, worker_type columns; _get_company_header_fields(), _get_category_counts(), _get_employee_worker_types() helpers; Director CP8D row segregation
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_borang_e_us062.py` — 22 new tests across 4 test classes
+
+### Patterns discovered
+- `bench migrate` deletes workspace/page fixtures as "orphans" — must run `frappe.utils.fixtures.sync_fixtures` after migrate
+- `frappe.get_cached_doc("Company", name)` works for fetching custom fields even if not in DB yet (returns empty string via getattr)
+- EA form SQL does not include custom_worker_type — must do a separate DB query in Borang E for director detection
+- Director detection: compare `custom_worker_type.lower() == 'director'` (case-insensitive)
+- PCB category normalisation: category value may be '1', '2', '3' or longer strings — use startswith() to normalise
+
+### Gotchas
+- `custom_employer_e_number` was already in fixture from earlier story; only `custom_lhdn_branch_code` was new
+- Container has two paths for the report: outer `lhdn_payroll_integration/lhdn_payroll_integration/report/` and inner `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/`. Borang E only exists in the outer path.
