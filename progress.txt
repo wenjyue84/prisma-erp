@@ -4589,3 +4589,32 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 ### Gotchas
 - bench migrate deleted LHDN Payroll workspace and Malaysia Compliance desktop icon as orphans — restored via bench console + sync_fixtures
 - Section B skipped tests: test DB Salary Slip insert requires strict fields; these tests skip gracefully and verify column structure instead
+
+
+## Iteration N — US-059: Implement MTD Method 2 (Year-to-Date Recalculation Formula)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 20 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_method2`
+**Result:** PASS — 20/20 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/pcb_calculator.py` — Added `calculate_pcb_method2()` and `populate_ytd_pcb_fields()`
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added Company-custom_pcb_method, Salary Slip-custom_ytd_section, custom_ytd_gross, custom_ytd_pcb_deducted
+- `lhdn_payroll_integration/hooks.py` — Added `before_submit` hook on Salary Slip pointing to `populate_ytd_pcb_fields`
+- `lhdn_payroll_integration/tests/test_pcb_method2.py` — 20 test cases across 4 test classes
+
+### Key Design Decisions
+- Method 2 formula: `pcb = max(0, (annual_tax_on_annualised_ytd - ytd_pcb_deducted) / (13 - month_number))`
+- `ytd_gross` includes current month; `ytd_pcb_deducted` is prior months only
+- For constant income: Method 2 total == Method 1 total (within RM2 rounding)
+- For variable income: months 7-11 after a month-6 bonus carry higher PCB; month 12 may be lower as it clears the remaining (correct LHDN behavior)
+- Zakat applied as annual offset against annual_tax before spreading across remaining months
+- `populate_ytd_pcb_fields()` uses SQL JOIN on tabSalary Detail to find PCB component amounts
+
+### Patterns discovered
+- `assertAlmostEqual(..., delta=2.0)` is better than `places=2` for floating-point annual totals (rounding across 12 months)
+- In test for "smoothing", don't assert month 12 > baseline — month 12 correctly mops up the remaining smaller balance after catching up in months 7-11
+
+### Gotchas
+- Month 12 PCB is NOT always > Method 1 baseline in the variable-income test — it's actually smaller because months 7-11 already over-collected. The test must only assert months 7-11 (range(6, 11)).
