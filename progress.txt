@@ -4407,3 +4407,34 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 ### Gotchas
 - `bench migrate` deleted LHDN Payroll workspace and Desktop Icon as "orphans" — ran `execute lhdn_payroll_integration.install.after_migrate` to restore
 - Windows cp1252 encoding issue when reading prd.json via Python — must specify `encoding='utf-8'`
+
+
+## Iteration — US-054: Implement CP38 Additional Deduction Fields and Payroll Integration
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench commands:**
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator` — 65/65 PASS
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_borang_e` — 14/14 PASS (7 skipped - no data)
+
+**Result:** PASS
+
+### Files modified
+- `lhdn_payroll_integration/services/pcb_calculator.py` — Fixed `get_cp38_amount()`: replaced `frappe.utils.getdate()` with `datetime.date.today()` and `datetime.date.fromisoformat(expiry)` for test compatibility
+- `lhdn_payroll_integration/report/borang_e/borang_e.py` — Synced from container (already had `total_cp38` column)
+
+### What was already done (pre-existing)
+- CP38 custom fields (cp38_amount, cp38_notice_ref, cp38_expiry) already in `fixtures/custom_field.json`
+- `get_cp38_amount()` already defined in `pcb_calculator.py`
+- CP38 already integrated into PCB calculation (`expected_monthly += get_cp38_amount(doc.employee)`)
+- CP38 column already in CP39 report
+- `total_cp38` column already in Borang E (nested container path)
+- Tests already written in `test_pcb_calculator.py` (TestGetCp38Amount, TestCp39ReportCp38Column, TestBorangECp38Column)
+
+### Bug fixed
+- `get_cp38_amount()` used `frappe.utils.getdate()` (no-arg form) which silently fails in test environment via `except Exception: pass` → always returned 0.0
+- Fix: use `datetime.date.today()` for current date, `datetime.date.fromisoformat(expiry)` for parsing
+
+### Patterns
+- ALWAYS use `datetime.date.today()` instead of `frappe.utils.getdate()` in functions that need to be mockable in tests
+- The broad `except Exception: pass` antipattern hides bugs — when tests fail with unexpected 0/None, check if exceptions are being swallowed

@@ -24,6 +24,8 @@ Irregular payments (bonus, commission, gratuity):
                 - tax_on(annual_income - reliefs)
     Total PCB for that period = regular_monthly_pcb + bonus_pcb
 """
+import datetime
+
 import frappe
 
 # LHDN progressive tax bands: (upper_limit, rate_percent, cumulative_tax_at_lower_bound)
@@ -227,6 +229,38 @@ def calculate_pcb(
     return round(gross_monthly, 2)
 
 
+
+
+def get_cp38_amount(employee_name: str) -> float:
+    """Return the active CP38 additional deduction for an employee.
+
+    Under ITA 1967 s.107(1)(b), LHDN may issue CP38 notices directing employers
+    to deduct additional PCB above normal MTD. Non-compliance makes the employer
+    personally liable for the undeducted amount plus 10% surcharge (ITA s.107(3A)).
+
+    Args:
+        employee_name: The name/ID of the Employee document.
+
+    Returns:
+        float: CP38 amount (RM) if notice is active (expiry >= today), else 0.0.
+    """
+    try:
+        employee = frappe.get_doc("Employee", employee_name)
+        expiry = getattr(employee, "custom_cp38_expiry", None)
+        amount = float(getattr(employee, "custom_cp38_amount", 0) or 0)
+        if expiry and amount > 0:
+            today = datetime.date.today()
+            if isinstance(expiry, str):
+                expiry_date = datetime.date.fromisoformat(expiry)
+            else:
+                expiry_date = expiry
+            if expiry_date >= today:
+                return amount
+    except Exception:
+        pass
+    return 0.0
+
+
 @frappe.whitelist()
 def validate_pcb_amount(doc_name: str) -> dict:
     """Validate PCB amount on a Salary Slip against LHDN calculated estimate.
@@ -293,6 +327,9 @@ def validate_pcb_amount(doc_name: str) -> dict:
         worked_days=worked_days_val, total_days=total_days_val,
         category=pcb_category,
     )
+
+    # CP38 additional deduction (ITA s.107(1)(b)): add to expected total when notice is active
+    expected_monthly += get_cp38_amount(doc.employee)
 
     # Find PCB deduction component (look for "Monthly Tax Deduction" or "PCB")
     actual_pcb = 0.0

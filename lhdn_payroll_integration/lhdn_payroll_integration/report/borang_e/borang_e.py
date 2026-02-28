@@ -81,6 +81,13 @@ def get_columns():
             "options": "MYR",
             "width": 200,
         },
+        {
+            "label": "Total CP38 Deducted (MYR)",
+            "fieldname": "total_cp38",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 200,
+        },
     ]
 
 
@@ -139,6 +146,46 @@ def _get_employer_component_total(filters, component_name):
     return float(rows[0][0]) if rows else 0.0
 
 
+def _get_total_cp38_deducted(filters):
+    """Sum CP38 additional deductions across all submitted slips for company/year.
+
+    CP38 is an additional employer obligation (ITA s.107(1)(b)). The total is
+    reported as a separate line in Borang E to distinguish from regular PCB.
+    """
+    conditions = ["ss.docstatus = 1"]
+    values = {}
+
+    year = filters.get("year")
+    if year:
+        conditions.append("YEAR(ss.start_date) = %(year)s")
+        values["year"] = int(year)
+
+    company = filters.get("company")
+    if company:
+        conditions.append("ss.company = %(company)s")
+        values["company"] = company
+
+    where = "WHERE " + " AND ".join(conditions)
+
+    rows = frappe.db.sql(
+        f"""
+        SELECT COALESCE(SUM(
+            CASE
+                WHEN e.custom_cp38_expiry IS NOT NULL
+                     AND e.custom_cp38_expiry >= ss.start_date
+                THEN COALESCE(e.custom_cp38_amount, 0)
+                ELSE 0
+            END
+        ), 0) AS total_cp38
+        FROM `tabSalary Slip` ss
+        LEFT JOIN `tabEmployee` e ON e.name = ss.employee
+        {where}
+        """,
+        values,
+    )
+    return float(rows[0][0]) if rows else 0.0
+
+
 def get_data(filters=None):
     if filters is None:
         filters = frappe._dict()
@@ -161,6 +208,9 @@ def get_data(filters=None):
     epf_employer = _get_employer_component_total(filters, "EPF Employer")
     socso_employer = _get_employer_component_total(filters, "SOCSO Employer")
 
+    # CP38 additional deductions (separate from regular PCB per ITA s.107(1)(b))
+    total_cp38 = _get_total_cp38_deducted(filters)
+
     # Row 0: Borang E company-level summary
     summary_row = frappe._dict(
         {
@@ -174,6 +224,7 @@ def get_data(filters=None):
             "epf_employer": epf_employer,
             "socso_employer": socso_employer,
             "total_pcb": total_pcb,
+            "total_cp38": total_cp38,
         }
     )
 
@@ -193,6 +244,7 @@ def get_data(filters=None):
                     "epf_employer": None,
                     "socso_employer": None,
                     "total_pcb": float(r.get("pcb_total") or 0),
+                    "total_cp38": None,
                 }
             )
         )
