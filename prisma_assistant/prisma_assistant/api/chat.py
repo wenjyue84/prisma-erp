@@ -320,7 +320,7 @@ def _raw_openai_call(api_key: str, model: str, messages: list, url: str) -> dict
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=120) as resp:
+    with urllib.request.urlopen(req, timeout=20) as resp:
         return json.loads(resp.read())
 
 
@@ -419,7 +419,7 @@ def _call_openai_compatible_with_tools(
             },
             method="POST",
         )
-        timeout = 120 if file_list else 120
+        timeout = 90 if file_list else 20
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = json.loads(resp.read())
 
