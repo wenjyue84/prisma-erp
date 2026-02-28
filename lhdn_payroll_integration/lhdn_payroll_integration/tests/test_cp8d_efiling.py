@@ -1,7 +1,8 @@
-"""Tests for CP8D e-Filing standalone report — US-049.
+"""Tests for CP8D e-Filing standalone report — US-049 / US-078.
 
-Verifies that column headers exactly match the LHDN e-Filing CP8D
-column specification: No., Name, NRIC/Passport, TIN, Gross Income, EPF, PCB.
+Verifies that column headers match the LHDN e-Filing CP8D 2024 column
+specification: No., Name, NRIC/Passport, TIN, Gross Income,
+Gross Bonus/Commission, Gross Gratuity, Other Income, EPF, PCB.
 """
 import frappe
 from frappe.tests.utils import FrappeTestCase
@@ -12,8 +13,12 @@ from lhdn_payroll_integration.lhdn_payroll_integration.report.cp8d_efiling.cp8d_
     get_data,
 )
 
-# LHDN CP8D e-Filing spec fieldnames in required order
-LHDN_CP8D_EFILING_FIELDNAMES = ["no", "employee_name", "id_number", "employee_tin", "annual_gross", "epf_employee", "total_pcb"]
+# LHDN CP8D e-Filing 2024 spec fieldnames in required order (10 columns)
+LHDN_CP8D_EFILING_FIELDNAMES = [
+    "no", "employee_name", "id_number", "employee_tin",
+    "annual_gross", "gross_bonus_commission", "gross_gratuity", "other_income",
+    "epf_employee", "total_pcb",
+]
 
 
 class TestCP8DEFilingColumns(FrappeTestCase):
@@ -23,11 +28,11 @@ class TestCP8DEFilingColumns(FrappeTestCase):
         columns = get_columns()
         self.assertIsInstance(columns, list)
 
-    def test_get_columns_has_7_columns(self):
-        """LHDN CP8D e-Filing spec requires exactly 7 columns."""
+    def test_get_columns_has_2024_spec_columns(self):
+        """LHDN CP8D e-Filing 2024 spec requires exactly 10 columns."""
         columns = get_columns()
-        self.assertEqual(len(columns), 7,
-            f"CP8D e-Filing must have 7 columns per LHDN spec, got {len(columns)}")
+        self.assertEqual(len(columns), 10,
+            f"CP8D e-Filing must have 10 columns per LHDN 2024 spec, got {len(columns)}")
 
     def test_column_fieldnames_match_lhdn_spec(self):
         """Column fieldnames must match LHDN CP8D e-Filing spec in correct order."""

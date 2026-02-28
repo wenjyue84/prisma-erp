@@ -14,7 +14,7 @@ from lhdn_payroll_integration.lhdn_payroll_integration.report.cp8d.cp8d import (
 
 REQUIRED_FIELDNAMES = {
     "employee_tin",
-    "id_number",
+    "nric",
     "employee_name",
     "annual_gross",
     "total_pcb",
@@ -185,7 +185,7 @@ class TestCP8DData(FrappeTestCase):
 
         row = matching[0]
         self.assertIn("employee_tin", row, "Row missing employee_tin key")
-        self.assertIn("id_number", row, "Row missing id_number key")
+        self.assertIn("nric", row, "Row missing nric key")
 
     def test_rows_have_all_required_keys(self):
         """Each row must contain all CP8D required fieldnames."""

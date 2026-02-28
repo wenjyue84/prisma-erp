@@ -4,14 +4,22 @@ CP8D is the annual return of private employees' remuneration submitted
 alongside Borang E for LHDN e-Filing. It is a machine-readable employee
 income list used for LHDN's employer annual return.
 
-Columns match the LHDN e-Filing CP8D column specification:
-  Employee TIN, NRIC/ID, Name, Annual Gross Income, Total PCB, EPF Employee.
+Columns match the LHDN e-Filing CP8D 2024 column specification:
+  Employee, TIN, NRIC/ID, Name, Annual Gross Income, Gross Bonus/Commission,
+  Gross Gratuity, Other Income, Total PCB, EPF Employee.
 """
 import frappe
 
 
 def get_columns():
     return [
+        {
+            "label": "Employee",
+            "fieldname": "employee",
+            "fieldtype": "Link",
+            "options": "Employee",
+            "width": 120,
+        },
         {
             "label": "Employee TIN",
             "fieldname": "employee_tin",
@@ -20,7 +28,7 @@ def get_columns():
         },
         {
             "label": "NRIC / ID Number",
-            "fieldname": "id_number",
+            "fieldname": "nric",
             "fieldtype": "Data",
             "width": 160,
         },
@@ -36,6 +44,27 @@ def get_columns():
             "fieldtype": "Currency",
             "options": "MYR",
             "width": 200,
+        },
+        {
+            "label": "Gross Bonus / Commission (MYR)",
+            "fieldname": "gross_bonus_commission",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 210,
+        },
+        {
+            "label": "Gross Gratuity (MYR)",
+            "fieldname": "gross_gratuity",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 180,
+        },
+        {
+            "label": "Other Income (MYR)",
+            "fieldname": "other_income",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 160,
         },
         {
             "label": "Total PCB (MYR)",
@@ -114,6 +143,45 @@ def _get_deduction_total(employee_slips, component_name):
     return float(rows[0][0]) if rows else 0.0
 
 
+def _get_ea_section_totals(employee_slips):
+    """Sum earnings by EA section for income type breakdown (CP8D 2024 spec).
+
+    Queries Salary Detail JOIN Salary Component on custom_ea_section.
+    Returns dict: gross_bonus_commission (B3+B4), gross_gratuity (B5), other_income (B9).
+    """
+    if not employee_slips:
+        return {"gross_bonus_commission": 0.0, "gross_gratuity": 0.0, "other_income": 0.0}
+
+    placeholders = ", ".join(["%s"] * len(employee_slips))
+    rows = frappe.db.sql(
+        f"""
+        SELECT sc.custom_ea_section AS ea_section, COALESCE(SUM(sd.amount), 0) AS total
+        FROM `tabSalary Detail` sd
+        JOIN `tabSalary Component` sc ON sc.name = sd.salary_component
+        WHERE sd.parent IN ({placeholders})
+          AND sd.parenttype = 'Salary Slip'
+          AND sd.parentfield = 'earnings'
+          AND sc.custom_ea_section IN (
+              'B3 Commission', 'B4 Bonus', 'B5 Gratuity', 'B9 Other Gains'
+          )
+        GROUP BY sc.custom_ea_section
+        """,
+        employee_slips,
+        as_dict=True,
+    )
+
+    totals = {"gross_bonus_commission": 0.0, "gross_gratuity": 0.0, "other_income": 0.0}
+    for row in rows:
+        ea = row.ea_section or ""
+        if ea in ("B3 Commission", "B4 Bonus"):
+            totals["gross_bonus_commission"] += float(row.total or 0)
+        elif ea == "B5 Gratuity":
+            totals["gross_gratuity"] += float(row.total or 0)
+        elif ea == "B9 Other Gains":
+            totals["other_income"] += float(row.total or 0)
+    return totals
+
+
 def get_data(filters=None):
     if filters is None:
         filters = frappe._dict()
@@ -159,16 +227,23 @@ def get_data(filters=None):
 
         pcb = _get_deduction_total(slips, "PCB")
         epf = _get_deduction_total(slips, "EPF")
+        breakdown = _get_ea_section_totals(slips)
 
         emp = emp_meta.get(row.employee, frappe._dict())
+        nric_val = emp.get("custom_id_value") or ""
 
         result.append(
             frappe._dict(
                 {
+                    "employee": row.employee,
                     "employee_tin": emp.get("custom_lhdn_tin") or "",
-                    "id_number": emp.get("custom_id_value") or "",
+                    "nric": nric_val,
+                    "id_number": nric_val,  # backward-compat alias
                     "employee_name": row.employee_name,
                     "annual_gross": float(row.annual_gross or 0),
+                    "gross_bonus_commission": breakdown["gross_bonus_commission"],
+                    "gross_gratuity": breakdown["gross_gratuity"],
+                    "other_income": breakdown["other_income"],
                     "total_pcb": pcb,
                     "epf_employee": epf,
                 }

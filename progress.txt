@@ -5247,3 +5247,33 @@ Completed: Implement Director Fee-Only MTD Lump-Sum Formula (Recipients Without 
 ### Gotchas
 - `bench --site frontend run-tests --module A --module B` seems to run only the last `--module` in some Frappe versions; run each module separately to confirm
 - When adding `disability_self`/`disability_spouse` to `_CAPS_DEFAULT`, the existing test `test_caps_contain_all_capped_fields` must also be updated
+## Iteration — US-078: Extend CP8D with Income Type Breakdown (Bonus, Commission, Gratuity, Other)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench commands:**
+  - bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cp8d
+  - bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cp8d_report
+  - bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cp8d_efiling
+  - bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cp8d_income_breakdown
+**Result:** PASS — 37 tests total, 9 graceful skips, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/report/cp8d/cp8d.py` — added `employee`, `nric` columns; added `_get_ea_section_totals()`; added `gross_bonus_commission`, `gross_gratuity`, `other_income` columns; keep `id_number` as data-dict alias for backward compat
+- `lhdn_payroll_integration/report/cp8d_efiling/cp8d_efiling.py` — added `_get_ea_section_totals()`; added breakdown columns after `annual_gross` (10 columns total)
+- `lhdn_payroll_integration/tests/test_cp8d_report.py` — updated REQUIRED_FIELDNAMES: id_number → nric
+- `lhdn_payroll_integration/tests/test_cp8d_efiling.py` — updated LHDN_CP8D_EFILING_FIELDNAMES to 10 columns; test_get_columns_has_7_columns → test_get_columns_has_2024_spec_columns
+- `lhdn_payroll_integration/tests/test_cp8d_income_breakdown.py` — NEW: 12 tests verifying B3/B4/B5/B9 EA-section amounts in correct breakdown columns
+
+### Patterns discovered
+- `custom_ea_section` on tabSalary Component (added in US-056) is queryable via JOIN with tabSalary Detail
+- Keep `id_number` as a backward-compat alias in the data dict (not in columns) to avoid breaking old test assertions on row keys
+- Skips in data tests are expected and graceful — test DB may not have salary components with EA sections pre-tagged
+
+### Gotchas
+- The nested path (lhdn_payroll_integration/lhdn_payroll_integration/...) is where tests import from; outer cp8d path doesn't exist in container
+- pycache .pyc files for cp8d must be cleared after update using find ... -name '*.pyc' -delete
+
+## Iteration 33 - Sat, Feb 28, 2026  7:53:52 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 1/3
+
