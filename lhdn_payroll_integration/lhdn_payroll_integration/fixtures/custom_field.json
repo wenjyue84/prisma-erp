@@ -1154,5 +1154,29 @@
   "description": "ITA 1967 Section 83A: statutory bodies, GLCs, and government-linked companies must issue Borang EC instead of Borang EA. When enabled, EC Form generation is used by default.",
   "module": "LHDN Payroll Integration",
   "insert_after": "custom_lhdn_webhook_secret"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Company-custom_local_employee_count",
+  "dt": "Company",
+  "fieldname": "custom_local_employee_count",
+  "fieldtype": "Int",
+  "label": "Local Employee Count (MTLM)",
+  "default": "0",
+  "description": "Number of local (Malaysian) employees. Used for Multi-Tier Levy Model (MTLM) dependency ratio calculation. dependency_ratio = foreign_count / (local_count + foreign_count).",
+  "module": "LHDN Payroll Integration",
+  "insert_after": "custom_is_statutory_employer"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Company-custom_foreign_employee_count",
+  "dt": "Company",
+  "fieldname": "custom_foreign_employee_count",
+  "fieldtype": "Int",
+  "label": "Foreign Worker Count (MTLM)",
+  "default": "0",
+  "description": "Number of foreign workers. Used for MTLM tier determination: Tier 1 (<15% ratio, RM410/yr), Tier 2 (15-30%, RM1,230/yr), Tier 3 (>30%, RM2,500/yr).",
+  "module": "LHDN Payroll Integration",
+  "insert_after": "custom_local_employee_count"
  }
 ]

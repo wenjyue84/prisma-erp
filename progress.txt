@@ -5968,3 +5968,26 @@ Incomplete: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee (ID: US-093) 
 
 ### Gotchas
 - Security hook in Claude blocks heredoc text containing shell meta-patterns — use Edit tool instead of bash for writing to progress.txt
+## Iteration 49 - Sat, Feb 28, 2026 10:29:58 PM
+Completed: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee (ID: US-093) in 5m
+
+
+## Iteration N+2 — US-095: Implement Multi-Tier Levy Model (MTLM) Rate Calculation for Foreign Workers
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_mtlm`
+**Result:** PASS — 24/24 tests pass, 0 failures, 0 errors. US-070 tests: 24/24 still pass (no regressions)
+
+### Files created/modified
+- `services/fw_levy_service.py` — Added MTLM_TIERS constant + calculate_fw_levy_tier(local, foreign, sector) function
+- `report/foreign_worker_levy/foreign_worker_levy.py` — Added levy_tier + mtlm_annual_levy columns; _get_company_headcounts() helper; compute tier per company in get_data()
+- `fixtures/custom_field.json` — Added Company-custom_local_employee_count (Int) and Company-custom_foreign_employee_count (Int)
+- `tests/test_mtlm.py` — 24 tests covering MTLM tiers, calculate_fw_levy_tier(), report columns, fixture fields
+
+### Patterns discovered
+- fw_levy_service.py outer path is a COPY of the nested path (same content); always update both via docker cp to the NESTED path
+- Existing test_foreign_worker_levy.py uses the OUTER module path (lhdn_payroll_integration.tests.test_foreign_worker_levy)
+
+### Gotchas
+- MTLM ratio boundary: 0.30 falls into Tier 3 (check is `low <= ratio < high` so 0.30 is in Tier 3 which has range 0.30-1.0)

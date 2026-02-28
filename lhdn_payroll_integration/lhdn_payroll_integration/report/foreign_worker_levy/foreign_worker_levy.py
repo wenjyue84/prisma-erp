@@ -169,6 +169,22 @@ def _get_employees(company):
     )
 
 
+def _get_company_headcounts(company):
+    """Return (local_count, foreign_count) from Company custom fields for MTLM tier."""
+    try:
+        doc = frappe.db.get_value(
+            "Company",
+            company,
+            ["custom_local_employee_count", "custom_foreign_employee_count"],
+            as_dict=True,
+        )
+        if doc:
+            return int(doc.get("custom_local_employee_count") or 0), int(doc.get("custom_foreign_employee_count") or 0)
+    except Exception:
+        pass
+    return 0, 0
+
+
 def get_data(filters=None):
     if filters is None:
         filters = frappe._dict()
@@ -181,6 +197,10 @@ def get_data(filters=None):
 
     employees = _get_employees(company)
     paid_map = _get_paid_levies(year)
+
+    # Compute company MTLM tier once for all workers
+    local_count, foreign_count = _get_company_headcounts(company)
+    tier_name, mtlm_rate = calculate_fw_levy_tier(local_count, foreign_count)
 
     rows = []
     for emp in employees:
@@ -201,6 +221,8 @@ def get_data(filters=None):
                 "paid_amount": paid_amount,
                 "payment_date": payment_date,
                 "levy_status": status,
+                "levy_tier": tier_name,
+                "mtlm_annual_levy": flt(mtlm_rate),
             }
         )
 
