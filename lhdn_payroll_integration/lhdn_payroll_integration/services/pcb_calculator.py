@@ -51,6 +51,11 @@ _SELF_RELIEF = 9_000
 _SPOUSE_RELIEF = 4_000
 _CHILD_RELIEF_PER_CHILD = 2_000
 
+# ITA 1967 s.6A: Tax rebates (US-058)
+# Applies to residents with chargeable income <= RM35,000
+_PERSONAL_REBATE = 400
+_REBATE_INCOME_LIMIT = 35_000
+
 # Warning threshold: warn if PCB deviates more than 10% from calculated
 _WARNING_THRESHOLD = 0.10
 
@@ -211,6 +216,20 @@ def calculate_pcb(
 
     chargeable_income = max(0.0, annual_income - total_relief)
     annual_tax = _compute_tax_on_chargeable_income(chargeable_income)
+
+    # ITA 1967 s.6A: Apply RM400 personal rebate and RM400 spouse rebate
+    # for residents with chargeable income <= RM35,000 (US-058).
+    if chargeable_income <= _REBATE_INCOME_LIMIT:
+        annual_tax = max(0.0, annual_tax - _PERSONAL_REBATE)
+        # Spouse rebate: Category 2 (non-working spouse) or Category 3 (single parent),
+        # also applies via legacy married=True flag.
+        _has_spouse = (
+            (category is not None and int(category) in (2, 3))
+            or (category is None and married)
+        )
+        if _has_spouse:
+            annual_tax = max(0.0, annual_tax - _PERSONAL_REBATE)
+
     regular_monthly_pcb = annual_tax / 12
 
     if total_irregular > 0:

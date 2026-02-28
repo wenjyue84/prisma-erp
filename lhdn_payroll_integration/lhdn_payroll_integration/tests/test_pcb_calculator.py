@@ -1,4 +1,4 @@
-"""Tests for PCB/MTD calculator — US-004, US-018, US-035, and US-036.
+"""Tests for PCB/MTD calculator — US-004, US-018, US-035, US-036, and US-058.
 
 Covers:
 - Single resident: progressive tax bands
@@ -9,6 +9,7 @@ Covers:
 - Bonus/irregular payment: one-twelfth annualisation rule (US-018)
 - Gratuity/leave encashment: Schedule 6 para 25 exemption (US-035)
 - Mid-month proration: worked_days/total_days proration (US-036)
+- ITA 1967 s.6A RM400 personal and spouse tax rebates (US-058)
 """
 from unittest.mock import MagicMock, patch
 
@@ -16,6 +17,7 @@ from frappe.tests.utils import FrappeTestCase
 
 from lhdn_payroll_integration.services.pcb_calculator import (
     calculate_pcb,
+    get_cp38_amount,
     validate_pcb_amount,
     _compute_tax_on_chargeable_income,
 )
@@ -44,10 +46,11 @@ class TestCalculatePcbResident(FrappeTestCase):
 
         Chargeable = 20,000 - 9,000 = 11,000
         Tax: first 5,000 at 0% = 0; next 6,000 at 1% = 60
-        Annual tax = 60; Monthly = 5.00
+        ITA s.6A personal rebate (chargeable 11,000 <= 35,000): max(0, 60-400) = 0
+        Monthly = 0.00
         """
         result = calculate_pcb(20_000, resident=True, married=False, children=0)
-        self.assertAlmostEqual(result, 5.00, places=2)
+        self.assertAlmostEqual(result, 0.00, places=2)
 
     def test_single_resident_mid_income(self):
         """Single resident, annual income RM 60,000.
@@ -579,13 +582,14 @@ class TestCalculatePcbProration(FrappeTestCase):
           1%  on 15,000 = 150
           3%  on  1,000 =  30
           Total = 180
-        Monthly PCB = 180 / 12 = 15.00
+        ITA s.6A personal rebate (chargeable 21,000 <= 35,000): max(0, 180-400) = 0
+        Monthly PCB = 0.00
         """
         result = calculate_pcb(
             60_000, resident=True,
             worked_days=15, total_days=30,
         )
-        self.assertAlmostEqual(result, 15.00, places=2)
+        self.assertAlmostEqual(result, 0.00, places=2)
 
     def test_none_worked_days_no_proration(self):
         """When worked_days is None, no proration applied."""
@@ -630,13 +634,16 @@ class TestCalculatePcbProration(FrappeTestCase):
           1%  on 15,000 = 150
           3%  on  3,000 =  90
           Total = 240
-        Monthly = 240 / 12 = 20.00
+        ITA s.6A rebates (chargeable 23,000 <= 35,000, married=True):
+          Personal: max(0, 240-400) = 0
+          Spouse: max(0, 0-400) = 0
+        Monthly = 0.00
         """
         result = calculate_pcb(
             60_000, resident=True, married=True, children=2,
             worked_days=20, total_days=30,
         )
-        self.assertAlmostEqual(result, 20.00, places=2)
+        self.assertAlmostEqual(result, 0.00, places=2)
 
     def test_zero_total_days_no_division_error(self):
         """total_days=0 should not cause ZeroDivisionError; treated as no proration."""
@@ -664,15 +671,17 @@ class TestValidatePcbAmountProration(FrappeTestCase):
 
         Monthly gross = 5,000; payment_days = 15, total_working_days = 30
         Annual = 60,000; prorated annual = 30,000
-        Expected PCB at prorated income = 15.00
+        Chargeable = 30,000 - 9,000 = 21,000
+        Tax = 180; ITA s.6A rebate (21,000 <= 35,000): max(0, 180-400) = 0
+        Expected PCB at prorated income = 0.00
         """
         slip = MagicMock()
         slip.gross_pay = 5_000
         slip.employee = "EMP-001"
         slip.payment_days = 15
         slip.total_working_days = 30
-        # Set actual PCB close to prorated expected (15.00)
-        slip.deductions = [self._make_deduction_row("Monthly Tax Deduction", 15.00)]
+        # Actual PCB = 0.00 to match rebated expected
+        slip.deductions = [self._make_deduction_row("Monthly Tax Deduction", 0.00)]
 
         employee = MagicMock()
         employee.custom_is_non_resident = 0
@@ -685,8 +694,8 @@ class TestValidatePcbAmountProration(FrappeTestCase):
         )
 
         result = validate_pcb_amount("SLIP-001")
-        # Expected monthly PCB should be based on prorated income (~15.00)
-        self.assertAlmostEqual(result["expected_monthly_pcb"], 15.00, places=2)
+        # Expected monthly PCB should be 0.00 (rebate applied to prorated income)
+        self.assertAlmostEqual(result["expected_monthly_pcb"], 0.00, places=2)
         self.assertFalse(result["warning"])
 
 
@@ -800,3 +809,266 @@ class TestCalculatePcbZakatOffset(FrappeTestCase):
         reduction = round(gross_pcb - net_pcb, 2)
         self.assertAlmostEqual(reduction, 2_000.0, places=2)
         self.assertGreaterEqual(net_pcb, 0.0)
+
+
+# ---------------------------------------------------------------------------
+# US-054: CP38 Additional Deduction Tests
+# ---------------------------------------------------------------------------
+
+class TestGetCp38Amount(FrappeTestCase):
+    """Tests for get_cp38_amount() function (US-054 - ITA s.107(1)(b))."""
+
+    def test_cp38_active_notice_returns_amount(self):
+        """Returns CP38 amount when expiry is in the future."""
+        from datetime import date, timedelta
+
+        future_date = (date.today() + timedelta(days=30)).isoformat()
+        mock_employee = MagicMock()
+        mock_employee.custom_cp38_amount = 500.0
+        mock_employee.custom_cp38_expiry = future_date
+
+        with patch("frappe.get_doc", return_value=mock_employee):
+            result = get_cp38_amount("EMP-CP38-001")
+        self.assertEqual(result, 500.0)
+
+    def test_cp38_expired_notice_returns_zero(self):
+        """Returns 0.0 when expiry date is in the past (notice expired)."""
+        from datetime import date, timedelta
+
+        past_date = (date.today() - timedelta(days=1)).isoformat()
+        mock_employee = MagicMock()
+        mock_employee.custom_cp38_amount = 500.0
+        mock_employee.custom_cp38_expiry = past_date
+
+        with patch("frappe.get_doc", return_value=mock_employee):
+            result = get_cp38_amount("EMP-CP38-002")
+        self.assertEqual(result, 0.0)
+
+    def test_cp38_expiry_today_is_active(self):
+        """Returns amount when expiry equals today (boundary - still active)."""
+        from datetime import date
+
+        today = date.today().isoformat()
+        mock_employee = MagicMock()
+        mock_employee.custom_cp38_amount = 200.0
+        mock_employee.custom_cp38_expiry = today
+
+        with patch("frappe.get_doc", return_value=mock_employee):
+            result = get_cp38_amount("EMP-CP38-003")
+        self.assertEqual(result, 200.0)
+
+    def test_cp38_no_expiry_returns_zero(self):
+        """Returns 0.0 when expiry field is None/not set."""
+        mock_employee = MagicMock()
+        mock_employee.custom_cp38_amount = 500.0
+        mock_employee.custom_cp38_expiry = None
+
+        with patch("frappe.get_doc", return_value=mock_employee):
+            result = get_cp38_amount("EMP-CP38-004")
+        self.assertEqual(result, 0.0)
+
+    def test_cp38_zero_amount_returns_zero(self):
+        """Returns 0.0 when CP38 amount is 0 even if expiry is in the future."""
+        from datetime import date, timedelta
+
+        future_date = (date.today() + timedelta(days=30)).isoformat()
+        mock_employee = MagicMock()
+        mock_employee.custom_cp38_amount = 0
+        mock_employee.custom_cp38_expiry = future_date
+
+        with patch("frappe.get_doc", return_value=mock_employee):
+            result = get_cp38_amount("EMP-CP38-005")
+        self.assertEqual(result, 0.0)
+
+    def test_cp38_exception_returns_zero(self):
+        """Returns 0.0 safely when frappe.get_doc raises (employee not found)."""
+        with patch("frappe.get_doc", side_effect=Exception("DoesNotExist")):
+            result = get_cp38_amount("EMP-NOTFOUND")
+        self.assertEqual(result, 0.0)
+
+
+class TestCp39ReportCp38Column(FrappeTestCase):
+    """Tests for CP39 report CP38 column (US-054)."""
+
+    def test_cp39_has_cp38_column(self):
+        """CP39 report get_columns() must include cp38_amount column."""
+        from lhdn_payroll_integration.lhdn_payroll_integration.report.cp39_pcb_remittance.cp39_pcb_remittance import (
+            get_columns,
+        )
+        columns = get_columns()
+        fieldnames = [c["fieldname"] for c in columns if isinstance(c, dict)]
+        self.assertIn(
+            "cp38_amount",
+            fieldnames,
+            "CP39 report must have cp38_amount column (US-054)",
+        )
+
+    def test_cp39_cp38_column_is_currency(self):
+        """CP38 column in CP39 report must be Currency type."""
+        from lhdn_payroll_integration.lhdn_payroll_integration.report.cp39_pcb_remittance.cp39_pcb_remittance import (
+            get_columns,
+        )
+        columns = get_columns()
+        cp38_col = next((c for c in columns if c.get("fieldname") == "cp38_amount"), None)
+        self.assertIsNotNone(cp38_col, "cp38_amount column not found")
+        self.assertEqual(cp38_col.get("fieldtype"), "Currency")
+
+
+class TestBorangECp38Column(FrappeTestCase):
+    """Tests for Borang E CP38 total column (US-054)."""
+
+    def test_borang_e_has_total_cp38_column(self):
+        """Borang E get_columns() must include total_cp38 column."""
+        from lhdn_payroll_integration.lhdn_payroll_integration.report.borang_e.borang_e import (
+            get_columns,
+        )
+        columns = get_columns()
+        fieldnames = [c["fieldname"] for c in columns if isinstance(c, dict)]
+        self.assertIn(
+            "total_cp38",
+            fieldnames,
+            "Borang E must have total_cp38 column (US-054)",
+        )
+
+    def test_borang_e_total_cp38_is_currency(self):
+        """total_cp38 column in Borang E must be Currency type."""
+        from lhdn_payroll_integration.lhdn_payroll_integration.report.borang_e.borang_e import (
+            get_columns,
+        )
+        columns = get_columns()
+        cp38_col = next((c for c in columns if c.get("fieldname") == "total_cp38"), None)
+        self.assertIsNotNone(cp38_col, "total_cp38 column not found in Borang E")
+        self.assertEqual(cp38_col.get("fieldtype"), "Currency")
+
+
+# ---------------------------------------------------------------------------
+# US-058: ITA 1967 s.6A RM400 Personal and Spouse Tax Rebates
+# ---------------------------------------------------------------------------
+
+class TestPcbTaxRebates(FrappeTestCase):
+    """Test ITA 1967 s.6A RM400 personal and spouse tax rebates — US-058.
+
+    Rebates apply to residents with chargeable income <= RM35,000:
+    - Personal rebate: RM400 for all categories
+    - Spouse rebate: additional RM400 for Category 2 or 3 (or legacy married=True)
+    Both applied as: annual_tax = max(0, annual_tax - 400)
+    """
+
+    def test_personal_rebate_category1_low_income(self):
+        """Category 1: RM400 personal rebate reduces tax.
+
+        annual = 39,000; self-relief = 9,000; chargeable = 30,000
+        Tax on 30,000 = 150 + (30,000-20,000)*3% = 450
+        Personal rebate (chargeable 30,000 <= 35,000): 450 - 400 = 50
+        Monthly = 50 / 12 ≈ 4.17
+        """
+        annual = 39_000  # chargeable = 39,000 - 9,000 = 30,000
+        result = calculate_pcb(annual, resident=True, category=1)
+        expected = round(50 / 12, 2)
+        self.assertAlmostEqual(result, expected, places=2)
+
+    def test_personal_and_spouse_rebate_category2_low_income(self):
+        """Category 2: RM400 personal + RM400 spouse rebate = RM800 total.
+
+        annual = 43,000; self + spouse relief = 13,000; chargeable = 30,000
+        Tax on 30,000 = 450
+        Personal rebate: max(0, 450-400) = 50
+        Spouse rebate (Category 2, chargeable <= 35,000): max(0, 50-400) = 0
+        Monthly = 0.00
+        """
+        annual = 43_000  # chargeable = 43,000 - 9,000 - 4,000 = 30,000
+        result = calculate_pcb(annual, resident=True, category=2)
+        self.assertEqual(result, 0.0)
+
+    def test_personal_and_spouse_rebate_category3_low_income(self):
+        """Category 3 (single parent): same RM800 total rebate as Category 2.
+
+        annual = 43,000; self + single-parent relief = 13,000; chargeable = 30,000
+        Tax on 30,000 = 450; both rebates applied → 0
+        Monthly = 0.00
+        """
+        annual = 43_000
+        result = calculate_pcb(annual, resident=True, category=3)
+        self.assertEqual(result, 0.0)
+
+    def test_no_rebate_when_chargeable_exceeds_35000(self):
+        """No rebate when chargeable income > RM35,000.
+
+        annual = 49,000; self + spouse relief = 13,000; chargeable = 36,000
+        Tax on 36,000 = 600 + (36,000-35,000)*8% = 680
+        No rebate (36,000 > 35,000)
+        Monthly = 680 / 12 ≈ 56.67
+        """
+        annual = 49_000  # chargeable = 49,000 - 9,000 - 4,000 = 36,000
+        result = calculate_pcb(annual, resident=True, category=2)
+        expected = round(680 / 12, 2)
+        self.assertAlmostEqual(result, expected, places=2)
+
+    def test_rebate_does_not_push_tax_below_zero(self):
+        """Rebate floors annual_tax at 0 — cannot be negative.
+
+        annual = 20,000; chargeable = 11,000; tax = 60
+        Personal rebate: max(0, 60-400) = 0
+        Monthly = 0.00
+        """
+        annual = 20_000  # chargeable = 11,000, tax = 60
+        result = calculate_pcb(annual, resident=True, category=1)
+        self.assertEqual(result, 0.0)
+
+    def test_non_resident_no_rebate(self):
+        """Non-residents are not entitled to ITA s.6A rebates (flat 30% only)."""
+        annual = 39_000  # qualifies for rebate as resident, but not as non-resident
+        result = calculate_pcb(annual, resident=False)
+        expected = round((annual * 0.30) / 12, 2)
+        self.assertAlmostEqual(result, expected, places=2)
+
+    def test_rebate_applies_with_legacy_married_flag(self):
+        """Spouse rebate applies when married=True (legacy flag, no category param).
+
+        annual = 39,000; self + spouse relief = 13,000; chargeable = 26,000
+        Tax on 26,000 = 150 + (26,000-20,000)*3% = 330
+        Personal rebate: max(0, 330-400) = 0
+        Spouse rebate (married=True): max(0, 0-400) = 0
+        Monthly = 0.00
+        """
+        annual = 39_000  # with married, chargeable = 39,000 - 13,000 = 26,000
+        result = calculate_pcb(annual, resident=True, married=True)
+        self.assertEqual(result, 0.0)
+
+    def test_rebate_at_exact_35000_boundary(self):
+        """Chargeable income exactly RM35,000 qualifies for rebate (inclusive boundary).
+
+        annual = 44,000; self-relief = 9,000; chargeable = 35,000
+        Tax on 35,000 = 150 + (35,000-20,000)*3% = 150 + 450 = 600
+        Personal rebate (35,000 <= 35,000): 600 - 400 = 200
+        Monthly = 200 / 12 ≈ 16.67
+        """
+        annual = 44_000  # chargeable = 35,000 exactly
+        result = calculate_pcb(annual, resident=True, category=1)
+        expected = round(200 / 12, 2)
+        self.assertAlmostEqual(result, expected, places=2)
+
+    def test_just_above_35000_no_rebate(self):
+        """Chargeable income of RM35,001 does NOT qualify — rebate boundary is strict.
+
+        annual = 44,001; self-relief = 9,000; chargeable = 35,001
+        Tax on 35,001 = 600 + 1 * 8% = 600.08
+        No rebate (35,001 > 35,000)
+        Monthly = 600.08 / 12 ≈ 50.01
+        """
+        annual = 44_001  # chargeable = 35,001
+        result = calculate_pcb(annual, resident=True, category=1)
+        expected = round(600.08 / 12, 2)
+        self.assertAlmostEqual(result, expected, places=2)
+
+    def test_rebate_stacks_with_zakat_offset(self):
+        """Rebate is applied before Zakat offset — both reduce PCB independently.
+
+        annual = 39,000; chargeable = 30,000; tax = 450
+        Personal rebate: 450 - 400 = 50; monthly = 50/12 ≈ 4.17
+        annual_zakat = 600 → monthly_zakat = 50
+        net_pcb = max(0, 4.17 - 50) = 0.00
+        """
+        annual = 39_000
+        result = calculate_pcb(annual, resident=True, category=1, annual_zakat=600)
+        self.assertEqual(result, 0.0)

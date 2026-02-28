@@ -4500,3 +4500,35 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 ### Gotchas
 - Container fixture file is write-protected; must modify locally then docker cp
 - check_minimum_wage returns dict with compliant/warning/actual/minimum keys (not raises) — caller decides severity
+
+
+## Iteration N — US-058: Apply RM400 Personal and Spouse Tax Rebates in PCB Calculator
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 75 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 75/75, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/pcb_calculator.py` — Added `_PERSONAL_REBATE = 400`, `_REBATE_INCOME_LIMIT = 35_000` constants; added 10-line rebate block after `annual_tax` computation
+- `lhdn_payroll_integration/tests/test_pcb_calculator.py` — Updated 4 existing tests that broke (low-income employees now get 0 PCB due to rebate), added `TestPcbTaxRebates` class (10 tests)
+
+### Implementation
+Rebate logic inserted after progressive band tax computation, before `regular_monthly_pcb = annual_tax / 12`:
+```python
+if chargeable_income <= _REBATE_INCOME_LIMIT:
+    annual_tax = max(0.0, annual_tax - _PERSONAL_REBATE)  # personal
+    if (category in (2, 3)) or (category is None and married):
+        annual_tax = max(0.0, annual_tax - _PERSONAL_REBATE)  # spouse
+```
+
+### Existing tests updated (chargeable <= 35,000 → rebate wipes out small tax)
+- `test_single_resident_low_income`: expected 5.00 → 0.00 (tax 60, rebate 400)
+- `test_half_month_prorated_calculation`: expected 15.00 → 0.00 (tax 180, rebate 400)
+- `test_proration_with_married_relief`: expected 20.00 → 0.00 (tax 240, personal+spouse rebates)
+- `test_prorated_pcb_used_when_payment_days_less_than_total`: actual_pcb updated to 0.00
+
+### Gotchas
+- Rebates apply only to RESIDENTS (non-residents still get flat 30%)
+- Rebates are a direct tax credit on `annual_tax`, NOT a reduction in chargeable income
+- The rebate is applied BEFORE the Zakat offset (both stack independently)
