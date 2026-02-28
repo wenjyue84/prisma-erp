@@ -80,6 +80,7 @@ def _get_settings() -> dict:
             "fallback_model": doc.get("fallback_model") or "",
             "fallback_api_key": doc.get_password("fallback_api_key") if doc.get("fallback_api_key") else "",
             "base_url": doc.get("base_url") or "",
+            "fallback_base_url": doc.get("fallback_base_url") or "",
             "system_prompt": doc.get("system_prompt") or "",
         }
     except Exception:  # noqa: BLE001
@@ -92,6 +93,7 @@ def _get_settings() -> dict:
         "fallback_model": doc_settings.get("fallback_model") or "",
         "fallback_api_key": doc_settings.get("fallback_api_key") or "",
         "base_url": doc_settings.get("base_url") or frappe.conf.get("ai_chat_base_url") or "",
+        "fallback_base_url": doc_settings.get("fallback_base_url") or "",
         "system_prompt": doc_settings.get("system_prompt") or _DEFAULT_SYSTEM_PROMPT,
     }
 
@@ -158,6 +160,7 @@ def send_message(message: str, history: str = "[]", files: str = "[]") -> dict:
     fallback_model = s["fallback_model"]
     fallback_api_key = s["fallback_api_key"] or api_key
     base_url = s["base_url"]
+    fallback_base_url = s["fallback_base_url"] or base_url  # defaults to same endpoint as primary
     system_prompt = s["system_prompt"]
 
     if not api_key:
@@ -211,23 +214,24 @@ def send_message(message: str, history: str = "[]", files: str = "[]") -> dict:
     file_list = processed_files  # only image files remain for vision dispatch
 
     # ── Dispatch ────────────────────────────────────────────────────────────
-    def _dispatch(mdl, key=None, fl=None):
+    def _dispatch(mdl, key=None, fl=None, url_override=None):
         k = key or api_key
         fl = fl if fl is not None else file_list
+        effective_base_url = url_override if url_override is not None else base_url
         if provider == "anthropic":
-            return _call_anthropic(k, mdl, message, parsed_history, base_url, system_prompt, fl)
+            return _call_anthropic(k, mdl, message, parsed_history, effective_base_url, system_prompt, fl)
         elif provider in ("openai", "ollama"):
-            url = base_url or _PROVIDER_DEFAULTS[provider]["url"]
+            url = effective_base_url or _PROVIDER_DEFAULTS[provider]["url"]
             return _call_openai_compatible_with_tools(k, mdl, message, parsed_history, url, system_prompt, fl)
         elif provider == "gemini":
-            return _call_gemini(k, mdl, message, parsed_history, base_url, system_prompt, fl)
+            return _call_gemini(k, mdl, message, parsed_history, effective_base_url, system_prompt, fl)
 
     try:
         return _dispatch(model)
     except Exception as exc:  # noqa: BLE001
         if fallback_model:
             try:
-                result = _dispatch(fallback_model, key=fallback_api_key)
+                result = _dispatch(fallback_model, key=fallback_api_key, url_override=fallback_base_url)
                 if result.get("reply"):
                     result["reply"] = f"*(Using fallback model: {fallback_model})*\n\n" + result["reply"]
                 return result
