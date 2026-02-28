@@ -36,6 +36,7 @@ doc_events = {
 	},
 	"Employee": {
 		"on_update": "lhdn_payroll_integration.services.cp107_service.handle_foreign_employee_left",
+		"after_insert": "lhdn_payroll_integration.services.socso_service.handle_new_employee_socso",
 	},
 }
 
@@ -45,6 +46,9 @@ doc_events = {
 scheduler_events = {
 	"hourly": [
 		"lhdn_payroll_integration.services.status_poller.poll_pending_documents",
+	],
+	"daily": [
+		"lhdn_payroll_integration.services.socso_service.check_overdue_socso_borang3",
 	],
 	"monthly": [
 		"lhdn_payroll_integration.services.consolidation_service.run_monthly_consolidation",

@@ -4870,3 +4870,29 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 - `frappe.client.get_list` reliably returns requested fields; `/api/resource/<Doctype>?fields=...` does not encode the fields JSON array reliably
 - `filters` param accepts list of [fieldname, op, value] triples when using api() POST
 
+## Iteration 20 - Sat, Feb 28, 2026  5:40:17 PM
+Completed: Fix fields parameter encoding in ERPNextSession.resource() helper (ID: US-097) in 7m
+
+
+## Iteration — US-065: Implement SOCSO Borang 3 — New Employee Notification to PERKESO
+
+**Type:** IMPL
+**TDD Phase:** GREEN (14/14 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_socso_borang3`
+**Result:** PASS — 14 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/doctype/socso_borang_3/socso_borang_3.json` — New DocType
+- `lhdn_payroll_integration/doctype/socso_borang_3/socso_borang_3.py` — Controller with validate, deadline calc, overdue warning
+- `lhdn_payroll_integration/services/socso_service.py` — handle_new_employee_socso, check_overdue_socso_borang3
+- `lhdn_payroll_integration/tests/test_socso_borang3.py` — 14 tests
+- `lhdn_payroll_integration/hooks.py` — Added Employee.after_insert → socso_service, daily scheduler
+
+### Patterns discovered
+- DocType folder naming: "SOCSO Borang 3" slugifies to `socso_borang_3` (Frappe inserts underscore before digit)
+- Critical: folder name must match exactly or ImportError on migrate
+- daily scheduler key added to scheduler_events dict
+
+### Gotchas
+- Frappe converts "SOCSO Borang 3" → module path `socso_borang_3` (underscore before '3', NOT 'socso_borang3')
+- bench migrate may delete LHDN Payroll workspace as orphan — fixture re-sync needed if workspace fixture exists
