@@ -5462,3 +5462,33 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 ## Iteration 1 - Sat, Feb 28, 2026  8:57:06 PM
 Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 2/3
 
+
+
+## Iteration — US-084: Implement ESOS/Share Option Gain Calculation and EA Form B10
+
+**Type:** IMPL
+**TDD Phase:** GREEN (19/19 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_esos`
+**Result:** PASS — 19 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_share_option_exercise/__init__.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_share_option_exercise/employee_share_option_exercise.json` — new DocType with auto-calculated taxable_gain
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_share_option_exercise/employee_share_option_exercise.py` — controller with validate()/_calculate_taxable_gain()
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/esos_service.py` — get_esos_gain_for_month(), get_esos_gain_for_year()
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/ea_form/ea_form.py` — updated get_data() to add ESOS gain to b10_esos_gain
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_esos.py` — 19 tests across 4 classes
+
+### Test classes
+1. TestESOSGainCalculation (7 tests) — formula validation, edge cases
+2. TestGetESOSGainForMonth (5 tests) — service function with mocked DB
+3. TestGetESOSGainForYear (3 tests) — service function with mocked DB
+4. TestEAFormB10Integration (4 tests) — EA form column, label, B10 mapping
+
+### Patterns discovered
+- CRITICAL: esos_service.py must be copied to BOTH outer services path (for test imports using `lhdn_payroll_integration.services.*`) AND nested path (in container for runtime use)
+- BIK block pattern in ea_form.py get_data() is the template for adding DocType-sourced values to EA form sections
+- Negative ESOS gain (underwater options) must be clamped to 0 — `max(gain, 0.0)`
+
+### Gotchas
+- The import `lhdn_payroll_integration.services.esos_service` resolves to the OUTER services path; tests must copy to outer path too
