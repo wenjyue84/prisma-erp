@@ -150,3 +150,123 @@ Switched to branch 'feature/lhdn-gap-closure'
   ║  Remaining:  49 stories
   ║
   ║  Recently done:
+  ║    ✓ [US-048] Fix retention archival to include Submitted/Invalid records
+  ║    ✓ [US-049] Generate standalone CP8D report with LHDN e-Filing format compliance
+  ║    ✓ [US-050] Add foreign currency conversion to Expense Claim XML builder
+  ║
+  ║  Up next:
+  ║    → [US-096] Fix CSRF token acquisition in test suite ERPNextSession login
+  ║    → [US-097] Fix fields parameter encoding in ERPNextSession.resource() helper
+  ║    → [US-098] Add fallback_base_url field to Prisma AI Settings doctype schema
+  ╚══════════════════════════════════════════╝
+
+[2m[15:00][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[15:26][0m [37mThe test file has wrong import paths. Let me fix them:[0m
+[2m[15:28][0m 📖 [36mRead[0m [2mtest_pcb_category.py[0m
+[2m[15:33][0m 🔧 [36mEdit[0m [2mtest_pcb_category.py[0m
+[2m[15:37][0m 💻 [36mBash[0m [2mdocker cp /c/Users/Jyue/Documents/1-projects/Projects/prisma...[0m
+[2m[15:42][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[15:48][0m [37mAll 13 tests pass. Now let me also verify existing tests haven't been broken:[0m
+[2m[15:49][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[15:50][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[16:00][0m [37mAll tests pass. Now mark US-051 as `passes: true` and commit:[0m
+[2m[16:02][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+
+[32m[1m✓ Claude finished[0m [2m(93 tool calls in 16:04)[0m
+
+[2mStream ended (93 tool calls, 16:05 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 16m
+
+  [done] Story completed: Add PCB Category Code (1/2/3) on Employee with CP39 and EA Form integration
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... SKIP (no bench module in acceptance criteria)
+  └────────────────────────────────────────────┘
+  ✓ Quality gates passed (bench check skipped)
+warning: in the working copy of 'progress.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/__init__.py', LF will be replaced by CRLF the next time Git touches it
+[feature/lhdn-gap-closure fd26a96] feat: US-051 - Add PCB Category Code (1/2/3) on Employee with CP39 and EA Form integration
+ 60 files changed, 16235 insertions(+), 2868 deletions(-)
+ create mode 100644 .claude/agent-memory/frappe-developer/MEMORY.md
+ create mode 100644 .claude/agent-memory/malaysia-payroll-specialist/MEMORY.md
+ create mode 100644 .claude/hooks/session-start.sh
+ create mode 100644 deploy-test-page.sh
+ create mode 100644 get-tunnel-url.bat
+ create mode 100644 lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/ea_form/__init__.py
+ create mode 100644 lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/ea_form/ea_form.py
+ create mode 100644 lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_pcb_category.py
+ create mode 100644 prisma_assistant/prisma_assistant/www/test.html
+ create mode 100644 prisma_assistant/prisma_assistant/www/test.py
+ create mode 100644 scripts/append_prd_stories.py
+ create mode 100644 scripts/append_prd_v3.py
+ create mode 100644 scripts/fix_prd_story_ids.py
+ create mode 100644 start-ollama-tunnel.bat
+ create mode 100644 test-reports/2026-02-28_12-37-46/report.html
+ create mode 100644 test-reports/2026-02-28_12-37-46/report.json
+ create mode 100644 test-reports/2026-02-28_12-37-46/summary.txt
+ create mode 100644 test-reports/2026-02-28_12-38-29/report.html
+ create mode 100644 test-reports/2026-02-28_12-38-29/report.json
+ create mode 100644 test-reports/2026-02-28_12-38-29/summary.txt
+ create mode 100644 test-reports/2026-02-28_13-52-25/report.html
+ create mode 100644 test-reports/2026-02-28_13-52-25/report.json
+ create mode 100644 test-reports/2026-02-28_13-52-25/summary.txt
+ create mode 100644 tests/api_contract/__init__.py
+ create mode 100644 tests/api_contract/test_api_contract.py
+ create mode 100644 tests/base.py
+ create mode 100644 tests/config.py
+ create mode 100644 tests/edge_cases/__init__.py
+ create mode 100644 tests/edge_cases/test_edge_cases.py
+ create mode 100644 tests/integration/__init__.py
+ create mode 100644 tests/integration/test_workflows.py
+ create mode 100644 tests/performance/__init__.py
+ create mode 100644 tests/performance/test_performance.py
+ create mode 100644 tests/regression/__init__.py
+ create mode 100644 tests/regression/test_regression.py
+ create mode 100644 tests/reporters/__init__.py
+ create mode 100644 tests/reporters/html_reporter.py
+ create mode 100644 tests/reporters/json_reporter.py
+ create mode 100644 tests/requirements.txt
+ create mode 100644 tests/run_tests.py
+ create mode 100644 tests/security/__init__.py
+ create mode 100644 tests/security/test_security.py
+ create mode 100644 tests/smoke/__init__.py
+ create mode 100644 tests/smoke/test_smoke.py
+ create mode 100644 tests/unit/__init__.py
+ create mode 100644 tests/unit/lhdn_payroll/__init__.py
+ create mode 100644 tests/unit/lhdn_payroll/test_payroll_doctypes.py
+ create mode 100644 tests/unit/prisma_ai/__init__.py
+ create mode 100644 tests/unit/prisma_ai/test_chat_api.py
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 2/60
+  Progress: [████████████████░░░░░░░░░░░░░░] 51/95 (53%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       US-096
+  │ Title:    Fix CSRF token acquisition in test suite ERPNextSession login
+  │ Priority: 1
+  │ Deps:     none
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for US-096...
+  ─────── Claude Output Start ──────────
+[2m[0:38][0m 💻 [36mBash[0m [2mhead -80 /c/Users/Jyue/Documents/1-projects/Projects/prisma-...[0m
+[2m[0:42][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[0:56][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:01][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:02][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
+[2m[1:06][0m [37mUS-096 is an IMPL story to fix CSRF token acquisition in the test suite. Let me read the current `te...[0m
+[2m[1:07][0m 📖 [36mRead[0m [2mbase.py[0m
+[2m[1:14][0m [37mI can see the issue. The `_login()` method only tries `resp.headers.get("X-Frappe-CSRF-Token")` whic...[0m
+[2m[1:15][0m 🔧 [36mEdit[0m [2mbase.py[0m
+[2m[1:22][0m 🔧 [36mEdit[0m [2mbase.py[0m
+[2m[1:24][0m [37mNow let me verify the fix looks correct:[0m
+[2m[1:25][0m 📖 [36mRead[0m [2mbase.py[0m
+[2m[1:26][0m [37mGood. Now let me verify the fix works by running the test suite:[0m
+[2m[1:28][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
