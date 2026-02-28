@@ -5645,3 +5645,37 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 ### Gotchas
 - The pcb_change_log directory already existed in container from a prior partial run
 - bench migrate needed to create the table for the DocType
+
+
+## Iteration N — US-087: Build Employee Self-Service Portal for Payslips, EA Forms, and TP1 Submission
+
+**Type:** IMPL
+**TDD Phase:** GREEN (22/22 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_employee_portal`
+**Result:** PASS — 22 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/api/employee_portal.py` — 5 whitelisted methods: get_my_payslips(), get_my_ea_forms(), get_my_ytd_summary(), get_my_tp1_declarations(), submit_tp1_form()
+- `lhdn_payroll_integration/templates/pages/employee_portal.html` — Jinja2 portal page extending templates/web.html; frappe.call() for all data loading; TP1 form with submit handler
+- `lhdn_payroll_integration/tests/test_employee_portal.py` — 22 tests across 7 classes
+
+### Test classes
+1. TestGetEmployeeForUser (2 tests) — returns employee, throws when no linked employee
+2. TestCheckEmployeePermission (2 tests) — allows own employee, blocks other employee
+3. TestGetMyPayslips (3 tests) — returns payslips, empty list, filters by session user
+4. TestGetMyEAForms (2 tests) — returns tax years, empty list
+5. TestGetMyYTDSummary (3 tests) — YTD totals, zeros fallback, current year date range
+6. TestGetMyTP1Declarations (2 tests) — current year TP1, empty when none
+7. TestSubmitTP1Form (5 tests) — create, update, action=created, action=updated, JSON string input
+8. TestEmployeeIsolation (3 tests) — employee A cannot access B's records via permission check and API calls
+
+### Key implementation details
+- _get_employee_for_user() ties every API call to frappe.session.user via Employee.user_id link
+- _check_employee_permission() throws frappe.PermissionError if employee != session employee
+- submit_tp1_form() detects existing record via frappe.db.get_value and uses upsert pattern
+- All 5 API methods decorated @frappe.whitelist() — accessible from web portal JS
+
+### Patterns discovered
+- frappe.whitelist() methods accessible from web page JS via frappe.call({method: "app.module.function", ...})
+- Portal HTML goes in templates/pages/ and extends templates/web.html
+- Permission guard pattern: _get_employee_for_user() + _check_employee_permission() combination used for all data access
