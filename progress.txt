@@ -5679,3 +5679,28 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 - frappe.whitelist() methods accessible from web page JS via frappe.call({method: "app.module.function", ...})
 - Portal HTML goes in templates/pages/ and extends templates/web.html
 - Permission guard pattern: _get_employee_for_user() + _check_employee_permission() combination used for all data access
+## Iteration 5 - Sat, Feb 28, 2026  9:36:24 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 1/3
+
+
+## Iteration N — US-090: Implement Foreign Worker EPF Mandatory Contribution (Effective October 2025)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (23/23 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_foreign_worker_epf`
+**Result:** PASS — 23 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/utils/statutory_rates.py` — Added FOREIGN_WORKER_EPF_START, FOREIGN_WORKER_EPF_RATE constants; updated calculate_epf_employer_rate() with is_foreign/payroll_date params (backward compat maintained); added calculate_epf_employee_rate() function
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/salary_component.json` — Added "EPF Employee (Foreign Worker)" and "EPF Employer (Foreign Worker)" components (type=Deduction)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_foreign_worker_epf.py` — Added `import frappe` (missing in pre-written test file)
+
+### Patterns discovered
+- `frappe.utils.fixtures.sync_fixtures` is the correct path (not frappe.modules.utils or frappe.fixtures)
+- Test files MUST have `import frappe` at the top — FrappeTestCase does NOT inject frappe into the module namespace
+- Pre-written test file in tmp_us090/ was complete except for missing `import frappe` at top
+
+### Gotchas
+- Test file had `frappe.db.exists` and `frappe.get_app_path` calls without `import frappe` → NameError in container
+- Two copies of utils/ exist (outer + nested Frappe module path) — always update the NESTED path for container tests
+

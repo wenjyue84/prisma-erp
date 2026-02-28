@@ -2,11 +2,12 @@
 
 Centralised module for all statutory contribution rate logic:
 - EPF (KWSP) employer contribution rates (EPF Contribution Rate Revision 2022)
+- EPF foreign worker mandatory contribution (US-090, effective October 2025)
 - SOCSO (PERKESO) First Schedule bracketed table (US-074)
 - EIS (SIP) contribution rules (US-075)
 - Age-based statutory rate transitions at age 60 (US-076)
 
-All rates are correct as of 2024 amendments.
+All rates are correct as of 2025 amendments.
 """
 import frappe
 from frappe.utils import flt
@@ -25,24 +26,70 @@ EPF_OVER_60_EMPLOYEE_RATE = 0.055   # 5.5% statutory (or 0% minimum elected)
 EPF_OVER_60_EMPLOYER_RATE = 0.04    # 4% for employees aged 60+
 EPF_STANDARD_EMPLOYEE_RATE = 0.11   # 11% standard rate for age < 60
 
+# ---------------------------------------------------------------------------
+# EPF — Foreign Worker Mandatory Contribution (US-090)
+# Effective October 2025: EPF mandatory for foreign workers at 2% each
+# Reference: EPF (Amendment) Act 2024, enforced from 1 October 2025
+# ---------------------------------------------------------------------------
+from datetime import date as _date_cls
+FOREIGN_WORKER_EPF_START = _date_cls(2025, 10, 1)  # Mandatory from 1 October 2025
+FOREIGN_WORKER_EPF_RATE = 0.02                       # 2% employee + 2% employer
 
-def calculate_epf_employer_rate(monthly_gross):
+
+def calculate_epf_employer_rate(monthly_gross, is_foreign=False, payroll_date=None):
     """Return the statutory EPF employer contribution rate for a given monthly gross.
 
-    Per EPF Contribution Rate Revision 2022:
+    Per EPF Contribution Rate Revision 2022 (citizen/PR):
     - 13% for employees earning <= RM5,000/month
     - 12% for employees earning > RM5,000/month
 
+    Per EPF (Amendment) Act 2024 — Foreign Workers (effective October 2025):
+    - 2% employer rate from 1 October 2025
+    - 0% before October 2025 (foreign workers were previously exempt)
+
     Args:
         monthly_gross: Employee's monthly gross salary in MYR.
+        is_foreign: bool, True if employee is a foreign worker (default False).
+        payroll_date: datetime.date for foreign worker start date check (default today).
 
     Returns:
-        float: Employer EPF rate (e.g. 0.13 for 13%).
+        float: Employer EPF rate (e.g. 0.13 for 13%, 0.02 for 2%, 0.0 if exempt).
     """
+    if is_foreign:
+        ref_date = payroll_date or _date_cls.today()
+        if ref_date >= FOREIGN_WORKER_EPF_START:
+            return FOREIGN_WORKER_EPF_RATE   # 2% from October 2025
+        return 0.0   # Not covered before October 2025
+
+    # Citizen / PR: salary-graduated rate
     gross = flt(monthly_gross)
     if gross <= EPF_LOWER_SALARY_THRESHOLD:
         return EPF_EMPLOYER_RATE_HIGH
     return EPF_EMPLOYER_RATE_LOW
+
+
+def calculate_epf_employee_rate(monthly_gross=None, is_foreign=False, payroll_date=None):
+    """Return the statutory EPF employee contribution rate.
+
+    Citizen/PR: 11% standard rate (age < 60).
+    Foreign worker from October 2025: 2%.
+    Foreign worker before October 2025: 0%.
+
+    Args:
+        monthly_gross: Not used for citizens (rate is flat 11%); kept for API symmetry.
+        is_foreign: bool, True if foreign worker.
+        payroll_date: datetime.date, used for foreign worker effective date check.
+
+    Returns:
+        float: Employee EPF rate.
+    """
+    if is_foreign:
+        ref_date = payroll_date or _date_cls.today()
+        if ref_date >= FOREIGN_WORKER_EPF_START:
+            return FOREIGN_WORKER_EPF_RATE   # 2%
+        return 0.0
+
+    return EPF_STANDARD_EMPLOYEE_RATE   # 11%
 
 
 def get_statutory_rates_for_employee(employee_name, payroll_date):

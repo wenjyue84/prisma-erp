@@ -110,5 +110,25 @@
     "custom_lhdn_exclude_from_invoice": 0,
     "custom_is_pcb_component": 0,
     "custom_lhdn_classification_code": "022"
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EPF Employee (Foreign Worker)",
+    "salary_component": "EPF Employee (Foreign Worker)",
+    "salary_component_abbr": "EPF-FW-EE",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EPF Employer (Foreign Worker)",
+    "salary_component": "EPF Employer (Foreign Worker)",
+    "salary_component_abbr": "EPF-FW-ER",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 1,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
   }
 ]
