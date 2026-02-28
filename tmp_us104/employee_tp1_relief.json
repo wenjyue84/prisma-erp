@@ -1,0 +1,323 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "format:TP1-{employee}-{tax_year}",
+ "creation": "2026-02-28 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "tax_year",
+  "column_break_basics",
+  "company",
+  "section_standard_reliefs",
+  "self_relief",
+  "spouse_relief",
+  "child_relief_normal",
+  "child_relief_disabled",
+  "section_insurance_reliefs",
+  "life_insurance",
+  "medical_insurance",
+  "section_education_reliefs",
+  "education_fees_self",
+  "sspn",
+  "childcare_fees",
+  "section_lifestyle_reliefs",
+  "lifestyle_expenses",
+  "prs_contribution",
+  "section_medical_reliefs",
+  "serious_illness_expenses",
+  "parents_medical",
+  "section_housing_loan_relief",
+  "spa_date",
+  "housing_loan_interest_500k",
+  "housing_loan_interest_750k",
+  "section_other_reliefs",
+  "disability_self",
+  "disability_spouse",
+  "socso_employee",
+  "epf_employee",
+  "annual_zakat",
+  "section_totals",
+  "total_reliefs"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "fetch_from": "employee.employee_name",
+   "fetch_if_empty": 1,
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "tax_year",
+   "fieldtype": "Int",
+   "label": "Tax Year",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "default": "2025"
+  },
+  {
+   "fieldname": "column_break_basics",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "fetch_from": "employee.company",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "section_standard_reliefs",
+   "fieldtype": "Section Break",
+   "label": "Standard Reliefs"
+  },
+  {
+   "fieldname": "self_relief",
+   "fieldtype": "Currency",
+   "label": "Self Relief (RM 9,000)",
+   "default": "9000",
+   "description": "Standard personal relief — RM 9,000 per year."
+  },
+  {
+   "fieldname": "spouse_relief",
+   "fieldtype": "Currency",
+   "label": "Spouse Relief (Max RM 4,000)",
+   "default": "0",
+   "description": "RM 4,000 for non-working spouse."
+  },
+  {
+   "fieldname": "child_relief_normal",
+   "fieldtype": "Currency",
+   "label": "Child Relief — Normal (RM 2,000 each)",
+   "default": "0",
+   "description": "RM 2,000 per qualifying child."
+  },
+  {
+   "fieldname": "child_relief_disabled",
+   "fieldtype": "Currency",
+   "label": "Child Relief — Disabled (RM 6,000 each)",
+   "default": "0",
+   "description": "RM 6,000 per disabled child."
+  },
+  {
+   "fieldname": "section_insurance_reliefs",
+   "fieldtype": "Section Break",
+   "label": "Insurance & Medical Reliefs"
+  },
+  {
+   "fieldname": "life_insurance",
+   "fieldtype": "Currency",
+   "label": "Life Insurance Premium (Max RM 3,000)",
+   "default": "0",
+   "description": "Life insurance premiums — maximum RM 3,000."
+  },
+  {
+   "fieldname": "medical_insurance",
+   "fieldtype": "Currency",
+   "label": "Medical / Education Insurance (Max RM 3,000)",
+   "default": "0",
+   "description": "Medical or education insurance — maximum RM 3,000."
+  },
+  {
+   "fieldname": "section_education_reliefs",
+   "fieldtype": "Section Break",
+   "label": "Education & Savings Reliefs"
+  },
+  {
+   "fieldname": "education_fees_self",
+   "fieldtype": "Currency",
+   "label": "Education Fees (Self) (Max RM 7,000)",
+   "default": "0",
+   "description": "Course fees for skills / professional qualifications — maximum RM 7,000."
+  },
+  {
+   "fieldname": "sspn",
+   "fieldtype": "Currency",
+   "label": "SSPN Net Deposit (Max RM 8,000)",
+   "default": "0",
+   "description": "Net deposit into SSPN account — maximum RM 8,000."
+  },
+  {
+   "fieldname": "childcare_fees",
+   "fieldtype": "Currency",
+   "label": "Childcare Fees (Max RM 3,000)",
+   "default": "0",
+   "description": "Fees paid to registered childcare centres — maximum RM 3,000."
+  },
+  {
+   "fieldname": "section_lifestyle_reliefs",
+   "fieldtype": "Section Break",
+   "label": "Lifestyle & Retirement Reliefs"
+  },
+  {
+   "fieldname": "lifestyle_expenses",
+   "fieldtype": "Currency",
+   "label": "Lifestyle Expenses (Max RM 2,500)",
+   "default": "0",
+   "description": "Books, internet, sports equipment, gym — maximum RM 2,500."
+  },
+  {
+   "fieldname": "prs_contribution",
+   "fieldtype": "Currency",
+   "label": "PRS Contribution (Max RM 3,000)",
+   "default": "0",
+   "description": "Private Retirement Scheme contribution — maximum RM 3,000."
+  },
+  {
+   "fieldname": "section_medical_reliefs",
+   "fieldtype": "Section Break",
+   "label": "Medical & Disability Reliefs"
+  },
+  {
+   "fieldname": "serious_illness_expenses",
+   "fieldtype": "Currency",
+   "label": "Serious Illness Medical Expenses (Max RM 10,000)",
+   "default": "0",
+   "description": "Medical expenses for serious illness — maximum RM 10,000."
+  },
+  {
+   "fieldname": "parents_medical",
+   "fieldtype": "Currency",
+   "label": "Parents' Medical Expenses (Max RM 8,000)",
+   "default": "0",
+   "description": "Medical expenses for parents — maximum RM 8,000."
+  },
+  {
+   "fieldname": "section_housing_loan_relief",
+   "fieldtype": "Section Break",
+   "label": "Housing Loan Interest Relief (YA2025–2027, Budget 2025)"
+  },
+  {
+   "fieldname": "spa_date",
+   "fieldtype": "Date",
+   "label": "SPA Date (Sale & Purchase Agreement)",
+   "default": "",
+   "description": "Date of Sale & Purchase Agreement. Must be between 1 Jan 2025 and 31 Dec 2027 to qualify for housing loan interest relief (Budget 2025 sunset clause)."
+  },
+  {
+   "fieldname": "housing_loan_interest_500k",
+   "fieldtype": "Currency",
+   "label": "Housing Loan Interest — First Home ≤RM500K (Max RM 7,000, YA2025)",
+   "default": "0",
+   "description": "Interest on housing loan for first home valued RM500,000 or less. Maximum RM 7,000. Only claimable when SPA is dated 1 Jan 2025 to 31 Dec 2027."
+  },
+  {
+   "fieldname": "housing_loan_interest_750k",
+   "fieldtype": "Currency",
+   "label": "Housing Loan Interest — First Home RM500K–RM750K (Max RM 5,000, YA2025)",
+   "default": "0",
+   "description": "Interest on housing loan for first home valued RM500,000–RM750,000. Maximum RM 5,000. Only claimable when SPA is dated 1 Jan 2025 to 31 Dec 2027."
+  },
+  {
+   "fieldname": "section_other_reliefs",
+   "fieldtype": "Section Break",
+   "label": "Other Statutory Reliefs"
+  },
+  {
+   "fieldname": "disability_self",
+   "fieldtype": "Currency",
+   "label": "Disability Relief (Self) (RM 7,000 for YA2025; RM 6,000 before)",
+   "default": "0",
+   "description": "Relief for certified disabled person — RM 7,000 (YA2025 onwards, increased from RM 6,000)."
+  },
+  {
+   "fieldname": "disability_spouse",
+   "fieldtype": "Currency",
+   "label": "Disability Relief (Spouse) (RM 6,000 for YA2025; RM 5,000 before)",
+   "default": "0",
+   "description": "Additional relief for certified disabled spouse — RM 6,000 (YA2025 onwards, increased from RM 5,000)."
+  },
+  {
+   "fieldname": "socso_employee",
+   "fieldtype": "Currency",
+   "label": "SOCSO Contributions (Employee Share)",
+   "default": "0",
+   "description": "Employee SOCSO contributions paid during the year."
+  },
+  {
+   "fieldname": "epf_employee",
+   "fieldtype": "Currency",
+   "label": "EPF Contributions (Max RM 4,000)",
+   "default": "0",
+   "description": "Employee EPF contributions — maximum RM 4,000."
+  },
+  {
+   "fieldname": "annual_zakat",
+   "fieldtype": "Currency",
+   "label": "Zakat (Annual Amount Paid)",
+   "default": "0",
+   "description": "Zakat paid — ringgit-for-ringgit tax rebate (handled separately in PCB)."
+  },
+  {
+   "fieldname": "section_totals",
+   "fieldtype": "Section Break",
+   "label": "Total Reliefs"
+  },
+  {
+   "fieldname": "total_reliefs",
+   "fieldtype": "Currency",
+   "label": "Total TP1 Reliefs (RM)",
+   "read_only": 1,
+   "description": "Auto-calculated sum of all capped relief fields (excluding Zakat which is a tax rebate)."
+  }
+ ],
+ "links": [],
+ "modified": "2026-02-28 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LHDN Payroll Integration",
+ "name": "Employee TP1 Relief",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "print": 1,
+   "role": "HR User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "employee_name",
+ "track_changes": 1
+}
