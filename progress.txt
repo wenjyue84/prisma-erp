@@ -5438,3 +5438,27 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 - Fixed-point iteration gross = desired_net + pcb(gross * 12) converges for all Malaysian tax rates (max 26% marginal, < 100%)
 - Non-resident gross-up uses flat 30% on gross (no reliefs) — always higher gross than resident equivalent
 - DTA_COUNTRIES uses key 'country' (not 'country_name') per test expectations
+
+## Iteration N — US-083: Implement Expatriate Gross-Up Calculator and DTA Country Table
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 25 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_expatriate_service`
+**Result:** PASS — 25/25 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/expatriate_service.py` — New service with calculate_gross_up(), is_resident(), get_dta_country(), DTA_COUNTRIES
+- `lhdn_payroll_integration/tests/test_expatriate_service.py` — 25 tests across 3 classes
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added 4 Employee custom fields (custom_expatriate_section, custom_is_tax_equalised, custom_dta_country, custom_malaysia_presence_days)
+
+### Patterns discovered
+- Gross-up fixed-point iteration converges in <10 iterations for typical Malaysian salaries
+- Non-resident flat 30% rate means gross-up is always higher than resident equivalent
+- Custom field fixture JSON can be updated with python3 script run as root in container, then chown back to frappe
+
+### Gotchas
+- Running python3 scripts in container: must use `bash -c "python3 /path"` to avoid Git Bash path expansion
+- Permission denied writing fixtures as frappe user — need `docker exec -u root` then chown back
+## Iteration 1 - Sat, Feb 28, 2026  8:57:06 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 2/3
+
