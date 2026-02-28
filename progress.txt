@@ -4947,3 +4947,38 @@ Incomplete: Fix SEC-06 CSRF enforcement test â€” incorrect test design (ID:
 ### Patterns discovered
 - `bench execute frappe.utils.fixtures.sync_fixtures --kwargs '{"app":"..."}' ` — correct path for fixture sync without full migrate
 - Fixture sync + clear-cache is sufficient for adding Custom Fields without bench migrate
+
+
+## Iteration N — US-068: Generate SOCSO and EIS e-Caruman Upload File
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 19 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_socso_eis_upload`
+**Result:** PASS — 19/19 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/socso_eis_upload_service.py` — PERKESO ASSIST e-Caruman generator
+- `lhdn_payroll_integration/tests/test_socso_eis_upload.py` — 19 tests (4 classes)
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added custom_socso_employer_number (Data) on Company
+
+### Implementation summary
+- New `services/socso_eis_upload_service.py`: `get_ecaruman_data()` + `generate_ecaruman_file()`
+- File format: pipe-delimited (|) with 8 columns per PERKESO ASSIST specification
+- SOCSO amounts via `calculate_socso_contribution()` from utils/statutory_rates.py (US-074)
+- EIS amounts via `calculate_eis_contribution()` from utils/statutory_rates.py (US-075)
+- Ceiling enforcement: wages > RM6,000 capped at statutory ceiling for both SOCSO and EIS
+- Exemptions: foreign workers and employees aged <18 or >=60 get EIS = 0.00
+- New Company field `custom_socso_employer_number` (Data) added to fixture + deployed via bench migrate
+
+### Test classes
+1. `TestEcarumanConstants` — delimiter=pipe, 8 required headers
+2. `TestGenerateEcarumanFileStructure` — file structure, row count, field count, decimal formatting
+3. `TestSocsoContributionInUploadFile` — bracket table lookup; ceiling cap visible in file
+4. `TestEisContributionInUploadFile` — RM6,000 ceiling; foreign worker=0; age>=60=0
+5. `TestEcarumanFiltersIntegration` — real Frappe DB integration; empty result for distant past
+
+### Patterns discovered
+- PERKESO ASSIST e-Caruman file: pipe-delimited, header + data rows, amounts to 2 d.p.
+- Recalculate contributions from statutory tables rather than reading salary slip components — ensures upload file is always correct regardless of payroll configuration errors
+- custom_field.json field updates: docker cp then bench migrate (standard pattern)
+
