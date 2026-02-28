@@ -3,7 +3,8 @@
 Generates the monthly PCB (Potongan Cukai Berjadual) remittance file
 compatible with LHDN's e-PCB portal.
 
-Columns: Employee TIN, IC/Passport Number, Employee Name, Gross Salary, PCB Amount, Period
+Columns: Employee TIN, IC/Passport Number, Employee Name, PCB Category,
+         Gross Salary, PCB Amount, Period
 Sources: Submitted Salary Slips (docstatus=1) with PCB deductions > 0.
 """
 import frappe
@@ -28,6 +29,12 @@ def get_columns():
             "fieldname": "employee_name",
             "fieldtype": "Data",
             "width": 200,
+        },
+        {
+            "label": "PCB Category",
+            "fieldname": "pcb_category",
+            "fieldtype": "Data",
+            "width": 120,
         },
         {
             "label": "Employee",
@@ -136,6 +143,7 @@ def get_data(filters=None):
             ss.employee_name                         AS employee_name,
             COALESCE(e.custom_lhdn_tin, '')         AS employee_tin,
             COALESCE(e.custom_id_value, '')         AS id_number,
+            COALESCE(e.custom_pcb_category, '1')    AS pcb_category,
             ss.gross_pay                             AS gross_salary,
             SUM(sd.amount)                           AS pcb_amount,
             CONCAT(

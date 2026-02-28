@@ -518,6 +518,19 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Employee-custom_pcb_category",
+    "dt": "Employee",
+    "fieldname": "custom_pcb_category",
+    "fieldtype": "Select",
+    "label": "PCB Category",
+    "options": "\n1\n2\n3",
+    "default": "1",
+    "description": "LHDN PCB Category: 1 = Single / Married (working spouse), 2 = Married (non-working spouse, RM4,000 relief), 3 = Single Parent (RM4,000 relief, ITA s.46A). Required for CP39 CSV upload.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_postcode"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Company-custom_hrdf_levy_rate",
     "dt": "Company",
     "fieldname": "custom_hrdf_levy_rate",

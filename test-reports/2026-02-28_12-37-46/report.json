@@ -1,0 +1,283 @@
+{
+  "suite": "Prisma ERP Test Suite",
+  "generated_at": "2026-02-28T04:37:46.241544+00:00",
+  "summary": {
+    "total": 10,
+    "passed": 6,
+    "failed": 4,
+    "errored": 0,
+    "skipped": 0,
+    "pass_rate": "60.0%"
+  },
+  "categories": {
+    "smoke": {
+      "total": 10,
+      "passed": 6,
+      "failed": 4,
+      "tests": [
+        {
+          "id": "tests.smoke.test_smoke.TestAppsInstalled.test_smk07_frappe_installed",
+          "name": "test_smk07_frappe_installed",
+          "description": "SMK-07: 'frappe' core app is installed.",
+          "category": "smoke",
+          "status": "FAIL",
+          "duration_ms": 44.76,
+          "error": {
+            "type": "AssertionError",
+            "message": "417 != 200 : Expected HTTP 200, got 417. Body: {\"exception\":\"frappe.exceptions.ValidationError: Failed to get method for command frappe.utils.change_log.get_installed_apps with module 'frappe.utils.change_log' has no attribute 'get_installed_apps'\",\"exc_type\":\"ValidationError\",\"exc\":\"[\\\"Traceback (most recent call last):\\\\n  File \\\\\\\"apps/frappe",
+            "traceback": [
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 58, in testPartExecutor\n    yield\n",
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 651, in run\n    self._callTestMethod(testMethod)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\n",
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 606, in _callTestMethod\n    if method() is not None:\n       ~~~~~~^^\n",
+              "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\smoke\\test_smoke.py\", line 95, in test_smk07_frappe_installed\n    self.assert_status(resp)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n",
+              "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\base.py\", line 113, in assert_status\n    self.assertEqual(\n    ~~~~~~~~~~~~~~~~^\n        resp.status_code,\n        ^^^^^^^^^^^^^^^^^\n        expected,\n        ^^^^^^^^^\n        msg or f\"Expected HTTP {expected}, got {resp.status_code}. Body: {resp.text[:300]}\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n"
+            ]
+          }
+        },
+        {
+          "id": "tests.smoke.test_smoke.TestAppsInstalled.test_smk08_erpnext_installed",
+          "name": "test_smk08_erpnext_installed",
+          "description": "SMK-08: 'erpnext' app is installed.",
+          "category": "smoke",
+          "status": "FAIL",
+          "duration_ms": 14.22,
+          "error": {
+            "type": "AssertionError",
+            "message": "417 != 200 : Expected HTTP 200, got 417. Body: {\"exception\":\"frappe.exceptions.ValidationError: Failed to get method for command frappe.utils.change_log.get_installed_apps with module 'frappe.utils.change_log' has no attribute 'get_installed_apps'\",\"exc_type\":\"ValidationError\",\"exc\":\"[\\\"Traceback (most recent call last):\\\\n  File \\\\\\\"apps/frappe",
+            "traceback": [
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 58, in testPartExecutor\n    yield\n",
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 651, in run\n    self._callTestMethod(testMethod)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\n",
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 606, in _callTestMethod\n    if method() is not None:\n       ~~~~~~^^\n",
+              "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\smoke\\test_smoke.py\", line 104, in test_smk08_erpnext_installed\n    self.assert_status(resp)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n",
+              "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\base.py\", line 113, in assert_status\n    self.assertEqual(\n    ~~~~~~~~~~~~~~~~^\n        resp.status_code,\n        ^^^^^^^^^^^^^^^^^\n        expected,\n        ^^^^^^^^^\n        msg or f\"Expected HTTP {expected}, got {resp.status_code}. Body: {resp.text[:300]}\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n"
+            ]
+          }
+        },
+        {
+          "id": "tests.smoke.test_smoke.TestAppsInstalled.test_smk09_prisma_assistant_installed",
+          "name": "test_smk09_prisma_assistant_installed",
+          "description": "SMK-09: 'prisma_assistant' custom app is installed.",
+          "category": "smoke",
+          "status": "FAIL",
+          "duration_ms": 51.01,
+          "error": {
+            "type": "AssertionError",
+            "message": "417 != 200 : Expected HTTP 200, got 417. Body: {\"exception\":\"frappe.exceptions.ValidationError: Failed to get method for command frappe.utils.change_log.get_installed_apps with module 'frappe.utils.change_log' has no attribute 'get_installed_apps'\",\"exc_type\":\"ValidationError\",\"exc\":\"[\\\"Traceback (most recent call last):\\\\n  File \\\\\\\"apps/frappe",
+            "traceback": [
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 58, in testPartExecutor\n    yield\n",
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 651, in run\n    self._callTestMethod(testMethod)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\n",
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 606, in _callTestMethod\n    if method() is not None:\n       ~~~~~~^^\n",
+              "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\smoke\\test_smoke.py\", line 113, in test_smk09_prisma_assistant_installed\n    self.assert_status(resp)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n",
+              "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\base.py\", line 113, in assert_status\n    self.assertEqual(\n    ~~~~~~~~~~~~~~~~^\n        resp.status_code,\n        ^^^^^^^^^^^^^^^^^\n        expected,\n        ^^^^^^^^^\n        msg or f\"Expected HTTP {expected}, got {resp.status_code}. Body: {resp.text[:300]}\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n"
+            ]
+          }
+        },
+        {
+          "id": "tests.smoke.test_smoke.TestAppsInstalled.test_smk10_lhdn_payroll_installed",
+          "name": "test_smk10_lhdn_payroll_installed",
+          "description": "SMK-10: 'lhdn_payroll_integration' app is installed.",
+          "category": "smoke",
+          "status": "FAIL",
+          "duration_ms": 50.93,
+          "error": {
+            "type": "AssertionError",
+            "message": "417 != 200 : Expected HTTP 200, got 417. Body: {\"exception\":\"frappe.exceptions.ValidationError: Failed to get method for command frappe.utils.change_log.get_installed_apps with module 'frappe.utils.change_log' has no attribute 'get_installed_apps'\",\"exc_type\":\"ValidationError\",\"exc\":\"[\\\"Traceback (most recent call last):\\\\n  File \\\\\\\"apps/frappe",
+            "traceback": [
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 58, in testPartExecutor\n    yield\n",
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 651, in run\n    self._callTestMethod(testMethod)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\n",
+              "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 606, in _callTestMethod\n    if method() is not None:\n       ~~~~~~^^\n",
+              "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\smoke\\test_smoke.py\", line 123, in test_smk10_lhdn_payroll_installed\n    self.assert_status(resp)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n",
+              "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\base.py\", line 113, in assert_status\n    self.assertEqual(\n    ~~~~~~~~~~~~~~~~^\n        resp.status_code,\n        ^^^^^^^^^^^^^^^^^\n        expected,\n        ^^^^^^^^^\n        msg or f\"Expected HTTP {expected}, got {resp.status_code}. Body: {resp.text[:300]}\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n"
+            ]
+          }
+        },
+        {
+          "id": "tests.smoke.test_smoke.TestAuthentication.test_smk04_current_user_is_administrator",
+          "name": "test_smk04_current_user_is_administrator",
+          "description": "SMK-04: Session user is Administrator after login.",
+          "category": "smoke",
+          "status": "PASS",
+          "duration_ms": 49.01,
+          "error": null
+        },
+        {
+          "id": "tests.smoke.test_smoke.TestAuthentication.test_smk05_whoami_endpoint",
+          "name": "test_smk05_whoami_endpoint",
+          "description": "SMK-05: /api/method/frappe.client.get_value returns a result.",
+          "category": "smoke",
+          "status": "PASS",
+          "duration_ms": 63.56,
+          "error": null
+        },
+        {
+          "id": "tests.smoke.test_smoke.TestAuthentication.test_smk06_unauthenticated_get_fails",
+          "name": "test_smk06_unauthenticated_get_fails",
+          "description": "SMK-06: Unauthenticated session to restricted endpoint \u2192 403/401.",
+          "category": "smoke",
+          "status": "PASS",
+          "duration_ms": 34.24,
+          "error": null
+        },
+        {
+          "id": "tests.smoke.test_smoke.TestHTTPConnectivity.test_smk01_root_returns_200",
+          "name": "test_smk01_root_returns_200",
+          "description": "SMK-01: GET / \u2192 200 (nginx + Frappe web layer alive).",
+          "category": "smoke",
+          "status": "PASS",
+          "duration_ms": 1668.89,
+          "error": null
+        },
+        {
+          "id": "tests.smoke.test_smoke.TestHTTPConnectivity.test_smk02_api_ping",
+          "name": "test_smk02_api_ping",
+          "description": "SMK-02: GET /api/method/frappe.ping \u2192 {message: 'pong'}.",
+          "category": "smoke",
+          "status": "PASS",
+          "duration_ms": 6.26,
+          "error": null
+        },
+        {
+          "id": "tests.smoke.test_smoke.TestHTTPConnectivity.test_smk03_favicon_served",
+          "name": "test_smk03_favicon_served",
+          "description": "SMK-03: Static asset /assets/frappe/images/frappe-favicon.svg served.",
+          "category": "smoke",
+          "status": "PASS",
+          "duration_ms": 2.84,
+          "error": null
+        }
+      ]
+    }
+  },
+  "all_results": [
+    {
+      "id": "tests.smoke.test_smoke.TestAppsInstalled.test_smk07_frappe_installed",
+      "name": "test_smk07_frappe_installed",
+      "description": "SMK-07: 'frappe' core app is installed.",
+      "category": "smoke",
+      "status": "FAIL",
+      "duration_ms": 44.76,
+      "error": {
+        "type": "AssertionError",
+        "message": "417 != 200 : Expected HTTP 200, got 417. Body: {\"exception\":\"frappe.exceptions.ValidationError: Failed to get method for command frappe.utils.change_log.get_installed_apps with module 'frappe.utils.change_log' has no attribute 'get_installed_apps'\",\"exc_type\":\"ValidationError\",\"exc\":\"[\\\"Traceback (most recent call last):\\\\n  File \\\\\\\"apps/frappe",
+        "traceback": [
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 58, in testPartExecutor\n    yield\n",
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 651, in run\n    self._callTestMethod(testMethod)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\n",
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 606, in _callTestMethod\n    if method() is not None:\n       ~~~~~~^^\n",
+          "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\smoke\\test_smoke.py\", line 95, in test_smk07_frappe_installed\n    self.assert_status(resp)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n",
+          "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\base.py\", line 113, in assert_status\n    self.assertEqual(\n    ~~~~~~~~~~~~~~~~^\n        resp.status_code,\n        ^^^^^^^^^^^^^^^^^\n        expected,\n        ^^^^^^^^^\n        msg or f\"Expected HTTP {expected}, got {resp.status_code}. Body: {resp.text[:300]}\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n"
+        ]
+      }
+    },
+    {
+      "id": "tests.smoke.test_smoke.TestAppsInstalled.test_smk08_erpnext_installed",
+      "name": "test_smk08_erpnext_installed",
+      "description": "SMK-08: 'erpnext' app is installed.",
+      "category": "smoke",
+      "status": "FAIL",
+      "duration_ms": 14.22,
+      "error": {
+        "type": "AssertionError",
+        "message": "417 != 200 : Expected HTTP 200, got 417. Body: {\"exception\":\"frappe.exceptions.ValidationError: Failed to get method for command frappe.utils.change_log.get_installed_apps with module 'frappe.utils.change_log' has no attribute 'get_installed_apps'\",\"exc_type\":\"ValidationError\",\"exc\":\"[\\\"Traceback (most recent call last):\\\\n  File \\\\\\\"apps/frappe",
+        "traceback": [
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 58, in testPartExecutor\n    yield\n",
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 651, in run\n    self._callTestMethod(testMethod)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\n",
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 606, in _callTestMethod\n    if method() is not None:\n       ~~~~~~^^\n",
+          "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\smoke\\test_smoke.py\", line 104, in test_smk08_erpnext_installed\n    self.assert_status(resp)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n",
+          "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\base.py\", line 113, in assert_status\n    self.assertEqual(\n    ~~~~~~~~~~~~~~~~^\n        resp.status_code,\n        ^^^^^^^^^^^^^^^^^\n        expected,\n        ^^^^^^^^^\n        msg or f\"Expected HTTP {expected}, got {resp.status_code}. Body: {resp.text[:300]}\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n"
+        ]
+      }
+    },
+    {
+      "id": "tests.smoke.test_smoke.TestAppsInstalled.test_smk09_prisma_assistant_installed",
+      "name": "test_smk09_prisma_assistant_installed",
+      "description": "SMK-09: 'prisma_assistant' custom app is installed.",
+      "category": "smoke",
+      "status": "FAIL",
+      "duration_ms": 51.01,
+      "error": {
+        "type": "AssertionError",
+        "message": "417 != 200 : Expected HTTP 200, got 417. Body: {\"exception\":\"frappe.exceptions.ValidationError: Failed to get method for command frappe.utils.change_log.get_installed_apps with module 'frappe.utils.change_log' has no attribute 'get_installed_apps'\",\"exc_type\":\"ValidationError\",\"exc\":\"[\\\"Traceback (most recent call last):\\\\n  File \\\\\\\"apps/frappe",
+        "traceback": [
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 58, in testPartExecutor\n    yield\n",
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 651, in run\n    self._callTestMethod(testMethod)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\n",
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 606, in _callTestMethod\n    if method() is not None:\n       ~~~~~~^^\n",
+          "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\smoke\\test_smoke.py\", line 113, in test_smk09_prisma_assistant_installed\n    self.assert_status(resp)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n",
+          "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\base.py\", line 113, in assert_status\n    self.assertEqual(\n    ~~~~~~~~~~~~~~~~^\n        resp.status_code,\n        ^^^^^^^^^^^^^^^^^\n        expected,\n        ^^^^^^^^^\n        msg or f\"Expected HTTP {expected}, got {resp.status_code}. Body: {resp.text[:300]}\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n"
+        ]
+      }
+    },
+    {
+      "id": "tests.smoke.test_smoke.TestAppsInstalled.test_smk10_lhdn_payroll_installed",
+      "name": "test_smk10_lhdn_payroll_installed",
+      "description": "SMK-10: 'lhdn_payroll_integration' app is installed.",
+      "category": "smoke",
+      "status": "FAIL",
+      "duration_ms": 50.93,
+      "error": {
+        "type": "AssertionError",
+        "message": "417 != 200 : Expected HTTP 200, got 417. Body: {\"exception\":\"frappe.exceptions.ValidationError: Failed to get method for command frappe.utils.change_log.get_installed_apps with module 'frappe.utils.change_log' has no attribute 'get_installed_apps'\",\"exc_type\":\"ValidationError\",\"exc\":\"[\\\"Traceback (most recent call last):\\\\n  File \\\\\\\"apps/frappe",
+        "traceback": [
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 58, in testPartExecutor\n    yield\n",
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 651, in run\n    self._callTestMethod(testMethod)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\n",
+          "  File \"C:\\Users\\Jyue\\AppData\\Roaming\\uv\\python\\cpython-3.13.6-windows-x86_64-none\\Lib\\unittest\\case.py\", line 606, in _callTestMethod\n    if method() is not None:\n       ~~~~~~^^\n",
+          "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\smoke\\test_smoke.py\", line 123, in test_smk10_lhdn_payroll_installed\n    self.assert_status(resp)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n",
+          "  File \"C:\\Users\\Jyue\\Documents\\1-projects\\Projects\\prisma-erp\\tests\\base.py\", line 113, in assert_status\n    self.assertEqual(\n    ~~~~~~~~~~~~~~~~^\n        resp.status_code,\n        ^^^^^^^^^^^^^^^^^\n        expected,\n        ^^^^^^^^^\n        msg or f\"Expected HTTP {expected}, got {resp.status_code}. Body: {resp.text[:300]}\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n"
+        ]
+      }
+    },
+    {
+      "id": "tests.smoke.test_smoke.TestAuthentication.test_smk04_current_user_is_administrator",
+      "name": "test_smk04_current_user_is_administrator",
+      "description": "SMK-04: Session user is Administrator after login.",
+      "category": "smoke",
+      "status": "PASS",
+      "duration_ms": 49.01,
+      "error": null
+    },
+    {
+      "id": "tests.smoke.test_smoke.TestAuthentication.test_smk05_whoami_endpoint",
+      "name": "test_smk05_whoami_endpoint",
+      "description": "SMK-05: /api/method/frappe.client.get_value returns a result.",
+      "category": "smoke",
+      "status": "PASS",
+      "duration_ms": 63.56,
+      "error": null
+    },
+    {
+      "id": "tests.smoke.test_smoke.TestAuthentication.test_smk06_unauthenticated_get_fails",
+      "name": "test_smk06_unauthenticated_get_fails",
+      "description": "SMK-06: Unauthenticated session to restricted endpoint \u2192 403/401.",
+      "category": "smoke",
+      "status": "PASS",
+      "duration_ms": 34.24,
+      "error": null
+    },
+    {
+      "id": "tests.smoke.test_smoke.TestHTTPConnectivity.test_smk01_root_returns_200",
+      "name": "test_smk01_root_returns_200",
+      "description": "SMK-01: GET / \u2192 200 (nginx + Frappe web layer alive).",
+      "category": "smoke",
+      "status": "PASS",
+      "duration_ms": 1668.89,
+      "error": null
+    },
+    {
+      "id": "tests.smoke.test_smoke.TestHTTPConnectivity.test_smk02_api_ping",
+      "name": "test_smk02_api_ping",
+      "description": "SMK-02: GET /api/method/frappe.ping \u2192 {message: 'pong'}.",
+      "category": "smoke",
+      "status": "PASS",
+      "duration_ms": 6.26,
+      "error": null
+    },
+    {
+      "id": "tests.smoke.test_smoke.TestHTTPConnectivity.test_smk03_favicon_served",
+      "name": "test_smk03_favicon_served",
+      "description": "SMK-03: Static asset /assets/frappe/images/frappe-favicon.svg served.",
+      "category": "smoke",
+      "status": "PASS",
+      "duration_ms": 2.84,
+      "error": null
+    }
+  ]
+}

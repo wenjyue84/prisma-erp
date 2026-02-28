@@ -84,11 +84,18 @@ def calculate_pcb(
     years_of_service: int = 0,
     worked_days: int = None,
     total_days: int = None,
+    category: int = None,
 ) -> float:
     """Calculate monthly PCB/MTD deduction amount.
 
     Applies standard reliefs for residents then uses LHDN progressive bands.
     Non-residents are taxed at flat 30% on gross income.
+
+    PCB Category (LHDN CP39 requirement):
+        category=1 : Single or married with working spouse — no spouse relief
+        category=2 : Married, non-working spouse — RM4,000 spouse relief (ITA s.45)
+        category=3 : Single parent — RM4,000 relief (ITA s.46A)
+        category=None: Falls back to the legacy ``married`` bool parameter.
 
     When worked_days and total_days are both provided and worked_days < total_days,
     monthly income is prorated before annualising:
@@ -111,7 +118,8 @@ def calculate_pcb(
     Args:
         annual_income: Gross annual employment income (RM).
         resident: True if employee is a tax resident of Malaysia.
-        married: True if employee is married (spouse relief applies).
+        married: (Deprecated) True if employee is married (spouse relief applies).
+            Ignored when ``category`` is provided.
         children: Number of qualifying children (RM2,000 each).
         bonus_amount: One-off irregular payment amount (RM) such as bonus
             or commission. When provided, triggers LHDN Schedule D
@@ -124,6 +132,8 @@ def calculate_pcb(
             When provided with total_days, prorates monthly income.
         total_days: Total calendar days in the pay period month.
             When provided with worked_days, prorates monthly income.
+        category: PCB category (1, 2, or 3). When provided, overrides ``married``.
+            1 = no spouse relief, 2 = spouse relief RM4,000, 3 = single parent RM4,000.
 
     Returns:
         float: Monthly PCB amount (RM), rounded to 2 decimal places.
@@ -155,9 +165,15 @@ def calculate_pcb(
         irregular_pcb = total_irregular * 0.30 if total_irregular > 0 else 0.0
         return round(regular_monthly + irregular_pcb, 2)
 
-    # Resident: apply personal reliefs before tax computation
+    # Resident: apply personal reliefs before tax computation.
+    # Resolve spouse/single-parent relief from category or legacy married flag.
     total_relief = _SELF_RELIEF
-    if married:
+    if category is not None:
+        # category 2 = non-working spouse relief; category 3 = single parent relief (ITA s.46A)
+        if int(category) in (2, 3):
+            total_relief += _SPOUSE_RELIEF
+        # category 1: no additional spouse/parent relief
+    elif married:
         total_relief += _SPOUSE_RELIEF
     total_relief += children * _CHILD_RELIEF_PER_CHILD
 
@@ -217,6 +233,15 @@ def validate_pcb_amount(doc_name: str) -> dict:
     if hasattr(employee, "custom_number_of_children"):
         children = int(employee.custom_number_of_children or 0)
 
+    # PCB category (US-051): prefer custom_pcb_category if set; fall back to married flag.
+    pcb_category = None
+    raw_cat = getattr(employee, "custom_pcb_category", None)
+    if raw_cat:
+        try:
+            pcb_category = int(raw_cat)
+        except (ValueError, TypeError):
+            pcb_category = None
+
     # Extract proration info from Salary Slip (total_working_days, payment_days)
     worked_days_val = None
     total_days_val = None
@@ -230,6 +255,7 @@ def validate_pcb_amount(doc_name: str) -> dict:
     expected_monthly = calculate_pcb(
         annual_income, resident=resident, married=married, children=children,
         worked_days=worked_days_val, total_days=total_days_val,
+        category=pcb_category,
     )
 
     # Find PCB deduction component (look for "Monthly Tax Deduction" or "PCB")

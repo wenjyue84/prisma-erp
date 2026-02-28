@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prisma ERP — Test Suite</title>
+<meta name="csrf-token" content="{{ csrf_token }}">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f172a; --surface: #1e293b; --surface2: #263348;
+    --border: #334155; --text: #e2e8f0; --muted: #64748b;
+    --green: #22c55e; --red: #ef4444; --orange: #f97316;
+    --blue: #3b82f6; --purple: #a855f7; --yellow: #eab308;
+    --cyan: #06b6d4;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+
+  body { font-family: var(--font); background: var(--bg); color: var(--text);
+         min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── Layout ─────────────────────────────────────────── */
+  #app { display: grid; grid-template-columns: 280px 1fr; grid-template-rows: 56px 1fr;
+         height: 100vh; overflow: hidden; }
+
+  /* Header */
+  #header { grid-column: 1/-1; background: var(--surface); border-bottom: 1px solid var(--border);
+             display: flex; align-items: center; justify-content: space-between;
+             padding: 0 20px; gap: 12px; }
+  #header h1 { font-size: 16px; font-weight: 700; color: var(--text);
+               display: flex; align-items: center; gap: 8px; }
+  #header h1 .logo { font-size: 22px; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+
+  /* Sidebar */
+  #sidebar { background: var(--surface); border-right: 1px solid var(--border);
+             overflow-y: auto; padding: 12px 0; }
+  .sidebar-section { padding: 6px 16px 4px; font-size: 10px; font-weight: 700;
+                     text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
+  .suite-item { display: flex; align-items: center; gap: 10px; padding: 8px 16px;
+                cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s;
+                font-size: 13px; }
+  .suite-item:hover { background: var(--surface2); }
+  .suite-item.active { border-left-color: var(--blue); background: var(--surface2); }
+  .suite-item input[type=checkbox] { accent-color: var(--blue); width: 14px; height: 14px; cursor: pointer; }
+  .suite-label { flex: 1; }
+  .suite-label .name { font-weight: 600; color: var(--text); }
+  .suite-label .desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .suite-badge { font-size: 10px; font-weight: 700; padding: 2px 6px;
+                 border-radius: 10px; background: var(--border); color: var(--muted); }
+  .suite-badge.pass { background: rgba(34,197,94,.2); color: var(--green); }
+  .suite-badge.fail { background: rgba(239,68,68,.2); color: var(--red); }
+  .suite-badge.running { background: rgba(59,130,246,.2); color: var(--blue); animation: pulse 1s infinite; }
+
+  /* Main panel */
+  #main { overflow-y: auto; display: flex; flex-direction: column; }
+
+  /* Top controls */
+  #controls { padding: 14px 20px; border-bottom: 1px solid var(--border);
+              display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  /* Progress bar */
+  #progress-bar-wrap { background: var(--border); height: 4px; border-radius: 2px; overflow: hidden; display: none; }
+  #progress-bar { height: 100%; background: var(--blue); transition: width 0.3s ease; width: 0%; }
+
+  /* Stats bar */
+  #stats-bar { display: none; padding: 10px 20px; gap: 16px; background: var(--surface);
+               border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center; }
+  .stat { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .stat-num { font-weight: 700; font-size: 20px; line-height: 1; }
+
+  /* Results area */
+  #results { padding: 16px 20px; flex: 1; }
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center;
+                 height: 60vh; color: var(--muted); gap: 12px; text-align: center; }
+  .empty-state .icon { font-size: 56px; }
+  .empty-state h2 { font-size: 18px; color: var(--text); }
+  .empty-state p { font-size: 14px; max-width: 380px; line-height: 1.6; }
+
+  /* Category group */
+  .category-group { margin-bottom: 20px; }
+  .category-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .category-header h3 { font-size: 13px; font-weight: 700; text-transform: uppercase;
+                        letter-spacing: 0.6px; color: var(--muted); }
+  .category-stat { font-size: 11px; color: var(--muted); }
+
+  /* Test row */
+  .test-row { border-radius: 6px; margin-bottom: 4px; overflow: hidden;
+              border: 1px solid var(--border); }
+  .test-row-header { display: flex; align-items: center; gap: 10px; padding: 9px 14px;
+                     background: var(--surface); cursor: pointer; }
+  .test-row-header:hover { background: var(--surface2); }
+  .test-icon { width: 18px; text-align: center; font-size: 14px; flex-shrink: 0; }
+  .test-name { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+  .test-id { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .test-ms { font-size: 11px; color: var(--muted); text-align: right; min-width: 60px; }
+  .test-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; min-width: 46px; text-align: center; }
+  .status-pass { background: rgba(34,197,94,.15); color: var(--green); }
+  .status-fail { background: rgba(239,68,68,.15); color: var(--red); }
+  .status-error { background: rgba(249,115,22,.15); color: var(--orange); }
+  .status-skip { background: rgba(148,163,184,.15); color: var(--muted); }
+  .status-running { background: rgba(59,130,246,.15); color: var(--blue); }
+  .status-pending { background: var(--border); color: var(--muted); }
+
+  .test-detail { display: none; padding: 10px 14px 12px; background: #141e2e;
+                 border-top: 1px solid var(--border); }
+  .test-detail.open { display: block; }
+  .test-desc { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .test-error { font-family: var(--mono); font-size: 11px; color: #fca5a5;
+                background: rgba(239,68,68,.08); border-radius: 4px; padding: 8px 10px;
+                white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; }
+
+  /* Buttons */
+  .btn { border: none; border-radius: 6px; padding: 7px 14px; font-size: 13px;
+         font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #2563eb; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover:not(:disabled) { background: var(--border); }
+  .btn-danger { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+  .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,.25); }
+  .btn-export { background: rgba(34,197,94,.15); color: var(--green); border: 1px solid rgba(34,197,94,.3); }
+  .btn-export:hover:not(:disabled) { background: rgba(34,197,94,.25); }
+
+  /* Running spinner overlay on test icon */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .spin { display: inline-block; animation: spin 0.8s linear infinite; }
+
+  /* Log console */
+  #log { background: #0a1020; border-top: 1px solid var(--border); padding: 10px 16px;
+         font-family: var(--mono); font-size: 11px; color: var(--muted); max-height: 120px;
+         overflow-y: auto; display: none; line-height: 1.6; }
+  #log.visible { display: block; }
+  .log-ok { color: var(--green); }
+  .log-fail { color: var(--red); }
+  .log-info { color: var(--cyan); }
+  .log-warn { color: var(--yellow); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <header id="header">
+    <h1><span class="logo">🧪</span> Prisma ERP Test Suite</h1>
+    <div class="header-right">
+      <span id="url-label" style="font-size:12px;color:var(--muted)">{{ site_name }}</span>
+      <button class="btn btn-export" id="btn-export" disabled onclick="exportReport()">⬇ Export JSON</button>
+      <button class="btn btn-primary" id="btn-run" onclick="runSelected()">▶ Run Selected</button>
+      <button class="btn btn-secondary" onclick="runAll()">▶ Run All</button>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="sidebar-section">Test Suites</div>
+
+    <div class="suite-item active" onclick="filterSuite('all')">
+      <input type="checkbox" id="chk-all" checked onchange="toggleAllSuites(this.checked)">
+      <div class="suite-label">
+        <div class="name">All Suites</div>
+        <div class="desc">Run everything</div>
+      </div>
+      <span class="suite-badge" id="badge-all">0</span>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:8px">Categories</div>
+
+    <script id="suite-data" type="application/json">
+    [
+      {"id":"smoke","name":"Smoke","desc":"Connectivity & apps installed","color":"var(--green)"},
+      {"id":"unit_ai","name":"Unit: Prisma AI","desc":"Chat API, settings, key masking","color":"var(--purple)"},
+      {"id":"unit_payroll","name":"Unit: LHDN Payroll","desc":"Doctypes, fields, reports","color":"var(--blue)"},
+      {"id":"api_contract","name":"API Contract","desc":"Response schema validation","color":"var(--cyan)"},
+      {"id":"regression","name":"Regression","desc":"Guard against past bugs","color":"var(--orange)"},
+      {"id":"integration","name":"Integration","desc":"End-to-end workflows","color":"var(--yellow)"},
+      {"id":"edge_cases","name":"Edge Cases","desc":"Boundary & unusual inputs","color":"var(--muted)"},
+      {"id":"security","name":"Security","desc":"Auth, CSRF, injections","color":"var(--red)"},
+      {"id":"performance","name":"Performance","desc":"Response times & concurrency","color":"var(--text)"}
+    ]
+    </script>
+
+    <div id="suite-list"></div>
+
+    <div style="padding:16px;margin-top:auto">
+      <button class="btn btn-secondary" style="width:100%;font-size:12px" onclick="clearResults()">🗑 Clear Results</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main id="main">
+    <div id="controls">
+      <div style="flex:1;display:flex;align-items:center;gap:10px">
+        <div id="progress-bar-wrap" style="flex:1;min-width:120px">
+          <div id="progress-bar"></div>
+        </div>
+        <span id="run-status" style="font-size:13px;color:var(--muted)">Select suites and click Run</span>
+      </div>
+      <button class="btn btn-danger btn-sm" id="btn-stop" style="display:none" onclick="stopRun()">⏹ Stop</button>
+      <button class="btn btn-secondary" onclick="toggleLog()">📋 Log</button>
+    </div>
+
+    <div id="stats-bar">
+      <div class="stat"><span class="stat-num" id="stat-total" style="color:var(--text)">0</span><span>Total</span></div>
+      <div class="stat"><span class="stat-num" id="stat-pass" style="color:var(--green)">0</span><span>Pass</span></div>
+      <div class="stat"><span class="stat-num" id="stat-fail" style="color:var(--red)">0</span><span>Fail</span></div>
+      <div class="stat"><span class="stat-num" id="stat-error" style="color:var(--orange)">0</span><span>Error</span></div>
+      <div class="stat"><span class="stat-num" id="stat-skip" style="color:var(--muted)">0</span><span>Skip</span></div>
+      <div style="flex:1"></div>
+      <div class="stat" id="pass-rate-display" style="font-size:24px;font-weight:800;color:var(--green)"></div>
+    </div>
+
+    <div id="results">
+      <div class="empty-state" id="empty-state">
+        <div class="icon">🧪</div>
+        <h2>Prisma ERP Test Suite</h2>
+        <p>Select test suites on the left and click <strong>Run Selected</strong> to start testing your ERPNext instance.</p>
+        <p style="margin-top:8px;font-size:12px">100+ tests across Smoke, Unit, Integration, Edge Cases, Security, Performance, and Regression categories.</p>
+      </div>
+    </div>
+
+    <div id="log"></div>
+  </main>
+</div>
+
+<script>
+// ── Configuration ──────────────────────────────────────────────────────────────
+const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+const BASE = '';  // Same origin
+
+// ── Test Definitions ───────────────────────────────────────────────────────────
+// Each test: { id, suite, name, desc, fn() → {pass, msg, ms} }
+const TESTS = [];
+
+function addTest(suite, id, name, desc, fn) {
+  TESTS.push({ suite, id, name, desc, fn });
+}
+
+// Helper: call Frappe API
+async function frappeAPI(method, params = {}) {
+  const t0 = performance.now();
+  const resp = await fetch(`/api/method/${method}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Frappe-CSRF-Token': CSRF,
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(params),
+    credentials: 'same-origin',
+  });
+  const ms = performance.now() - t0;
+  let body = null;
+  try { body = await resp.json(); } catch(e) {}
+  return { status: resp.status, body, ms };
+}
+
+async function frappeGET(path, params = {}) {
+  const t0 = performance.now();
+  const qs = new URLSearchParams(params).toString();
+  const resp = await fetch(`${path}${qs ? '?' + qs : ''}`, {
+    credentials: 'same-origin',
+    headers: { 'Accept': 'application/json' },
+  });
+  const ms = performance.now() - t0;
+  let body = null;
+  try { body = await resp.json(); } catch(e) {}
+  return { status: resp.status, body, ms };
+}
+
+// ── SMOKE TESTS ────────────────────────────────────────────────────────────────
+addTest('smoke','SMK-01','HTTP Root','GET / returns 200 or redirect', async () => {
+  const r = await frappeGET('/');
+  const ok = [200,301,302].includes(r.status);
+  return { pass: ok, ms: r.ms, msg: ok ? 'OK' : `Status: ${r.status}` };
+});
+addTest('smoke','SMK-02','API Ping','frappe.ping returns pong', async () => {
+  const r = await frappeAPI('frappe.ping');
+  const ok = r.status === 200 && r.body?.message === 'pong';
+  return { pass: ok, ms: r.ms, msg: ok ? 'pong ✓' : `Got: ${JSON.stringify(r.body).slice(0,80)}` };
+});
+addTest('smoke','SMK-03','Auth Check','Session user is Administrator', async () => {
+  const r = await frappeAPI('frappe.auth.get_logged_user');
+  const ok = r.status === 200 && r.body?.message === 'Administrator';
+  return { pass: ok, ms: r.ms, msg: ok ? 'Administrator ✓' : `Got: ${r.body?.message}` };
+});
+addTest('smoke','SMK-04','Apps List','Installed apps endpoint reachable', async () => {
+  const r = await frappeAPI('frappe.utils.change_log.get_installed_apps');
+  const ok = r.status === 200 && Array.isArray(r.body?.message);
+  return { pass: ok, ms: r.ms, msg: ok ? `${r.body.message.length} apps` : `Status: ${r.status}` };
+});
+addTest('smoke','SMK-05','prisma_assistant Installed','prisma_assistant app is in installed list', async () => {
+  const r = await frappeAPI('frappe.utils.change_log.get_installed_apps');
+  const apps = (r.body?.message || []).map(a => typeof a === 'object' ? a.name : a);
+  const ok = apps.includes('prisma_assistant');
+  return { pass: ok, ms: r.ms, msg: ok ? 'Installed ✓' : `Apps: ${apps.slice(0,6).join(', ')}` };
+});
+addTest('smoke','SMK-06','lhdn_payroll Installed','lhdn_payroll_integration is installed', async () => {
+  const r = await frappeAPI('frappe.utils.change_log.get_installed_apps');
+  const apps = (r.body?.message || []).map(a => typeof a === 'object' ? a.name : a);
+  const ok = apps.includes('lhdn_payroll_integration');
+  return { pass: ok, ms: r.ms, msg: ok ? 'Installed ✓' : `Apps: ${apps.slice(0,6).join(', ')}` };
+});
+addTest('smoke','SMK-07','desk_widget.js','Chat widget JS asset served', async () => {
+  const r = await frappeGET('/assets/prisma_assistant/js/desk_widget.js');
+  const ok = [200,304].includes(r.status);
+  return { pass: ok, ms: r.ms, msg: ok ? 'Served ✓' : `Status: ${r.status}` };
+});
+addTest('smoke','SMK-08','LHDN Workspace','LHDN Payroll workspace exists', async () => {
+  const r = await frappeGET('/api/resource/Workspace', {filters: '[["name","like","LHDN%"]]', limit: 1});
+  const ok = r.status === 200 && (r.body?.data?.length || 0) > 0;
+  return { pass: ok, ms: r.ms, msg: ok ? 'Found ✓' : 'Workspace not found' };
+});
+
+// ── UNIT: PRISMA AI ────────────────────────────────────────────────────────────
+addTest('unit_ai','PA-01','send_message 200','Valid message → HTTP 200', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message', { message: 'Reply: OK' });
+  const ok = r.status === 200;
+  return { pass: ok, ms: r.ms, msg: ok ? 'OK' : `Status: ${r.status} | ${JSON.stringify(r.body).slice(0,100)}` };
+});
+addTest('unit_ai','PA-02','Response has message key','send_message body has "message" key', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message', { message: 'Say PONG' });
+  const ok = r.status === 200 && 'message' in (r.body || {});
+  return { pass: ok, ms: r.ms, msg: ok ? 'message key ✓' : `Keys: ${Object.keys(r.body||{}).join(', ')}` };
+});
+addTest('unit_ai','PA-03','Empty message no 500','Empty string message → no 500', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message', { message: '' });
+  const ok = r.status !== 500;
+  return { pass: ok, ms: r.ms, msg: ok ? `Status: ${r.status} (acceptable)` : '500 server error!' };
+});
+addTest('unit_ai','PA-04','get_api_key_info','Key info returns 200', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.get_api_key_info');
+  const ok = r.status === 200;
+  return { pass: ok, ms: r.ms, msg: ok ? 'OK' : `Status: ${r.status}` };
+});
+addTest('unit_ai','PA-05','Key not exposed','API key not in key_info response', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.get_api_key_info');
+  const text = JSON.stringify(r.body || '');
+  const exposed = text.includes('sk-ant-api03-') || text.includes('sk-proj-');
+  return { pass: !exposed, ms: r.ms, msg: exposed ? '⚠ API key exposed in response!' : 'Key masked ✓' };
+});
+addTest('unit_ai','PA-06','Settings doctype','Prisma AI Settings accessible', async () => {
+  const r = await frappeGET('/api/resource/Prisma AI Settings/Prisma AI Settings');
+  const ok = [200,403,404].includes(r.status);
+  return { pass: ok, ms: r.ms, msg: ok ? `Status: ${r.status}` : `Unexpected: ${r.status}` };
+});
+addTest('unit_ai','PA-07','Settings not exposing key','Settings GET has no plaintext key', async () => {
+  const r = await frappeGET('/api/resource/Prisma AI Settings/Prisma AI Settings');
+  const text = JSON.stringify(r.body || '');
+  const ok = !text.includes('sk-ant-') && !text.includes('sk-proj-');
+  return { pass: ok, ms: r.ms, msg: ok ? 'Clean ✓' : '⚠ Key in settings response!' };
+});
+addTest('unit_ai','PA-08','History context','Chat preserves conversation context', async () => {
+  const history = JSON.stringify([
+    {role:'user',content:'My secret word is ULTRAVIOLET99'},
+    {role:'assistant',content:'Noted: ULTRAVIOLET99'}
+  ]);
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message',
+    { message: 'What is my secret word?', history });
+  const reply = JSON.stringify(r.body?.message || '').toLowerCase();
+  const ok = r.status === 200 && reply.includes('ultraviolet');
+  return { pass: ok, ms: r.ms, msg: ok ? 'Context used ✓' : 'Context not reflected in reply' };
+});
+addTest('unit_ai','PA-09','fallback_base_url field','Settings has fallback_base_url (v2 feature)', async () => {
+  const r = await frappeGET('/api/resource/Prisma AI Settings/Prisma AI Settings');
+  if (r.status !== 200) return { pass: null, ms: r.ms, msg: 'Skip: settings not readable' };
+  const ok = 'fallback_base_url' in (r.body?.data || {});
+  return { pass: ok, ms: r.ms, msg: ok ? 'Field present ✓' : 'fallback_base_url missing — is v2 deployed?' };
+});
+
+// ── UNIT: LHDN PAYROLL ─────────────────────────────────────────────────────────
+addTest('unit_payroll','LP-01','MSIC Code data','LHDN MSIC Code has records', async () => {
+  const r = await frappeGET('/api/resource/LHDN MSIC Code', {limit:1});
+  const ok = r.status === 200 && (r.body?.data?.length || 0) > 0;
+  return { pass: ok, ms: r.ms, msg: ok ? 'Data present ✓' : 'Empty — run sync_fixtures' };
+});
+addTest('unit_payroll','LP-02','CP21 doctype','LHDN CP21 is accessible', async () => {
+  const r = await frappeGET('/api/resource/LHDN CP21', {limit:1});
+  const ok = [200,403].includes(r.status);
+  return { pass: ok, ms: r.ms, msg: `Status: ${r.status}` };
+});
+addTest('unit_payroll','LP-03','CP22 doctype','LHDN CP22 is accessible', async () => {
+  const r = await frappeGET('/api/resource/LHDN CP22', {limit:1});
+  const ok = [200,403].includes(r.status);
+  return { pass: ok, ms: r.ms, msg: `Status: ${r.status}` };
+});
+addTest('unit_payroll','LP-04','Salary Components','EPF/SOCSO/PCB components exist', async () => {
+  const r = await frappeGET('/api/resource/Salary Component', {limit:30,fields:'["name"]'});
+  const names = (r.body?.data || []).map(d => d.name.toLowerCase());
+  const hasEPF = names.some(n => n.includes('epf'));
+  const hasSOCSO = names.some(n => n.includes('socso'));
+  const ok = hasEPF && hasSOCSO;
+  return { pass: ok, ms: r.ms, msg: ok ? 'EPF+SOCSO found ✓' : `Missing: ${!hasEPF?'EPF ':''}${!hasSOCSO?'SOCSO':''}` };
+});
+addTest('unit_payroll','LP-05','Salary Slip custom_lhdn_status','LHDN status field on Salary Slip', async () => {
+  const r = await frappeAPI('frappe.client.get', {doctype:'DocType',name:'Salary Slip'});
+  const fields = (r.body?.message?.fields || []).map(f => f.fieldname);
+  const ok = fields.some(f => f.includes('lhdn_status'));
+  return { pass: ok, ms: r.ms, msg: ok ? 'Field found ✓' : 'custom_lhdn_status missing from Salary Slip' };
+});
+addTest('unit_payroll','LP-06','PCB field on Salary Slip','PCB custom field exists', async () => {
+  const r = await frappeAPI('frappe.client.get', {doctype:'DocType',name:'Salary Slip'});
+  const fields = (r.body?.message?.fields || []).map(f => f.fieldname);
+  const ok = fields.some(f => f.includes('pcb'));
+  return { pass: ok, ms: r.ms, msg: ok ? 'PCB field ✓' : 'No PCB field on Salary Slip' };
+});
+addTest('unit_payroll','LP-07','EPF fields on Salary Slip','EPF employee + employer fields', async () => {
+  const r = await frappeAPI('frappe.client.get', {doctype:'DocType',name:'Salary Slip'});
+  const fields = (r.body?.message?.fields || []).map(f => f.fieldname);
+  const epfFields = fields.filter(f => f.includes('epf'));
+  const ok = epfFields.length >= 2;
+  return { pass: ok, ms: r.ms, msg: ok ? `${epfFields.length} EPF fields ✓` : `Only ${epfFields.length} EPF field(s)` };
+});
+addTest('unit_payroll','LP-08','Dev Tools Page','lhdn-dev-tools page reachable', async () => {
+  const r = await frappeGET('/app/lhdn-dev-tools');
+  const ok = [200,302,303].includes(r.status);
+  return { pass: ok, ms: r.ms, msg: `Status: ${r.status}` };
+});
+addTest('unit_payroll','LP-09','Resubmission Log','LHDN Resubmission Log doctype exists', async () => {
+  const r = await frappeGET('/api/resource/LHDN Resubmission Log', {limit:1});
+  const ok = [200,403].includes(r.status);
+  return { pass: ok, ms: r.ms, msg: `Status: ${r.status}` };
+});
+addTest('unit_payroll','LP-10','Company TIN field','custom_company_tin_number on Company', async () => {
+  const r = await frappeGET('/api/resource/Company', {fields:'["name","custom_company_tin_number"]',limit:1});
+  const ok = r.status === 200 && 'custom_company_tin_number' in (r.body?.data?.[0] || {});
+  return { pass: ok, ms: r.ms, msg: ok ? 'Field present ✓' : 'TIN field missing from Company' };
+});
+addTest('unit_payroll','LP-11','LHDN Payroll Module Reports','Reports visible in LHDN module', async () => {
+  const r = await frappeGET('/api/resource/Report', {
+    filters:'[["module","=","LHDN Payroll Integration"]]', limit:5, fields:'["name"]'
+  });
+  const count = r.body?.data?.length || 0;
+  const ok = count > 0;
+  return { pass: ok, ms: r.ms, msg: ok ? `${count} reports ✓` : 'No reports in LHDN module' };
+});
+
+// ── INTEGRATION ────────────────────────────────────────────────────────────────
+addTest('integration','INT-01','Employee List','GET Employee list succeeds', async () => {
+  const r = await frappeGET('/api/resource/Employee', {limit:5});
+  const ok = r.status === 200;
+  return { pass: ok, ms: r.ms, msg: ok ? `${r.body?.data?.length || 0} employees` : `Status: ${r.status}` };
+});
+addTest('integration','INT-02','Salary Slip LHDN field','Salary Slip records include custom_lhdn_status', async () => {
+  const r = await frappeGET('/api/resource/Salary Slip', {
+    limit:3, fields:'["name","custom_lhdn_status","employee"]'
+  });
+  if (!r.body?.data?.length) return { pass: null, ms: r.ms, msg: 'Skip: no Salary Slips' };
+  const ok = 'custom_lhdn_status' in r.body.data[0];
+  return { pass: ok, ms: r.ms, msg: ok ? 'Field accessible ✓' : 'custom_lhdn_status missing' };
+});
+addTest('integration','INT-03','Resubmit API','resubmit_to_lhdn method reachable', async () => {
+  const r = await frappeAPI(
+    'lhdn_payroll_integration.services.submission_service.resubmit_to_lhdn',
+    { docname: 'NONEXISTENT_TEST_9999' }
+  );
+  const ok = [200,404,422,500].includes(r.status);
+  return { pass: ok, ms: r.ms, msg: `Status: ${r.status} (method accessible)` };
+});
+addTest('integration','INT-04','Bulk Enqueue API','bulk_enqueue_lhdn_submission reachable', async () => {
+  const r = await frappeAPI(
+    'lhdn_payroll_integration.services.submission_service.bulk_enqueue_lhdn_submission',
+    { docnames: [] }
+  );
+  const ok = [200,422,500].includes(r.status);
+  return { pass: ok, ms: r.ms, msg: `Status: ${r.status}` };
+});
+addTest('integration','INT-05','AI Chat with ERP question','AI answers ERPNext question', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message',
+    { message: 'What is ERPNext? One sentence only.' });
+  const reply = String(r.body?.message || '');
+  const ok = r.status === 200 && reply.length > 5;
+  return { pass: ok, ms: r.ms, msg: ok ? `Reply: ${reply.slice(0,60)}…` : 'Empty or error reply' };
+});
+addTest('integration','INT-06','Settings R/W','Prisma AI Settings reads consistently', async () => {
+  const r1 = await frappeGET('/api/resource/Prisma AI Settings/Prisma AI Settings');
+  const r2 = await frappeGET('/api/resource/Prisma AI Settings/Prisma AI Settings');
+  if (r1.status !== 200) return { pass: null, ms: r1.ms, msg: 'Skip: settings not readable' };
+  const ok = r1.body?.data?.name === r2.body?.data?.name;
+  return { pass: ok, ms: r2.ms, msg: ok ? 'Consistent ✓' : 'Settings changed between reads!' };
+});
+
+// ── EDGE CASES ─────────────────────────────────────────────────────────────────
+addTest('edge_cases','EC-01','10k char message','Very long message no 500', async () => {
+  const msg = 'word '.repeat(2000);
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message', { message: msg });
+  return { pass: r.status !== 500, ms: r.ms, msg: r.status !== 500 ? `Status: ${r.status}` : '500!' };
+});
+addTest('edge_cases','EC-02','SQL injection in filter','SQL payload safe in filter', async () => {
+  const r = await frappeGET('/api/resource/Salary Slip',
+    { filters: '[["name","like","\';\\ DROP TABLE--"]]', limit: 1 });
+  return { pass: r.status !== 500, ms: r.ms, msg: r.status !== 500 ? 'Safe ✓' : '500 on SQL payload!' };
+});
+addTest('edge_cases','EC-03','XSS in chat','XSS payload no 500', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message',
+    { message: "<script>alert('xss')</script>" });
+  return { pass: r.status !== 500, ms: r.ms, msg: r.status !== 500 ? 'Safe ✓' : '500!' };
+});
+addTest('edge_cases','EC-04','Unicode message','Arabic/CJK/emoji message no 500', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message',
+    { message: 'مرحبا 你好 こんにちは 🤖' });
+  return { pass: r.status !== 500, ms: r.ms, msg: r.status !== 500 ? `Status: ${r.status}` : '500!' };
+});
+addTest('edge_cases','EC-05','Null message field','Null message no 500', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message', { message: null });
+  return { pass: r.status !== 500, ms: r.ms, msg: r.status !== 500 ? `Status: ${r.status}` : '500!' };
+});
+addTest('edge_cases','EC-06','Future date filter','Report with year=2099 no crash', async () => {
+  const r = await frappeAPI('frappe.desk.query_report.run',
+    { report_name: 'LHDN Monthly Summary', filters: { year: '2099' } });
+  return { pass: r.status !== 500, ms: r.ms, msg: `Status: ${r.status}` };
+});
+addTest('edge_cases','EC-07','Max limit param','limit=99999 no crash', async () => {
+  const r = await frappeGET('/api/resource/Salary Component', { limit: 99999 });
+  return { pass: r.status !== 500, ms: r.ms, msg: r.status !== 500 ? 'Handled ✓' : '500!' };
+});
+addTest('edge_cases','EC-08','Nonexistent Employee','GET nonexistent employee → 404 not 500', async () => {
+  const r = await frappeGET('/api/resource/Employee/EMP-NONEXISTENT-99999');
+  return { pass: r.status !== 500, ms: r.ms, msg: `Status: ${r.status}` };
+});
+
+// ── SECURITY ───────────────────────────────────────────────────────────────────
+addTest('security','SEC-01','API key not in chat response','Chat response has no raw key', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message', { message: 'Say hello' });
+  const text = JSON.stringify(r.body || '');
+  const ok = !text.includes('sk-ant-') && !text.includes('sk-proj-');
+  return { pass: ok, ms: r.ms, msg: ok ? 'Clean ✓' : '⚠ API key in chat response!' };
+});
+addTest('security','SEC-02','Password not in User GET','User record has no password field', async () => {
+  const r = await frappeGET('/api/resource/User/Administrator');
+  const ok = r.status !== 200 || !JSON.stringify(r.body).includes('"password"');
+  return { pass: ok, ms: r.ms, msg: ok ? 'No password exposed ✓' : '⚠ Password in User response!' };
+});
+addTest('security','SEC-03','Path traversal blocked','../etc/passwd → not 200', async () => {
+  const r = await frappeGET('/api/resource/../../../etc/passwd');
+  return { pass: r.status !== 200, ms: r.ms, msg: r.status !== 200 ? `Blocked (${r.status}) ✓` : '⚠ 200 returned!' };
+});
+addTest('security','SEC-04','CSRF token not in error body','CSRF token not leaked in errors', async () => {
+  const r = await frappeAPI('frappe.auth.get_logged_user', { invalid: 'x' });
+  const body_text = JSON.stringify(r.body || '');
+  const csrfLen = CSRF.length;
+  const ok = csrfLen < 8 || !body_text.includes(CSRF);
+  return { pass: ok, ms: r.ms, msg: ok ? 'CSRF not leaked ✓' : '⚠ CSRF token in response!' };
+});
+addTest('security','SEC-05','Settings key masked','Prisma AI Settings no plaintext key', async () => {
+  const r = await frappeGET('/api/resource/Prisma AI Settings/Prisma AI Settings');
+  const text = JSON.stringify(r.body || '');
+  const ok = !text.includes('sk-ant-api03-') && !text.includes('sk-proj-');
+  return { pass: ok, ms: r.ms, msg: ok ? 'Key masked ✓' : '⚠ Key in settings!' };
+});
+
+// ── PERFORMANCE ────────────────────────────────────────────────────────────────
+addTest('performance','PF-01','Ping < 500ms','frappe.ping under 500ms', async () => {
+  const r = await frappeAPI('frappe.ping');
+  const ok = r.ms < 500;
+  return { pass: ok, ms: r.ms, msg: ok ? `${r.ms.toFixed(0)} ms ✓` : `${r.ms.toFixed(0)} ms > 500ms` };
+});
+addTest('performance','PF-02','Auth < 1s','get_logged_user under 1000ms', async () => {
+  const r = await frappeAPI('frappe.auth.get_logged_user');
+  const ok = r.ms < 1000;
+  return { pass: ok, ms: r.ms, msg: ok ? `${r.ms.toFixed(0)} ms ✓` : `${r.ms.toFixed(0)} ms > 1s` };
+});
+addTest('performance','PF-03','Employee List < 2s','Employee list under 2000ms', async () => {
+  const r = await frappeGET('/api/resource/Employee', { limit: 10 });
+  const ok = r.ms < 2000;
+  return { pass: ok, ms: r.ms, msg: ok ? `${r.ms.toFixed(0)} ms ✓` : `${r.ms.toFixed(0)} ms > 2s` };
+});
+addTest('performance','PF-04','MSIC Code List < 2s','MSIC Code list under 2000ms', async () => {
+  const r = await frappeGET('/api/resource/LHDN MSIC Code', { limit: 50 });
+  const ok = r.ms < 2000;
+  return { pass: ok, ms: r.ms, msg: ok ? `${r.ms.toFixed(0)} ms ✓` : `${r.ms.toFixed(0)} ms > 2s` };
+});
+addTest('performance','PF-05','Settings Read < 500ms','Prisma AI Settings read under 500ms', async () => {
+  const r = await frappeGET('/api/resource/Prisma AI Settings/Prisma AI Settings');
+  const ok = r.ms < 500;
+  return { pass: ok, ms: r.ms, msg: `${r.ms.toFixed(0)} ms` };
+});
+addTest('performance','PF-06','5 Sequential Pings','5 pings all < 1s', async () => {
+  let times = [], start = performance.now();
+  for (let i = 0; i < 5; i++) {
+    const r = await frappeAPI('frappe.ping');
+    times.push(r.ms);
+  }
+  const max = Math.max(...times);
+  const ok = max < 1000;
+  return { pass: ok, ms: performance.now()-start, msg: ok ? `max ${max.toFixed(0)}ms ✓` : `max ${max.toFixed(0)}ms > 1s` };
+});
+
+// ── API CONTRACT ───────────────────────────────────────────────────────────────
+addTest('api_contract','AC-01','Ping schema','{message:"pong"} shape', async () => {
+  const r = await frappeAPI('frappe.ping');
+  const ok = r.status === 200 && r.body?.message === 'pong';
+  return { pass: ok, ms: r.ms, msg: ok ? 'Schema ✓' : `Got: ${JSON.stringify(r.body).slice(0,80)}` };
+});
+addTest('api_contract','AC-02','Resource list {data:[]}','Employee list returns {data: Array}', async () => {
+  const r = await frappeGET('/api/resource/Employee', { limit: 1 });
+  const ok = r.status === 200 && Array.isArray(r.body?.data);
+  return { pass: ok, ms: r.ms, msg: ok ? 'Shape ✓' : `data type: ${typeof r.body?.data}` };
+});
+addTest('api_contract','AC-03','Single resource {data:{}}','User/Admin returns {data: Object}', async () => {
+  const r = await frappeGET('/api/resource/User/Administrator');
+  const ok = r.status === 200 && typeof r.body?.data === 'object' && !Array.isArray(r.body.data);
+  return { pass: ok, ms: r.ms, msg: ok ? 'Shape ✓' : `data type: ${typeof r.body?.data}` };
+});
+addTest('api_contract','AC-04','send_message has message key','Top-level message key required', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message', { message: 'Hi' });
+  const ok = r.status === 200 && 'message' in (r.body || {});
+  return { pass: ok, ms: r.ms, msg: ok ? 'Contract ✓' : `Keys: ${Object.keys(r.body||{})}` };
+});
+addTest('api_contract','AC-05','MSIC Code fields','name field in MSIC records', async () => {
+  const r = await frappeGET('/api/resource/LHDN MSIC Code', { limit: 1 });
+  const rec = r.body?.data?.[0] || null;
+  if (!rec) return { pass: null, ms: r.ms, msg: 'Skip: no records' };
+  const ok = 'name' in rec;
+  return { pass: ok, ms: r.ms, msg: ok ? 'name ✓' : `Keys: ${Object.keys(rec)}` };
+});
+addTest('api_contract','AC-06','Workspace has name','Workspace records have name field', async () => {
+  const r = await frappeGET('/api/resource/Workspace', { limit: 2 });
+  const data = r.body?.data || [];
+  const ok = data.every(d => 'name' in d);
+  return { pass: ok, ms: r.ms, msg: ok ? 'name field ✓' : 'Missing name in workspace records' };
+});
+addTest('api_contract','AC-07','Company TIN field in response','Company response includes custom TIN', async () => {
+  const r = await frappeGET('/api/resource/Company', {
+    fields: '["name","custom_company_tin_number"]', limit: 1
+  });
+  const rec = r.body?.data?.[0] || null;
+  if (!rec) return { pass: null, ms: r.ms, msg: 'Skip: no companies' };
+  const ok = 'custom_company_tin_number' in rec;
+  return { pass: ok, ms: r.ms, msg: ok ? 'TIN field ✓' : `Keys: ${Object.keys(rec).slice(0,8)}` };
+});
+
+// ── REGRESSION ─────────────────────────────────────────────────────────────────
+addTest('regression','REG-01','desk_widget.js served','Asset in frontend container', async () => {
+  const r = await frappeGET('/assets/prisma_assistant/js/desk_widget.js');
+  return { pass: [200,304].includes(r.status), ms: r.ms, msg: `Status: ${r.status}` };
+});
+addTest('regression','REG-02','desk_widget.css served','CSS asset served', async () => {
+  const r = await frappeGET('/assets/prisma_assistant/css/desk_widget.css');
+  return { pass: [200,304].includes(r.status), ms: r.ms, msg: `Status: ${r.status}` };
+});
+addTest('regression','REG-03','Chat no 500 on missing key','No 500 when key unconfigured', async () => {
+  const r = await frappeAPI('prisma_assistant.api.chat.send_message', { message: 'ping' });
+  return { pass: r.status !== 500, ms: r.ms, msg: r.status !== 500 ? 'Graceful ✓' : '500!' };
+});
+addTest('regression','REG-04','fallback_base_url in Settings','v2 field present', async () => {
+  const r = await frappeGET('/api/resource/Prisma AI Settings/Prisma AI Settings');
+  if (r.status !== 200) return { pass: null, ms: r.ms, msg: 'Skip' };
+  const ok = 'fallback_base_url' in (r.body?.data || {});
+  return { pass: ok, ms: r.ms, msg: ok ? 'Field ✓' : 'fallback_base_url missing' };
+});
+addTest('regression','REG-05','nginx not 502','nginx healthy after restart', async () => {
+  const r = await frappeAPI('frappe.ping');
+  return { pass: r.status === 200, ms: r.ms, msg: r.status === 200 ? 'OK ✓' : `Status: ${r.status} — restart frontend?` };
+});
+addTest('regression','REG-06','MSIC fixtures loaded','Fixture data present', async () => {
+  const r = await frappeGET('/api/resource/LHDN MSIC Code', { limit: 1 });
+  const ok = r.status === 200 && (r.body?.data?.length || 0) > 0;
+  return { pass: ok, ms: r.ms, msg: ok ? 'Loaded ✓' : 'Empty — run sync_fixtures' };
+});
+addTest('regression','REG-07','LHDN Workspace exists','Workspace fixture deployed', async () => {
+  const r = await frappeGET('/api/resource/Workspace', {
+    filters: '[["name","like","LHDN%"]]', limit: 1
+  });
+  const ok = r.status === 200 && (r.body?.data?.length || 0) > 0;
+  return { pass: ok, ms: r.ms, msg: ok ? 'Workspace found ✓' : 'Missing — deploy workspace fixture' };
+});
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let results = {};   // id → {status, ms, msg}
+let running = false;
+let stopFlag = false;
+let logVisible = false;
+
+const SUITE_MAP = {
+  smoke: TESTS.filter(t=>t.suite==='smoke'),
+  unit_ai: TESTS.filter(t=>t.suite==='unit_ai'),
+  unit_payroll: TESTS.filter(t=>t.suite==='unit_payroll'),
+  api_contract: TESTS.filter(t=>t.suite==='api_contract'),
+  regression: TESTS.filter(t=>t.suite==='regression'),
+  integration: TESTS.filter(t=>t.suite==='integration'),
+  edge_cases: TESTS.filter(t=>t.suite==='edge_cases'),
+  security: TESTS.filter(t=>t.suite==='security'),
+  performance: TESTS.filter(t=>t.suite==='performance'),
+};
+
+// ── Suite sidebar init ─────────────────────────────────────────────────────────
+const suiteMeta = JSON.parse(document.getElementById('suite-data').textContent);
+const sidebarList = document.getElementById('suite-list');
+suiteMeta.forEach(s => {
+  const count = (SUITE_MAP[s.id] || []).length;
+  const el = document.createElement('div');
+  el.className = 'suite-item';
+  el.id = `suite-item-${s.id}`;
+  el.innerHTML = `
+    <input type="checkbox" id="chk-${s.id}" checked onchange="onSuiteCheck()">
+    <div class="suite-label">
+      <div class="name" style="color:${s.color}">${s.name}</div>
+      <div class="desc">${s.desc}</div>
+    </div>
+    <span class="suite-badge" id="badge-${s.id}">${count}</span>`;
+  sidebarList.appendChild(el);
+});
+document.getElementById('badge-all').textContent = TESTS.length;
+
+// ── Log ────────────────────────────────────────────────────────────────────────
+function log(msg, type='info') {
+  const el = document.getElementById('log');
+  const ts = new Date().toLocaleTimeString();
+  const cls = {ok:'log-ok',fail:'log-fail',warn:'log-warn',info:'log-info'}[type]||'';
+  el.innerHTML += `<div class="${cls}">[${ts}] ${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+function toggleLog() {
+  const el = document.getElementById('log');
+  logVisible = !logVisible;
+  el.classList.toggle('visible', logVisible);
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────────
+function getSelectedSuites() {
+  return suiteMeta.map(s=>s.id).filter(id => document.getElementById(`chk-${id}`)?.checked);
+}
+
+function renderResults() {
+  const sel = getSelectedSuites();
+  const tests = TESTS.filter(t => sel.includes(t.suite));
+
+  const el = document.getElementById('results');
+  if (!Object.keys(results).length && !running) {
+    el.innerHTML = `<div class="empty-state" id="empty-state">
+      <div class="icon">🧪</div><h2>Prisma ERP Test Suite</h2>
+      <p>Select suites and click <strong>Run Selected</strong> or <strong>Run All</strong>.</p>
+      <p style="margin-top:8px;font-size:12px">${TESTS.length} tests across ${suiteMeta.length} categories.</p>
+    </div>`;
+    return;
+  }
+
+  // Group by suite
+  const bySuite = {};
+  tests.forEach(t => { (bySuite[t.suite] = bySuite[t.suite]||[]).push(t); });
+
+  let html = '';
+  for (const suiteId of sel) {
+    const suiteTests = bySuite[suiteId] || [];
+    if (!suiteTests.length) continue;
+    const s = suiteMeta.find(m=>m.id===suiteId);
+    const passed = suiteTests.filter(t => results[t.id]?.status==='pass').length;
+    const total = suiteTests.length;
+    html += `<div class="category-group">
+      <div class="category-header">
+        <h3 style="color:${s?.color||'var(--muted)'}">${s?.name||suiteId}</h3>
+        <span class="category-stat">${passed}/${total}</span>
+      </div>`;
+    suiteTests.forEach(t => {
+      const r = results[t.id];
+      const status = r?.status || (running ? 'pending' : 'pending');
+      const icon = {pass:'✓',fail:'✗',error:'⚠',skip:'⊘',running:'⟳',pending:'·'}[status]||'·';
+      const iconStyle = {pass:'color:var(--green)',fail:'color:var(--red)',error:'color:var(--orange)',
+                         skip:'color:var(--muted)',running:'color:var(--blue)',pending:'color:var(--border)'}[status]||'';
+      const statusCls = `status-${status}`;
+      const ms = r?.ms ? `${r.ms.toFixed(0)} ms` : '—';
+      const hasDetail = r?.msg || t.desc;
+      const errorHtml = r?.error ? `<div class="test-error">${escHtml(r.error)}</div>` : '';
+      html += `<div class="test-row" id="row-${t.id}">
+        <div class="test-row-header" onclick="toggleDetail('${t.id}')">
+          <span class="test-icon" style="${iconStyle}">${status==='running'?'<span class="spin">⟳</span>':icon}</span>
+          <span class="test-name">${escHtml(t.name)}</span>
+          <span class="test-id">${t.id}</span>
+          <span class="test-ms">${ms}</span>
+          <span class="test-status ${statusCls}">${status.toUpperCase()}</span>
+        </div>
+        <div class="test-detail" id="detail-${t.id}">
+          <div class="test-desc">${escHtml(t.desc)}</div>
+          ${r?.msg ? `<div style="font-size:12px;color:var(--text);margin-top:4px">${escHtml(r.msg)}</div>` : ''}
+          ${errorHtml}
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  el.innerHTML = html;
+  updateStats();
+}
+
+function toggleDetail(id) {
+  document.getElementById(`detail-${id}`)?.classList.toggle('open');
+}
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function updateStats() {
+  const all = Object.values(results);
+  const pass = all.filter(r=>r.status==='pass').length;
+  const fail = all.filter(r=>r.status==='fail').length;
+  const err = all.filter(r=>r.status==='error').length;
+  const skip = all.filter(r=>r.status==='skip').length;
+  const total = all.length;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-pass').textContent = pass;
+  document.getElementById('stat-fail').textContent = fail;
+  document.getElementById('stat-error').textContent = err;
+  document.getElementById('stat-skip').textContent = skip;
+
+  const rate = total ? Math.round((pass/total)*100) : 0;
+  const rateEl = document.getElementById('pass-rate-display');
+  rateEl.textContent = total ? `${rate}%` : '';
+  rateEl.style.color = (fail+err)===0 ? 'var(--green)' : 'var(--red)';
+
+  // Update sidebar badges
+  suiteMeta.forEach(s => {
+    const suiteResults = TESTS.filter(t=>t.suite===s.id).map(t=>results[t.id]).filter(Boolean);
+    const badgeEl = document.getElementById(`badge-${s.id}`);
+    if (!badgeEl) return;
+    const p = suiteResults.filter(r=>r.status==='pass').length;
+    const f = suiteResults.filter(r=>['fail','error'].includes(r.status)).length;
+    badgeEl.textContent = `${p}/${SUITE_MAP[s.id].length}`;
+    badgeEl.className = 'suite-badge' + (f>0?' fail':p>0?' pass':'');
+  });
+}
+
+// ── Run engine ─────────────────────────────────────────────────────────────────
+function toggleAllSuites(checked) {
+  suiteMeta.forEach(s => { const el = document.getElementById(`chk-${s.id}`); if(el) el.checked = checked; });
+}
+function onSuiteCheck() {
+  const allChecked = suiteMeta.every(s => document.getElementById(`chk-${s.id}`)?.checked);
+  document.getElementById('chk-all').checked = allChecked;
+}
+
+async function runAll() {
+  suiteMeta.forEach(s => { const el = document.getElementById(`chk-${s.id}`); if(el) el.checked = true; });
+  document.getElementById('chk-all').checked = true;
+  await runSelected();
+}
+
+async function runSelected() {
+  if (running) return;
+  const sel = getSelectedSuites();
+  const tests = TESTS.filter(t => sel.includes(t.suite));
+  if (!tests.length) { alert('No suites selected!'); return; }
+
+  running = true; stopFlag = false;
+  results = {};
+  document.getElementById('stats-bar').style.display = 'flex';
+  document.getElementById('progress-bar-wrap').style.display = 'block';
+  document.getElementById('btn-run').disabled = true;
+  document.getElementById('btn-stop').style.display = '';
+  document.getElementById('btn-export').disabled = true;
+  document.getElementById('log').classList.add('visible');
+  logVisible = true;
+
+  log(`Starting ${tests.length} tests across ${sel.length} suites…`, 'info');
+
+  let done = 0;
+  for (const t of tests) {
+    if (stopFlag) { log('Run stopped by user', 'warn'); break; }
+
+    results[t.id] = { status: 'running', ms: 0, msg: '' };
+    document.getElementById(`row-${t.id}`)?.querySelector('.test-row-header')?.click();
+    renderResults();
+    document.getElementById('run-status').textContent = `Running: ${t.name} (${done+1}/${tests.length})`;
+
+    try {
+      const res = await t.fn();
+      let status = 'pass';
+      if (res.pass === false) status = 'fail';
+      else if (res.pass === null) status = 'skip';
+      results[t.id] = { status, ms: res.ms || 0, msg: res.msg || '' };
+      log(`[${status.toUpperCase()}] ${t.id} ${t.name} ${res.ms ? `(${res.ms.toFixed(0)}ms)` : ''} — ${res.msg}`, status==='pass'?'ok':'fail');
+    } catch(e) {
+      results[t.id] = { status: 'error', ms: 0, msg: e.message, error: e.stack };
+      log(`[ERROR] ${t.id}: ${e.message}`, 'fail');
+    }
+    done++;
+    document.getElementById('progress-bar').style.width = `${(done/tests.length)*100}%`;
+    renderResults();
+  }
+
+  running = false;
+  const pass = Object.values(results).filter(r=>r.status==='pass').length;
+  const fail = Object.values(results).filter(r=>['fail','error'].includes(r.status)).length;
+  document.getElementById('run-status').textContent = `Done: ${pass} passed, ${fail} failed`;
+  document.getElementById('btn-run').disabled = false;
+  document.getElementById('btn-stop').style.display = 'none';
+  document.getElementById('btn-export').disabled = false;
+  log(`Finished: ${pass} pass, ${fail} fail, ${done} total`, fail===0?'ok':'warn');
+}
+
+function stopRun() { stopFlag = true; }
+
+function clearResults() {
+  results = {};
+  document.getElementById('stats-bar').style.display = 'none';
+  document.getElementById('progress-bar-wrap').style.display = 'none';
+  document.getElementById('btn-export').disabled = true;
+  renderResults();
+}
+
+function exportReport() {
+  const report = {
+    generated_at: new Date().toISOString(),
+    site: '{{ site_name }}',
+    suite: 'Prisma ERP Test Suite',
+    summary: {
+      total: Object.keys(results).length,
+      passed: Object.values(results).filter(r=>r.status==='pass').length,
+      failed: Object.values(results).filter(r=>r.status==='fail').length,
+      errored: Object.values(results).filter(r=>r.status==='error').length,
+      skipped: Object.values(results).filter(r=>r.status==='skip').length,
+    },
+    results: TESTS.filter(t => results[t.id]).map(t => ({
+      id: t.id, suite: t.suite, name: t.name, desc: t.desc, ...results[t.id]
+    })),
+  };
+  report.summary.pass_rate = report.summary.total
+    ? `${(report.summary.passed/report.summary.total*100).toFixed(1)}%` : 'N/A';
+
+  const blob = new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `prisma-erp-tests-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Init
+renderResults();
+</script>
+</body>
+</html>
