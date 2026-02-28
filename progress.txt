@@ -4438,3 +4438,38 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 ### Patterns
 - ALWAYS use `datetime.date.today()` instead of `frappe.utils.getdate()` in functions that need to be mockable in tests
 - The broad `except Exception: pass` antipattern hides bugs — when tests fail with unexpected 0/None, check if exceptions are being swallowed
+## Iteration 6 - Sat, Feb 28, 2026  3:18:25 PM
+Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (ID: US-097) — attempt 1/3
+
+
+## Iteration N — US-055: Fix CP39 CSV Format – Add All Mandatory LHDN e-PCB Plus Columns
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cp39_pcb_remittance`
+**Result:** PASS — 17 tests run, 12 pass, 5 skipped (no 2024-01 data), 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/report/cp39_pcb_remittance/cp39_pcb_remittance.py` — Rebuilt with mandatory e-PCB Plus columns
+- `lhdn_payroll_integration/tests/test_cp39_pcb_remittance.py` — New test file (17 tests)
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added custom_employer_e_number to Company
+
+### Changes to cp39_pcb_remittance.py
+- Reordered columns to match LHDN e-PCB Plus mandatory order
+- Added employer_e_number column (from Company.custom_employer_e_number)
+- Added month_year column (DATE_FORMAT MM/YYYY replacing Period string)
+- Added epf_employee column (conditional SUM from Salary Detail where component='EPF')
+- Renamed gross_salary → gross_remuneration, pcb_amount → total_pcb
+- Used conditional aggregation (CASE WHEN) to get both PCB and EPF in single query
+- Added get_csv_data() function returning UTF-8 CSV with amounts formatted to 2 d.p.
+
+### Patterns discovered
+- CRITICAL: Always deploy to BOTH paths:
+  - apps/lhdn_payroll_integration/lhdn_payroll_integration/report/ (outer)
+  - apps/lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/ (nested, where Python resolves)
+- Conditional SQL aggregation: SUM(CASE WHEN sc.custom_is_pcb_component=1 THEN sd.amount ELSE 0 END) gets multiple component totals in one pass
+- bench migrate applies custom_field.json fixture changes (custom_employer_e_number now exists on Company)
+- Date format: DATE_FORMAT(ss.start_date, '%%m/%%Y') for MM/YYYY (double-% for Python string formatting)
+
+### Gotchas
+- frappe.modules.utils.sync_fixtures and frappe.custom.fixtures.sync_fixtures don't exist — use bench migrate to apply fixtures

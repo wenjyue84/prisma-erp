@@ -585,6 +585,17 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Company-custom_employer_e_number",
+    "dt": "Company",
+    "fieldname": "custom_employer_e_number",
+    "fieldtype": "Data",
+    "label": "Employer E-Number (LHDN)",
+    "description": "LHDN employer reference number (No. Majikan), used in CP39/Borang E submissions",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_postcode"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Salary Slip-custom_lhdn_raw_document",
     "dt": "Salary Slip",
     "fieldname": "custom_lhdn_raw_document",
