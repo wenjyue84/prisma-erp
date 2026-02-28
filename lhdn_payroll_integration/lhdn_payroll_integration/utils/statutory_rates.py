@@ -4,9 +4,11 @@ Centralised module for all statutory contribution rate logic:
 - EPF (KWSP) employer contribution rates (EPF Contribution Rate Revision 2022)
 - SOCSO (PERKESO) First Schedule bracketed table (US-074)
 - EIS (SIP) contribution rules (US-075)
+- Age-based statutory rate transitions at age 60 (US-076)
 
 All rates are correct as of 2024 amendments.
 """
+import frappe
 from frappe.utils import flt
 
 # ---------------------------------------------------------------------------
@@ -17,6 +19,11 @@ from frappe.utils import flt
 EPF_EMPLOYER_RATE_HIGH = 0.13   # 13% for monthly gross salary <= RM5,000
 EPF_EMPLOYER_RATE_LOW = 0.12    # 12% for monthly gross salary > RM5,000
 EPF_LOWER_SALARY_THRESHOLD = 5000.0  # RM5,000 threshold
+
+# Age 60+ rates — EPF Act 1991 Third Schedule
+EPF_OVER_60_EMPLOYEE_RATE = 0.055   # 5.5% statutory (or 0% minimum elected)
+EPF_OVER_60_EMPLOYER_RATE = 0.04    # 4% for employees aged 60+
+EPF_STANDARD_EMPLOYEE_RATE = 0.11   # 11% standard rate for age < 60
 
 
 def calculate_epf_employer_rate(monthly_gross):
@@ -36,6 +43,64 @@ def calculate_epf_employer_rate(monthly_gross):
     if gross <= EPF_LOWER_SALARY_THRESHOLD:
         return EPF_EMPLOYER_RATE_HIGH
     return EPF_EMPLOYER_RATE_LOW
+
+
+def get_statutory_rates_for_employee(employee_name, payroll_date):
+    """Return EPF/SOCSO/EIS statutory rates for an employee based on age at payroll_date.
+
+    At age 60, statutory contribution rules change (EPF Act 1991 Third Schedule;
+    SOCSO Act 1969; EIS Act 2017):
+    - EPF employee rate: 5.5% (or 0% if minimum elected); employer: 4%
+    - SOCSO: no longer covered
+    - EIS: no longer covered
+
+    Args:
+        employee_name: str, Frappe Employee docname.
+        payroll_date: datetime.date, payroll processing date.
+
+    Returns:
+        dict with keys:
+            epf_employee_rate (float),
+            epf_employer_rate (float or None for < 60 — use calculate_epf_employer_rate()),
+            socso_covered (bool),
+            eis_covered (bool),
+            age (int),
+            over_60 (bool).
+    """
+    from datetime import date as _date
+
+    emp = frappe.get_doc("Employee", employee_name)
+    dob = emp.date_of_birth
+
+    # Normalise to date object (Frappe may return a string)
+    if isinstance(dob, str):
+        from frappe.utils import getdate
+        dob = getdate(dob)
+
+    ref_date = payroll_date or _date.today()
+    # Use calendar-based age to handle leap years correctly
+    age = ref_date.year - dob.year - (
+        (ref_date.month, ref_date.day) < (dob.month, dob.day)
+    )
+
+    if age >= 60:
+        return {
+            "epf_employee_rate": EPF_OVER_60_EMPLOYEE_RATE,
+            "epf_employer_rate": EPF_OVER_60_EMPLOYER_RATE,
+            "socso_covered": False,
+            "eis_covered": False,
+            "age": age,
+            "over_60": True,
+        }
+
+    return {
+        "epf_employee_rate": EPF_STANDARD_EMPLOYEE_RATE,
+        "epf_employer_rate": None,  # salary-dependent — call calculate_epf_employer_rate()
+        "socso_covered": True,
+        "eis_covered": True,
+        "age": age,
+        "over_60": False,
+    }
 
 
 # ---------------------------------------------------------------------------

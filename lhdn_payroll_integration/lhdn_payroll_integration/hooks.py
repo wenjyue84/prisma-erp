@@ -29,6 +29,7 @@ doc_events = {
 		"on_cancel": "lhdn_payroll_integration.services.cancellation_service.handle_salary_slip_cancel",
 		"before_amend": "lhdn_payroll_integration.services.retention_service.check_retention_lock",
 		"validate": "lhdn_payroll_integration.services.cp107_service.check_salary_slip_cp107_warning",
+		"before_submit": "lhdn_payroll_integration.services.age_checker_service.validate_statutory_rates_before_submit",
 	},
 	"Expense Claim": {
 		"on_submit": "lhdn_payroll_integration.services.submission_service.enqueue_expense_claim_submission",
@@ -54,6 +55,7 @@ scheduler_events = {
 		"lhdn_payroll_integration.services.socso_service.check_overdue_socso_borang3",
 		"lhdn_payroll_integration.services.socso_service.check_overdue_socso_borang4",
 		"lhdn_payroll_integration.services.fw_levy_service.check_overdue_fw_levy",
+		"lhdn_payroll_integration.services.age_checker_service.check_approaching_age_60",
 	],
 	"monthly": [
 		"lhdn_payroll_integration.services.consolidation_service.run_monthly_consolidation",

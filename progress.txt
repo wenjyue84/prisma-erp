@@ -5100,3 +5100,30 @@ Completed: Implement Foreign Worker Levy Tracking (FWCMS / Multi-Tier Levy Model
 
 ### Gotchas
 - deploy service to BOTH paths: outer (lhdn_payroll_integration/services/) AND nested (lhdn_payroll_integration/lhdn_payroll_integration/services/) — tests import from nested path
+## Iteration 28 - Sat, Feb 28, 2026  6:56:53 PM
+Completed: Implement Payroll Bank Disbursement File Generator (Maybank + CIMB + DuitNow) (ID: US-071) in 12m
+
+
+## Iteration N — US-076: Implement Age-Based EPF/SOCSO/EIS Statutory Rate Transitions at Age 60
+
+**Type:** IMPL
+**TDD Phase:** GREEN (19/19 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_age_based_statutory`
+**Result:** PASS — 19 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/statutory_rates.py` — Added EPF_OVER_60_EMPLOYEE_RATE=0.055, EPF_OVER_60_EMPLOYER_RATE=0.04, EPF_STANDARD_EMPLOYEE_RATE=0.11; added get_statutory_rates_for_employee(employee_name, payroll_date)
+- `lhdn_payroll_integration/services/age_checker_service.py` — New: validate_statutory_rates_before_submit (before_submit hook) + check_approaching_age_60 (daily scheduler)
+- `lhdn_payroll_integration/hooks.py` — Added before_submit to Salary Slip, added daily scheduler check_approaching_age_60
+- `lhdn_payroll_integration/tests/test_age_based_statutory.py` — New: 19 tests across 4 classes (TestAge60RateConstants, TestGetStatutoryRatesForEmployee, TestSalarySlipAgeValidation, TestCheckApproachingAge60)
+
+### Patterns discovered
+- CRITICAL: Use `import frappe` at MODULE LEVEL in utility modules (not inside functions). `@patch("...module.frappe")` only works if `frappe` is an attribute of the module namespace (module-level import). Local imports inside functions are NOT patchable via the module's namespace.
+- CRITICAL: Import dependencies used in tests at MODULE LEVEL in service files (e.g., `get_statutory_rates_for_employee`). Functions imported inside try blocks cannot be patched with `@patch("...service.func")`.
+- CRITICAL: Use calendar-based age calc `ref_date.year - dob.year - ((ref_date.month, ref_date.day) < (dob.month, dob.day))` instead of `(ref_date - dob).days // 365`. The days // 365 formula can give age=60 one day before the 60th birthday due to leap years (60 years * 365 days + 15 leap days = 21915; from 1965-06-16 to 2025-06-15 = 21914 days; 21914 // 365 = 60 — wrong!).
+- frappe.get_all() returns frappe._dict objects in production. In tests with mocked frappe, plain dicts are returned. Use `emp.get("key")` or `emp["key"]` dict-style access (works for both), not `emp.key` attribute access (fails for plain dicts).
+- Daily scheduler ToDo dedup pattern: check for existing open ToDo with same reference_name and description LIKE "%keyword%" before creating a new one.
+
+### Gotchas
+- The `before_submit` hook wraps everything in try/except and logs errors via frappe.log_error to NEVER block submission (regulatory warning only, not an enforcement).
+- Two paths must always be updated: `.../lhdn_payroll_integration/lhdn_payroll_integration/services/` AND `.../lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/services/` — use `docker exec -u root cp` for the deeply nested path.
