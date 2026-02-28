@@ -77,11 +77,16 @@ def _get_settings() -> dict:
             "provider": doc.get("provider") or "",
             "api_key": doc.get_password("api_key") if doc.get("api_key") else "",
             "model": doc.get("model") or "",
+            "base_url": doc.get("base_url") or "",
+            "system_prompt": doc.get("system_prompt") or "",
+            "fallback_provider": doc.get("fallback_provider") or "",
             "fallback_model": doc.get("fallback_model") or "",
             "fallback_api_key": doc.get_password("fallback_api_key") if doc.get("fallback_api_key") else "",
-            "base_url": doc.get("base_url") or "",
             "fallback_base_url": doc.get("fallback_base_url") or "",
-            "system_prompt": doc.get("system_prompt") or "",
+            "fallback2_provider": doc.get("fallback2_provider") or "",
+            "fallback2_model": doc.get("fallback2_model") or "",
+            "fallback2_api_key": doc.get_password("fallback2_api_key") if doc.get("fallback2_api_key") else "",
+            "fallback2_base_url": doc.get("fallback2_base_url") or "",
         }
     except Exception:  # noqa: BLE001
         pass  # DocType may not exist yet — use frappe.conf only
@@ -90,11 +95,16 @@ def _get_settings() -> dict:
         "provider": (doc_settings.get("provider") or frappe.conf.get("ai_chat_provider") or "anthropic").lower(),
         "api_key": doc_settings.get("api_key") or frappe.conf.get("ai_chat_api_key") or "",
         "model": doc_settings.get("model") or frappe.conf.get("ai_chat_model") or "",
+        "base_url": doc_settings.get("base_url") or frappe.conf.get("ai_chat_base_url") or "",
+        "system_prompt": doc_settings.get("system_prompt") or _DEFAULT_SYSTEM_PROMPT,
+        "fallback_provider": (doc_settings.get("fallback_provider") or "").lower(),
         "fallback_model": doc_settings.get("fallback_model") or "",
         "fallback_api_key": doc_settings.get("fallback_api_key") or "",
-        "base_url": doc_settings.get("base_url") or frappe.conf.get("ai_chat_base_url") or "",
         "fallback_base_url": doc_settings.get("fallback_base_url") or "",
-        "system_prompt": doc_settings.get("system_prompt") or _DEFAULT_SYSTEM_PROMPT,
+        "fallback2_provider": (doc_settings.get("fallback2_provider") or "").lower(),
+        "fallback2_model": doc_settings.get("fallback2_model") or "",
+        "fallback2_api_key": doc_settings.get("fallback2_api_key") or "",
+        "fallback2_base_url": doc_settings.get("fallback2_base_url") or "",
     }
 
 
@@ -149,6 +159,21 @@ def _extract_pdf_content(file_dict: dict) -> dict:
         }
 
 
+# ── Provider dispatch (shared by primary + all fallbacks) ─────────────────────
+def _do_dispatch(
+    prov: str, key: str, mdl: str, url: str,
+    msg: str, history: list, sys_prompt: str, fl: list
+) -> dict:
+    """Route to the correct provider implementation."""
+    if prov == "anthropic":
+        return _call_anthropic(key, mdl, msg, history, url, sys_prompt, fl)
+    elif prov == "gemini":
+        return _call_gemini(key, mdl, msg, history, url, sys_prompt, fl)
+    else:  # openai, ollama, or unknown — use OpenAI-compatible path
+        eff_url = url or _PROVIDER_DEFAULTS.get(prov, _PROVIDER_DEFAULTS["openai"])["url"]
+        return _call_openai_compatible_with_tools(key, mdl, msg, history, eff_url, sys_prompt, fl)
+
+
 # ── Main whitelisted function ─────────────────────────────────────────────────
 @frappe.whitelist()
 def send_message(message: str, history: str = "[]", files: str = "[]") -> dict:
@@ -157,10 +182,7 @@ def send_message(message: str, history: str = "[]", files: str = "[]") -> dict:
     provider = s["provider"]
     api_key = s["api_key"]
     model = s["model"] or _PROVIDER_DEFAULTS.get(provider, {}).get("model", "")
-    fallback_model = s["fallback_model"]
-    fallback_api_key = s["fallback_api_key"] or api_key
     base_url = s["base_url"]
-    fallback_base_url = s["fallback_base_url"] or base_url  # defaults to same endpoint as primary
     system_prompt = s["system_prompt"]
 
     if not api_key:
@@ -213,32 +235,46 @@ def send_message(message: str, history: str = "[]", files: str = "[]") -> dict:
 
     file_list = processed_files  # only image files remain for vision dispatch
 
-    # ── Dispatch ────────────────────────────────────────────────────────────
-    def _dispatch(mdl, key=None, fl=None, url_override=None):
-        k = key or api_key
-        fl = fl if fl is not None else file_list
-        effective_base_url = url_override if url_override is not None else base_url
-        if provider == "anthropic":
-            return _call_anthropic(k, mdl, message, parsed_history, effective_base_url, system_prompt, fl)
-        elif provider in ("openai", "ollama"):
-            url = effective_base_url or _PROVIDER_DEFAULTS[provider]["url"]
-            return _call_openai_compatible_with_tools(k, mdl, message, parsed_history, url, system_prompt, fl)
-        elif provider == "gemini":
-            return _call_gemini(k, mdl, message, parsed_history, effective_base_url, system_prompt, fl)
+    # ── 3-tier fallback dispatch ─────────────────────────────────────────────
+    # Build attempt chain: [(prov, model, key, url, label), ...]
+    def _prov_default_url(p):
+        return _PROVIDER_DEFAULTS.get(p, _PROVIDER_DEFAULTS["openai"])["url"]
 
-    try:
-        return _dispatch(model)
-    except Exception as exc:  # noqa: BLE001
-        if fallback_model:
-            try:
-                result = _dispatch(fallback_model, key=fallback_api_key, url_override=fallback_base_url)
-                if result.get("reply"):
-                    result["reply"] = f"*(Using fallback model: {fallback_model})*\n\n" + result["reply"]
-                return result
-            except Exception as fallback_exc:  # noqa: BLE001
-                frappe.log_error(str(fallback_exc), "Prisma AI Chat Error (Fallback)")
-        frappe.log_error(str(exc), "Prisma AI Chat Error")
-        return {"error": _("AI request failed: {0}").format(str(exc)[:200])}
+    attempts = [
+        (provider, model, api_key, base_url, ""),
+    ]
+    if s["fallback_model"]:
+        fb1_prov = s["fallback_provider"] or provider
+        attempts.append((
+            fb1_prov,
+            s["fallback_model"],
+            s["fallback_api_key"] or api_key,
+            s["fallback_base_url"] or base_url or _prov_default_url(fb1_prov),
+            s["fallback_model"],
+        ))
+    if s["fallback2_model"]:
+        fb2_prov = s["fallback2_provider"] or provider
+        attempts.append((
+            fb2_prov,
+            s["fallback2_model"],
+            s["fallback2_api_key"] or api_key,
+            s["fallback2_base_url"] or base_url or _prov_default_url(fb2_prov),
+            s["fallback2_model"],
+        ))
+
+    last_exc = None
+    for prov, mdl, key, url, label in attempts:
+        try:
+            result = _do_dispatch(prov, key, mdl, url, message, parsed_history, system_prompt, file_list)
+            if label:
+                result["reply"] = f"*(Using fallback: {label})*\n\n" + result.get("reply", "")
+            return result
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            frappe.log_error(str(exc), f"Prisma AI Chat Error ({prov}:{mdl})")
+            continue
+
+    return {"error": _("All AI providers failed. Last error: {0}").format(str(last_exc)[:200] if last_exc else "unknown")}
 
 
 # ── Anthropic ─────────────────────────────────────────────────────────────────
@@ -525,7 +561,7 @@ def _call_gemini(
 
 # ── Settings form helpers ─────────────────────────────────────────────────────
 
-_ALLOWED_KEY_FIELDS = {"api_key", "fallback_api_key"}
+_ALLOWED_KEY_FIELDS = {"api_key", "fallback_api_key", "fallback2_api_key"}
 
 
 def _mask_key(key: str) -> str:

@@ -10,9 +10,15 @@
     "base_url",
     "section_models",
     "model",
+    "fallback_provider",
     "fallback_model",
     "fallback_api_key",
     "fallback_base_url",
+    "section_fallback2",
+    "fallback2_provider",
+    "fallback2_model",
+    "fallback2_api_key",
+    "fallback2_base_url",
     "section_prompt",
     "system_prompt"
   ],
@@ -54,9 +60,16 @@
       "description": "e.g. gpt-4o-mini, claude-haiku-4-5-20251001, gemini-2.0-flash-lite, qwen2.5. Leave blank to use the provider default."
     },
     {
+      "fieldname": "fallback_provider",
+      "fieldtype": "Select",
+      "label": "Fallback 1 Provider",
+      "options": "anthropic\nopenai\ngemini\nollama",
+      "description": "Provider for the first fallback model. Leave blank to use the same provider as primary."
+    },
+    {
       "fieldname": "fallback_model",
       "fieldtype": "Data",
-      "label": "Fallback Model",
+      "label": "Fallback 1 Model",
       "description": "If the default model fails, retry with this model. Leave blank to disable fallback."
     },
     {
@@ -68,8 +81,38 @@
     {
       "fieldname": "fallback_base_url",
       "fieldtype": "Data",
-      "label": "Fallback Model Base URL",
-      "description": "API endpoint URL for the fallback model if it uses a different provider (e.g. https://api.moonshot.cn/v1/chat/completions for Kimi). Leave blank to reuse the main Base URL."
+      "label": "Fallback 1 Base URL",
+      "description": "API endpoint for the fallback model (e.g. https://api.moonshot.ai/v1/chat/completions for Kimi international). Leave blank to reuse the main Base URL."
+    },
+    {
+      "fieldname": "section_fallback2",
+      "fieldtype": "Section Break",
+      "label": "Fallback 2 (Second Fallback)"
+    },
+    {
+      "fieldname": "fallback2_provider",
+      "fieldtype": "Select",
+      "label": "Fallback 2 Provider",
+      "options": "anthropic\nopenai\ngemini\nollama",
+      "description": "Provider for the second fallback model. Leave blank to disable second fallback."
+    },
+    {
+      "fieldname": "fallback2_model",
+      "fieldtype": "Data",
+      "label": "Fallback 2 Model",
+      "description": "Model name for the second fallback. Leave blank to disable."
+    },
+    {
+      "fieldname": "fallback2_api_key",
+      "fieldtype": "Password",
+      "label": "Fallback 2 API Key",
+      "description": "API key for the second fallback provider. Leave blank to reuse the main API Key."
+    },
+    {
+      "fieldname": "fallback2_base_url",
+      "fieldtype": "Data",
+      "label": "Fallback 2 Base URL",
+      "description": "API endpoint for the second fallback model. Leave blank to use provider default."
     },
     {
       "fieldname": "section_prompt",
