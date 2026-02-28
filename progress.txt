@@ -5570,3 +5570,49 @@ All components were already implemented (likely in a previous session):
 
 ### Gotchas
 - EA form base_sql GROUP BY must include new columns (approved_pension_scheme, date_of_birth) to avoid SQL aggregation errors
+
+
+## Iteration N — US-091: SOCSO/EIS Wage Ceiling Update to RM6,000 (October 2024 Amendment)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (15/15 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_wage_ceiling_us091`
+**Result:** PASS — 15 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_wage_ceiling_us091.py` (new)
+- Container: `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration/tests/test_wage_ceiling_us091.py`
+
+### What was done
+- SOCSO_WAGE_CEILING = 6000.0 and EIS_WAGE_CEILING = 6000.0 were already set in us074/us075 with October 2024 comments
+- Created dedicated test file with 15 tests covering:
+  1. TestSocsoWageCeilingOctober2024 (6 tests): ceiling=6000, RM5500>RM5000, RM5500 scheduled amounts, RM6500 capped, RM6000 at ceiling, range check
+  2. TestEisWageCeilingOctober2024 (6 tests): ceiling=6000, RM5500 EIS=11.00, RM5500>RM5000, RM6500 capped at 12.00, RM6000=12.00, range 5001-5999
+  3. TestWageCeilingConstantComments (3 tests): SOCSO exported, EIS exported, both aligned
+
+### Patterns discovered
+- Constants were already set correctly by US-074/US-075; US-091 is a confirmation + dedicated test coverage story
+- EIS is rate-based (0.2% of insured wages), SOCSO is table-based (First Schedule brackets)
+
+## Iteration N+1 — US-086: Assess and Implement XAdES XML Digital Signature for MyInvois Self-Billed Phase 2
+
+**Type:** IMPL
+**TDD Phase:** GREEN (13/13 tests pass, 1 skipped — xmlsec not installed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_xml_signer`
+**Result:** PASS — 12 pass, 1 skip (expected: xmlsec not installed in container)
+
+### Files created/modified
+- `utils/xml_signer.py` — XAdES BeS sign_xml(), maybe_sign_xml(), get_company_signing_config()
+- `services/payload_builder.py` — Added xml_signer import + maybe_sign_xml() calls in build_salary_slip_xml, build_expense_claim_xml, build_consolidated_xml
+- `fixtures/custom_field.json` — Added 4 Company fields: custom_xml_signature_section, custom_enable_xml_signature (Check), custom_digital_cert_path (Data), custom_digital_cert_password (Password)
+- `tests/test_xml_signer.py` — 13 tests covering all branches
+
+### Patterns discovered
+- XAdES signing is opt-in via Company flag custom_enable_xml_signature
+- Graceful degradation: if xmlsec not installed → log warning, return original XML
+- build_consolidated_xml uses frappe.db.get_value to get company from first docname
+
+### Gotchas
+- Files owned by root in container → need `docker exec -u root` to write, or use `docker cp` then chmod
+- Two copies of app files (outer + inner Frappe module path) — both must be synced
+

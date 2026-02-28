@@ -16,6 +16,7 @@ from decimal import Decimal, ROUND_HALF_UP
 import frappe
 
 from lhdn_payroll_integration.services.exemption_filter import get_default_classification_code
+from lhdn_payroll_integration.utils.xml_signer import maybe_sign_xml
 
 # UBL 2.1 Namespaces
 UBL_NS = "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
@@ -329,7 +330,8 @@ def build_salary_slip_xml(docname):
         price = _sub(line, CAC_NS, "Price")
         _sub(price, CBC_NS, "PriceAmount", str(amount), currencyID="MYR")
 
-    return ET.tostring(root, encoding="unicode", xml_declaration=True)
+    xml_str = ET.tostring(root, encoding="unicode", xml_declaration=True)
+    return maybe_sign_xml(xml_str, doc.company)
 
 
 def build_expense_claim_xml(docname):
@@ -361,7 +363,7 @@ def build_expense_claim_xml(docname):
         conv_rate = Decimal("1")
 
     # Calculate totals from expenses rows (sanctioned_amount converted to MYR)
-    total_excl = sum(_quantize(Decimal(str(row.sanctioned_amount)) * conv_rate) for row in doc.expenses)
+    total_excl = sum(_quantize(row.sanctioned_amount * conv_rate) for row in doc.expenses)
     total_tax = Decimal("0.00")
 
     _add_tax_and_totals(root, total_excl, total_tax)
@@ -372,7 +374,7 @@ def build_expense_claim_xml(docname):
         _sub(line, CBC_NS, "ID", str(idx))
         _sub(line, CBC_NS, "InvoicedQuantity", "1", unitCode="C62")
 
-        amount = _quantize(Decimal(str(expense.sanctioned_amount)) * conv_rate)
+        amount = _quantize(expense.sanctioned_amount * conv_rate)
         _sub(line, CBC_NS, "LineExtensionAmount", str(amount), currencyID="MYR")
 
         item = _sub(line, CAC_NS, "Item")
@@ -387,7 +389,8 @@ def build_expense_claim_xml(docname):
         price = _sub(line, CAC_NS, "Price")
         _sub(price, CBC_NS, "PriceAmount", str(amount), currencyID="MYR")
 
-    return ET.tostring(root, encoding="unicode", xml_declaration=True)
+    xml_str = ET.tostring(root, encoding="unicode", xml_declaration=True)
+    return maybe_sign_xml(xml_str, doc.company)
 
 
 def build_consolidated_xml(docnames, target_month):
@@ -503,7 +506,10 @@ def build_consolidated_xml(docnames, target_month):
         price = _sub(line, CAC_NS, "Price")
         _sub(price, CBC_NS, "PriceAmount", str(amount), currencyID="MYR")
 
-    return ET.tostring(root, encoding="unicode", xml_declaration=True)
+    xml_str = ET.tostring(root, encoding="unicode", xml_declaration=True)
+    # Use company from first doc for signing config
+    company_name = frappe.db.get_value("Salary Slip", docnames[0], "company") if docnames else ""
+    return maybe_sign_xml(xml_str, company_name) if company_name else xml_str
 
 
 def prepare_submission_wrapper(xml_string, docname):

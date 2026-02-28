@@ -1026,5 +1026,50 @@
     "default": "0",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_malaysia_presence_days"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_xml_signature_section",
+    "dt": "Company",
+    "fieldname": "custom_xml_signature_section",
+    "fieldtype": "Section Break",
+    "label": "XAdES XML Digital Signature",
+    "description": "US-086: XAdES BeS digital signature for MyInvois Self-Billed Phase 2.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_cimb_org_code"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_enable_xml_signature",
+    "dt": "Company",
+    "fieldname": "custom_enable_xml_signature",
+    "fieldtype": "Check",
+    "label": "Enable XML Digital Signature",
+    "description": "When enabled, self-billed payroll XML is signed with XAdES BeS (RSA-SHA256) before submission.",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_xml_signature_section"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_digital_cert_path",
+    "dt": "Company",
+    "fieldname": "custom_digital_cert_path",
+    "fieldtype": "Data",
+    "label": "Digital Certificate Path",
+    "description": "Absolute path to the PEM or PFX/P12 certificate file (MSC Trustgate or DigiCert Malaysia).",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_enable_xml_signature"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_digital_cert_password",
+    "dt": "Company",
+    "fieldname": "custom_digital_cert_password",
+    "fieldtype": "Password",
+    "label": "Digital Certificate Password",
+    "description": "Password for the PFX/P12 certificate file. Leave blank if using a PEM key without password.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_digital_cert_path"
   }
 ]
