@@ -46,17 +46,16 @@ class TestPayrollWorkflow(ERPNextTestCase):
 
     def test_int04_salary_slip_lhdn_status_field(self):
         """INT-04: Most recent Salary Slip has LHDN status field accessible."""
-        resp = self.session.resource(
-            "Salary Slip",
-            params={
-                "limit": 1,
-                "order_by": "creation desc",
-                "fields": '["name","custom_lhdn_status","employee"]',
-            },
+        resp = self.session.api(
+            "frappe.client.get_list",
+            doctype="Salary Slip",
+            fields=["name", "custom_lhdn_status", "employee"],
+            order_by="creation desc",
+            limit=1,
         )
         self.assert_status(resp)
         body = self.parse_json(resp)
-        data = body.get("data") or []
+        data = body.get("message") or []
         if not data:
             self.skipTest("No Salary Slips exist — run setup_test_data.py")
         slip = data[0]

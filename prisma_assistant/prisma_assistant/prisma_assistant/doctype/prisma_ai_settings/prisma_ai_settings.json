@@ -11,6 +11,7 @@
     "section_models",
     "model",
     "fallback_model",
+    "fallback_base_url",
     "fallback_api_key",
     "section_prompt",
     "system_prompt"
@@ -59,6 +60,15 @@
       "description": "If the default model fails, retry with this model. Leave blank to disable fallback."
     },
     {
+      "fieldname": "fallback_base_url",
+      "fieldtype": "Data",
+      "label": "Fallback Base URL",
+      "description": "Override the API endpoint for the fallback model. Leave blank to use the provider default.",
+      "reqd": 0,
+      "in_list_view": 0,
+      "insert_after": "fallback_model"
+    },
+    {
       "fieldname": "fallback_api_key",
       "fieldtype": "Password",
       "label": "Fallback Model API Key",
@@ -80,7 +90,7 @@
   "is_single": 1,
   "issingle": 1,
   "links": [],
-  "modified": "2026-02-27 12:00:00.000000",
+  "modified": "2026-02-28 10:00:00.000000",
   "modified_by": "Administrator",
   "module": "Prisma Assistant",
   "name": "Prisma AI Settings",
