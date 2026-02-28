@@ -4672,3 +4672,20 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 ### Gotchas
 - `docker cp` only updates the outermost copy; must also `docker exec -u root cp` to sync inner nested copies
 - prd.json has unicode chars — always open with encoding='utf-8'
+
+## Iteration N+1 — US-073: Enforce EPF Employer Rate Differential (13% for Salary <=RM5,000, 12% for >RM5,000)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_statutory_rates`
+**Result:** PASS — 13/13 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/statutory_rates.py` — NEW: calculate_epf_employer_rate(), EPF_EMPLOYER_RATE_HIGH=0.13, EPF_EMPLOYER_RATE_LOW=0.12, EPF_LOWER_SALARY_THRESHOLD=5000. Also includes SOCSO table (US-074) and EIS rules (US-075) for future use.
+- `lhdn_payroll_integration/report/epf_borang_a/epf_borang_a.py` — Added get_epf_employer_rate_warning(); added epf_rate_warning column; imports from statutory_rates
+- `lhdn_payroll_integration/tests/test_statutory_rates.py` — NEW: TestCalculateEpfEmployerRate (6 tests) + TestEpfBorangAValidation (7 tests)
+
+### Patterns discovered
+- Proactively included SOCSO table and EIS rules in statutory_rates.py to avoid creating multiple files for US-074/075
+- 5% tolerance for EPF rate deviation catches real errors without false positives for rounding
+- utils/ has both outer and nested copies; must sync both
