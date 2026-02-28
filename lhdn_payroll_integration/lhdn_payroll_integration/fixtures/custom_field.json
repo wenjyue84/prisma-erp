@@ -639,5 +639,29 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_lhdn_raw_document"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_employment_type",
+    "dt": "Employee",
+    "fieldname": "custom_employment_type",
+    "fieldtype": "Select",
+    "label": "Employment Type",
+    "options": "\nFull-time\nPart-time\nContract",
+    "default": "Full-time",
+    "description": "Employment type for minimum wage compliance check (Minimum Wages Order Amendment 2025).",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_section"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_contracted_hours_per_month",
+    "dt": "Employee",
+    "fieldname": "custom_contracted_hours_per_month",
+    "fieldtype": "Float",
+    "label": "Contracted Hours per Month",
+    "description": "For Part-time employees: total contracted hours per month. Used to calculate hourly rate for minimum wage compliance (RM8.17/hour minimum per Minimum Wages Order 2025).",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_employment_type"
   }
 ]

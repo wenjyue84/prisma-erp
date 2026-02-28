@@ -4473,3 +4473,30 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 
 ### Gotchas
 - frappe.modules.utils.sync_fixtures and frappe.custom.fixtures.sync_fixtures don't exist — use bench migrate to apply fixtures
+## Iteration 7 - Sat, Feb 28, 2026  3:27:20 PM
+Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (ID: US-097) — attempt 2/3
+
+
+## Iteration — US-057: Update Minimum Wage Validation to RM1,700 (Feb 2025 Amendment)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 17 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_minimum_wage`
+**Result:** PASS — 17/17 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `utils/employment_compliance.py` — New: check_minimum_wage(monthly_salary, employment_type, contracted_hours); constants MINIMUM_WAGE_MONTHLY=1700, MINIMUM_WAGE_HOURLY=8.17
+- `utils/validation.py` — Updated: validate_document_for_lhdn() now dispatches on doctype; Salary Slip → _validate_salary_slip_minimum_wage(); Employee → id validation (unchanged)
+- `hooks.py` — Added Salary Slip before_submit → validate_document_for_lhdn
+- `fixtures/custom_field.json` — Added Employee-custom_employment_type (Select: Full-time/Part-time/Contract) and Employee-custom_contracted_hours_per_month (Float)
+- `tests/test_minimum_wage.py` — 17 tests across 4 classes
+
+### Patterns discovered
+- validate_document_for_lhdn() is a multi-doctype hook; dispatch on doc.get("doctype") pattern
+- frappe.msgprint() for warnings (non-blocking) vs frappe.throw() for hard errors
+- fixture JSON written via python3 locally then docker cp (container has restricted write perms)
+- Part-time hourly = monthly_salary / contracted_hours_per_month; compared to 8.17 RM/hour
+
+### Gotchas
+- Container fixture file is write-protected; must modify locally then docker cp
+- check_minimum_wage returns dict with compliant/warning/actual/minimum keys (not raises) — caller decides severity

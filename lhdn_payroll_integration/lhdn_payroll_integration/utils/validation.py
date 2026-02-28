@@ -163,16 +163,64 @@ def validate_id_value(id_type, id_value):
 
 
 def validate_document_for_lhdn(doc, method=None):
-    """Employee validate hook — checks custom_id_type / custom_id_value when set.
+    """Multi-doctype validate/before_submit hook for LHDN compliance checks.
 
-    Hooked via hooks.py: Employee → validate.
+    Dispatches to doctype-specific checks:
+    - Employee: validates custom_id_type / custom_id_value
+    - Salary Slip: checks minimum wage compliance (Minimum Wages Order 2025)
+
+    Hooked via hooks.py:
+      Employee    → validate
+      Salary Slip → before_submit
 
     Args:
-        doc: The Employee document being validated.
+        doc: The document being validated.
         method: Unused (Frappe doc event signature).
     """
-    id_type = doc.get("custom_id_type")
-    id_value = doc.get("custom_id_value")
+    doctype = doc.get("doctype")
 
-    if id_type and id_value:
-        validate_id_value(id_type, id_value)
+    if doctype == "Salary Slip":
+        _validate_salary_slip_minimum_wage(doc)
+    else:
+        # Default: Employee ID validation
+        id_type = doc.get("custom_id_type")
+        id_value = doc.get("custom_id_value")
+        if id_type and id_value:
+            validate_id_value(id_type, id_value)
+
+
+def _validate_salary_slip_minimum_wage(doc):
+    """Check minimum wage compliance on a Salary Slip before submission.
+
+    Issues a frappe.msgprint warning (non-blocking) if salary is below
+    RM1,700/month or RM8.17/hour for part-time employees.
+
+    Args:
+        doc: Salary Slip document.
+    """
+    from lhdn_payroll_integration.utils.employment_compliance import check_minimum_wage
+
+    basic_pay = float(doc.get("base_gross_pay") or doc.get("gross_pay") or 0)
+
+    # Try to get employment type from linked Employee
+    employment_type = "Full-time"
+    contracted_hours = None
+    employee_name = doc.get("employee")
+    if employee_name:
+        emp = frappe.get_cached_doc("Employee", employee_name) if frappe.db.exists("Employee", employee_name) else None
+        if emp:
+            employment_type = emp.get("custom_employment_type") or "Full-time"
+            contracted_hours = emp.get("custom_contracted_hours_per_month")
+
+    result = check_minimum_wage(
+        monthly_salary=basic_pay,
+        employment_type=employment_type,
+        contracted_hours=contracted_hours,
+    )
+
+    if not result["compliant"] and result.get("warning"):
+        frappe.msgprint(
+            msg=result["warning"],
+            title="Minimum Wage Warning",
+            indicator="orange",
+        )
