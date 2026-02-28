@@ -5334,3 +5334,36 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 - SQL aliases `dec` and `may` are MariaDB reserved words — always backtick-quote month aliases in GROUP BY pivot queries
 - Report JSON must be at NESTED path (lhdn_payroll_integration/lhdn_payroll_integration/) to be importable by test module
 - __init__.py required in each report subdirectory for Python module discovery
+## Iteration 36 - Sat, Feb 28, 2026  8:26:40 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 1/3
+
+
+## Iteration — US-080: Track Maternity/Paternity Leave and Validate Maternity Pay Rate
+
+**Type:** IMPL
+**TDD Phase:** GREEN (27 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_maternity_paternity`
+**Result:** PASS — 27/27 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/employment_compliance.py` — Added 5 new exports:
+  - `MATERNITY_LEAVE_DAYS = 98`
+  - `PATERNITY_LEAVE_DAYS = 7`
+  - `MAX_PATERNITY_BIRTHS = 5`
+  - `validate_maternity_pay(salary_slip)` — checks days <= 98, allowance >= ORP * days
+  - `validate_paternity_claims(employee_doc)` — checks births <= 5, days <= 7
+- `lhdn_payroll_integration/tests/test_maternity_paternity.py` — 27 new tests across 6 test classes
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added 4 Employee fields:
+  - `custom_leave_compliance_section` (Section Break)
+  - `custom_maternity_leave_taken` (Int)
+  - `custom_paternity_leave_taken` (Int)
+  - `custom_paternity_births_claimed` (Int)
+
+### Patterns discovered
+- EA S.37 uses ORP_daily = monthly_salary / 26 (same as calculate_orp)
+- validate_maternity_pay() fetches Employee doc via frappe.get_doc() — mock with patch()
+- validate_paternity_claims() takes employee_doc directly — simpler to test (no frappe.get_doc needed)
+
+### Gotchas
+- MagicMock `.get()` needs explicit side_effect to return correct field values for specific keys
+- Component matching uses `"maternit" in component.lower()` to catch both "Maternity Allowance" and "Maternity Bonus"

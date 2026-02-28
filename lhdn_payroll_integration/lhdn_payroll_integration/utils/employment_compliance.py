@@ -10,6 +10,9 @@ Covers:
 - Part-Time Employee ORP Proration — EA Third Schedule (US-102)
   ORP = agreed_monthly_wage / (contracted_hours_per_week * 52 / 12)
   OT cap: 104 hours/month; multipliers: 1.5x Normal, 2.0x Public Holiday
+- Maternity/Paternity Leave Validation — Employment Act S.37 & S.60FA (US-080)
+  Maternity leave: 98 consecutive days; allowance must be >= ORP * days
+  Paternity leave: 7 consecutive days; max 5 live births per career
 """
 
 import frappe
@@ -401,4 +404,152 @@ def check_part_time_ot_rate(
         "multiplier": multiplier,
         "orp_hourly": orp_hourly,
         "minimum_amount": minimum_amount,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Maternity / Paternity Leave — Employment Act 1955 S.37 & S.60FA (US-080)
+# ---------------------------------------------------------------------------
+
+# Employment Act 1955 Section 37 (A1651 amendment)
+MATERNITY_LEAVE_DAYS = 98       # Maximum consecutive maternity leave days per confinement
+# Employment Act 1955 Section 60FA
+PATERNITY_LEAVE_DAYS = 7        # Maximum consecutive paternity leave days per birth
+MAX_PATERNITY_BIRTHS = 5        # Maximum births for which paternity leave may be claimed
+
+
+def validate_maternity_pay(salary_slip):
+    """Validate maternity allowance on a Salary Slip against Employment Act S.37.
+
+    Checks:
+    1. Days taken do not exceed 98 per confinement.
+    2. Total maternity component >= ORP_daily * days_taken.
+
+    Args:
+        salary_slip: Frappe document or mock with fields:
+            - employee       (str) — linked Employee name
+            - base           (float) — gross basic salary for ORP calculation
+            - earnings       (list of dicts) — salary components
+        The linked Employee doc is expected to have:
+            - custom_maternity_leave_taken (int) — days taken this confinement
+
+    Returns:
+        dict with keys:
+            'compliant':    bool
+            'warnings':     list[str] — human-readable warnings (empty if compliant)
+            'days_taken':   int or None
+            'orp_daily':    float or None
+            'minimum_pay':  float or None
+            'maternity_pay': float or None
+    """
+    warnings = []
+
+    # --- Retrieve days taken from Employee ---
+    try:
+        employee_name = salary_slip.employee
+        emp = frappe.get_doc("Employee", employee_name)
+        days_taken = int(emp.get("custom_maternity_leave_taken") or 0)
+    except Exception:
+        days_taken = 0
+
+    # --- Calculate ORP ---
+    try:
+        basic = float(salary_slip.base or 0)
+    except (TypeError, ValueError):
+        basic = 0.0
+    orp_daily = calculate_orp(basic)["daily"]
+
+    # --- Sum maternity components from earnings ---
+    maternity_pay = 0.0
+    try:
+        earnings = salary_slip.earnings or []
+        for row in earnings:
+            component = (
+                row.get("salary_component") if isinstance(row, dict)
+                else getattr(row, "salary_component", "")
+            ) or ""
+            if "maternit" in component.lower():
+                try:
+                    amount = float(
+                        row.get("amount") if isinstance(row, dict)
+                        else getattr(row, "amount", 0)
+                    )
+                    maternity_pay += amount
+                except (TypeError, ValueError):
+                    pass
+    except Exception:
+        pass
+
+    # --- Validations ---
+    if days_taken > MATERNITY_LEAVE_DAYS:
+        warnings.append(
+            f"Maternity leave taken ({days_taken} days) exceeds the statutory maximum "
+            f"of {MATERNITY_LEAVE_DAYS} consecutive days per confinement "
+            f"(Employment Act 1955 Section 37)."
+        )
+
+    if days_taken > 0 and orp_daily > 0:
+        minimum_pay = orp_daily * days_taken
+        if maternity_pay < minimum_pay:
+            warnings.append(
+                f"Maternity allowance (RM{maternity_pay:.2f}) is below the statutory minimum "
+                f"of RM{minimum_pay:.2f} (ORP RM{orp_daily:.2f}/day x {days_taken} days). "
+                f"Underpayment of maternity allowance is an offence under Employment Act S.37."
+            )
+    else:
+        minimum_pay = None
+
+    return {
+        "compliant": len(warnings) == 0,
+        "warnings": warnings,
+        "days_taken": days_taken,
+        "orp_daily": orp_daily,
+        "minimum_pay": minimum_pay if days_taken > 0 and orp_daily > 0 else None,
+        "maternity_pay": maternity_pay,
+    }
+
+
+def validate_paternity_claims(employee_doc):
+    """Validate paternity leave claims against Employment Act S.60FA.
+
+    Checks:
+    1. Paternity births claimed do not exceed 5.
+    2. Days taken per claim do not exceed 7.
+
+    Args:
+        employee_doc: Frappe Employee document or mock with:
+            - custom_paternity_births_claimed (int)
+            - custom_paternity_leave_taken    (int) — days taken for current claim
+
+    Returns:
+        dict with keys:
+            'compliant': bool
+            'warnings':  list[str]
+            'births_claimed': int
+            'days_taken':    int
+    """
+    warnings = []
+
+    births_claimed = int(employee_doc.get("custom_paternity_births_claimed") or 0)
+    days_taken = int(employee_doc.get("custom_paternity_leave_taken") or 0)
+
+    if births_claimed > MAX_PATERNITY_BIRTHS:
+        warnings.append(
+            f"Paternity leave births claimed ({births_claimed}) exceeds the statutory "
+            f"maximum of {MAX_PATERNITY_BIRTHS} live births "
+            f"(Employment Act 1955 Section 60FA)."
+        )
+
+    if days_taken > PATERNITY_LEAVE_DAYS:
+        warnings.append(
+            f"Paternity leave days taken ({days_taken}) exceeds the statutory maximum "
+            f"of {PATERNITY_LEAVE_DAYS} consecutive days per birth "
+            f"(Employment Act 1955 Section 60FA)."
+        )
+
+    return {
+        "compliant": len(warnings) == 0,
+        "warnings": warnings,
+        "births_claimed": births_claimed,
+        "days_taken": days_taken,
     }
