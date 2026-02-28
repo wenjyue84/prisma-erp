@@ -5790,3 +5790,34 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 - Custom fields auto-computed on validate via hook (no manual computation needed by HR)
 - Exchange rate auto-fetched from ERPNext Currency Exchange DocType if not manually set
 - Backward compatible: MYR slips unaffected (exchange_rate=1.0, gross_myr=gross_pay)
+## Iteration 7 - Sat, Feb 28, 2026  9:59:32 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 2/3
+
+
+## Iteration N — US-111: Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 21 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_multi_currency_salary`
+**Result:** PASS — 21/21 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `services/currency_converter.py` — NEW: get_exchange_rate(), get_gross_myr_for_slip(), apply_myr_conversion() validate hook
+- `services/pcb_calculator.py` — Updated validate_pcb_amount() to use custom_gross_myr for non-MYR slips
+- `fixtures/custom_field.json` — Added 4 Salary Slip fields: custom_forex_section, custom_salary_currency, custom_exchange_rate_to_myr, custom_gross_myr
+- `lhdn_payroll_integration/report/cp39_pcb_remittance/cp39_pcb_remittance.py` — Updated SQL: COALESCE(ss.custom_gross_myr, ss.gross_pay) AS gross_remuneration
+- `lhdn_payroll_integration/report/ea_form/ea_form.py` — Updated earnings SQL: SUM(sd.amount * COALESCE(ss.custom_exchange_rate_to_myr, 1)) for MYR conversion
+
+### Test structure
+TestGetExchangeRate (5 tests) — DB lookup, fallback, exception handling
+TestGetGrossMyrForSlip (5 tests) — MYR passthrough, currency conversion
+TestApplyMyrConversion (5 tests) — validate hook, auto-fetch, manual rate
+TestPcbUsesGrossMyr (2 tests) — PCB uses MYR amount for non-MYR slips
+TestCp39GrossRemuneration (1 test) — COALESCE SQL check
+TestEaFormExchangeRate (3 tests) — exchange_rate in SQL, custom fields in fixture
+
+### Patterns discovered
+- apply_myr_conversion() called from hooks.py doc_events["Salary Slip"]["validate"] (was already registered, needed the module)
+- Test was pre-existing (test_multi_currency_salary.py) expecting currency_converter module — created module to match expected API
+- Key gotcha: assert_called_once_with() is strict about positional vs keyword args — use positional args when calling get_exchange_rate() from within the module
+- custom_gross_myr field name (not custom_gross_pay_myr) must match the existing test expectations

@@ -1079,9 +1079,10 @@
     "fieldname": "custom_forex_section",
     "fieldtype": "Section Break",
     "label": "Foreign Currency Salary",
+    "collapsible": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_lhdn_archived",
-    "collapsible": 1
+    "description": "For expatriate employees paid in foreign currency. All PCB, EA Form, and CP39 values are computed in MYR."
   },
   {
     "doctype": "Custom Field",
@@ -1089,11 +1090,12 @@
     "dt": "Salary Slip",
     "fieldname": "custom_salary_currency",
     "fieldtype": "Link",
-    "label": "Salary Currency",
     "options": "Currency",
+    "label": "Salary Currency",
+    "default": "MYR",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_forex_section",
-    "description": "Leave blank or set MYR for standard Ringgit slips. Set to foreign currency (USD, SGD, etc.) for expatriate employees."
+    "description": "Currency in which salary is paid per employment contract. Defaults to MYR. LHDN PCB is always computed in MYR."
   },
   {
     "doctype": "Custom Field",
@@ -1102,10 +1104,11 @@
     "fieldname": "custom_exchange_rate_to_myr",
     "fieldtype": "Float",
     "label": "Exchange Rate to MYR",
+    "default": "1",
+    "precision": "6",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_salary_currency",
-    "default": "1.0",
-    "description": "Exchange rate at date of payment (BNM middle rate). Auto-fetched if Currency Exchange records exist. For MYR slips, always 1.0."
+    "description": "BNM middle rate on payment date: 1 unit of Salary Currency = N MYR. Leave 0 to auto-fetch from Currency Exchange table."
   },
   {
     "doctype": "Custom Field",
@@ -1114,9 +1117,9 @@
     "fieldname": "custom_gross_myr",
     "fieldtype": "Currency",
     "label": "Gross Pay (MYR Equivalent)",
+    "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_exchange_rate_to_myr",
-    "read_only": 1,
-    "description": "Gross pay converted to MYR. Used for PCB, EA Form, and CP39 reporting (ITA 1967 s.13 / LHDN PCB Spec)."
+    "description": "Gross pay converted to MYR using the exchange rate above. Used as PCB base (LHDN ITA 1967 s.13)."
   }
 ]

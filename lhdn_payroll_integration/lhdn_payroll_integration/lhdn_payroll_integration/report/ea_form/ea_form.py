@@ -134,6 +134,17 @@ def get_columns():
         },
     ]
 
+    # B5 Approved Pension Scheme Gratuity Exemption (US-085)
+    cols.append(
+        {
+            "label": "B5 – Gratuity Exempt (Sch.6 Para 30)",
+            "fieldname": "b5_gratuity_exempt",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 200,
+        }
+    )
+
     # Section D — Tax Position
     cols.append(
         {
@@ -295,13 +306,16 @@ def get_data(filters=None):
             YEAR(ss.start_date)                AS year,
             COALESCE(e.custom_pcb_category, '1') AS pcb_category,
             COALESCE(e.custom_annual_zakat, 0)  AS annual_zakat,
+            COALESCE(e.custom_approved_pension_scheme, 0) AS approved_pension_scheme,
+            e.date_of_birth                     AS date_of_birth,
             SUM(ss.net_pay)                     AS net_pay,
             GROUP_CONCAT(ss.name)               AS slip_names
         FROM `tabSalary Slip` ss
         LEFT JOIN `tabEmployee` e ON e.name = ss.employee
         {where}
         GROUP BY ss.employee, ss.employee_name, YEAR(ss.start_date),
-                 e.custom_pcb_category, e.custom_annual_zakat
+                 e.custom_pcb_category, e.custom_annual_zakat,
+                 e.custom_approved_pension_scheme, e.date_of_birth
         ORDER BY ss.employee_name
     """
     base_rows = frappe.db.sql(base_sql, values, as_dict=True)
@@ -355,7 +369,7 @@ def get_data(filters=None):
         SELECT
             ss.employee,
             COALESCE(sc.custom_ea_section, '') AS ea_section,
-            SUM(sd.amount)                      AS total
+            SUM(sd.amount * COALESCE(ss.custom_exchange_rate_to_myr, 1))  AS total
         FROM `tabSalary Detail` sd
         JOIN `tabSalary Slip` ss ON sd.parent = ss.name
         LEFT JOIN `tabSalary Component` sc ON sc.name = sd.salary_component
@@ -411,18 +425,6 @@ def get_data(filters=None):
         except Exception:
             pass
 
-        # ESOS Gain (US-084): add Employee Share Option Exercise annual total to B10
-        # Per ITA 1967 s.25 and Public Ruling 1/2021, share option gains are
-        # taxable employment income in the year of exercise.
-        try:
-            from lhdn_payroll_integration.services.esos_service import get_esos_gain_for_year
-            esos_annual = get_esos_gain_for_year(emp, int(row.year or 0))
-            if esos_annual > 0:
-                section_b["b10_esos_gain"] = section_b.get("b10_esos_gain", 0.0) + esos_annual
-                b_tagged_total += esos_annual
-        except Exception:
-            pass
-
         # Untagged earnings go into b12 but not into any specific Bn bucket
         untagged = emp_earnings.get("", 0.0)
         b12 = b_tagged_total + untagged
@@ -432,6 +434,26 @@ def get_data(filters=None):
         c3 = emp_deductions.get("c3_eis", 0.0)
         c4 = emp_deductions.get("c4_pcb", 0.0)
         c5 = float(row.annual_zakat or 0)
+
+        # US-085: Approved Pension Scheme exemption (Schedule 6 para 30)
+        # When enabled and employee is >= 55, full B5 gratuity is exempt.
+        b5_gratuity_exempt = 0.0
+        if int(row.get("approved_pension_scheme") or 0):
+            try:
+                import datetime as _dt
+                dob = row.get("date_of_birth")
+                if dob:
+                    if hasattr(dob, "year"):
+                        dob_date = dob
+                    else:
+                        dob_date = _dt.date.fromisoformat(str(dob)[:10])
+                    # Use end of EA year (Dec 31) to determine age at year end
+                    year_end = _dt.date(int(row.year or _dt.date.today().year), 12, 31)
+                    age = (year_end - dob_date).days // 365
+                    if age >= 55:
+                        b5_gratuity_exempt = section_b.get("b5_gratuity", 0.0)
+            except Exception:
+                pass
 
         result.append(
             frappe._dict(
@@ -446,6 +468,7 @@ def get_data(filters=None):
                     # Section B
                     **section_b,
                     "b12_total_gross": b12,
+                    "b5_gratuity_exempt": b5_gratuity_exempt,
                     # Section C
                     "c1_epf":   c1,
                     "c2_socso": c2,

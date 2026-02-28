@@ -350,11 +350,13 @@ def validate_pcb_amount(doc_name: str) -> dict:
     """
     doc = frappe.get_doc("Salary Slip", doc_name)
 
-    # Multi-currency support (US-111): use MYR-equivalent gross when salary
-    # currency is non-MYR (ITA 1967 s.13; LHDN PCB Spec: all income in RM).
-    slip_currency = getattr(doc, "custom_salary_currency", None) or "MYR"
-    if slip_currency != "MYR" and getattr(doc, "custom_gross_myr", None):
-        monthly_gross = float(doc.custom_gross_myr)
+    # Extract annual income from the slip — use MYR equivalent for foreign-currency slips (US-111)
+    # For non-MYR slips, custom_gross_myr holds the pre-computed MYR equivalent (set by
+    # apply_myr_conversion validate hook). Fall back to gross_pay if field not set.
+    salary_currency = (getattr(doc, "custom_salary_currency", None) or "MYR").strip().upper()
+    if salary_currency != "MYR":
+        custom_gross_myr = float(getattr(doc, "custom_gross_myr", 0) or 0)
+        monthly_gross = custom_gross_myr if custom_gross_myr > 0 else float(doc.gross_pay or 0)
     else:
         monthly_gross = float(doc.gross_pay or 0)
 

@@ -2165,7 +2165,7 @@
         "Payslip is accessible via Employee Self-Service portal (if implemented) and downloadable by HR"
       ],
       "technicalNotes": [
-        "Employment Act 1955, Section 61 (Wage registers and salary records) — mandatory for all employees post-2022 amendment",
+        "Employment Act 1955, Section 61 (Wage registers and salary records) ï¿½ mandatory for all employees post-2022 amendment",
         "Section 61(1B): payslip must be delivered on or before each payment of wages",
         "Use Frappe's print format / Jinja template for PDF generation via wkhtmltopdf or WeasyPrint",
         "Mandatory fields enumerated in Employment Act Third Schedule (Ninth Schedule after amendment)"
