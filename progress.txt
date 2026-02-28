@@ -4349,3 +4349,33 @@ The original code tried `resp.headers.get("X-Frappe-CSRF-Token")` which always r
 - Actual format in Frappe HTML: `frappe.csrf_token = "...56-char hex...";` (JS format, ~56 chars, varies)
 - The regex `[a-f0-9]{32}` would never match (token is 56-58 chars, not 32)
 - Use `[a-f0-9]+` to handle any hex length
+## Iteration 2 - Sat, Feb 28, 2026  2:18:09 PM
+Completed: Fix CSRF token acquisition in test suite ERPNextSession login (ID: US-096) in 3m
+
+
+## Iteration N — US-052: Implement TP1 Employee Relief Declaration DocType and PCB Integration
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 26 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_tp1_relief`
+**Result:** PASS — 26/26 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_tp1_relief/__init__.py` (new)
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_tp1_relief/employee_tp1_relief.json` (new)
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_tp1_relief/employee_tp1_relief.py` (new)
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/pcb_calculator.py` (updated: tp1_total_reliefs kwarg)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_tp1_relief.py` (new, 26 tests)
+
+### Patterns discovered
+- TP1 reliefs are annual figures — added directly to total_relief before computing chargeable income
+- Non-residents (flat 30%) correctly ignore TP1 reliefs — handled by early return before relief logic
+- annual_zakat is a tax rebate (not a relief) — excluded from total_reliefs, not passed to calculate_pcb
+- Caps enforced in DocType controller _apply_caps(); silently caps and calls frappe.msgprint(alert=True)
+- unique (employee, tax_year) enforced via _enforce_unique_per_year() using frappe.db.get_value
+
+### Test coverage (26 tests across 4 classes)
+- TestCalculatePcbTp1Integration (14 tests): verifies each relief type reduces PCB, mathematical correctness, non-resident immunity, combined with category/children
+- TestEmployeeTP1ReliefCaps (4 tests): _CAPS constants match LHDN limits, zakat excluded from _RELIEF_FIELDS
+- TestEmployeeTP1ReliefController (5 tests): cap enforcement, total calculation, unique constraint
+- TestGetEmployeeTP1Reliefs (3 tests): no-record case, correct values, string tax_year coercion

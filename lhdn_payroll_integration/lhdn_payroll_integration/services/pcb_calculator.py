@@ -85,6 +85,7 @@ def calculate_pcb(
     worked_days: int = None,
     total_days: int = None,
     category: int = None,
+    tp1_total_reliefs: float = 0.0,
 ) -> float:
     """Calculate monthly PCB/MTD deduction amount.
 
@@ -115,6 +116,11 @@ def calculate_pcb(
     per completed year of service. Only the remainder above the exempt amount
     is taxable (treated as an irregular payment using the annualisation rule).
 
+    TP1 Employee Relief Declaration (US-052):
+        Pass tp1_total_reliefs to include employee-declared reliefs from Borang TP1.
+        These are subtracted from chargeable income AFTER the standard personal/child
+        reliefs, reducing PCB proportionally. Non-residents ignore TP1 reliefs.
+
     Args:
         annual_income: Gross annual employment income (RM).
         resident: True if employee is a tax resident of Malaysia.
@@ -134,6 +140,9 @@ def calculate_pcb(
             When provided with worked_days, prorates monthly income.
         category: PCB category (1, 2, or 3). When provided, overrides ``married``.
             1 = no spouse relief, 2 = spouse relief RM4,000, 3 = single parent RM4,000.
+        tp1_total_reliefs: Additional annual reliefs from employee Borang TP1 declaration
+            (e.g. life insurance, medical insurance, education fees, SSPN, EPF, SOCSO).
+            These are subtracted from chargeable income to reduce PCB. Default 0.0.
 
     Returns:
         float: Monthly PCB amount (RM), rounded to 2 decimal places.
@@ -176,6 +185,9 @@ def calculate_pcb(
     elif married:
         total_relief += _SPOUSE_RELIEF
     total_relief += children * _CHILD_RELIEF_PER_CHILD
+
+    # TP1 employee-declared reliefs (US-052): added on top of standard reliefs
+    total_relief += max(0.0, float(tp1_total_reliefs or 0))
 
     chargeable_income = max(0.0, annual_income - total_relief)
     annual_tax = _compute_tax_on_chargeable_income(chargeable_income)
