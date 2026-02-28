@@ -5,10 +5,20 @@ listing each employee's wages, employee SOCSO, employer SOCSO and total
 for a given month/year.
 
 Columns: Employee Name, NRIC, SOCSO Member Number, Wages,
-         Employee SOCSO, Employer SOCSO, Total
+         Employee SOCSO, Employer SOCSO, Total, SOCSO Warning
 Sources: Submitted Salary Slips (docstatus=1) with SOCSO deduction lines.
+
+US-074: Added First Schedule (Jadual Kadar Caruman) validation.
+  - Wage ceiling updated to RM6,000 (October 2024 amendment).
+  - Warns if reported SOCSO amounts deviate >5% from scheduled amounts.
 """
 import frappe
+from frappe.utils import flt
+
+from lhdn_payroll_integration.lhdn_payroll_integration.utils.statutory_rates import (
+    calculate_socso_contribution,
+    SOCSO_WAGE_CEILING,
+)
 
 _SOCSO_EMPLOYEE_COMPONENTS = {"SOCSO", "SOCSO Employee", "PERKESO", "PERKESO Employee"}
 _SOCSO_EMPLOYER_COMPONENTS = {
@@ -17,6 +27,8 @@ _SOCSO_EMPLOYER_COMPONENTS = {
     "PERKESO - Employer",
     "PERKESO Employer",
 }
+
+SOCSO_VALIDATION_TOLERANCE = 0.05  # 5% deviation tolerance
 
 
 def get_columns():
@@ -81,6 +93,12 @@ def get_columns():
             "options": "Salary Slip",
             "width": 160,
         },
+        {
+            "label": "SOCSO Schedule Warning",
+            "fieldname": "socso_warning",
+            "fieldtype": "Data",
+            "width": 320,
+        },
     ]
 
 
@@ -109,6 +127,49 @@ def get_filters():
             "default": current_year,
         },
     ]
+
+
+def get_socso_amount_warning(wages, employee_socso, employer_socso):
+    """Return warning if SOCSO amounts deviate >5% from First Schedule amounts.
+
+    Args:
+        wages: Monthly wages in MYR.
+        employee_socso: Actual employee SOCSO amount deducted.
+        employer_socso: Actual employer SOCSO amount contributed.
+
+    Returns:
+        Warning string, or empty string if within tolerance.
+    """
+    wages = flt(wages)
+    if wages <= 0:
+        return ""
+
+    scheduled = calculate_socso_contribution(wages)
+    warnings = []
+
+    # Check employee amount
+    expected_emp = scheduled["employee"]
+    actual_emp = flt(employee_socso)
+    if expected_emp > 0:
+        emp_deviation = abs(actual_emp - expected_emp) / expected_emp
+        if emp_deviation > SOCSO_VALIDATION_TOLERANCE:
+            warnings.append(
+                f"Employee SOCSO: expected RM{expected_emp:.2f} per First Schedule, "
+                f"actual RM{actual_emp:.2f} ({emp_deviation * 100:.1f}% deviation)"
+            )
+
+    # Check employer amount
+    expected_emr = scheduled["employer"]
+    actual_emr = flt(employer_socso)
+    if expected_emr > 0:
+        emr_deviation = abs(actual_emr - expected_emr) / expected_emr
+        if emr_deviation > SOCSO_VALIDATION_TOLERANCE:
+            warnings.append(
+                f"Employer SOCSO: expected RM{expected_emr:.2f} per First Schedule, "
+                f"actual RM{actual_emr:.2f} ({emr_deviation * 100:.1f}% deviation)"
+            )
+
+    return "; ".join(warnings)
 
 
 def _build_conditions(filters):
@@ -193,6 +254,11 @@ def get_data(filters=None):
 
     for row in rows:
         row["total_socso"] = (row.get("employee_socso") or 0) + (row.get("employer_socso") or 0)
+        row["socso_warning"] = get_socso_amount_warning(
+            row.get("wages", 0),
+            row.get("employee_socso", 0),
+            row.get("employer_socso", 0),
+        )
 
     return rows
 
