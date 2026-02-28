@@ -15,6 +15,11 @@
     "cessation_date",
     "reason",
     "status",
+    "section_termination_benefits",
+    "years_of_service",
+    "statutory_minimum_termination_pay",
+    "actual_termination_pay",
+    "underpayment_warning",
     "remarks"
   ],
   "fields": [
@@ -93,13 +98,46 @@
       "in_standard_filter": 1
     },
     {
+      "fieldname": "section_termination_benefits",
+      "fieldtype": "Section Break",
+      "label": "Termination Benefits (Regulations 1980)"
+    },
+    {
+      "fieldname": "years_of_service",
+      "fieldtype": "Float",
+      "label": "Years of Service",
+      "read_only": 1,
+      "precision": 2,
+      "description": "Fractional years from date of joining to cessation date (auto-calculated)."
+    },
+    {
+      "fieldname": "statutory_minimum_termination_pay",
+      "fieldtype": "Currency",
+      "label": "Statutory Minimum Termination Pay (RM)",
+      "read_only": 1,
+      "description": "Minimum termination pay per Employment (Termination and Lay-Off Benefits) Regulations 1980 (auto-calculated)."
+    },
+    {
+      "fieldname": "actual_termination_pay",
+      "fieldtype": "Currency",
+      "label": "Actual Termination Pay (RM)",
+      "description": "Actual termination pay to be disbursed. Must be >= statutory minimum."
+    },
+    {
+      "fieldname": "underpayment_warning",
+      "fieldtype": "Small Text",
+      "label": "Underpayment Warning",
+      "read_only": 1,
+      "description": "Warning if actual termination pay is below the statutory minimum."
+    },
+    {
       "fieldname": "remarks",
       "fieldtype": "Small Text",
       "label": "Remarks"
     }
   ],
   "links": [],
-  "modified": "2026-02-27 00:00:00.000000",
+  "modified": "2026-02-28 00:00:00.000000",
   "modified_by": "Administrator",
   "module": "LHDN Payroll Integration",
   "name": "LHDN CP22A",

@@ -553,3 +553,92 @@ def validate_paternity_claims(employee_doc):
         "births_claimed": births_claimed,
         "days_taken": days_taken,
     }
+
+# ---------------------------------------------------------------------------
+# Termination and Lay-Off Benefits — Employment (Termination and Lay-Off Benefits)
+# Regulations 1980 (US-082)
+# ---------------------------------------------------------------------------
+
+# Termination rate lookup: {service_years_ceiling: days_per_year}
+# < 2 years  → 10 days/year
+# 2-5 years  → 15 days/year
+# > 5 years  → 20 days/year
+TERMINATION_RATE = {2: 10, 5: 15, 999: 20}
+
+
+def calculate_termination_benefits(employee, termination_date):
+    """Calculate statutory minimum termination pay per Regulations 1980.
+
+    Employment (Termination and Lay-Off Benefits) Regulations 1980:
+      - < 2 years of service  → 10 days wages per year
+      - 2–5 years of service  → 15 days wages per year
+      - > 5 years of service  → 20 days wages per year
+
+    daily_rate = (employee.ctc or employee.salary_currency) / (12 * 26)
+    statutory_minimum = daily_rate * rate_days * years_of_service
+
+    Args:
+        employee: Frappe Employee document or mock with:
+            - date_of_joining (date/str): hire date
+            - ctc (float): cost to company / annual salary (used to derive daily rate)
+        termination_date (date/str): effective termination date
+
+    Returns:
+        dict with keys:
+            'years_of_service':          float — fractional years of service
+            'rate_days':                 int — days per year (10/15/20)
+            'daily_rate':                float — monthly_salary / 26
+            'statutory_minimum':         float — minimum termination pay in RM
+            'monthly_salary':            float — derived monthly CTC
+    """
+    from frappe.utils import getdate
+
+    _zero = {
+        "years_of_service": 0.0,
+        "rate_days": 0,
+        "daily_rate": 0.0,
+        "statutory_minimum": 0.0,
+        "monthly_salary": 0.0,
+    }
+
+    # --- Date inputs ---
+    try:
+        joining_date = getdate(employee.date_of_joining)
+        term_date = getdate(termination_date)
+    except Exception:
+        return _zero
+
+    if not joining_date or not term_date or term_date <= joining_date:
+        return _zero
+
+    # --- Years of service ---
+    days_of_service = (term_date - joining_date).days
+    years_of_service = days_of_service / 365.0
+
+    # --- Determine rate bracket ---
+    rate_days = 20  # default > 5 years
+    for ceiling in sorted(TERMINATION_RATE.keys()):
+        if years_of_service < ceiling:
+            rate_days = TERMINATION_RATE[ceiling]
+            break
+
+    # --- Monthly salary from CTC ---
+    try:
+        ctc = float(employee.ctc or 0)
+    except (TypeError, ValueError):
+        ctc = 0.0
+    monthly_salary = ctc / 12.0
+
+    # --- Daily rate: monthly / 26 (Employment Act S.60I) ---
+    daily_rate = monthly_salary / 26.0
+
+    # --- Statutory minimum ---
+    statutory_minimum = daily_rate * rate_days * years_of_service
+
+    return {
+        "years_of_service": years_of_service,
+        "rate_days": rate_days,
+        "daily_rate": daily_rate,
+        "statutory_minimum": statutory_minimum,
+        "monthly_salary": monthly_salary,
+    }

@@ -5367,3 +5367,29 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 ### Gotchas
 - MagicMock `.get()` needs explicit side_effect to return correct field values for specific keys
 - Component matching uses `"maternit" in component.lower()` to catch both "Maternity Allowance" and "Maternity Bonus"
+## Iteration 37 - Sat, Feb 28, 2026  8:33:54 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 2/3
+
+
+## Iteration N — US-082: Implement Termination and Lay-Off Benefits Calculator
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 12 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_termination_benefits`
+**Result:** PASS — 12/12 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/employment_compliance.py` — Added `calculate_termination_benefits()` and `TERMINATION_RATE` constant
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_cp22a/lhdn_cp22a.json` — Added 4 new fields: section_termination_benefits, years_of_service, statutory_minimum_termination_pay, actual_termination_pay, underpayment_warning
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_cp22a/lhdn_cp22a.py` — Added calculate_termination_benefits() call in validate()
+- `lhdn_payroll_integration/tests/test_termination_benefits.py` — 12 tests: 9 unit + 3 integration
+
+### Patterns discovered
+- employment_compliance.py must be copied to BOTH paths: outer (utils/) and nested (lhdn_payroll_integration/utils/)
+- TERMINATION_RATE = {2: 10, 5: 15, 999: 20} sorted iteration works correctly for bracket lookup
+- years_of_service = (termination_date - date_of_joining).days / 365 (fractional years)
+- daily_rate = (ctc / 12) / 26 per EA S.60I
+
+### Gotchas
+- Nested utils directory (lhdn_payroll_integration/lhdn_payroll_integration/utils/) did NOT have employment_compliance.py; must be copied there for module imports to work
+- File permissions (owned by root): must use `docker exec -u root` for writes
