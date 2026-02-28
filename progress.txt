@@ -5521,3 +5521,31 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 - EA form ea_form.py already had B10 ESOS stub for lazy import — previous iteration pre-wired it
 - esos_service.py uses keyword dict params %(employee)s for named params, not positional tuple
 - Tests use `patch("frappe.db.sql")` for DB isolation; call_args[0][1] is the dict of named params
+## Iteration 41 - Sat, Feb 28, 2026  9:13:19 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 2/3
+
+
+## Iteration N — US-085: Implement Approved Pension Scheme Full Retirement Gratuity Exemption
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 81/81 tests pass (including TestApprovedPensionSchemeExemption)
+
+### Implementation status
+All components were already implemented (likely in a previous session):
+
+### Files verified
+- `fixtures/custom_field.json` — `Employee-custom_approved_pension_scheme` Check field present
+- `services/pcb_calculator.py` — `approved_pension_scheme` + `employee_age` params; para 30 full-exemption logic
+- `report/ea_form/ea_form.py` — `b5_gratuity_exempt` populated when approved_pension_scheme=True and age>=55
+
+### Tests passing
+- `TestApprovedPensionSchemeExemption.test_age_55_approved_scheme_full_gratuity_exempt`
+- `TestApprovedPensionSchemeExemption.test_age_55_without_approved_scheme_uses_para25`
+- All 81 pcb_calculator tests and 15 ea_form tests pass
+
+### Patterns discovered
+- ITA Schedule 6 para 30 full exemption overrides para 25 partial (RM1,000/year)
+- EA form B5 uses date_of_birth + year_end (Dec 31) to compute age for exemption gate
+
