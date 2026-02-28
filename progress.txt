@@ -4800,3 +4800,31 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 - Print format files (JSON+HTML) in `print_format/<name>/` are picked up by Frappe on `bench migrate`
 - api/ directory must be manually created in nested path — not auto-created
 - The nested path doesn't have api/ by default; must create + copy __init__.py separately
+## Iteration 18 - Sat, Feb 28, 2026  5:19:53 PM
+Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (ID: US-097) — attempt 1/3
+
+
+## Iteration 19 — US-063: Implement e-CP39 API Submission to LHDN MyTax / e-PCB Plus
+
+**Type:** IMPL
+**TDD Phase:** GREEN (14/14 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_ecp39_service`
+**Result:** PASS — 14 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/ecp39_service.py` — New service: `submit_cp39_to_lhdn()`, `_get_mytax_access_token()`, `_build_pipe_delimited_payload()`, `_store_submission_log()`
+- `lhdn_payroll_integration/doctype/lhdn_cp39_submission_log/` — New DocType with company, month, year, submission_reference, submission_datetime, status, employees_count, response_message
+- `lhdn_payroll_integration/api/__init__.py` + `api/ecp39.py` — Whitelisted `submit_cp39()` method (HR Manager/System Manager only)
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added `custom_mytax_client_id` (Data) and `custom_mytax_client_secret` (Password) to Company
+- `lhdn_payroll_integration/tests/test_ecp39_service.py` — 14 tests across 5 test classes
+
+### Patterns discovered
+- Mock at the service function level (`_get_mytax_access_token`) rather than `frappe.db.get_value` — avoids StopIteration when Frappe internals call `frappe.db.get_value` after mock side_effect is exhausted
+- DocType must be installed via `reload_doc('Module Name', 'doctype', 'doctype_name', force=True)` when bench migrate doesn't pick it up (e.g. after manual cp)
+- Controller class name for "LHDN CP39 Submission Log" is `LHDNCP39SubmissionLog` (all-caps "LHDN", strip spaces + title-case)
+- `get_data` import must be at module level (not inside function) to be patchable via `patch('...ecp39_service.get_data')`
+- Custom fields synced via console `frappe.new_doc('Custom Field').update(field_def).insert()` when sync_fixtures API not available
+
+### Gotchas
+- bench migrate deletes LHDN Payroll workspace as "orphan" — fixture re-sync needed after migrate
+- DocType controller classname: Frappe strips spaces and title-cases each part: "LHDN CP39 Submission Log" → "LHDNCP39SubmissionLog" (not LHDNcp39SubmissionLog)
