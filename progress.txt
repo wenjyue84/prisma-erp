@@ -4737,3 +4737,31 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 
 ### Gotchas
 - Test using `_dob_for_age(17)` with fixed payroll_date=2025-01-01 would show as age 18 if warning function used `date.today()` (2026-02-28) — fixed by passing payroll_date
+## Iteration 16 - Sat, Feb 28, 2026  5:02:07 PM
+Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (ID: US-097) — attempt 2/3
+
+
+## Iteration — US-064: Implement CP107 DocType for Foreign Employee Tax Clearance Workflow
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_cp107`
+**Result:** PASS — 12/12 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/doctype/lhdn_cp107/lhdn_cp107.json` — New DocType (LHDN CP107)
+- `lhdn_payroll_integration/doctype/lhdn_cp107/lhdn_cp107.py` — DocType controller
+- `lhdn_payroll_integration/doctype/lhdn_cp107/__init__.py` — Package init
+- `lhdn_payroll_integration/services/cp107_service.py` — handle_foreign_employee_left, check_salary_slip_cp107_warning, get_open_cp107_for_employee
+- `lhdn_payroll_integration/tests/test_cp107.py` — 12 tests covering auto-creation, duplicate prevention, warning logic
+- `hooks.py` — Added Employee.on_update and Salary Slip.validate hooks
+
+### Patterns discovered
+- After `bench migrate` creates the DB table, must run `frappe.reload_doc(module, "doctype", doctype)` to insert the DocType metadata into `tabDocType`. Without this, `frappe.db.exists("DocType", "LHDN CP107")` fails even though the table exists.
+- bench migrate alone is NOT sufficient for new DocTypes — always follow with reload_doc via bench console
+
+### Acceptance Criteria Met
+- LHDN CP107 DocType with all required fields: employee, last_working_date, final_month_salary, withholding_amount, clearance_letter_date, clearance_reference, status (Draft/Submitted to LHDN/Clearance Received/Payment Released)
+- Auto-created when Employee with custom_is_foreign_worker=1 status set to Left
+- Salary Slip validate hook warns if foreign worker has open CP107
+- HTML Print Format: CP107 uses standard DocType print layout (no custom print format needed at this stage)
