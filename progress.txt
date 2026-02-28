@@ -5991,3 +5991,28 @@ Completed: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee (ID: US-093) i
 
 ### Gotchas
 - MTLM ratio boundary: 0.30 falls into Tier 3 (check is `low <= ratio < high` so 0.30 is in Tier 3 which has range 0.30-1.0)
+## Iteration 10 - Sat, Feb 28, 2026 10:32:05 PM
+Completed: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee (ID: US-093) in 10m
+
+
+## Iteration N — US-095: Implement Multi-Tier Levy Model (MTLM) Rate Calculation for Foreign Workers
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_mtlm`
+**Result:** PASS — 24/24 tests pass
+
+### Files synced to container
+- `lhdn_payroll_integration/tests/test_mtlm.py` — outer tests path (bench discovery)
+- `lhdn_payroll_integration/fixtures/custom_field.json` — outer fixture path (added MTLM fields)
+- `lhdn_payroll_integration/report/foreign_worker_levy/foreign_worker_levy.py` — outer report path
+
+### Implementation was complete from US-070
+- `calculate_fw_levy_tier()` already in fw_levy_service.py with MTLM_TIERS constant
+- Report already had levy_tier and mtlm_annual_levy columns
+- Fixture already had custom_local_employee_count and custom_foreign_employee_count on Company
+
+### Gotchas
+- test_mtlm.py only existed in nested inner path; needed copy to outer path for bench discovery
+- Outer fixture (102 fields) was out of sync with local/inner fixture (104 fields) — local had MTLM fields
+- Outer report/foreign_worker_levy/ directory didn't exist — needed root to mkdir
