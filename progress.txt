@@ -5306,3 +5306,31 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 ### Gotchas
 - EA Third Schedule uses 52/12 factor for weekly→monthly hours conversion (not 4.33 approximation)
 - Public Holiday multiplier for part-time is 2.0x (not 3.0x like full-time) per Third Schedule
+
+
+## Iteration [N] — US-079: Implement CP58 Agent/Dealer Non-Employment Income Statement
+
+**Type:** IMPL
+**TDD Phase:** GREEN (pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cp58`
+**Result:** PASS — 16 tests, 0 failures, 0 errors, 5 skipped (no test data — expected)
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/cp58_agent_statement/__init__.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/cp58_agent_statement/cp58_agent_statement.json`
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/cp58_agent_statement/cp58_agent_statement.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_cp58.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — added 6 new Expense Claim fields
+
+### Custom fields added (Expense Claim)
+- `custom_cp58_section` — Section Break: CP58 Contractor Payment
+- `custom_payee_type` — Select: Employee / Contractor
+- `custom_payment_category` — Select: Commission / Service Fee / Other
+- `custom_payee_name` — Data: Contractor Name
+- `custom_payee_nric_reg` — Data: NRIC / Registration No
+- `custom_payee_tin` — Data: TIN (LHDN)
+
+### Patterns discovered
+- SQL aliases `dec` and `may` are MariaDB reserved words — always backtick-quote month aliases in GROUP BY pivot queries
+- Report JSON must be at NESTED path (lhdn_payroll_integration/lhdn_payroll_integration/) to be importable by test module
+- __init__.py required in each report subdirectory for Python module discovery
