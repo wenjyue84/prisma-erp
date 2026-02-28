@@ -5046,3 +5046,32 @@ Incomplete: Fix SEC-06 CSRF enforcement test â€” incorrect test design (ID:
 ### Gotchas
 - The old test was a false-negative: it appeared to test CSRF but actually allowed mutation
 - SEC-11 timeout was caused by AI model being slow on local stack; catching Timeout is correct pattern
+## Iteration 26 - Sat, Feb 28, 2026  6:29:07 PM
+Completed: Fix SEC-06 CSRF enforcement test â€” incorrect test design (ID: US-099) in 6m
+
+
+## Iteration N — US-070: Implement Foreign Worker Levy Tracking (FWCMS / Multi-Tier Levy Model)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_foreign_worker_levy`
+**Result:** PASS — 24/24 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/doctype/foreign_worker_levy_payment/` — New DocType (employee, levy_period_year, levy_amount, payment_date, receipt_number)
+- `lhdn_payroll_integration/report/foreign_worker_levy/` — New Script Report (Company + Year filters, shows Paid/Overdue/Due Soon/Upcoming status)
+- `lhdn_payroll_integration/services/fw_levy_service.py` — Daily scheduler alert + is_levy_overdue_or_due_soon() helper
+- `lhdn_payroll_integration/tests/test_foreign_worker_levy.py` — 24 tests across 6 test classes
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added 3 Employee fields: custom_fw_levy_rate, custom_fw_levy_due_date, custom_fw_levy_receipt_ref
+- `lhdn_payroll_integration/hooks.py` — Added daily scheduler: fw_levy_service.check_overdue_fw_levy
+
+### Patterns discovered
+- CRITICAL: Pre-compute test dates at module load time (outside all patches). `frappe.today()` internally calls `frappe.db.sql` to get System Settings; if `frappe.db.sql` is patched globally, `add_days(today(), N)` inside test bodies fails with deep MagicMock recursion.
+- SOLUTION: Extract all DB queries into named helper functions (`_get_employees()`, `_get_paid_levies()`, `_get_overdue_employees()`) and patch THOSE — never patch `frappe.db.sql` globally.
+- Module-level patch strings: `"lhdn_payroll_integration.lhdn_payroll_integration.report.X.X._helper"` for report-level helpers.
+- `bench migrate` creates DocType tables from JSON files in `doctype/` subdirectories automatically.
+- Custom fields are applied via `sync_fixtures()` / `after_migrate` hook after the initial migrate run.
+
+### Gotchas
+- bench migrate deleted the LHDN Payroll workspace as an orphan — normal; re-synced via after_migrate hook.
+- `docker cp` from Windows MINGW requires Windows-compatible path on host side (C:/..., not /tmp/...). Write tool creates files at Windows path; use C:/Users/... paths for all docker cp operations.
