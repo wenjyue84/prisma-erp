@@ -1,0 +1,32 @@
+Prisma ERP Test Report — 2026-02-28_17-36-29
+URL: http://localhost:8080
+============================================================
+Total: 12  Pass: 11  Fail: 1  Error: 0  Skip: 0
+Pass rate: 91.7%
+
+FAILURES & ERRORS:
+
+  [FAIL] tests.regression.test_regression.TestPrismaAIRegressions.test_reg04_fallback_provider_fields_in_settings
+  REG-04: Settings doctype has fallback_base_url field (added in feature/prisma-assistant-v2).
+
+Regression: fallback_base_url was missing before PR #aa57961.
+  AssertionError: 'fallback_base_url' not found in {'name': 'Prisma AI Settings', 'owner': 'Administrator', 'modified': '2026-02-28 00:42:29.725204', 'modified_by': 'Administrator', 'docstatus': 0, 'idx': '0', 'provider': 'ollama', 'api_key': '*********************************************************', 'base_url': 'http://host.docker.internal:11434/v1/chat/completions', 'model': 'gemini-3-flash-preview:cloud', 'system_prompt': 'You are an AI assistant embedded in ERPNext for Prisma Technology (Malaysia).\n\nYou can help with anything the user asks, with particular depth in:\n\nERPNext / Frappe Framework:\n- Any module: Accounting, Purchasing, Sales, Inventory, Manufacturing, HR, Projects, CRM\n- Frappe doctype structure, reports, print formats, workflows, custom fields, scripts\n- Setup, configuration, permissions, roles, and customisation best practices\n\nMalaysian compliance (specialist knowledge):\n- Payroll: PCB/MTD, EPF, SOCSO, EIS, HRDF levy calculations and deadlines\n- LHDN MyInvois e-invoicing: UBL XML, submission API, error codes, status polling\n- Statutory forms: EA Form (CP8A), Borang E, CP8D, CP21, CP22\n- SST, transfer pricing, withholding tax, double-taxation agreements\n- Employment Act 1955, minimum wage, foreign worker rules\n\nGeneral coding & integrations:\n- Python, JavaScript, Frappe/ERPNext custom scripts and API calls\n- REST APIs, webhooks, data imports/exports\n- SQL queries for Frappe\'s MariaDB schema\n\nGuidelines:\n- Answer any question the user asks — do not refuse because it seems "off topic".\n- Be concise and practical. Use numbered steps for procedures.\n- When referencing ERPNext fields or doctypes, use their exact label.\n- If uncertain about a regulatory detail, say so and point to the official source (LHDN portal, EPF website, etc.).\n- Respond in the same language as the user (English or Bahasa Malaysia).\n', 'doctype': 'Prisma AI Settings'} : fallback_base_url missing from Prisma AI Settings. Available fields: ['base_url']
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 58, in testPartExecutor
+    yield
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 651, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 606, in _callTestMethod
+    if method() is not None:
+       ~~~~~~^^
+      File "C:\Users\Jyue\Documents\1-projects\Projects\prisma-erp\tests\regression\test_regression.py", line 65, in test_reg04_fallback_provider_fields_in_settings
+    self.assertIn(
+    ~~~~~~~~~~~~~^
+        "fallback_base_url", data,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        f"fallback_base_url missing from Prisma AI Settings. "
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        f"Available fields: {[k for k in data.keys() if 'fallback' in k.lower() or 'base' in k.lower()]}"
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^

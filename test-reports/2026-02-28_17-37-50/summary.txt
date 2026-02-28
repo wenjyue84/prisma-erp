@@ -1,0 +1,54 @@
+Prisma ERP Test Report — 2026-02-28_17-37-50
+URL: http://localhost:8080
+============================================================
+Total: 16  Pass: 13  Fail: 3  Error: 0  Skip: 0
+Pass rate: 81.2%
+
+FAILURES & ERRORS:
+
+  [FAIL] tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac11_salary_slip_fields_present
+  AC-11: Salary Slip list records include employee and gross_pay.
+  AssertionError: 'employee' not found in {'name': 'Sal Slip/None/00001'}
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 58, in testPartExecutor
+    yield
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 651, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 606, in _callTestMethod
+    if method() is not None:
+       ~~~~~~^^
+      File "C:\Users\Jyue\Documents\1-projects\Projects\prisma-erp\tests\api_contract\test_api_contract.py", line 144, in test_ac11_salary_slip_fields_present
+    self.assertIn("employee", record)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+
+  [FAIL] tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac15_report_list_schema
+  AC-15: Report list records have name and report_type.
+  AssertionError: 'report_type' not found in {'name': 'Serial No Service Contract Expiry'}
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 58, in testPartExecutor
+    yield
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 651, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 606, in _callTestMethod
+    if method() is not None:
+       ~~~~~~^^
+      File "C:\Users\Jyue\Documents\1-projects\Projects\prisma-erp\tests\api_contract\test_api_contract.py", line 193, in test_ac15_report_list_schema
+    self.assertIn("report_type", record)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+
+  [FAIL] tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac16_company_has_lhdn_tin_field
+  AC-16: Company record includes custom_company_tin_number field.
+  AssertionError: 'custom_company_tin_number' not found in {'name': 'Arising Packaging'} : custom_company_tin_number not in Company: ['name']
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 58, in testPartExecutor
+    yield
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 651, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 606, in _callTestMethod
+    if method() is not None:
+       ~~~~~~^^
+      File "C:\Users\Jyue\Documents\1-projects\Projects\prisma-erp\tests\api_contract\test_api_contract.py", line 207, in test_ac16_company_has_lhdn_tin_field
+    self.assertIn("custom_company_tin_number", record,
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  f"custom_company_tin_number not in Company: {list(record.keys())}")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

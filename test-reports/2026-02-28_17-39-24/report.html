@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Prisma ERP Test Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; font-weight: 700; }
+  .card { background: #1e293b; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  details summary::-webkit-details-marker { display: none; }
+</style>
+</head>
+<body>
+
+<div class="card" style="display:flex;justify-content:space-between;align-items:center">
+  <div>
+    <h1>🧪 Prisma ERP Test Report</h1>
+    <p style="color:#64748b;font-size:13px;margin-top:4px">Generated 2026-02-28T09:39:24.143172+00:00</p>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:32px;font-weight:800;color:#22c55e">100.0%</div>
+    <div style="color:#64748b;font-size:12px">pass rate</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#e2e8f0">28</div>
+    <div style="color:#64748b;font-size:12px">Total</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#22c55e">28</div>
+    <div style="color:#64748b;font-size:12px">Passed</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#ef4444">0</div>
+    <div style="color:#64748b;font-size:12px">Failed</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#f97316">0</div>
+    <div style="color:#64748b;font-size:12px">Errors</div>
+  </div>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr style="border-bottom:2px solid #334155">
+        <th style="padding:8px 12px;text-align:left;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:200px">Test ID</th>
+        <th style="padding:8px 12px;text-align:left;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase">Description</th>
+        <th style="padding:8px 12px;text-align:right;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:100px">Duration</th>
+        <th style="padding:8px 12px;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:80px">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr style="background:#1e293b;">
+          <td colspan="4" style="padding:8px 12px;font-weight:700;color:#94a3b8;font-size:12px;letter-spacing:.5px;text-transform:uppercase">
+            API_CONTRACT &nbsp; (16/16 passed)
+          </td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac01_ping_response_schema</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac01_ping_response_schema</div>
+            <div style="color:#64748b;font-size:11px">AC-01: frappe.ping → {message: 'pong'}.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">5.92 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac02_get_logged_user_schema</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac02_get_logged_user_schema</div>
+            <div style="color:#64748b;font-size:11px">AC-02: frappe.auth.get_logged_user → {message: str}.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">49.51 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac03_resource_list_schema</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac03_resource_list_schema</div>
+            <div style="color:#64748b;font-size:11px">AC-03: GET /api/resource/Employee → {data: list}.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">16.13 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac04_resource_single_schema</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac04_resource_single_schema</div>
+            <div style="color:#64748b;font-size:11px">AC-04: GET /api/resource/User/Administrator → {data: dict with name}.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">12.2 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac10_msic_code_record_schema</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac10_msic_code_record_schema</div>
+            <div style="color:#64748b;font-size:11px">AC-10: LHDN MSIC Code record has expected fields (name, code, description).</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">6.8 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac11_salary_slip_fields_present</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac11_salary_slip_fields_present</div>
+            <div style="color:#64748b;font-size:11px">AC-11: Salary Slip list records include employee and gross_pay.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">50.4 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac12_employee_has_required_fields</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac12_employee_has_required_fields</div>
+            <div style="color:#64748b;font-size:11px">AC-12: Employee list records include name, employee_name, company.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">7.08 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac13_workspace_record_has_name</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac13_workspace_record_has_name</div>
+            <div style="color:#64748b;font-size:11px">AC-13: Workspace list records have 'name' field.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">7.2 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac14_resubmission_log_schema</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac14_resubmission_log_schema</div>
+            <div style="color:#64748b;font-size:11px">AC-14: LHDN Resubmission Log has expected fields if records exist.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">7.19 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac15_report_list_schema</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac15_report_list_schema</div>
+            <div style="color:#64748b;font-size:11px">AC-15: Report list records have name and report_type.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">49.45 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac16_company_has_lhdn_tin_field</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac16_company_has_lhdn_tin_field</div>
+            <div style="color:#64748b;font-size:11px">AC-16: Company record includes custom_company_tin_number field.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">52.47 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac05_send_message_top_level_schema</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac05_send_message_top_level_schema</div>
+            <div style="color:#64748b;font-size:11px">AC-05: send_message → top-level JSON has 'message' key.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">1798.52 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac06_send_message_response_is_string_or_dict</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac06_send_message_response_is_string_or_dict</div>
+            <div style="color:#64748b;font-size:11px">AC-06: send_message 'message' value is str or dict (not None or list).</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">2734.93 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac07_get_api_key_info_schema</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac07_get_api_key_info_schema</div>
+            <div style="color:#64748b;font-size:11px">AC-07: get_api_key_info → {message: dict or string} with no raw key.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">8.31 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac08_error_response_has_exc_type</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac08_error_response_has_exc_type</div>
+            <div style="color:#64748b;font-size:11px">AC-08: API errors include 'exc_type' field (Frappe error convention).</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">67.75 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_ac09_settings_doctype_fields</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_ac09_settings_doctype_fields</div>
+            <div style="color:#64748b;font-size:11px">AC-09: Prisma AI Settings response includes expected field names.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">8.04 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="background:#1e293b;">
+          <td colspan="4" style="padding:8px 12px;font-weight:700;color:#94a3b8;font-size:12px;letter-spacing:.5px;text-transform:uppercase">
+            INTEGRATION &nbsp; (12/12 passed)
+          </td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int09_chat_with_erp_question</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int09_chat_with_erp_question</div>
+            <div style="color:#64748b;font-size:11px">INT-09: AI answers a business question about ERPNext.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">2108.52 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int10_chat_preserves_conversation</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int10_chat_preserves_conversation</div>
+            <div style="color:#64748b;font-size:11px">INT-10: Second message with history receives context-aware reply.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">2004.06 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int11_api_key_info_after_chat</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int11_api_key_info_after_chat</div>
+            <div style="color:#64748b;font-size:11px">INT-11: get_api_key_info works immediately after a send_message call.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">2405.63 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int12_settings_persist_across_requests</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int12_settings_persist_across_requests</div>
+            <div style="color:#64748b;font-size:11px">INT-12: Prisma AI Settings are consistent across two reads.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">12.91 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int05_resubmit_api_exists</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int05_resubmit_api_exists</div>
+            <div style="color:#64748b;font-size:11px">INT-05: resubmit_to_lhdn whitelisted method is reachable.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">50.99 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int06_bulk_enqueue_api_exists</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int06_bulk_enqueue_api_exists</div>
+            <div style="color:#64748b;font-size:11px">INT-06: bulk_enqueue_lhdn_submission method is reachable.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">49.1 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int07_dev_tools_status_check</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int07_dev_tools_status_check</div>
+            <div style="color:#64748b;font-size:11px">INT-07: Dev tools system status endpoint returns data.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">89.59 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int08_resubmission_log_list</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int08_resubmission_log_list</div>
+            <div style="color:#64748b;font-size:11px">INT-08: LHDN Resubmission Log list is queryable.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">6.62 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int01_list_employees</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int01_list_employees</div>
+            <div style="color:#64748b;font-size:11px">INT-01: GET /api/resource/Employee returns a list (payroll foundation).</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">6.75 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int02_list_salary_slips</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int02_list_salary_slips</div>
+            <div style="color:#64748b;font-size:11px">INT-02: GET /api/resource/Salary Slip returns accessible records.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">6.67 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int03_company_has_lhdn_fields</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int03_company_has_lhdn_fields</div>
+            <div style="color:#64748b;font-size:11px">INT-03: Test company has LHDN custom fields populated.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">8.2 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int04_salary_slip_lhdn_status_field</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int04_salary_slip_lhdn_status_field</div>
+            <div style="color:#64748b;font-size:11px">INT-04: Most recent Salary Slip has LHDN status field accessible.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">51.66 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="margin-top:12px;color:#475569;font-size:12px;text-align:center">
+  Prisma ERP Test Suite &mdash; Prisma ERP Test Suite
+</div>
+
+<script>
+  // Embed raw JSON for machine reading
+  window.testReport = {"suite": "Prisma ERP Test Suite", "generated_at": "2026-02-28T09:39:24.143172+00:00", "summary": {"total": 28, "passed": 28, "failed": 0, "errored": 0, "skipped": 0, "pass_rate": "100.0%"}, "categories": {"api_contract": {"total": 16, "passed": 16, "failed": 0, "tests": [{"id": "tests.api_contract.test_api_contract.TestFrappeAPIContracts.test_ac01_ping_response_schema", "name": "test_ac01_ping_response_schema", "description": "AC-01: frappe.ping \u2192 {message: 'pong'}.", "category": "api_contract", "status": "PASS", "duration_ms": 5.92, "error": null}, {"id": "tests.api_contract.test_api_contract.TestFrappeAPIContracts.test_ac02_get_logged_user_schema", "name": "test_ac02_get_logged_user_schema", "description": "AC-02: frappe.auth.get_logged_user \u2192 {message: str}.", "category": "api_contract", "status": "PASS", "duration_ms": 49.51, "error": null}, {"id": "tests.api_contract.test_api_contract.TestFrappeAPIContracts.test_ac03_resource_list_schema", "name": "test_ac03_resource_list_schema", "description": "AC-03: GET /api/resource/Employee \u2192 {data: list}.", "category": "api_contract", "status": "PASS", "duration_ms": 16.13, "error": null}, {"id": "tests.api_contract.test_api_contract.TestFrappeAPIContracts.test_ac04_resource_single_schema", "name": "test_ac04_resource_single_schema", "description": "AC-04: GET /api/resource/User/Administrator \u2192 {data: dict with name}.", "category": "api_contract", "status": "PASS", "duration_ms": 12.2, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac10_msic_code_record_schema", "name": "test_ac10_msic_code_record_schema", "description": "AC-10: LHDN MSIC Code record has expected fields (name, code, description).", "category": "api_contract", "status": "PASS", "duration_ms": 6.8, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac11_salary_slip_fields_present", "name": "test_ac11_salary_slip_fields_present", "description": "AC-11: Salary Slip list records include employee and gross_pay.", "category": "api_contract", "status": "PASS", "duration_ms": 50.4, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac12_employee_has_required_fields", "name": "test_ac12_employee_has_required_fields", "description": "AC-12: Employee list records include name, employee_name, company.", "category": "api_contract", "status": "PASS", "duration_ms": 7.08, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac13_workspace_record_has_name", "name": "test_ac13_workspace_record_has_name", "description": "AC-13: Workspace list records have 'name' field.", "category": "api_contract", "status": "PASS", "duration_ms": 7.2, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac14_resubmission_log_schema", "name": "test_ac14_resubmission_log_schema", "description": "AC-14: LHDN Resubmission Log has expected fields if records exist.", "category": "api_contract", "status": "PASS", "duration_ms": 7.19, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac15_report_list_schema", "name": "test_ac15_report_list_schema", "description": "AC-15: Report list records have name and report_type.", "category": "api_contract", "status": "PASS", "duration_ms": 49.45, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac16_company_has_lhdn_tin_field", "name": "test_ac16_company_has_lhdn_tin_field", "description": "AC-16: Company record includes custom_company_tin_number field.", "category": "api_contract", "status": "PASS", "duration_ms": 52.47, "error": null}, {"id": "tests.api_contract.test_api_contract.TestPrismaAIAPIContract.test_ac05_send_message_top_level_schema", "name": "test_ac05_send_message_top_level_schema", "description": "AC-05: send_message \u2192 top-level JSON has 'message' key.", "category": "api_contract", "status": "PASS", "duration_ms": 1798.52, "error": null}, {"id": "tests.api_contract.test_api_contract.TestPrismaAIAPIContract.test_ac06_send_message_response_is_string_or_dict", "name": "test_ac06_send_message_response_is_string_or_dict", "description": "AC-06: send_message 'message' value is str or dict (not None or list).", "category": "api_contract", "status": "PASS", "duration_ms": 2734.93, "error": null}, {"id": "tests.api_contract.test_api_contract.TestPrismaAIAPIContract.test_ac07_get_api_key_info_schema", "name": "test_ac07_get_api_key_info_schema", "description": "AC-07: get_api_key_info \u2192 {message: dict or string} with no raw key.", "category": "api_contract", "status": "PASS", "duration_ms": 8.31, "error": null}, {"id": "tests.api_contract.test_api_contract.TestPrismaAIAPIContract.test_ac08_error_response_has_exc_type", "name": "test_ac08_error_response_has_exc_type", "description": "AC-08: API errors include 'exc_type' field (Frappe error convention).", "category": "api_contract", "status": "PASS", "duration_ms": 67.75, "error": null}, {"id": "tests.api_contract.test_api_contract.TestPrismaAIAPIContract.test_ac09_settings_doctype_fields", "name": "test_ac09_settings_doctype_fields", "description": "AC-09: Prisma AI Settings response includes expected field names.", "category": "api_contract", "status": "PASS", "duration_ms": 8.04, "error": null}]}, "integration": {"total": 12, "passed": 12, "failed": 0, "tests": [{"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int09_chat_with_erp_question", "name": "test_int09_chat_with_erp_question", "description": "INT-09: AI answers a business question about ERPNext.", "category": "integration", "status": "PASS", "duration_ms": 2108.52, "error": null}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int10_chat_preserves_conversation", "name": "test_int10_chat_preserves_conversation", "description": "INT-10: Second message with history receives context-aware reply.", "category": "integration", "status": "PASS", "duration_ms": 2004.06, "error": null}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int11_api_key_info_after_chat", "name": "test_int11_api_key_info_after_chat", "description": "INT-11: get_api_key_info works immediately after a send_message call.", "category": "integration", "status": "PASS", "duration_ms": 2405.63, "error": null}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int12_settings_persist_across_requests", "name": "test_int12_settings_persist_across_requests", "description": "INT-12: Prisma AI Settings are consistent across two reads.", "category": "integration", "status": "PASS", "duration_ms": 12.91, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int05_resubmit_api_exists", "name": "test_int05_resubmit_api_exists", "description": "INT-05: resubmit_to_lhdn whitelisted method is reachable.", "category": "integration", "status": "PASS", "duration_ms": 50.99, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int06_bulk_enqueue_api_exists", "name": "test_int06_bulk_enqueue_api_exists", "description": "INT-06: bulk_enqueue_lhdn_submission method is reachable.", "category": "integration", "status": "PASS", "duration_ms": 49.1, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int07_dev_tools_status_check", "name": "test_int07_dev_tools_status_check", "description": "INT-07: Dev tools system status endpoint returns data.", "category": "integration", "status": "PASS", "duration_ms": 89.59, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int08_resubmission_log_list", "name": "test_int08_resubmission_log_list", "description": "INT-08: LHDN Resubmission Log list is queryable.", "category": "integration", "status": "PASS", "duration_ms": 6.62, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int01_list_employees", "name": "test_int01_list_employees", "description": "INT-01: GET /api/resource/Employee returns a list (payroll foundation).", "category": "integration", "status": "PASS", "duration_ms": 6.75, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int02_list_salary_slips", "name": "test_int02_list_salary_slips", "description": "INT-02: GET /api/resource/Salary Slip returns accessible records.", "category": "integration", "status": "PASS", "duration_ms": 6.67, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int03_company_has_lhdn_fields", "name": "test_int03_company_has_lhdn_fields", "description": "INT-03: Test company has LHDN custom fields populated.", "category": "integration", "status": "PASS", "duration_ms": 8.2, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int04_salary_slip_lhdn_status_field", "name": "test_int04_salary_slip_lhdn_status_field", "description": "INT-04: Most recent Salary Slip has LHDN status field accessible.", "category": "integration", "status": "PASS", "duration_ms": 51.66, "error": null}]}}, "all_results": [{"id": "tests.api_contract.test_api_contract.TestFrappeAPIContracts.test_ac01_ping_response_schema", "name": "test_ac01_ping_response_schema", "description": "AC-01: frappe.ping \u2192 {message: 'pong'}.", "category": "api_contract", "status": "PASS", "duration_ms": 5.92, "error": null}, {"id": "tests.api_contract.test_api_contract.TestFrappeAPIContracts.test_ac02_get_logged_user_schema", "name": "test_ac02_get_logged_user_schema", "description": "AC-02: frappe.auth.get_logged_user \u2192 {message: str}.", "category": "api_contract", "status": "PASS", "duration_ms": 49.51, "error": null}, {"id": "tests.api_contract.test_api_contract.TestFrappeAPIContracts.test_ac03_resource_list_schema", "name": "test_ac03_resource_list_schema", "description": "AC-03: GET /api/resource/Employee \u2192 {data: list}.", "category": "api_contract", "status": "PASS", "duration_ms": 16.13, "error": null}, {"id": "tests.api_contract.test_api_contract.TestFrappeAPIContracts.test_ac04_resource_single_schema", "name": "test_ac04_resource_single_schema", "description": "AC-04: GET /api/resource/User/Administrator \u2192 {data: dict with name}.", "category": "api_contract", "status": "PASS", "duration_ms": 12.2, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac10_msic_code_record_schema", "name": "test_ac10_msic_code_record_schema", "description": "AC-10: LHDN MSIC Code record has expected fields (name, code, description).", "category": "api_contract", "status": "PASS", "duration_ms": 6.8, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac11_salary_slip_fields_present", "name": "test_ac11_salary_slip_fields_present", "description": "AC-11: Salary Slip list records include employee and gross_pay.", "category": "api_contract", "status": "PASS", "duration_ms": 50.4, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac12_employee_has_required_fields", "name": "test_ac12_employee_has_required_fields", "description": "AC-12: Employee list records include name, employee_name, company.", "category": "api_contract", "status": "PASS", "duration_ms": 7.08, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac13_workspace_record_has_name", "name": "test_ac13_workspace_record_has_name", "description": "AC-13: Workspace list records have 'name' field.", "category": "api_contract", "status": "PASS", "duration_ms": 7.2, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac14_resubmission_log_schema", "name": "test_ac14_resubmission_log_schema", "description": "AC-14: LHDN Resubmission Log has expected fields if records exist.", "category": "api_contract", "status": "PASS", "duration_ms": 7.19, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac15_report_list_schema", "name": "test_ac15_report_list_schema", "description": "AC-15: Report list records have name and report_type.", "category": "api_contract", "status": "PASS", "duration_ms": 49.45, "error": null}, {"id": "tests.api_contract.test_api_contract.TestLHDNPayrollAPIContract.test_ac16_company_has_lhdn_tin_field", "name": "test_ac16_company_has_lhdn_tin_field", "description": "AC-16: Company record includes custom_company_tin_number field.", "category": "api_contract", "status": "PASS", "duration_ms": 52.47, "error": null}, {"id": "tests.api_contract.test_api_contract.TestPrismaAIAPIContract.test_ac05_send_message_top_level_schema", "name": "test_ac05_send_message_top_level_schema", "description": "AC-05: send_message \u2192 top-level JSON has 'message' key.", "category": "api_contract", "status": "PASS", "duration_ms": 1798.52, "error": null}, {"id": "tests.api_contract.test_api_contract.TestPrismaAIAPIContract.test_ac06_send_message_response_is_string_or_dict", "name": "test_ac06_send_message_response_is_string_or_dict", "description": "AC-06: send_message 'message' value is str or dict (not None or list).", "category": "api_contract", "status": "PASS", "duration_ms": 2734.93, "error": null}, {"id": "tests.api_contract.test_api_contract.TestPrismaAIAPIContract.test_ac07_get_api_key_info_schema", "name": "test_ac07_get_api_key_info_schema", "description": "AC-07: get_api_key_info \u2192 {message: dict or string} with no raw key.", "category": "api_contract", "status": "PASS", "duration_ms": 8.31, "error": null}, {"id": "tests.api_contract.test_api_contract.TestPrismaAIAPIContract.test_ac08_error_response_has_exc_type", "name": "test_ac08_error_response_has_exc_type", "description": "AC-08: API errors include 'exc_type' field (Frappe error convention).", "category": "api_contract", "status": "PASS", "duration_ms": 67.75, "error": null}, {"id": "tests.api_contract.test_api_contract.TestPrismaAIAPIContract.test_ac09_settings_doctype_fields", "name": "test_ac09_settings_doctype_fields", "description": "AC-09: Prisma AI Settings response includes expected field names.", "category": "api_contract", "status": "PASS", "duration_ms": 8.04, "error": null}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int09_chat_with_erp_question", "name": "test_int09_chat_with_erp_question", "description": "INT-09: AI answers a business question about ERPNext.", "category": "integration", "status": "PASS", "duration_ms": 2108.52, "error": null}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int10_chat_preserves_conversation", "name": "test_int10_chat_preserves_conversation", "description": "INT-10: Second message with history receives context-aware reply.", "category": "integration", "status": "PASS", "duration_ms": 2004.06, "error": null}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int11_api_key_info_after_chat", "name": "test_int11_api_key_info_after_chat", "description": "INT-11: get_api_key_info works immediately after a send_message call.", "category": "integration", "status": "PASS", "duration_ms": 2405.63, "error": null}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int12_settings_persist_across_requests", "name": "test_int12_settings_persist_across_requests", "description": "INT-12: Prisma AI Settings are consistent across two reads.", "category": "integration", "status": "PASS", "duration_ms": 12.91, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int05_resubmit_api_exists", "name": "test_int05_resubmit_api_exists", "description": "INT-05: resubmit_to_lhdn whitelisted method is reachable.", "category": "integration", "status": "PASS", "duration_ms": 50.99, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int06_bulk_enqueue_api_exists", "name": "test_int06_bulk_enqueue_api_exists", "description": "INT-06: bulk_enqueue_lhdn_submission method is reachable.", "category": "integration", "status": "PASS", "duration_ms": 49.1, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int07_dev_tools_status_check", "name": "test_int07_dev_tools_status_check", "description": "INT-07: Dev tools system status endpoint returns data.", "category": "integration", "status": "PASS", "duration_ms": 89.59, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int08_resubmission_log_list", "name": "test_int08_resubmission_log_list", "description": "INT-08: LHDN Resubmission Log list is queryable.", "category": "integration", "status": "PASS", "duration_ms": 6.62, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int01_list_employees", "name": "test_int01_list_employees", "description": "INT-01: GET /api/resource/Employee returns a list (payroll foundation).", "category": "integration", "status": "PASS", "duration_ms": 6.75, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int02_list_salary_slips", "name": "test_int02_list_salary_slips", "description": "INT-02: GET /api/resource/Salary Slip returns accessible records.", "category": "integration", "status": "PASS", "duration_ms": 6.67, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int03_company_has_lhdn_fields", "name": "test_int03_company_has_lhdn_fields", "description": "INT-03: Test company has LHDN custom fields populated.", "category": "integration", "status": "PASS", "duration_ms": 8.2, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int04_salary_slip_lhdn_status_field", "name": "test_int04_salary_slip_lhdn_status_field", "description": "INT-04: Most recent Salary Slip has LHDN status field accessible.", "category": "integration", "status": "PASS", "duration_ms": 51.66, "error": null}]};
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+{
+  "actions": [],
+  "creation": "2026-02-27 12:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "section_connection",
+    "provider",
+    "api_key",
+    "base_url",
+    "section_models",
+    "model",
+    "fallback_model",
+    "fallback_base_url",
+    "fallback_api_key",
+    "section_prompt",
+    "system_prompt"
+  ],
+  "fields": [
+    {
+      "fieldname": "section_connection",
+      "fieldtype": "Section Break",
+      "label": "Connection"
+    },
+    {
+      "fieldname": "provider",
+      "fieldtype": "Select",
+      "label": "AI Provider",
+      "options": "anthropic\nopenai\ngemini\nollama",
+      "default": "anthropic",
+      "reqd": 1
+    },
+    {
+      "fieldname": "api_key",
+      "fieldtype": "Password",
+      "label": "API Key",
+      "description": "Your provider API key. Stored encrypted."
+    },
+    {
+      "fieldname": "base_url",
+      "fieldtype": "Data",
+      "label": "Base URL",
+      "description": "Override the default API endpoint. Leave blank to use the provider default (e.g. for Ollama/OpenWebUI: http://host.docker.internal:3000)."
+    },
+    {
+      "fieldname": "section_models",
+      "fieldtype": "Section Break",
+      "label": "Models"
+    },
+    {
+      "fieldname": "model",
+      "fieldtype": "Data",
+      "label": "Default Model",
+      "description": "e.g. gpt-4o-mini, claude-haiku-4-5-20251001, gemini-2.0-flash-lite, qwen2.5. Leave blank to use the provider default."
+    },
+    {
+      "fieldname": "fallback_model",
+      "fieldtype": "Data",
+      "label": "Fallback Model",
+      "description": "If the default model fails, retry with this model. Leave blank to disable fallback."
+    },
+    {
+      "fieldname": "fallback_base_url",
+      "fieldtype": "Data",
+      "label": "Fallback Base URL",
+      "description": "Override the API endpoint for the fallback model. Leave blank to use the provider default.",
+      "reqd": 0,
+      "in_list_view": 0,
+      "insert_after": "fallback_model"
+    },
+    {
+      "fieldname": "fallback_api_key",
+      "fieldtype": "Password",
+      "label": "Fallback Model API Key",
+      "description": "API key for the fallback model if it uses a different provider or key. Leave blank to reuse the main API Key."
+    },
+    {
+      "fieldname": "section_prompt",
+      "fieldtype": "Section Break",
+      "label": "System Prompt"
+    },
+    {
+      "fieldname": "system_prompt",
+      "fieldtype": "Long Text",
+      "label": "System Prompt",
+      "description": "The AI's personality and instructions. Leave blank to use the built-in default prompt.",
+      "rows": 8
+    }
+  ],
+  "is_single": 1,
+  "issingle": 1,
+  "links": [],
+  "modified": "2026-02-28 10:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Prisma Assistant",
+  "name": "Prisma AI Settings",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 0,
+      "email": 1,
+      "export": 0,
+      "print": 1,
+      "read": 1,
+      "report": 0,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    }
+  ],
+  "sort_field": "creation",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}

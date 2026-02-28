@@ -1,0 +1,114 @@
+[
+  {
+    "doctype": "Salary Component",
+    "name": "Basic Salary",
+    "salary_component": "Basic Salary",
+    "salary_component_abbr": "BS",
+    "type": "Earning",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "Monthly Tax Deduction",
+    "salary_component": "Monthly Tax Deduction",
+    "salary_component_abbr": "PCB",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 1,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EPF Employee",
+    "salary_component": "EPF Employee",
+    "salary_component_abbr": "EPF-EE",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "SOCSO Employee",
+    "salary_component": "SOCSO Employee",
+    "salary_component_abbr": "SOCSO-EE",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EPF - Employer",
+    "salary_component": "EPF - Employer",
+    "salary_component_abbr": "EPF-ER",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 1,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "SOCSO - Employer",
+    "salary_component": "SOCSO - Employer",
+    "salary_component_abbr": "SOCSO-ER",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 1,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EIS Employee",
+    "salary_component": "EIS Employee",
+    "salary_component_abbr": "EIS-EE",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EIS - Employer",
+    "salary_component": "EIS - Employer",
+    "salary_component_abbr": "EIS-ER",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 1,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "HRDF Levy",
+    "salary_component": "HRDF Levy",
+    "salary_component_abbr": "HRDF",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 1,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "Transport Allowance",
+    "salary_component": "Transport Allowance",
+    "salary_component_abbr": "TA",
+    "type": "Earning",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": "022",
+    "custom_exemption_type": "Transport",
+    "custom_annual_exemption_ceiling": 6000
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "Housing Allowance",
+    "salary_component": "Housing Allowance",
+    "salary_component_abbr": "HA",
+    "type": "Earning",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": "022"
+  }
+]

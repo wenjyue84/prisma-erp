@@ -1,0 +1,329 @@
+{
+  "stories": [
+    {
+      "title": "Generate Employment Act S.61 Compliant Payslip with All Mandatory Fields",
+      "priority": "critical",
+      "description": "Employment Act 1955 Section 61 (amended by Employment (Amendment) Act 2022, effective 1 Jan 2023) extended the mandatory payslip obligation to ALL employees regardless of salary. Payslips must itemize gross wages, all allowances, all deductions (EPF/SOCSO/EIS/PCB/advances), and net pay. Non-compliance is an offence under Section 99A (fine up to RM10,000). Currently no story covers generating a compliant payslip document.",
+      "acceptanceCriteria": [
+        "Payslip PDF/HTML generated per Salary Slip record includes: employee full name, NRIC, gender, citizenship status, wage period, payment date, itemized gross earnings (basic, OT, allowances), itemized deductions (EPF, SOCSO, EIS, PCB, zakat, advance repayment), and net pay",
+        "Employer name, address, and place of employment appear on every payslip",
+        "Payslip generation works for all employee types: full-time, part-time, foreign workers",
+        "Bulk payslip generation (all employees for a payroll run) produces individual PDFs or a ZIP archive",
+        "Payslip is accessible via Employee Self-Service portal (if implemented) and downloadable by HR"
+      ],
+      "technicalNotes": [
+        "Employment Act 1955, Section 61 (Wage registers and salary records) — mandatory for all employees post-2022 amendment",
+        "Section 61(1B): payslip must be delivered on or before each payment of wages",
+        "Use Frappe's print format / Jinja template for PDF generation via wkhtmltopdf or WeasyPrint",
+        "Mandatory fields enumerated in Employment Act Third Schedule (Ninth Schedule after amendment)"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "medium",
+      "source": "https://jtksm.mohr.gov.my/sites/default/files/2023-11/Akta%20Kerja%201955%20(Akta%20265)_0.pdf"
+    },
+    {
+      "title": "Implement Salary Advance Loan Module with Employment Act S.22/24 50% Deduction Cap",
+      "priority": "high",
+      "description": "Employment Act 1955 Sections 22-24 govern employer salary advances and lawful deductions. Advances under Section 22 (interest-free) can be recovered without separate employee consent, but total deductions in any wage period cannot exceed 50% of monthly wages. No existing story models advance loans, outstanding balances, or enforces the 50% monthly deduction ceiling across all concurrent deduction types.",
+      "acceptanceCriteria": [
+        "Salary Advance DocType stores: advance date, amount, approved repayment schedule, outstanding balance, and linked salary slips",
+        "Payroll run automatically adds advance repayment line to Salary Slip and deducts from net pay",
+        "System enforces the 50% cap: if EPF + SOCSO + EIS + PCB + advance repayment > 50% of gross wages, advance deduction is reduced to respect the cap and the balance carried to the next period",
+        "Advance balance ledger tracks remaining amount and projected clearance date",
+        "HR can view all active advances and outstanding balances in a list report"
+      ],
+      "technicalNotes": [
+        "Employment Act 1955 Section 22: Advance of wages; Section 24(1): Lawful deductions; Section 24(2): 50% deduction ceiling",
+        "Exception to 50% ceiling: final wages on resignation/termination (full deduction allowed)",
+        "New Frappe DocType: 'Salary Advance Loan' with fields: employee, advance_date, amount, repayment_amount_per_period, outstanding_balance, status",
+        "Hook into before_submit of Salary Slip to compute cap and adjust repayment line"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "medium",
+      "source": "https://jtksm.mohr.gov.my/sites/default/files/2023-11/Akta%20Kerja%201955%20(Akta%20265)_0.pdf"
+    },
+    {
+      "title": "Implement Part-Time Employee ORP Proration and Overtime Eligibility under EA Third Schedule",
+      "priority": "high",
+      "description": "Employment Act 1955 Third Schedule (Part-Time Employees) defines a separate ORP formula for employees whose contracted hours are 70% or less of normal full-time hours. The ORP for part-time workers is based on agreed monthly wage divided by contracted monthly hours. Overtime rate and rest day pay follow the same 1.5x/2x multipliers on this adjusted HRP. The existing ORP story covers monthly-rated employees; part-time workers have a distinct formula not yet captured.",
+      "acceptanceCriteria": [
+        "Employee record has a field 'Employment Type' with options: Full-Time, Part-Time",
+        "Part-time employees have fields: 'Contracted Hours Per Week' and 'Contracted Days Per Week'",
+        "ORP for part-time calculated as: agreed_monthly_wage divided by contracted_hours_per_month, where contracted_hours_per_month = contracted_hours_per_week * 52 / 12",
+        "Overtime entitlement check applies: part-time employee must be earning RM4,000/month equivalent or less to be covered under EA",
+        "Overtime pay line on Salary Slip uses part-time HRP x 1.5 for normal day OT, x 2 for public holiday OT",
+        "System prevents OT payments above 104 hours/month for EA-covered part-time employees"
+      ],
+      "technicalNotes": [
+        "Employment Act 1955, Third Schedule - Minimum Terms and Conditions of Employment for Part-Time Employees (Regulation 5)",
+        "Part-time definition: works fewer than 70% of normal full-time hours",
+        "Employment (Amendment) Act 2022 extended EA coverage to employees earning up to RM4,000/month (previously RM2,000)",
+        "ORP formula reference: Employment Act Third Schedule, Regulation 5(3) for hourly rate derivation"
+      ],
+      "dependencies": ["Implement Ordinary Rate of Pay (ORP) Calculator and Overtime Validation"],
+      "estimatedComplexity": "medium",
+      "source": "https://www.mohr.gov.my/index.php/en/akta-peraturan-perintah/akta-kerja-1955-akta-265"
+    },
+    {
+      "title": "Extend EPF i-Akaun Upload File to Support Foreign Employee 2% Contribution Scheme (Oct 2025)",
+      "priority": "critical",
+      "description": "The Employees Provident Fund (Amendment) Act 2025 (effective 1 October 2025) mandates EPF contributions for all non-citizen employees holding valid employment passes: 2% employer + 2% employee. The existing 'Generate EPF i-Akaun Electronic Upload File' story covers Malaysian/PR employees. The KWSP i-Akaun upload format requires a separate employee type/scheme code for foreign employees. A new scheme-aware upload file must be generated.",
+      "acceptanceCriteria": [
+        "Employee record has 'Citizenship Status' field: Malaysian Citizen, Permanent Resident, Non-Citizen (Employment Pass), Non-Citizen Exempt (domestic worker)",
+        "EPF calculation for Non-Citizen (Employment Pass): employer 2% + employee 2% of monthly wages",
+        "EPF calculation for domestic workers (maid, cook, cleaner): EPF contribution not mandatory - system excludes them automatically based on occupation field",
+        "KWSP i-Akaun upload TXT/CSV file includes both Malaysian (standard scheme) and foreign employee (new scheme) records in a single monthly upload",
+        "Contribution month offset applied correctly: KWSP contribution month = salary month + 1",
+        "Unit tests verify correct 2% rate for foreign employees and exclusion of domestic workers"
+      ],
+      "technicalNotes": [
+        "KWSP Third Schedule (1 October 2025): https://www.kwsp.gov.my/documents/d/guest/jadual-ketiga-bi-1-oct-2025",
+        "EPF Amendment Act 2025 passed by Parliament March 2025; effective 1 October 2025",
+        "Lockton Malaysia alert: https://global.lockton.com/us/en/news-insights/malaysia-introduces-mandatory-epf-contributions-for-foreign-employees",
+        "KWSP may publish updated CSV column specification closer to Oct 2025 - monitor https://www.kwsp.gov.my/employer/responsibilities/mandatory-contribution",
+        "Domestic worker exemption covers: maid, cook, gardener, driver employed in private household"
+      ],
+      "dependencies": ["Generate EPF i-Akaun Electronic Upload File", "Implement Foreign Worker EPF Mandatory Contribution (Effective October 2025)"],
+      "estimatedComplexity": "medium",
+      "source": "https://www.kwsp.gov.my/en/employer/responsibilities/mandatory-contribution"
+    },
+    {
+      "title": "Implement Director Fee-Only MTD Lump-Sum Formula (Recipients Without Monthly Salary)",
+      "priority": "high",
+      "description": "LHDN's PCB specification defines a distinct MTD formula for directors who receive only lump-sum director fees (no monthly salary). The formula divides total fees by the number of months covered, computes MTD on that monthly equivalent, then multiplies by months. This differs from the bonus-month annualization formula (which adds to existing monthly salary) and from the existing 'Distinguish director fee vs director salary' story (which operates at the MyInvois XML level, not the PCB calculation level).",
+      "acceptanceCriteria": [
+        "Employee record has 'Director Status' flag and 'Director Fee Payment Frequency' (Monthly, Quarterly, Annually, Irregular)",
+        "For fee-only directors (no monthly salary): MTD computed as: tax_on_monthly_equivalent x months_covered, where monthly_equivalent = total_fee / months_covered",
+        "For directors with both monthly salary and lump-sum fee: bonus-month annualization formula applied (existing logic) - not the fee-only formula",
+        "Director fee Salary Slip distinguishes between Employment Income and Director Fee income type on CP39 and EA Form",
+        "System produces correct PCB amount verified against LHDN's worked examples in the PCB specification"
+      ],
+      "technicalNotes": [
+        "LHDN PCB Specification 2026: Section 5 - MTD computation method for director fee recipients",
+        "PCB Spec PDF: https://www.hasil.gov.my/media/arvlrzh5/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2026.pdf",
+        "Director fees must appear under Jumlah Imbuhan (B5 on EA Form), separate from basic salary (B1)",
+        "CP39 row for director fee uses distinct income type code per LHDN specification"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "source": "https://www.hasil.gov.my/media/arvlrzh5/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2026.pdf"
+    },
+    {
+      "title": "Update PCB TP1 Relief Tables for YA2025 (New Housing Loan Interest Relief and Increased Disability Amounts)",
+      "priority": "high",
+      "description": "Budget 2025 introduced new and revised personal income tax reliefs effective YA2025 that must be reflected in the TP1 declaration and PCB calculation engine. Key changes: (1) NEW housing loan interest relief (RM7,000 for first home RM500K or less; RM5,000 for RM500K-RM750K, valid for SPA signed 1 Jan 2025 to 31 Dec 2027); (2) disabled individual additional relief raised to RM7,000 from RM6,000; (3) disabled spouse additional relief raised to RM6,000 from RM5,000. The existing TP1 story created the infrastructure; the YA2025 relief values need updating.",
+      "acceptanceCriteria": [
+        "TP1 DocType Relief Items table includes new line item: Housing Loan Interest - First Home RM500K or less (max RM7,000) with SPA date validation (1 Jan 2025 to 31 Dec 2027)",
+        "New line item: Housing Loan Interest - First Home RM500K to RM750K (max RM5,000) with same SPA date validation",
+        "Disabled individual additional relief updated to RM7,000 maximum (from RM6,000)",
+        "Disabled spouse additional relief updated to RM6,000 (from RM5,000)",
+        "PCB calculation engine validates that YA2025 relief caps are applied per the updated LHDN relief table",
+        "Relief limits are version-controlled by assessment year so historical YA2024 calculations remain unaffected"
+      ],
+      "technicalNotes": [
+        "LHDN Tax Reliefs for YA2025: https://www.hasil.gov.my/en/individual/individual-life-cycle/income-declaration/tax-reliefs/",
+        "Crowe Malaysia YA2025 relief guide: https://www.crowe.com/my/insights/malaysia-personal-income-tax-relief-for-ya-2025",
+        "Housing loan interest relief: only for SPA dated between 1 Jan 2025 and 31 Dec 2027 (sunset clause); not applicable to SPA before 2025",
+        "Store relief caps in a configuration table keyed by (assessment_year, relief_type) to support future annual updates"
+      ],
+      "dependencies": ["Implement TP1 Employee Relief Declaration DocType and PCB Integration"],
+      "estimatedComplexity": "small",
+      "source": "https://www.hasil.gov.my/en/individual/individual-life-cycle/income-declaration/tax-reliefs/"
+    },
+    {
+      "title": "Implement HRDF Levy Contribution Base Classifier (Fixed Allowances vs. Variable Pay)",
+      "priority": "medium",
+      "description": "PSMB Act 2001 requires HRD Corp levy to be computed on wages which includes basic salary and fixed allowances (housing, transport, shift allowance) but excludes overtime, bonuses, commissions, service charges, and reimbursements. The existing HRDF stories cover the 1%/0.5% rate and Borang PSMB/6 generation, but no story classifies salary components into levy-base vs. non-levy-base, nor validates that the levy is computed on the correct base each month.",
+      "acceptanceCriteria": [
+        "Salary component configuration has a boolean field 'Is HRDF Levy Base' (default: True for fixed allowances, False for variable/performance components)",
+        "HRDF levy calculated as: sum of components where is_hrdf_levy_base = True, multiplied by levy_rate (1% or 0.5%)",
+        "Monthly Salary Slip shows HRDF levy base amount and levy contribution computed",
+        "HRDF levy base excludes: overtime pay, bonus, commission, service charge, gratuity, one-time payments",
+        "HRDF levy base includes: basic salary, housing allowance (fixed), transport allowance (fixed), shift allowance (fixed)",
+        "Report shows monthly HRDF levy base vs. gross wages so HR can audit classification"
+      ],
+      "technicalNotes": [
+        "PSMB Act 2001 definition of wages for levy: Section 2 interpretation and Third Schedule",
+        "HRD Corp levy contribution guide: https://hrdcorp.gov.my/faq",
+        "Add 'is_hrdf_levy_base' custom field to Salary Component via fixture",
+        "Monthly levy payment due to HRD Corp by 15th of following month via HRD Corp employer portal"
+      ],
+      "dependencies": ["Add HRDF levy validation and basic reporting", "Fix HRDF Levy Rate - 1% Mandatory for All Employers with 10+ Employees"],
+      "estimatedComplexity": "small",
+      "source": "https://hrdcorp.gov.my/faq"
+    },
+    {
+      "title": "Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)",
+      "priority": "medium",
+      "description": "Employment Act 1955 Section 19 (post-2022 amendment) requires wages to be paid no later than 7 days after the end of each wage period. Overtime wages must be paid within 10 days of the end of the wage period. Non-compliance exposes employers to fines up to RM50,000 per occurrence (Section 100A). No current story tracks payroll run timing or alerts HR when payroll processing is running late relative to the legal deadline.",
+      "acceptanceCriteria": [
+        "System tracks Wage Period End Date and Payment Due Date (= wage period end + 7 days) per payroll run",
+        "HR Manager receives email/Frappe notification alert 2 days before payment due date if Salary Slips are not yet in Submitted status",
+        "Dashboard widget shows payroll compliance status: On-Time, At Risk (2 or fewer days remaining), or Overdue",
+        "Overtime payment deadline tracked separately: wage period end + 10 days",
+        "Alert configuration is per-company and respects custom wage period definitions (weekly, fortnightly, monthly)"
+      ],
+      "technicalNotes": [
+        "Employment Act 1955, Section 19(1): normal wages must be paid within 7 days; Section 19(1A): overtime wages within 10 days - post-2022 amendment",
+        "Frappe notification/scheduler: use background job to check daily and send Frappe notifications",
+        "Payment due date = last day of wage period + 7 calendar days (not business days)",
+        "Section 100A fine: RM50,000 per violation per employee (effective 2022 amendment)"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "source": "https://jtksm.mohr.gov.my/sites/default/files/2023-11/Akta%20Kerja%201955%20(Akta%20265)_0.pdf"
+    },
+    {
+      "title": "Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export",
+      "priority": "medium",
+      "description": "Employment Act 1955 Section 61 and Income Tax Act 1967 Section 82 require employers to maintain wage records for a minimum of 6 and 7 years respectively. During LHDN or MOHR (Department of Labour) audits, employers must produce a wage register for each employee covering the audit period. No current story implements a formal wage register with enforced retention policy and structured export for auditors.",
+      "acceptanceCriteria": [
+        "Wage Register report generates a per-employee annual summary: all wage periods, gross pay, deductions, net pay, payroll dates",
+        "Records cannot be deleted or purged if within 7-year retention window (archive lock enforcement)",
+        "Export formats: PDF (print-ready tabular format) and XLSX for any selected date range",
+        "Audit export includes: employer details, employee details, every salary slip within the range, and total annual figures matching EA Form values",
+        "System-level data retention policy document accessible from LHDN Payroll workspace"
+      ],
+      "technicalNotes": [
+        "Income Tax Act 1967, Section 82: records must be kept for 7 years",
+        "Employment Act 1955, Section 61(1A): wage register retained for not less than 6 years",
+        "Frappe archive lock: prevent delete for Salary Slip records within retention window; set custom_lhdn_archived = 1 only after 7-year retention period expires",
+        "Integrate with the existing 'Define custom_lhdn_archived field in custom_field.json fixture' story"
+      ],
+      "dependencies": ["Define custom_lhdn_archived field in custom_field.json fixture"],
+      "estimatedComplexity": "medium",
+      "source": "https://www.hasil.gov.my/en/employers/employer-obligations/record-keeping/"
+    },
+    {
+      "title": "Auto-Generate EIS Form IA New Employee Registration File for PERKESO ASSIST",
+      "priority": "medium",
+      "description": "Employment Insurance System Act 2017 Section 34 requires employers to register every new eligible employee with EIS within 30 days of employment commencement. PERKESO provides Form IA (EIS-1A) for batch employee registration submitted via the ASSIST portal. The existing SOCSO Borang 3 story covers new employee notification to PERKESO for SOCSO; EIS Form IA is a separate, parallel registration requirement that should auto-generate on employee onboarding.",
+      "acceptanceCriteria": [
+        "On Employee DocType save (status = Active, age 18-60, employment date set), system creates a Pending EIS Registration flag",
+        "HR can trigger batch EIS Form IA file generation for all pending employees covering a date range",
+        "EIS Form IA file (CSV/text per PERKESO ASSIST specification) includes: employer reference number, employee NRIC, employee name, date joined, monthly wage bracket",
+        "System marks employee as EIS Registered after HR confirms PERKESO ASSIST upload acknowledgement",
+        "Alert generated if employee reaches 30 days of employment without EIS registration confirmation",
+        "Foreign workers and employees over age 60 are automatically excluded from EIS Form IA generation"
+      ],
+      "technicalNotes": [
+        "Employment Insurance System Act 2017 (Act 800), Section 34: employer registration obligation for new employees",
+        "PERKESO ASSIST portal: https://assist.perkeso.gov.my - supports batch CSV upload for employee registration",
+        "EIS eligibility: Malaysian/PR employees aged 18-60 only; foreign workers, civil servants, and domestic workers exempt",
+        "Differentiate from SOCSO Borang 3 (SOCSO registration) - EIS Form IA is submitted via the same ASSIST portal but is a distinct form and file format"
+      ],
+      "dependencies": ["Implement SOCSO Borang 3 - New Employee Notification to PERKESO"],
+      "estimatedComplexity": "small",
+      "source": "https://www.perkeso.gov.my/en/employer/register-employee.html"
+    },
+    {
+      "title": "Integrate Private Retirement Scheme (PRS) Voluntary Deduction with TP1 RM3,000 Relief",
+      "priority": "medium",
+      "description": "Private Retirement Scheme Act 2012 allows employees to make voluntary PRS contributions which qualify for RM3,000 personal tax relief per year. When employers facilitate PRS payroll deductions, the contribution amount must appear on the payslip as a voluntary deduction and auto-populate the PRS relief field in the employee's TP1 declaration. No existing story connects PRS payroll deductions to the TP1 relief accumulation.",
+      "acceptanceCriteria": [
+        "Salary component 'Private Retirement Scheme (PRS)' of type Deduction exists in fixture, marked as voluntary and non-statutory",
+        "PRS deduction on Salary Slip accumulates in a YTD counter per employee per year, capped at RM3,000 for relief reporting purposes",
+        "TP1 Employee Relief Declaration DocType has PRS relief field auto-populated from YTD PRS payroll deduction total",
+        "PRS provider name and employee account number stored on Employee for remittance reference",
+        "Payslip shows PRS deduction as a separate line item (after statutory deductions, before net pay)",
+        "EA Form Part D (deductions) includes PRS amount in the correct row for Private Retirement Scheme contributions"
+      ],
+      "technicalNotes": [
+        "Private Retirement Scheme Act 2012 (Act 739); SC-approved PRS providers listed at https://www.sc.com.my/development/private-retirement-scheme",
+        "LHDN Tax Relief: PRS = RM3,000/year, this is a separate bucket from EPF + life insurance (RM7,000 combined bucket)",
+        "PRS deduction does NOT reduce EPF/SOCSO/EIS contribution base - applied after statutory deductions",
+        "EA Form: PRS contributions declared under the row for contributions to approved Private Retirement Schemes"
+      ],
+      "dependencies": ["Implement TP1 Employee Relief Declaration DocType and PCB Integration"],
+      "estimatedComplexity": "small",
+      "source": "https://www.hasil.gov.my/en/individual/individual-life-cycle/income-declaration/tax-reliefs/"
+    },
+    {
+      "title": "Implement DTA 183-Day Residency Tracker and Short-Term Assignee PCB Exemption Workflow",
+      "priority": "medium",
+      "description": "Malaysia's Double Taxation Agreements (DTAs) with 70+ countries include a short-term employment exemption: non-citizen employees from DTA countries working in Malaysia for fewer than 183 days in a calendar year may be exempt from Malaysian income tax on employment income. Payroll systems must track days-in-Malaysia, flag employees approaching 183 days, and support a PCB exemption override. The existing 'Implement Expatriate Gross-Up Calculator and DTA Country Table' story covers grossed-up salary for tax residents; this story covers the pre-183-day exemption tracking workflow.",
+      "acceptanceCriteria": [
+        "Employee record has Tax Residency Status field: Resident, Non-Resident, Short-Term Assignee (DTA Exempt)",
+        "Days-in-Malaysia counter tracks calendar year presence from a structured Travel Log sub-table (date, direction: Entry/Exit)",
+        "System generates alert when Short-Term Assignee exceeds 150 days in-Malaysia in a calendar year (approaching 183-day threshold)",
+        "PCB exemption flag on Salary Slip suppresses PCB deduction and generates a zero-PCB CP39 record for that employee",
+        "When Short-Term Assignee exceeds 183 days, system automatically removes exemption flag and triggers backpay-of-PCB calculation for prior months in the same year",
+        "DTA country table lists treaty partner countries; system validates that employee home country has an active DTA before allowing exemption flag"
+      ],
+      "technicalNotes": [
+        "LHDN DTA page: https://www.hasil.gov.my/en/international/double-taxation-avoidance-agreement-dtadtaa/",
+        "Income Tax Act 1967, Section 13(2)(h): employment income exemption under DTA for short-term assignments",
+        "183 days counted per calendar year (1 Jan to 31 Dec), including partial days of entry and exit",
+        "Employer must retain documentation for treaty claim and may need to file LHDN exemption notification in some DTA scenarios"
+      ],
+      "dependencies": ["Implement Expatriate Gross-Up Calculator and DTA Country Table"],
+      "estimatedComplexity": "medium",
+      "source": "https://www.hasil.gov.my/en/international/double-taxation-avoidance-agreement-dtadtaa/"
+    },
+    {
+      "title": "Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation",
+      "priority": "medium",
+      "description": "Some expatriate employees receive salaries denominated in foreign currencies (USD, SGD, GBP, AUD) per their employment contracts. For PCB purposes, LHDN requires all income to be converted to Malaysian Ringgit using the exchange rate prevailing at the date of payment (Bank Negara Malaysia middle rate). No existing story handles foreign-currency salary slips or the forex conversion step for PCB and EA Form reporting. This is distinct from the existing 'Add foreign currency conversion to Expense Claim XML builder' which covers expense reimbursements only.",
+      "acceptanceCriteria": [
+        "Salary Slip supports a Salary Currency field (defaults to MYR) and an Exchange Rate to MYR field",
+        "For non-MYR salary slips, all salary components are stored in both original currency amount and MYR equivalent amount",
+        "PCB calculation uses MYR equivalent amount for all tax computations",
+        "EA Form and CP39 always report values in MYR regardless of salary currency",
+        "Exchange rate can be manually entered or fetched from ERPNext Currency Exchange rates table (BNM middle rate is the official reference)",
+        "Payslip shows both original currency amount and MYR equivalent for each component for employee transparency"
+      ],
+      "technicalNotes": [
+        "LHDN PCB Specification: all income reported in RM; foreign-currency income converted at kadar pertukaran pada tarikh pembayaran (rate on payment date)",
+        "Bank Negara Malaysia forex rates: https://www.bnm.gov.my/exchange-rates",
+        "Income Tax Act 1967, Section 13: employment income includes amounts received in foreign currency",
+        "ERPNext has built-in Currency Exchange DocType; salary foreign currency conversion should use the same exchange rate lookup mechanism"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "medium",
+      "source": "https://www.hasil.gov.my/media/arvlrzh5/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2026.pdf"
+    },
+    {
+      "title": "Build Monthly e-PCB Plus Submission Reconciliation View",
+      "priority": "medium",
+      "description": "Since 15 January 2025, all PCB submissions go exclusively through the e-PCB Plus system on MyTax portal (legacy e-CP39, e-PCB, and e-Data PCB systems are closed for input). Employers need a monthly reconciliation view comparing PCB amounts computed by the payroll system against amounts acknowledged by e-PCB Plus. The existing 'Build year-end PCB vs submission reconciliation report' covers annual reconciliation; this story provides the monthly operational view used by payroll administrators to catch errors within the same month.",
+      "acceptanceCriteria": [
+        "Monthly PCB Reconciliation report for a selected month shows: employee name, employee NRIC, system-computed PCB, e-PCB Plus submitted PCB (from imported acknowledgement file), and variance",
+        "Submission records can be imported from the e-PCB Plus acknowledgement/confirmation file (CSV/text downloaded from MyTax portal) and matched to Salary Slip records by employee NRIC and month",
+        "Unmatched employees (in system but not in submission, or vice versa) are highlighted as exceptions requiring investigation",
+        "Report exports as XLSX for HR audit trail",
+        "Summary row shows: total system PCB, total submitted PCB, total variance, and count of unmatched employees"
+      ],
+      "technicalNotes": [
+        "e-PCB Plus system mandatory from 15 January 2025 at https://mytax.hasil.gov.my",
+        "e-PCB Plus generates an acknowledgement file on successful submission - system should store the reference number and submission timestamp per monthly payroll run",
+        "This report is distinct from the year-end PCB reconciliation (CP159/annual Borang E supporting schedule) - monthly view is for ongoing payroll operations",
+        "BusinessToday e-PCB Plus mandate announcement: https://www.businesstoday.com.my/2025/01/08/deadline-for-submission-of-data-and-monthly-tax-deduction-payments-via-e-pcb-plus/"
+      ],
+      "dependencies": ["Implement e-CP39 API Submission to LHDN MyTax / e-PCB Plus", "Fix CP39 CSV Format - Add All Mandatory LHDN e-PCB Plus Columns"],
+      "estimatedComplexity": "medium",
+      "source": "https://www.businesstoday.com.my/2025/01/08/deadline-for-submission-of-data-and-monthly-tax-deduction-payments-via-e-pcb-plus/"
+    },
+    {
+      "title": "Implement Zakat State Rate Table for Multi-State Employer Offices",
+      "priority": "low",
+      "description": "The ringgit-for-ringgit Zakat PCB offset (Section 6A, Income Tax Act 1967) allows zakat deducted at source to offset the employee's PCB liability dollar-for-dollar. However, zakat rates are set independently by each Malaysian state's religious authority and differ between states. The existing 'Implement Zakat PCB Offset' story implements the offset mechanism but assumes a single rate; multi-state employers need state-specific rates and remittance routing to the correct state authority.",
+      "acceptanceCriteria": [
+        "Zakat State Rate Table DocType stores: state, zakat authority name, current annual rate (percentage of income), income threshold (nisab), and effective date",
+        "Employee record has a Zakat State field (selects applicable state for zakat computation)",
+        "Monthly zakat deduction computed using the rate and nisab applicable to the employee's registered state",
+        "Zakat remittance report groups zakat amounts by state authority for correct payment routing",
+        "PCB offset applies: PCB liability for the month reduced by exact zakat deducted that month (1:1 offset)",
+        "If monthly zakat deduction exceeds PCB liability for that month, excess is not refunded but can be documented for employee's annual self-assessment offset"
+      ],
+      "technicalNotes": [
+        "Income Tax Act 1967, Section 6A: zakat/fitrah PCB offset - potongan zakat boleh ditolak daripada cukai",
+        "Zakat authorities by state: LZS (Selangor), MAIWP (Kuala Lumpur, Putrajaya, Labuan), LZZT (Terengganu), MAIAMP (Pahang), etc.",
+        "Annual nisab threshold approximately RM22,000 (varies by state; based on current gold/silver price)",
+        "Payroll deducts zakat monthly (1/12 of annual estimate based on projected annual income) with year-end adjustment"
+      ],
+      "dependencies": ["Implement Zakat PCB Offset (Ringgit-for-Ringgit Deduction)"],
+      "estimatedComplexity": "small",
+      "source": "https://www.hasil.gov.my/en/individual/individual-life-cycle/income-declaration/tax-reliefs/"
+    }
+  ]
+}
