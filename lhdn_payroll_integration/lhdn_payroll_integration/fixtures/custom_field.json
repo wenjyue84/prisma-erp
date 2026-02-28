@@ -955,5 +955,17 @@
     "description": "Total live births for which paternity leave has been claimed. Max 5 per EA S.60FA.",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_paternity_leave_taken"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_contracted_weekly_hours",
+    "dt": "Employee",
+    "fieldname": "custom_contracted_weekly_hours",
+    "fieldtype": "Float",
+    "label": "Contracted Weekly Hours",
+    "description": "Standard contracted working hours per week. Used for Employment Act S.60A(1) weekly hours compliance check. Default 45 (statutory maximum post-2022 amendment).",
+    "default": "45",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_paternity_births_claimed"
   }
 ]

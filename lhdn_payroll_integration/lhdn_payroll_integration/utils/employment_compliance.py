@@ -13,6 +13,8 @@ Covers:
 - Maternity/Paternity Leave Validation — Employment Act S.37 & S.60FA (US-080)
   Maternity leave: 98 consecutive days; allowance must be >= ORP * days
   Paternity leave: 7 consecutive days; max 5 live births per career
+- Working Hours Compliance — Employment Act 1955 Section 60A(1) post-2022 amendment (US-081)
+  Maximum 45 hours per week; OT from Salary Detail where custom_day_type is set
 """
 
 import frappe
@@ -37,6 +39,10 @@ PART_TIME_OT_MULTIPLIERS = {
     "Public Holiday": 2.0,
 }
 PART_TIME_DEFINITION_THRESHOLD = 0.70  # < 70% of normal full-time hours = part-time
+
+# Working Hours Compliance — Employment Act 1955 Section 60A(1) post-2022 amendment
+MAX_WEEKLY_HOURS = 45  # Maximum hours per week (reduced from 48 by EA Amendment 2022)
+WEEKS_PER_MONTH = 4.33  # Average weeks per calendar month
 
 
 def check_minimum_wage(monthly_salary, employment_type=None, worked_days=None, total_days=None, contracted_hours=None):
@@ -641,4 +647,89 @@ def calculate_termination_benefits(employee, termination_date):
         "daily_rate": daily_rate,
         "statutory_minimum": statutory_minimum,
         "monthly_salary": monthly_salary,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Working Hours Compliance — Employment Act 1955 Section 60A(1) (US-081)
+# Post-2022 amendment: maximum 45 hours per week (reduced from 48)
+# ---------------------------------------------------------------------------
+
+def validate_weekly_hours(salary_slip):
+    """Validate that implied average weekly hours do not exceed the statutory limit.
+
+    Employment Act 1955 Section 60A(1) (as amended 2022): maximum 45 working
+    hours per week. Excessive overtime may cause total implied weekly hours to
+    breach this limit, which is an Employment Act offence.
+
+    Calculation:
+        contracted_monthly_hours = contracted_weekly_hours * WEEKS_PER_MONTH
+        ot_hours_monthly         = sum of qty from earnings where custom_day_type is set
+        total_monthly_hours      = contracted_monthly_hours + ot_hours_monthly
+        implied_weekly_hours     = total_monthly_hours / WEEKS_PER_MONTH
+                                 = contracted_weekly_hours + (ot_hours_monthly / WEEKS_PER_MONTH)
+
+    Args:
+        salary_slip: Frappe Salary Slip document or mock with:
+            - employee (str): Employee ID to fetch custom_contracted_weekly_hours
+            - earnings (list): Salary Detail rows with 'custom_day_type' and 'qty' attributes
+
+    Returns:
+        dict with keys:
+            'compliant':             bool — True if implied_weekly_hours <= MAX_WEEKLY_HOURS
+            'warning':               str or None — human-readable warning if non-compliant
+            'implied_weekly_hours':  float — calculated average weekly hours
+            'max_weekly_hours':      int — statutory maximum (45)
+            'contracted_weekly_hours': float — hours from Employee or default 45
+            'ot_hours_monthly':      float — total OT hours summed from earnings
+    """
+    # --- Get contracted weekly hours from Employee (default MAX_WEEKLY_HOURS) ---
+    contracted_weekly_hours = MAX_WEEKLY_HOURS  # fallback default
+    try:
+        employee_name = getattr(salary_slip, "employee", None)
+        if employee_name:
+            emp_doc = frappe.get_doc("Employee", employee_name)
+            raw = getattr(emp_doc, "custom_contracted_weekly_hours", None)
+            if raw is not None:
+                contracted_weekly_hours = float(raw or MAX_WEEKLY_HOURS)
+    except Exception:
+        pass  # use default if employee not found or field missing
+
+    # --- Sum OT hours from earnings where custom_day_type is set ---
+    ot_hours_monthly = 0.0
+    earnings = getattr(salary_slip, "earnings", None) or []
+    for row in earnings:
+        day_type = getattr(row, "custom_day_type", None)
+        if day_type:  # any non-empty value indicates an OT/overtime row
+            try:
+                ot_hours_monthly += float(getattr(row, "qty", 0) or 0)
+            except (TypeError, ValueError):
+                pass
+
+    # --- Implied average weekly hours ---
+    implied_weekly_hours = contracted_weekly_hours + (ot_hours_monthly / WEEKS_PER_MONTH)
+
+    # --- Compliance check ---
+    if implied_weekly_hours > MAX_WEEKLY_HOURS:
+        warning = (
+            f"Implied average weekly hours ({implied_weekly_hours:.2f}h) exceeds the statutory "
+            f"maximum of {MAX_WEEKLY_HOURS} hours per week under Employment Act 1955 "
+            f"Section 60A(1) (as amended 2022). Excessive overtime is an Employment Act offence."
+        )
+        return {
+            "compliant": False,
+            "warning": warning,
+            "implied_weekly_hours": implied_weekly_hours,
+            "max_weekly_hours": MAX_WEEKLY_HOURS,
+            "contracted_weekly_hours": contracted_weekly_hours,
+            "ot_hours_monthly": ot_hours_monthly,
+        }
+
+    return {
+        "compliant": True,
+        "warning": None,
+        "implied_weekly_hours": implied_weekly_hours,
+        "max_weekly_hours": MAX_WEEKLY_HOURS,
+        "contracted_weekly_hours": contracted_weekly_hours,
+        "ot_hours_monthly": ot_hours_monthly,
     }

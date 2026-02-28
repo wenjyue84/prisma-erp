@@ -5393,3 +5393,28 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 ### Gotchas
 - Nested utils directory (lhdn_payroll_integration/lhdn_payroll_integration/utils/) did NOT have employment_compliance.py; must be copied there for module imports to work
 - File permissions (owned by root): must use `docker exec -u root` for writes
+
+
+## Iteration — US-081: Implement Working Hours Compliance Check (45-Hour Weekly Limit)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 11 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_working_hours_compliance`
+**Result:** PASS — 11/11 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `utils/employment_compliance.py` — Added MAX_WEEKLY_HOURS=45, WEEKS_PER_MONTH=4.33 constants and validate_weekly_hours(salary_slip) function
+- `fixtures/custom_field.json` — Added custom_contracted_weekly_hours (Float, default 45) on Employee
+- `tests/test_working_hours_compliance.py` — 11 tests covering 46h warning, 45h pass, multiple OT rows, missing employee fallback
+
+### Implementation
+- validate_weekly_hours(salary_slip): gets contracted_weekly_hours from employee.custom_contracted_weekly_hours (default 45); sums qty from earnings where custom_day_type is set; implied_weekly = contracted_weekly + (ot_monthly / 4.33); warns if > 45
+- Employment Act 1955 S.60A(1) post-2022 amendment: maximum 45h/week
+
+### Patterns discovered
+- CRITICAL pattern confirmed: must copy to BOTH outer and nested paths in container
+- patch("frappe.get_doc") works well for mocking employee document lookup
+
+### Gotchas
+- Test first tried lhdn_payroll_integration.lhdn_payroll_integration.tests.* (wrong); use lhdn_payroll_integration.tests.* (short path)
+- Nested path imports from lhdn_payroll_integration.lhdn_payroll_integration.utils.* — always sync both paths
