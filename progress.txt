@@ -5850,3 +5850,26 @@ TestEaFormExchangeRate (3 tests) — exchange_rate in SQL, custom fields in fixt
 ### Gotchas
 - Python 3.14: `_is_async_obj()` in mock calls `hasattr(obj, '__func__')` which triggers LocalProxy.__getattr__ → RuntimeError
 - Patching small helpers that wrap LocalProxy objects avoids this entirely
+## Iteration 8 - Sat, Feb 28, 2026 10:08:35 PM
+Completed: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) in 9m
+
+
+## Iteration N — US-092: Implement LHDN MyInvois Webhook Callback Handler
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 15 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_lhdn_webhook`
+**Result:** PASS — 15/15 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `api/lhdn_webhook.py` — Webhook handler with HMAC-SHA256 validation (was already pre-written but had test failures)
+- `tests/test_lhdn_webhook.py` — 15 tests rewritten to use `frappe.local.request` instead of `@patch("...frappe.request")`
+
+### Patterns discovered
+- **CRITICAL:** `@patch("...frappe.request")` FAILS in Frappe test context because `frappe.request` is a `LocalProxy` that raises `RuntimeError("object is not bound")` when `@patch` tries to inspect it for async detection.
+- **Fix:** Use `frappe.local.request = MagicMock()` in setUp/tearDown instead. The Frappe-native pattern (seen in frappe/tests/test_auth.py) is `frappe.local.request = Request(env)`.
+- `frappe.response` is a regular dict in test context — access directly, no patching needed.
+- Use `getattr(frappe.local, 'request', None)` in implementation to safely handle missing request in tests.
+
+### Gotchas
+- Both files (impl + tests) were pre-created but tests were broken due to the LocalProxy patching issue.

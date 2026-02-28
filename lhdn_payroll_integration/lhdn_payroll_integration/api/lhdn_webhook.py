@@ -25,24 +25,6 @@ import frappe
 from frappe import _
 
 
-# ---------------------------------------------------------------------------
-# Request accessors — extracted for testability (avoid direct LocalProxy access)
-# ---------------------------------------------------------------------------
-
-def _read_raw_body() -> str:
-    """Return raw POST body as text from the current Frappe request."""
-    return frappe.request.get_data(as_text=True)
-
-
-def _read_signature_header() -> str:
-    """Return X-LHDN-Signature header value from the current Frappe request."""
-    return frappe.request.headers.get("X-LHDN-Signature", "")
-
-
-# ---------------------------------------------------------------------------
-# Public endpoint
-# ---------------------------------------------------------------------------
-
 @frappe.whitelist(allow_guest=True)
 def receive_status_callback():
     """
@@ -52,7 +34,9 @@ def receive_status_callback():
     Returns 401 if signature is invalid or webhook secret not configured.
     Updates the corresponding Salary Slip / Expense Claim custom_lhdn_status.
     """
-    raw_body = _read_raw_body()
+    # Use frappe.local.request to avoid LocalProxy binding issues in tests
+    request = getattr(frappe.local, "request", None)
+    raw_body = request.get_data(as_text=True) if request else ""
 
     # Parse payload
     try:
@@ -72,7 +56,7 @@ def receive_status_callback():
         return {"error": "Webhook secret not configured"}
 
     # Validate HMAC-SHA256 signature
-    received_sig = _read_signature_header()
+    received_sig = request.headers.get("X-LHDN-Signature", "") if request else ""
     if not _verify_signature(raw_body, webhook_secret, received_sig):
         frappe.response["http_status_code"] = 401
         return {"error": "Invalid signature"}
@@ -90,10 +74,6 @@ def receive_status_callback():
 
     return {"status": "ok", "document_id": document_id, "updated_status": status}
 
-
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
 
 def _verify_signature(body: str, secret: str, received_sig: str) -> bool:
     """
