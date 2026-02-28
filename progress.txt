@@ -4712,3 +4712,28 @@ Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (I
 ### Gotchas
 - `bench migrate` orphan-deletes LHDN Payroll workspace — always re-sync fixtures after migrate
 - sync_fixtures is in `frappe.utils.fixtures`, not `frappe.modules.utils`
+## Iteration 15 - Sat, Feb 28, 2026  4:49:07 PM
+Incomplete: Fix fields parameter encoding in ERPNextSession.resource() helper (ID: US-097) — attempt 1/3
+
+
+## Iteration — US-075: Enforce EIS Contribution Ceiling (RM6,000) and Age/Foreign Worker Exemptions
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench commands:**
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_eis_monthly` → 19/19 PASS
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_statutory_rates` → 21/21 PASS
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/eis_monthly/eis_monthly.py` — Added `get_eis_contribution_warning()` with payroll_date param; added `eis_contribution_warning` column; SQL now fetches `date_of_birth` and `custom_is_foreign_worker` from Employee
+- `lhdn_payroll_integration/tests/test_statutory_rates.py` — Added `TestCalculateEisContribution` class (8 tests: foreign→0, age17→0, age60→0, wages7000→ceiling6000, etc.)
+- `lhdn_payroll_integration/tests/test_eis_monthly.py` — Added `TestEisMonthlyValidation` class (9 tests: warning for exempt employee with EIS, wrong ceiling detection, payroll_date param)
+
+### Implementation notes
+- `calculate_eis_contribution()` was pre-built in statutory_rates.py during US-074 (module docstring already had US-075 placeholder)
+- Added `payroll_date` param to `get_eis_contribution_warning()` to avoid age drift in tests (fixed-date age tests need explicit reference date)
+- Foreign worker field: `custom_is_foreign_worker` on Employee doctype
+- Age check: `age = (payroll_date - date_of_birth).days // 365`; exempt if age < 18 or >= 60
+
+### Gotchas
+- Test using `_dob_for_age(17)` with fixed payroll_date=2025-01-01 would show as age 18 if warning function used `date.today()` (2026-02-28) — fixed by passing payroll_date

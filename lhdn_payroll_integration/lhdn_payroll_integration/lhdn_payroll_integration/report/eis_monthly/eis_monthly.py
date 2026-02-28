@@ -4,13 +4,95 @@ Generates the monthly EIS (Sistem Insurans Pekerjaan) contribution schedule
 listing each employee's wages, employee EIS, employer EIS and total
 for a given month/year.
 
-Columns: Employee Name, NRIC, Wages, EIS Employee, EIS Employer, Total
+Columns: Employee Name, NRIC, Wages, EIS Employee, EIS Employer, Total, Warning
 Sources: Submitted Salary Slips (docstatus=1) with EIS deduction/earning lines.
+
+US-075: Validates each row against calculate_eis_contribution() and flags:
+- Exempt employees incorrectly included (foreign workers, age <18 or >=60)
+- Wrong ceiling (wages > RM6,000 not capped correctly)
 """
 import frappe
+from frappe.utils import flt, getdate
+
+from lhdn_payroll_integration.lhdn_payroll_integration.utils.statutory_rates import (
+    EIS_WAGE_CEILING,
+    calculate_eis_contribution,
+)
 
 _EIS_EMPLOYEE_COMPONENTS = {"EIS", "EIS Employee", "EIS - Employee"}
 _EIS_EMPLOYER_COMPONENTS = {"EIS - Employer", "EIS Employer"}
+
+EIS_TOLERANCE = 0.05  # 5% tolerance for rounding differences
+
+
+def get_eis_contribution_warning(wages, date_of_birth, is_foreign, actual_employee, actual_employer, payroll_date=None):
+    """Return a warning string if the actual EIS amounts deviate from expected.
+
+    Flags:
+    - Exempt employee incorrectly included (foreign, age <18 or >=60)
+    - Employee wages incorrectly calculated (wrong ceiling, wrong rate)
+
+    Args:
+        wages: Monthly gross wages in MYR.
+        date_of_birth: datetime.date of employee's birth (or None).
+        is_foreign: bool, True if employee is a foreign worker.
+        actual_employee: Actual employee EIS deducted from salary slip.
+        actual_employer: Actual employer EIS contributed.
+        payroll_date: datetime.date for age calculation (defaults to today).
+
+    Returns:
+        Warning string, or empty string if correct.
+    """
+    from datetime import date as _date
+
+    actual_employee = flt(actual_employee)
+    actual_employer = flt(actual_employer)
+
+    if date_of_birth is None:
+        # Cannot validate without DOB — skip
+        return ""
+
+    if not isinstance(date_of_birth, _date):
+        try:
+            date_of_birth = getdate(date_of_birth)
+        except Exception:
+            return ""
+
+    expected = calculate_eis_contribution(wages, date_of_birth, bool(is_foreign), payroll_date=payroll_date)
+
+    expected_employee = expected["employee"]
+    expected_employer = expected["employer"]
+
+    # Case 1: employee should be exempt but has EIS deducted
+    if expected_employee == 0.0 and expected_employer == 0.0:
+        if actual_employee > 0 or actual_employer > 0:
+            reason = "foreign worker" if is_foreign else "age exemption (<18 or >=60)"
+            return (
+                f"EIS exempt ({reason}) but EIS deducted: "
+                f"employee=RM{actual_employee:.2f}, employer=RM{actual_employer:.2f}"
+            )
+        return ""
+
+    # Case 2: contribution amount mismatch (wrong ceiling or rate)
+    warnings = []
+    if expected_employee > 0:
+        deviation = abs(actual_employee - expected_employee) / expected_employee
+        if deviation > EIS_TOLERANCE:
+            warnings.append(
+                f"employee EIS RM{actual_employee:.2f} (expected RM{expected_employee:.2f})"
+            )
+
+    if expected_employer > 0:
+        deviation = abs(actual_employer - expected_employer) / expected_employer
+        if deviation > EIS_TOLERANCE:
+            warnings.append(
+                f"employer EIS RM{actual_employer:.2f} (expected RM{expected_employer:.2f})"
+            )
+
+    if warnings:
+        return "EIS mismatch: " + "; ".join(warnings) + f" [ceiling=RM{EIS_WAGE_CEILING:,.0f}]"
+
+    return ""
 
 
 def get_columns():
@@ -61,6 +143,12 @@ def get_columns():
             "fieldtype": "Currency",
             "options": "MYR",
             "width": 140,
+        },
+        {
+            "label": "EIS Warning",
+            "fieldname": "eis_contribution_warning",
+            "fieldtype": "Data",
+            "width": 300,
         },
         {
             "label": "Salary Slip",
@@ -153,6 +241,8 @@ def get_data(filters=None):
             ss.employee_name                                 AS employee_name,
             COALESCE(e.custom_id_value, '')                 AS nric,
             ss.gross_pay                                     AS wages,
+            COALESCE(e.date_of_birth, NULL)                 AS date_of_birth,
+            COALESCE(e.custom_is_foreign_worker, 0)         AS is_foreign,
             COALESCE(SUM(CASE
                 WHEN sd.salary_component IN ({emp_placeholders})
                      AND sd.parentfield = 'deductions'
@@ -180,6 +270,13 @@ def get_data(filters=None):
 
     for row in rows:
         row["total_eis"] = (row.get("eis_employee") or 0) + (row.get("eis_employer") or 0)
+        row["eis_contribution_warning"] = get_eis_contribution_warning(
+            wages=row.get("wages", 0),
+            date_of_birth=row.get("date_of_birth"),
+            is_foreign=row.get("is_foreign", 0),
+            actual_employee=row.get("eis_employee", 0),
+            actual_employer=row.get("eis_employer", 0),
+        )
 
     return rows
 

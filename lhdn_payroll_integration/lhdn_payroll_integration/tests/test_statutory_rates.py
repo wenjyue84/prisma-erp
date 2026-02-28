@@ -106,3 +106,80 @@ class TestEpfBorangAValidation(FrappeTestCase):
         cols = get_columns()
         fieldnames = [c["fieldname"] for c in cols]
         self.assertIn("epf_rate_warning", fieldnames)
+
+
+# ---------------------------------------------------------------------------
+# US-075: EIS Contribution Ceiling and Exemptions
+# ---------------------------------------------------------------------------
+from datetime import date as _date_cls  # noqa: E402
+
+
+class TestCalculateEisContribution(FrappeTestCase):
+    """Verify calculate_eis_contribution() per EIS Act 2017 Second Schedule."""
+
+    def setUp(self):
+        from lhdn_payroll_integration.lhdn_payroll_integration.utils.statutory_rates import (
+            calculate_eis_contribution,
+        )
+        self.calc = calculate_eis_contribution
+        self.payroll_date = _date_cls(2025, 1, 1)
+
+    def _dob_for_age(self, age):
+        return _date_cls(self.payroll_date.year - age, self.payroll_date.month, self.payroll_date.day)
+
+    def test_eis_constants_exist(self):
+        """EIS_WAGE_CEILING and EIS_RATE must be exported from statutory_rates."""
+        from lhdn_payroll_integration.lhdn_payroll_integration.utils.statutory_rates import (
+            EIS_RATE,
+            EIS_WAGE_CEILING,
+        )
+        self.assertAlmostEqual(EIS_WAGE_CEILING, 6000.0)
+        self.assertAlmostEqual(EIS_RATE, 0.002)
+
+    def test_foreign_worker_returns_zero(self):
+        """Foreign worker -> both employee and employer EIS = 0."""
+        dob = self._dob_for_age(30)
+        result = self.calc(5000, dob, is_foreign=True, payroll_date=self.payroll_date)
+        self.assertEqual(result["employee"], 0.0)
+        self.assertEqual(result["employer"], 0.0)
+
+    def test_age_17_returns_zero(self):
+        """Age 17 (under 18) -> exempt, both EIS = 0."""
+        dob = self._dob_for_age(17)
+        result = self.calc(3000, dob, is_foreign=False, payroll_date=self.payroll_date)
+        self.assertEqual(result["employee"], 0.0)
+        self.assertEqual(result["employer"], 0.0)
+
+    def test_age_18_is_covered(self):
+        """Age exactly 18 -> covered, EIS > 0."""
+        dob = self._dob_for_age(18)
+        result = self.calc(3000, dob, is_foreign=False, payroll_date=self.payroll_date)
+        self.assertGreater(result["employee"], 0.0)
+
+    def test_age_60_returns_zero(self):
+        """Age 60 -> exempt, both EIS = 0."""
+        dob = self._dob_for_age(60)
+        result = self.calc(3000, dob, is_foreign=False, payroll_date=self.payroll_date)
+        self.assertEqual(result["employee"], 0.0)
+        self.assertEqual(result["employer"], 0.0)
+
+    def test_wages_7000_uses_ceiling_6000(self):
+        """Wages RM7,000 -> EIS computed on RM6,000 ceiling only (= 12.00)."""
+        dob = self._dob_for_age(30)
+        result = self.calc(7000, dob, is_foreign=False, payroll_date=self.payroll_date)
+        self.assertAlmostEqual(result["employee"], 12.00, places=2)
+        self.assertAlmostEqual(result["employer"], 12.00, places=2)
+
+    def test_wages_6000_at_ceiling(self):
+        """Wages exactly RM6,000 -> EIS = 12.00."""
+        dob = self._dob_for_age(30)
+        result = self.calc(6000, dob, is_foreign=False, payroll_date=self.payroll_date)
+        self.assertAlmostEqual(result["employee"], 12.00, places=2)
+        self.assertAlmostEqual(result["employer"], 12.00, places=2)
+
+    def test_employee_and_employer_equal(self):
+        """Employee and employer EIS contributions must always be equal."""
+        dob = self._dob_for_age(35)
+        for wages in [1500, 3000, 5000, 6000, 8000]:
+            result = self.calc(wages, dob, is_foreign=False, payroll_date=self.payroll_date)
+            self.assertAlmostEqual(result["employee"], result["employer"], places=2)
