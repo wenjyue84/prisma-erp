@@ -1427,7 +1427,7 @@
         "US-073"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-068",

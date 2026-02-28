@@ -696,5 +696,16 @@
   "description": "LHDN MyTax API client_secret for e-PCB Plus programmatic CP39 submission.",
   "module": "LHDN Payroll Integration",
   "insert_after": "custom_mytax_client_id"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Company-custom_epf_employer_registration",
+  "dt": "Company",
+  "fieldname": "custom_epf_employer_registration",
+  "fieldtype": "Data",
+  "label": "EPF Employer Registration Number",
+  "description": "KWSP/EPF employer registration number for i-Akaun electronic upload file (EPF Act 1991 s.43(3)).",
+  "module": "LHDN Payroll Integration",
+  "insert_after": "custom_mytax_client_secret"
  }
 ]

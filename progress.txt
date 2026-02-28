@@ -4922,3 +4922,28 @@ Incomplete: Fix SEC-06 CSRF enforcement test â€” incorrect test design (ID:
 ### Gotchas
 - bench migrate needed after adding new DocType JSON
 - Both inner and outer copies of hooks.py and socso_service.py must be updated
+## Iteration 22 - Sat, Feb 28, 2026  5:55:54 PM
+Incomplete: Fix SEC-06 CSRF enforcement test â€” incorrect test design (ID: US-099) — attempt 2/3
+
+
+## Iteration N — US-067: Generate EPF i-Akaun Electronic Upload File
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 27 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_epf_borang_a`
+**Result:** PASS — 27/27 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/epf_borang_a/epf_borang_a.py` — Renamed `total_epf` → `total_contribution`; added `generate_iakaun_file()` function
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — Added `custom_epf_employer_registration` (Data) to Company
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_epf_borang_a.py` — Added `TestEPFIAkaunFile` class (9 tests) for i-Akaun file format validation
+
+### Changes
+1. Fixed `total_epf` → `total_contribution` fieldname in columns and data rows (4 failing tests fixed)
+2. Added `generate_iakaun_file(filters)` — pipe-delimited .txt format: H|REG|PERIOD|COUNT, D|SEQ|NRIC|EPF_NO|NAME|WAGES|EE|ER, T|COUNT|EE_TOTAL|ER_TOTAL
+3. Added `custom_epf_employer_registration` (Data) on Company for EPF i-Akaun header
+4. Added 9 i-Akaun tests: header/trailer structure, NRIC no-hyphens, period in header, employee count, custom field existence
+
+### Patterns discovered
+- `bench execute frappe.utils.fixtures.sync_fixtures --kwargs '{"app":"..."}' ` — correct path for fixture sync without full migrate
+- Fixture sync + clear-cache is sufficient for adding Custom Fields without bench migrate
