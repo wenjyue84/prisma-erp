@@ -836,5 +836,18 @@
     "description": "Bank account type for payroll disbursement.",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_bank_code"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_director_fee_payment_frequency",
+    "dt": "Employee",
+    "fieldname": "custom_director_fee_payment_frequency",
+    "fieldtype": "Select",
+    "label": "Director Fee Payment Frequency",
+    "options": "\nMonthly\nQuarterly\nAnnually\nIrregular",
+    "description": "Frequency of director fee payment. Used for PCB Section 5 fee-only MTD formula.",
+    "depends_on": "eval:doc.custom_worker_type == \"Director\" && doc.custom_director_payment_type == \"Director Fee\"",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_director_payment_type"
   }
 ]

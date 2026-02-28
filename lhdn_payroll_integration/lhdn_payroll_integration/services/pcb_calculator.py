@@ -565,3 +565,91 @@ def populate_ytd_pcb_fields(doc, method=None):
         doc.custom_ytd_pcb_deducted = ytd_pcb
     except Exception:
         pass
+
+
+def calculate_director_fee_pcb(
+    total_fee: float,
+    months_covered: int,
+    resident: bool = True,
+    category: int = None,
+    tp1_total_reliefs: float = 0.0,
+    annual_zakat: float = 0.0,
+) -> float:
+    """Calculate PCB/MTD for fee-only directors receiving lump-sum director fees.
+
+    LHDN PCB Specification 2026 Section 5: For directors who receive only
+    lump-sum director fees (no monthly salary), MTD is computed as:
+
+        monthly_equivalent = total_fee / months_covered
+        annual_equivalent  = monthly_equivalent * 12
+        annual_tax         = tax_on(annual_equivalent - reliefs)
+        monthly_tax        = annual_tax / 12
+        MTD                = monthly_tax * months_covered
+
+    This formula differs from the bonus-month annualisation rule (Schedule D)
+    which is used when a director has BOTH monthly salary AND a lump-sum fee.
+    For mixed-income directors, use calculate_pcb() with bonus_amount instead.
+
+    For non-resident directors: flat 30% on total_fee (no reliefs applied).
+
+    Annual Zakat (ITA 1967 s.6A(3)) is applied as a ringgit-for-ringgit credit
+    against the total MTD for the payment period:
+        net_mtd = max(0, gross_mtd - (annual_zakat / 12) * months_covered)
+
+    Args:
+        total_fee: Total director fee for the payment period (RM).
+        months_covered: Number of months the fee covers
+            (1=monthly, 3=quarterly, 6=bi-annual, 12=annually).
+        resident: True if director is a Malaysian tax resident.
+        category: PCB category (1=single, 2=non-working spouse, 3=single parent).
+            Category 2 and 3 receive RM4,000 spouse/parent relief.
+        tp1_total_reliefs: Additional annual reliefs from Borang TP1 (RM).
+        annual_zakat: Annual Zakat paid by Muslim director (RM). Applied as
+            ringgit-for-ringgit credit on the total MTD for the period.
+
+    Returns:
+        float: Total MTD for the fee payment period (RM), rounded to 2 decimal places.
+               Returns 0.0 for zero or negative fee.
+    """
+    if total_fee <= 0:
+        return 0.0
+
+    months_covered = max(1, int(months_covered))
+    monthly_equivalent = total_fee / months_covered
+
+    if not resident:
+        # Non-resident: flat 30% on total fee, no reliefs
+        gross_mtd = total_fee * 0.30
+        if annual_zakat:
+            zakat_for_period = (float(annual_zakat) / 12) * months_covered
+            gross_mtd = max(0.0, gross_mtd - zakat_for_period)
+        return round(gross_mtd, 2)
+
+    # Resident: annualise the monthly equivalent then compute tax
+    annual_equivalent = monthly_equivalent * 12
+
+    # Apply standard and TP1 reliefs
+    total_relief = _SELF_RELIEF
+    if category is not None and int(category) in (2, 3):
+        total_relief += _SPOUSE_RELIEF
+    total_relief += max(0.0, float(tp1_total_reliefs or 0))
+
+    chargeable_income = max(0.0, annual_equivalent - total_relief)
+    annual_tax = _compute_tax_on_chargeable_income(chargeable_income)
+
+    # ITA 1967 s.6A: RM400 personal rebate for chargeable income <= RM35,000
+    if chargeable_income <= _REBATE_INCOME_LIMIT:
+        annual_tax = max(0.0, annual_tax - _PERSONAL_REBATE)
+        _has_spouse = (category is not None and int(category) in (2, 3))
+        if _has_spouse:
+            annual_tax = max(0.0, annual_tax - _PERSONAL_REBATE)
+
+    monthly_tax = annual_tax / 12
+    gross_mtd = monthly_tax * months_covered
+
+    # ITA 1967 s.6A(3): Zakat is ringgit-for-ringgit credit for the payment period
+    if annual_zakat:
+        zakat_for_period = (float(annual_zakat) / 12) * months_covered
+        gross_mtd = max(0.0, gross_mtd - zakat_for_period)
+
+    return round(gross_mtd, 2)
