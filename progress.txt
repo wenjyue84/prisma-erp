@@ -5127,3 +5127,30 @@ Completed: Implement Payroll Bank Disbursement File Generator (Maybank + CIMB + 
 ### Gotchas
 - The `before_submit` hook wraps everything in try/except and logs errors via frappe.log_error to NEVER block submission (regulatory warning only, not an enforcement).
 - Two paths must always be updated: `.../lhdn_payroll_integration/lhdn_payroll_integration/services/` AND `.../lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/services/` — use `docker exec -u root cp` for the deeply nested path.
+## Iteration 29 - Sat, Feb 28, 2026  7:10:20 PM
+Completed: Implement Age-Based EPF/SOCSO/EIS Statutory Rate Transitions at Age 60 (ID: US-076) in 13m
+
+
+## Iteration N — US-101: Implement Salary Advance Loan Module (Employment Act S.22/24 50% Cap)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 23 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_salary_advance_loan`
+**Result:** PASS — 23/23 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/salary_advance_loan/` — New DocType (employee, advance_date, amount, repayment_amount_per_period, outstanding_balance, status, repayment_history)
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/salary_advance_repayment/` — Child DocType for repayment history table
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/salary_advance_service.py` — Core service: compute_advance_repayment_for_salary_slip(), 50% cap enforcement, helper functions
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/active_salary_advances/` — Script report for HR to view active advances
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_salary_advance_loan.py` — 23 unit tests
+- `lhdn_payroll_integration/lhdn_payroll_integration/hooks.py` — Updated: before_submit now a list with age_checker + salary_advance_service
+
+### Patterns discovered
+- When `before_submit` has multiple handlers, use a Python list in hooks.py doc_events
+- Frappe's `Document.append()` requires `self.doctype` to be set; in unit tests, always mock `loan.append = MagicMock()` when testing controller methods that call append
+- Order matters in compute_advance_repayment_for_salary_slip: check gross_pay BEFORE _get_active_loans to avoid unnecessary DB queries
+
+### Gotchas
+- bench migrate removes orphaned DocTypes including LHDN CP107 and workspace; use sync_fixtures separately if needed
+- DocType's `_table_fieldnames` cached_property requires `self.doctype` attribute — cannot instantiate with `__new__` and then call `append()` directly without mocking it
