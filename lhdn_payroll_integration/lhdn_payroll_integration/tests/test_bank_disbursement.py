@@ -1,10 +1,16 @@
-"""Tests for US-071: Payroll Bank Disbursement File Generator.
+"""Tests for US-071 + US-089: Payroll Bank Disbursement File Generator.
 
-Acceptance criteria:
+Acceptance criteria (US-071):
   - Maybank format: pipe-delimited with ORG_CODE|PAY_DATE header + 6-field detail lines
   - CIMB format: Header (H|), Detail (D|), Footer (T|) structure
   - DuitNow: ISO 20022 pain.001.001.03 XML with SALA purpose code
   - Unsupported bank raises ValidationError
+
+Acceptance criteria (US-089):
+  - generate_duitnow_bulk_xml(payroll_entry_name) generates ISO 20022 pain.001.001.03 XML
+  - <PmtInf>/<PmtTpInf>/<CtgyPurp>/<Cd>SALA</Cd> mandatory purpose code
+  - <CdtTrfTxInf>/<Cdtr>/<Id> uses DuitNow ID (NRIC or registered mobile)
+  - <EndToEndId> unique per transaction max 35 chars
 """
 from unittest.mock import patch, MagicMock
 
@@ -14,6 +20,7 @@ from frappe.tests.utils import FrappeTestCase
 from lhdn_payroll_integration.lhdn_payroll_integration.services.bank_disbursement_service import (
     SUPPORTED_BANKS,
     generate_bank_file,
+    generate_duitnow_bulk_xml,
     _generate_maybank_file,
     _generate_cimb_file,
     _generate_duitnow_file,
@@ -449,3 +456,168 @@ class TestGenerateBankFileRouting(FrappeTestCase):
             result = generate_bank_file("PE-001", "CIMB")
 
         self.assertIsInstance(result, bytes)
+
+
+# ---------------------------------------------------------------------------
+# US-089: generate_duitnow_bulk_xml — ISO 20022 pain.001.001.03 with SALA
+# ---------------------------------------------------------------------------
+
+_MOCK_SLIPS_089 = [
+    frappe._dict({
+        "name": "SAL-2025-001",
+        "employee": "EMP-001",
+        "employee_name": "Ahmad Bin Ali",
+        "custom_bank_code": "12345678901234567890",
+        "custom_nric": "901231145678",
+        "custom_bank_name": "Maybank",
+        "custom_account_type": "Savings",
+        "net_pay": 3500.00,
+    }),
+    frappe._dict({
+        "name": "SAL-2025-002",
+        "employee": "EMP-002",
+        "employee_name": "Siti Binti Hamid",
+        "custom_bank_code": "0987654321",
+        "custom_nric": "850615105432",
+        "custom_bank_name": "CIMB",
+        "custom_account_type": "Current",
+        "net_pay": 4200.50,
+    }),
+]
+
+
+class TestDuitNowBulkXmlUS089(FrappeTestCase):
+    """US-089: DuitNow Bulk ISO 20022 pain.001.001.03 with SALA purpose code.
+
+    Tests for generate_duitnow_bulk_xml(payroll_entry_name).
+    """
+
+    def _run_generate(self):
+        """Helper: call generate_duitnow_bulk_xml with mocked Frappe."""
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.services.bank_disbursement_service.frappe"
+        ) as mock_frappe, patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.services.bank_disbursement_service._get_salary_slips",
+            return_value=_MOCK_SLIPS_089,
+        ), patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.services.bank_disbursement_service.today",
+            return_value="2025-06-30",
+        ):
+            mock_entry = MagicMock()
+            mock_entry.company = "Arising Packaging Sdn Bhd"
+            mock_frappe.get_doc.return_value = mock_entry
+            mock_frappe.db.get_value.return_value = "Arising Packaging Sdn Bhd"
+            result = generate_duitnow_bulk_xml("PE-2025-001")
+        return result
+
+    def test_generate_duitnow_bulk_xml_returns_bytes(self):
+        """generate_duitnow_bulk_xml must return bytes."""
+        result = self._run_generate()
+        self.assertIsInstance(result, bytes)
+
+    def test_generated_xml_is_parseable(self):
+        """Output must be valid XML parseable by ElementTree."""
+        import xml.etree.ElementTree as ET
+        content = self._run_generate()
+        root = ET.fromstring(content.decode("utf-8"))
+        self.assertIsNotNone(root)
+
+    def test_pain001_namespace_present(self):
+        """XML must declare the ISO 20022 pain.001.001.03 namespace."""
+        content = self._run_generate().decode("utf-8")
+        self.assertIn("pain.001.001.03", content)
+
+    def test_ctgy_purp_sala_code_present(self):
+        """<PmtInf>/<PmtTpInf>/<CtgyPurp>/<Cd>SALA</Cd> must be in output."""
+        content = self._run_generate().decode("utf-8")
+        self.assertIn("<CtgyPurp>", content)
+        self.assertIn("<Cd>SALA</Cd>", content)
+
+    def test_end_to_end_id_within_35_chars(self):
+        """Every <EndToEndId> must be at most 35 characters (ISO 20022 limit)."""
+        import xml.etree.ElementTree as ET
+        content = self._run_generate()
+        # Use string search since namespace makes ET path complex
+        xml_text = content.decode("utf-8")
+        import re
+        end_to_end_ids = re.findall(r"<EndToEndId>(.+?)</EndToEndId>", xml_text)
+        self.assertTrue(len(end_to_end_ids) > 0, "No EndToEndId elements found")
+        for eid in end_to_end_ids:
+            self.assertLessEqual(
+                len(eid), 35,
+                f"EndToEndId '{eid}' exceeds 35 chars (len={len(eid)})"
+            )
+
+    def test_end_to_end_id_contains_payroll_prefix(self):
+        """EndToEndId must start with PAYROLL- prefix."""
+        import re
+        content = self._run_generate().decode("utf-8")
+        end_to_end_ids = re.findall(r"<EndToEndId>(.+?)</EndToEndId>", content)
+        for eid in end_to_end_ids:
+            self.assertTrue(eid.startswith("PAYROLL-"), f"EndToEndId '{eid}' missing PAYROLL- prefix")
+
+    def test_cdtr_id_contains_nric(self):
+        """<Cdtr>/<Id> must include employee NRIC as DuitNow identifier."""
+        content = self._run_generate().decode("utf-8")
+        # First slip NRIC
+        self.assertIn("901231145678", content)
+
+    def test_myr_currency_present(self):
+        """InstdAmt must specify MYR currency."""
+        content = self._run_generate().decode("utf-8")
+        self.assertIn('Ccy="MYR"', content)
+
+    def test_nb_of_txs_matches_slip_count(self):
+        """NbOfTxs in GrpHdr must match number of salary slips."""
+        content = self._run_generate().decode("utf-8")
+        self.assertIn(f"<NbOfTxs>{len(_MOCK_SLIPS_089)}</NbOfTxs>", content)
+
+    def test_ctrl_sum_matches_total_pay(self):
+        """CtrlSum must equal sum of net_pay across all slips."""
+        content = self._run_generate().decode("utf-8")
+        total = sum(s.net_pay for s in _MOCK_SLIPS_089)
+        self.assertIn(f"<CtrlSum>{total:.2f}</CtrlSum>", content)
+
+
+class TestDuitNowFileUpdatedForUS089(FrappeTestCase):
+    """Verify _generate_duitnow_file internals match US-089 requirements."""
+
+    def _slips(self):
+        return [
+            frappe._dict({
+                "name": "SAL-ABCDEFGHIJ12345",  # 18-char name to test truncation
+                "employee": "EMP-001",
+                "employee_name": "Ahmad Bin Ali",
+                "custom_bank_code": "1234567890",
+                "custom_nric": "901231145678",
+                "net_pay": 3500.00,
+            })
+        ]
+
+    def test_ctgy_purp_not_purp(self):
+        """DuitNow XML must use <CtgyPurp> tag (not <Purp>) for SALA code."""
+        content = _generate_duitnow_file(self._slips(), "Test Corp", "2025-06-30").decode("utf-8")
+        self.assertIn("<CtgyPurp>", content)
+        self.assertNotIn("<Purp>", content)
+
+    def test_end_to_end_id_uses_slip_name_and_yyyymm(self):
+        """EndToEndId must be built from slip name and YYYYMM."""
+        import re
+        content = _generate_duitnow_file(self._slips(), "Test Corp", "2025-06-30").decode("utf-8")
+        eids = re.findall(r"<EndToEndId>(.+?)</EndToEndId>", content)
+        self.assertEqual(len(eids), 1)
+        # Should contain YYYYMM suffix "202506"
+        self.assertIn("202506", eids[0])
+
+    def test_end_to_end_id_max_35_chars(self):
+        """EndToEndId must be truncated to max 35 chars."""
+        import re
+        content = _generate_duitnow_file(self._slips(), "Test Corp", "2025-06-30").decode("utf-8")
+        eids = re.findall(r"<EndToEndId>(.+?)</EndToEndId>", content)
+        for eid in eids:
+            self.assertLessEqual(len(eid), 35, f"EndToEndId '{eid}' exceeds 35 chars")
+
+    def test_cdtr_id_contains_nric(self):
+        """Cdtr/Id must embed the employee NRIC."""
+        content = _generate_duitnow_file(self._slips(), "Test Corp", "2025-06-30").decode("utf-8")
+        self.assertIn("901231145678", content)

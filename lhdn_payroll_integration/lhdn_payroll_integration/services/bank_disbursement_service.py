@@ -3,6 +3,9 @@
 US-071: Generate bank disbursement files for Maybank M2E, CIMB BizChannel,
 and DuitNow Bulk (PayNet ISO 20022 pain.001.001.03).
 
+US-089: Dedicated generate_duitnow_bulk_xml(payroll_entry_name) with proper
+ISO 20022 CtgyPurp/SALA, DuitNow ID in Cdtr/Id, and EndToEndId ≤ 35 chars.
+
 Malaysian payroll file formats:
   - Maybank M2E: pipe-delimited with 5-digit org code header
   - CIMB BizChannel: CSV with Header/Detail/Footer structure
@@ -22,6 +25,30 @@ SUPPORTED_BANKS = [
     "RHB",
     "DuitNow Bulk",
 ]
+
+
+def generate_duitnow_bulk_xml(payroll_entry_name):
+    """Generate ISO 20022 pain.001.001.03 XML for DuitNow Bulk payroll disbursement.
+
+    US-089: Dedicated entry point for DuitNow Bulk XML generation with:
+      - <PmtInf>/<PmtTpInf>/<CtgyPurp>/<Cd>SALA</Cd> mandatory purpose code
+      - <CdtTrfTxInf>/<Cdtr>/<Id> populated with employee DuitNow ID (NRIC)
+      - <EndToEndId> unique per transaction, max 35 chars
+
+    Args:
+        payroll_entry_name (str): Name of the Payroll Entry document.
+
+    Returns:
+        bytes: UTF-8 encoded ISO 20022 pain.001.001.03 XML.
+    """
+    entry = frappe.get_doc("Payroll Entry", payroll_entry_name)
+    company = entry.company
+    disbursement_date = today()
+
+    slips = _get_salary_slips(payroll_entry_name)
+    company_name = frappe.db.get_value("Company", company, "company_name") or company
+
+    return _generate_duitnow_file(slips, company_name, disbursement_date)
 
 
 def generate_bank_file(payroll_entry_name, bank):
@@ -207,6 +234,9 @@ def _generate_duitnow_file(slips, company_name, disbursement_date):
     msg_id = f"LHDN-PAYROLL-{raw}"
     creation_dt = f"{iso_date}T00:00:00"
 
+    # YYYYMM from disbursement date for EndToEndId
+    yyyymm = raw[:6]  # e.g. "202506"
+
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">',
@@ -226,9 +256,9 @@ def _generate_duitnow_file(slips, company_name, disbursement_date):
         f"      <NbOfTxs>{num_txns}</NbOfTxs>",
         f"      <CtrlSum>{ctrl_sum}</CtrlSum>",
         "      <PmtTpInf>",
-        "        <Purp>",
+        "        <CtgyPurp>",
         "          <Cd>SALA</Cd>",
-        "        </Purp>",
+        "        </CtgyPurp>",
         "      </PmtTpInf>",
         f"      <ReqdExctnDt>{iso_date}</ReqdExctnDt>",
         "      <Dbtr>",
@@ -246,17 +276,22 @@ def _generate_duitnow_file(slips, company_name, disbursement_date):
         name = _xml_escape(slip.get("employee_name") or slip.get("employee", ""))
         account = slip.get("custom_bank_code") or ""
         amount = f"{flt(slip.get('net_pay', 0), 2):.2f}"
-        emp = slip.get("employee", "")
+        slip_name = slip.get("name") or slip.get("employee", "")
+        # EndToEndId: max 35 chars per ISO 20022
+        end_to_end_id = f"PAYROLL-{slip_name[:15]}-{yyyymm}"[:35]
+        # DuitNow ID: prefer NRIC; fall back to bank account number
+        duitnow_id = _xml_escape(slip.get("custom_nric") or account or "")
         lines += [
             "      <CdtTrfTxInf>",
             "        <PmtId>",
-            f"          <EndToEndId>PAYROLL-{emp}</EndToEndId>",
+            f"          <EndToEndId>{end_to_end_id}</EndToEndId>",
             "        </PmtId>",
             "        <Amt>",
             f'          <InstdAmt Ccy="MYR">{amount}</InstdAmt>',
             "        </Amt>",
             "        <Cdtr>",
             f"          <Nm>{name}</Nm>",
+            f"          <Id><OrgId><Othr><Id>{duitnow_id}</Id></Othr></OrgId></Id>",
             "        </Cdtr>",
             "        <CdtrAcct>",
             f"          <Id><Othr><Id>{_xml_escape(account)}</Id></Othr></Id>",

@@ -5704,3 +5704,27 @@ Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — at
 - Test file had `frappe.db.exists` and `frappe.get_app_path` calls without `import frappe` → NameError in container
 - Two copies of utils/ exist (outer + nested Frappe module path) — always update the NESTED path for container tests
 
+## Iteration 44 - Sat, Feb 28, 2026  9:39:02 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 2/3
+
+
+## Iteration N — US-089: Generate DuitNow Bulk Payroll File (ISO 20022 pain.001.001.03 with SALA Purpose Code)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (57 tests pass, 0 failures)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_bank_disbursement`
+**Result:** PASS — 57 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `services/bank_disbursement_service.py` — Added `generate_duitnow_bulk_xml(payroll_entry_name)` public function; fixed `_generate_duitnow_file` to use `<CtgyPurp>` (not `<Purp>`), proper EndToEndId format `PAYROLL-{slip_name[:15]}-{YYYYMM}`[:35], and Cdtr/Id with NRIC as DuitNow ID
+- `tests/test_bank_disbursement.py` — Added `TestDuitNowBulkXmlUS089` (10 tests) and `TestDuitNowFileUpdatedForUS089` (4 tests) for US-089 acceptance criteria
+
+### Patterns discovered
+- Python f-string bug: must put `f` prefix even inside a list of strings or variable interpolation silently fails (renders `{varname}` literally)
+- bench run-tests loads ALL test files in the app even when specifying `--module` — any top-level ImportError in any test file blocks the entire suite
+- Workaround for broken TDD RED test imports: deploy a stub module so top-level imports resolve (tests still fail at runtime = RED confirmed)
+- Two-path deployment: always cp to BOTH `/apps/lhdn_payroll_integration/lhdn_payroll_integration/services/` (outer) and `/apps/lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/services/` (nested) 
+
+### Gotchas
+- `test_wage_payment_compliance.py` had a top-level ImportError blocking all tests; created a stub `utils/wage_payment_compliance.py` with NotImplementedError stubs so the import works (tests still fail = red phase preserved)
+- lxml is NOT available in the container — use `xml.etree.ElementTree` (stdlib) for XML parsing in tests
