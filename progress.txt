@@ -5277,3 +5277,32 @@ Completed: Implement Director Fee-Only MTD Lump-Sum Formula (Recipients Without 
 ## Iteration 33 - Sat, Feb 28, 2026  7:53:52 PM
 Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 1/3
 
+## Iteration 34 - Sat, Feb 28, 2026  8:09:03 PM
+Incomplete: Implement LHDN MyInvois Webhook Callback Handler (ID: US-092) — attempt 2/3
+
+
+## Iteration — US-102: Implement Part-Time Employee ORP Proration and Overtime Eligibility
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 52 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_part_time_orp`
+**Result:** PASS — 52/52 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/employment_compliance.py` — Added 4 new exports:
+  - `PART_TIME_OT_HOURS_CAP = 104`
+  - `PART_TIME_OT_MULTIPLIERS = {"Normal": 1.5, "Public Holiday": 2.0}`
+  - `calculate_part_time_orp(agreed_monthly_wage, contracted_hours_per_week)` — EA Third Schedule Reg. 5(3): ORP = wage / (hrs_per_week * 52 / 12)
+  - `check_part_time_ea_coverage(monthly_salary)` — bool, EA coverage <= RM4,000
+  - `check_part_time_ot_hours_cap(claimed_hours_per_month)` — validates 104h/month cap
+  - `check_part_time_ot_rate(monthly_salary, contracted_hours_per_week, component_amount, ot_hours_claimed, day_type)` — validates OT pay for part-time
+- `lhdn_payroll_integration/tests/test_part_time_orp.py` — 52 new tests across 4 test classes
+
+### Patterns discovered
+- Part-time ORP multipliers differ from full-time (2.0x PH instead of 3.0x) per EA Third Schedule
+- Tests import `employment_compliance.py` from outer (non-nested) utils path — nested path doesn't have this file
+- US-069 (full-time ORP) tests still pass after changes — no regression
+
+### Gotchas
+- EA Third Schedule uses 52/12 factor for weekly→monthly hours conversion (not 4.33 approximation)
+- Public Holiday multiplier for part-time is 2.0x (not 3.0x like full-time) per Third Schedule

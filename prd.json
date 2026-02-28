@@ -2219,7 +2219,7 @@
         "Implement Ordinary Rate of Pay (ORP) Calculator and Overtime Validation"
       ],
       "estimatedComplexity": "medium",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-103",
