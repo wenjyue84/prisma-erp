@@ -5947,3 +5947,24 @@ Incomplete: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee (ID: US-093) 
 
 ### Gotchas
 - Two fixture copies exist in container: outer and nested path — always update both when test files are in nested location
+
+## Iteration — US-094: Add EC Form Variant for Statutory/Government Body Employers
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 14 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_ec_form`
+**Result:** PASS — 14/14 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/report/ec_form/__init__.py` — Package init
+- `lhdn_payroll_integration/report/ec_form/ec_form.json` — Script Report descriptor (ref_doctype: Salary Slip)
+- `lhdn_payroll_integration/report/ec_form/ec_form.py` — EC Form report; imports get_data from ea_form; substitutes EC column labels (EC-B1..EC-B12, EC-C1..EC-C5, EC-D)
+- `lhdn_payroll_integration/tests/test_ec_form.py` — 14 tests across 4 classes
+
+### Patterns discovered
+- EC Form is structurally identical to EA Form — only column labels differ (prefix "EC-")
+- Reuse `get_data` from ea_form by direct import — no SQL duplication needed
+- custom_is_statutory_employer Check field was already present in custom_field.json from a prior iteration
+
+### Gotchas
+- Security hook in Claude blocks heredoc text containing shell meta-patterns — use Edit tool instead of bash for writing to progress.txt
