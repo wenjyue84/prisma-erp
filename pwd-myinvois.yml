@@ -122,6 +122,9 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
+      # Patch: resolver + variable proxy_pass so nginx re-resolves Docker DNS every 10s.
+      # Prevents 502 after backend/websocket restarts (upstream{} blocks cache IP at startup).
+      - ./frappe_patches/frappe.conf.template:/templates/nginx/frappe.conf.template:ro
     ports:
       - "8080:8080"
 

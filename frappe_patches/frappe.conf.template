@@ -1,0 +1,119 @@
+# Patched nginx template — replaces static upstream blocks with resolver+variable approach.
+# This prevents 502 Bad Gateway errors when backend/websocket containers restart and get
+# a new Docker-assigned IP. nginx's upstream{} blocks resolve DNS once at startup and
+# cache forever; using a variable in proxy_pass forces re-resolution every `valid=` seconds.
+#
+# Docker's embedded DNS server is always at 127.0.0.11.
+# valid=10s means nginx re-queries DNS at most every 10 seconds.
+#
+# Mounted via pwd-myinvois.yml:
+#   ./frappe_patches/frappe.conf.template:/templates/nginx/frappe.conf.template:ro
+
+server {
+	listen 8080;
+	server_name ${FRAPPE_SITE_NAME_HEADER};
+	root /home/frappe/frappe-bench/sites;
+
+	# Docker embedded DNS — re-resolve upstream hostnames every 10s.
+	# Without this, nginx caches the IP at startup and 502s after any backend restart.
+	resolver 127.0.0.11 valid=10s ipv6=off;
+	resolver_timeout 5s;
+
+	proxy_buffer_size 128k;
+	proxy_buffers 4 256k;
+	proxy_busy_buffers_size 256k;
+
+	add_header X-Frame-Options "SAMEORIGIN";
+	add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
+	add_header X-Content-Type-Options nosniff;
+	add_header X-XSS-Protection "1; mode=block";
+	add_header Referrer-Policy "same-origin, strict-origin-when-cross-origin";
+
+	set_real_ip_from ${UPSTREAM_REAL_IP_ADDRESS};
+	real_ip_header ${UPSTREAM_REAL_IP_HEADER};
+	real_ip_recursive ${UPSTREAM_REAL_IP_RECURSIVE};
+
+	location /assets {
+		try_files $uri =404;
+	}
+
+	location ~ ^/protected/(.*) {
+		internal;
+		try_files /${FRAPPE_SITE_NAME_HEADER}/$1 =404;
+	}
+
+	location /socket.io {
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+		proxy_set_header X-Frappe-Site-Name ${FRAPPE_SITE_NAME_HEADER};
+		proxy_set_header Origin $scheme://$http_host;
+		proxy_set_header Host $host;
+
+		# Variable forces nginx to use the resolver (re-resolves DNS every 10s)
+		set $socketio_upstream http://${SOCKETIO};
+		proxy_pass $socketio_upstream;
+	}
+
+	location / {
+		rewrite ^(.+)/$ $1 permanent;
+		rewrite ^(.+)/index\.html$ $1 permanent;
+		rewrite ^(.+)\.html$ $1 permanent;
+
+		location ~ ^/files/.*.(htm|html|svg|xml) {
+			add_header Content-disposition "attachment";
+			try_files /${FRAPPE_SITE_NAME_HEADER}/public/$uri @webserver;
+		}
+
+		try_files /${FRAPPE_SITE_NAME_HEADER}/public/$uri @webserver;
+	}
+
+	location @webserver {
+		proxy_http_version 1.1;
+		proxy_set_header X-Forwarded-For $remote_addr;
+		proxy_set_header X-Forwarded-Proto $scheme;
+		proxy_set_header X-Frappe-Site-Name ${FRAPPE_SITE_NAME_HEADER};
+		proxy_set_header Host $host;
+		proxy_set_header X-Use-X-Accel-Redirect True;
+		proxy_read_timeout ${PROXY_READ_TIMEOUT};
+		proxy_redirect off;
+
+		# Variable forces nginx to use the resolver (re-resolves DNS every 10s)
+		set $backend_upstream http://${BACKEND};
+		proxy_pass $backend_upstream;
+	}
+
+	# optimizations
+	sendfile on;
+	keepalive_timeout 15;
+	client_max_body_size ${CLIENT_MAX_BODY_SIZE};
+	client_body_buffer_size 16K;
+	client_header_buffer_size 1k;
+
+	# enable gzip compression
+	# based on https://mattstauffer.co/blog/enabling-gzip-on-nginx-servers-including-laravel-forge
+	gzip on;
+	gzip_http_version 1.1;
+	gzip_comp_level 5;
+	gzip_min_length 256;
+	gzip_proxied any;
+	gzip_vary on;
+	gzip_types
+		application/atom+xml
+		application/javascript
+		application/json
+		application/rss+xml
+		application/vnd.ms-fontobject
+		application/x-font-ttf
+		application/font-woff
+		application/x-web-app-manifest+json
+		application/xhtml+xml
+		application/xml
+		font/opentype
+		image/svg+xml
+		image/x-icon
+		text/css
+		text/plain
+		text/x-component;
+		# text/html is always compressed by HttpGzipModule
+}
