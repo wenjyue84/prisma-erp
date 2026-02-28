@@ -1072,3 +1072,179 @@ class TestPcbTaxRebates(FrappeTestCase):
         annual = 39_000
         result = calculate_pcb(annual, resident=True, category=1, annual_zakat=600)
         self.assertEqual(result, 0.0)
+
+
+class TestApprovedPensionSchemeExemption(FrappeTestCase):
+    """US-085: ITA 1967 Schedule 6 paragraph 30 — approved pension scheme full exemption.
+
+    Para 30: retirement gratuity from an approved company pension scheme for
+    employee retiring at age >= 55 is FULLY exempt (100%).
+    Para 25 (default): RM1,000 per completed year of service.
+    """
+
+    def test_age_55_approved_scheme_full_gratuity_exempt(self):
+        """Age 55 with approved pension scheme — full gratuity exempt (para 30).
+
+        Without gratuity:
+          annual=480,000; chargeable=471,000 (self-relief 9,000)
+          tax on 471,000 = 82,700 + (471,000-400,000)*24.5% = 82,700 + 17,395 = 100,095
+          monthly = 100,095 / 12 = 8,341.25
+
+        With approved_pension_scheme=True, age=55, gratuity=30,000:
+          exempt_gratuity = 30,000 (100% — para 30)
+          taxable_gratuity = 0; total_irregular = 0
+          Result should equal the regular monthly PCB (no incremental tax).
+        """
+        annual = 480_000
+        gratuity = 30_000
+        years = 10
+
+        regular = calculate_pcb(annual, resident=True, category=1)
+
+        with_gratuity_approved = calculate_pcb(
+            annual,
+            resident=True,
+            category=1,
+            gratuity_amount=gratuity,
+            years_of_service=years,
+            approved_pension_scheme=True,
+            employee_age=55,
+        )
+
+        # Full exemption: gratuity adds zero incremental PCB
+        self.assertAlmostEqual(regular, with_gratuity_approved, places=2)
+
+    def test_age_60_approved_scheme_full_gratuity_exempt(self):
+        """Age 60 (compulsory retirement) with approved pension scheme — still fully exempt."""
+        annual = 360_000
+        gratuity = 50_000
+
+        regular = calculate_pcb(annual, resident=True, category=1)
+        with_gratuity = calculate_pcb(
+            annual,
+            resident=True,
+            category=1,
+            gratuity_amount=gratuity,
+            years_of_service=20,
+            approved_pension_scheme=True,
+            employee_age=60,
+        )
+
+        self.assertAlmostEqual(regular, with_gratuity, places=2)
+
+    def test_age_55_without_approved_scheme_uses_para25(self):
+        """Age 55 WITHOUT approved pension scheme — falls back to RM1,000/year (para 25).
+
+        annual=480,000; gratuity=30,000; years=10
+        Para 25 exempt = min(30,000, 10*1,000) = 10,000
+        taxable_gratuity = 20,000
+
+        chargeable base = 471,000
+        tax_base = 100,095; monthly = 8,341.25
+
+        total_chargeable = 471,000 + 20,000 = 491,000
+        tax_with = 82,700 + (491,000-400,000)*24.5% = 82,700 + 22,295 = 105,000 - wait:
+          471,000 - 9,000 relief = 462,000 + 20,000 = 482,000... let me recompute:
+          chargeable = max(0, 480,000 - 9,000) = 471,000
+          total_chargeable_with_irr = 471,000 + 20,000 = 491,000
+          tax_with = 82,700 + (491,000-400,000)*24.5% = 82,700 + 22,295 = 105,000 - 5 = 104,995
+          Actually: 491,000 - 400,000 = 91,000; 91,000 * 0.245 = 22,295
+          tax_with = 82,700 + 22,295 = 104,995
+          irregular_pcb = 104,995 - 100,095 = 4,900
+          monthly = 8,341.25 + 4,900 = 13,241.25
+
+        Without approved scheme, gratuity is taxable after para 25, so PCB > regular monthly.
+        """
+        annual = 480_000
+        gratuity = 30_000
+        years = 10
+
+        regular = calculate_pcb(annual, resident=True, category=1)
+        with_gratuity_no_scheme = calculate_pcb(
+            annual,
+            resident=True,
+            category=1,
+            gratuity_amount=gratuity,
+            years_of_service=years,
+            approved_pension_scheme=False,
+            employee_age=55,
+        )
+
+        # Without approved scheme, taxable gratuity adds incremental PCB
+        self.assertGreater(with_gratuity_no_scheme, regular)
+
+    def test_age_below_55_approved_scheme_does_not_apply(self):
+        """Approved scheme flag but age < 55 — para 25 applies (not para 30)."""
+        annual = 480_000
+        gratuity = 30_000
+        years = 10
+
+        result_age_54 = calculate_pcb(
+            annual,
+            resident=True,
+            category=1,
+            gratuity_amount=gratuity,
+            years_of_service=years,
+            approved_pension_scheme=True,
+            employee_age=54,
+        )
+
+        result_age_55 = calculate_pcb(
+            annual,
+            resident=True,
+            category=1,
+            gratuity_amount=gratuity,
+            years_of_service=years,
+            approved_pension_scheme=True,
+            employee_age=55,
+        )
+
+        # Age 54 with approved scheme: para 25 applies → taxable gratuity → higher PCB
+        # Age 55 with approved scheme: para 30 applies → full exempt → lower PCB
+        self.assertGreater(result_age_54, result_age_55)
+
+    def test_approved_scheme_no_gratuity_no_effect(self):
+        """Approved pension scheme flag with no gratuity — same as normal PCB."""
+        annual = 240_000
+        regular = calculate_pcb(annual, resident=True, category=1)
+        with_scheme = calculate_pcb(
+            annual,
+            resident=True,
+            category=1,
+            approved_pension_scheme=True,
+            employee_age=58,
+        )
+        self.assertEqual(regular, with_scheme)
+
+    def test_approved_scheme_age_55_vs_para25_lower_pcb(self):
+        """Para 30 (full exempt) always produces <= PCB vs para 25 (RM1,000/year).
+
+        With RM30,000 gratuity and 10 years of service:
+        - Para 25 exempts RM10,000 → RM20,000 taxable
+        - Para 30 exempts RM30,000 → RM0 taxable
+        Para 30 PCB must be strictly less than para 25 PCB for positive taxable gratuity.
+        """
+        annual = 300_000
+        gratuity = 30_000
+        years = 10
+
+        pcb_para25 = calculate_pcb(
+            annual,
+            resident=True,
+            category=1,
+            gratuity_amount=gratuity,
+            years_of_service=years,
+            approved_pension_scheme=False,
+        )
+
+        pcb_para30 = calculate_pcb(
+            annual,
+            resident=True,
+            category=1,
+            gratuity_amount=gratuity,
+            years_of_service=years,
+            approved_pension_scheme=True,
+            employee_age=55,
+        )
+
+        self.assertLess(pcb_para30, pcb_para25)

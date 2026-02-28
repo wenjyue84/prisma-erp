@@ -5549,3 +5549,24 @@ All components were already implemented (likely in a previous session):
 - ITA Schedule 6 para 30 full exemption overrides para 25 partial (RM1,000/year)
 - EA form B5 uses date_of_birth + year_end (Dec 31) to compute age for exemption gate
 
+
+## Iteration — US-085: Implement Approved Pension Scheme Full Retirement Gratuity Exemption
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_calculator`
+**Result:** PASS — 81/81 tests pass (6 new), 0 failures, 0 errors
+
+### Files created/modified
+- `fixtures/custom_field.json` — Added `custom_approved_pension_scheme` Check field on Employee (Sch. 6 Para 30)
+- `services/pcb_calculator.py` — Added `approved_pension_scheme: bool` and `employee_age: int` params; full gratuity exemption when age >= 55 and approved scheme
+- `report/ea_form/ea_form.py` — Added `b5_gratuity_exempt` column; calculates exempt amount based on approved_pension_scheme flag and employee DOB
+- `tests/test_pcb_calculator.py` — Added `TestApprovedPensionSchemeExemption` class (6 test methods)
+
+### Patterns discovered
+- ITA 1967 Schedule 6 para 30 (full exemption) overrides para 25 (RM1,000/year) when approved_pension_scheme=True and age >= 55
+- EA form uses GROUP_CONCAT + date_of_birth from Employee; age calculated from year-end (Dec 31 of assessment year) for consistency
+- Test: para 30 PCB < para 25 PCB for any positive taxable gratuity amount
+
+### Gotchas
+- EA form base_sql GROUP BY must include new columns (approved_pension_scheme, date_of_birth) to avoid SQL aggregation errors

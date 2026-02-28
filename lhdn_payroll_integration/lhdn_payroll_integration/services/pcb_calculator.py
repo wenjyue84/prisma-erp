@@ -119,6 +119,8 @@ def calculate_pcb(
     category: int = None,
     tp1_total_reliefs: float = 0.0,
     annual_zakat: float = 0.0,
+    approved_pension_scheme: bool = False,
+    employee_age: int = 0,
 ) -> float:
     """Calculate monthly PCB/MTD deduction amount.
 
@@ -148,6 +150,13 @@ def calculate_pcb(
     Schedule 6 paragraph 25 of ITA 1967 provides a tax exemption of RM1,000
     per completed year of service. Only the remainder above the exempt amount
     is taxable (treated as an irregular payment using the annualisation rule).
+
+    Approved Pension Scheme (US-085 — ITA 1967 Schedule 6 paragraph 30):
+        When approved_pension_scheme=True and employee_age >= 55, the FULL
+        gratuity amount is exempt (100%), overriding the para 25 RM1,000/year
+        calculation. This applies to employees retiring from an approved company
+        pension scheme at the normal retirement age of 55 (or compulsory
+        retirement age 60).
 
     TP1 Employee Relief Declaration (US-052):
         Pass tp1_total_reliefs to include employee-declared reliefs from Borang TP1.
@@ -185,6 +194,11 @@ def calculate_pcb(
         annual_zakat: Annual Zakat paid by Muslim employee (RM). Under ITA 1967 s.6A(3),
             Zakat is a ringgit-for-ringgit offset applied after tax computation:
             net_pcb = max(0, gross_monthly_pcb - annual_zakat / 12). Default 0.0.
+        approved_pension_scheme: True if the employee is a member of an approved company
+            pension scheme under ITA 1967 Schedule 6 para 30. When True and employee_age
+            >= 55, the full gratuity amount is exempt (overrides para 25). Default False.
+        employee_age: Employee's age in years at the time of gratuity payment. Used with
+            approved_pension_scheme to determine full exemption eligibility. Default 0.
 
     Returns:
         float: Monthly PCB amount (RM), rounded to 2 decimal places.
@@ -204,8 +218,18 @@ def calculate_pcb(
     if annual_income <= 0 and bonus_amount <= 0 and gratuity_amount <= 0:
         return 0.0
 
-    # Schedule 6 para 25: RM1,000 per year of service exempt from gratuity
-    exempt_gratuity = min(gratuity_amount, years_of_service * 1_000) if gratuity_amount > 0 else 0.0
+    # Gratuity exemption — Schedule 6 ITA 1967:
+    # Para 30 (US-085): Approved pension scheme retirees aged >= 55 → 100% exempt.
+    # Para 25          : All others → RM1,000 per completed year of service.
+    if gratuity_amount > 0:
+        if approved_pension_scheme and int(employee_age or 0) >= 55:
+            # Full exemption under Schedule 6 para 30
+            exempt_gratuity = gratuity_amount
+        else:
+            # Partial exemption under Schedule 6 para 25
+            exempt_gratuity = min(gratuity_amount, years_of_service * 1_000)
+    else:
+        exempt_gratuity = 0.0
     taxable_gratuity = max(0.0, gratuity_amount - exempt_gratuity)
 
     # Total irregular amount = bonus + taxable portion of gratuity

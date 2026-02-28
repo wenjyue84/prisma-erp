@@ -134,6 +134,17 @@ def get_columns():
         },
     ]
 
+    # B5 Approved Pension Scheme Gratuity Exemption (US-085)
+    cols.append(
+        {
+            "label": "B5 – Gratuity Exempt (Sch.6 Para 30)",
+            "fieldname": "b5_gratuity_exempt",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 200,
+        }
+    )
+
     # Section D — Tax Position
     cols.append(
         {
@@ -295,13 +306,16 @@ def get_data(filters=None):
             YEAR(ss.start_date)                AS year,
             COALESCE(e.custom_pcb_category, '1') AS pcb_category,
             COALESCE(e.custom_annual_zakat, 0)  AS annual_zakat,
+            COALESCE(e.custom_approved_pension_scheme, 0) AS approved_pension_scheme,
+            e.date_of_birth                     AS date_of_birth,
             SUM(ss.net_pay)                     AS net_pay,
             GROUP_CONCAT(ss.name)               AS slip_names
         FROM `tabSalary Slip` ss
         LEFT JOIN `tabEmployee` e ON e.name = ss.employee
         {where}
         GROUP BY ss.employee, ss.employee_name, YEAR(ss.start_date),
-                 e.custom_pcb_category, e.custom_annual_zakat
+                 e.custom_pcb_category, e.custom_annual_zakat,
+                 e.custom_approved_pension_scheme, e.date_of_birth
         ORDER BY ss.employee_name
     """
     base_rows = frappe.db.sql(base_sql, values, as_dict=True)
@@ -421,6 +435,26 @@ def get_data(filters=None):
         c4 = emp_deductions.get("c4_pcb", 0.0)
         c5 = float(row.annual_zakat or 0)
 
+        # US-085: Approved Pension Scheme exemption (Schedule 6 para 30)
+        # When enabled and employee is >= 55, full B5 gratuity is exempt.
+        b5_gratuity_exempt = 0.0
+        if int(row.get("approved_pension_scheme") or 0):
+            try:
+                import datetime as _dt
+                dob = row.get("date_of_birth")
+                if dob:
+                    if hasattr(dob, "year"):
+                        dob_date = dob
+                    else:
+                        dob_date = _dt.date.fromisoformat(str(dob)[:10])
+                    # Use end of EA year (Dec 31) to determine age at year end
+                    year_end = _dt.date(int(row.year or _dt.date.today().year), 12, 31)
+                    age = (year_end - dob_date).days // 365
+                    if age >= 55:
+                        b5_gratuity_exempt = section_b.get("b5_gratuity", 0.0)
+            except Exception:
+                pass
+
         result.append(
             frappe._dict(
                 {
@@ -434,6 +468,7 @@ def get_data(filters=None):
                     # Section B
                     **section_b,
                     "b12_total_gross": b12,
+                    "b5_gratuity_exempt": b5_gratuity_exempt,
                     # Section C
                     "c1_epf":   c1,
                     "c2_socso": c2,

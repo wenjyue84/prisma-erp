@@ -1014,5 +1014,17 @@
     "default": "0",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_dta_country"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_approved_pension_scheme",
+    "dt": "Employee",
+    "fieldname": "custom_approved_pension_scheme",
+    "fieldtype": "Check",
+    "label": "Approved Pension Scheme (Sch. 6 Para 30)",
+    "description": "ITA 1967 Schedule 6 paragraph 30: retirement gratuity from an approved company pension scheme is fully exempt for employees retiring at age 55 (or compulsory retirement age 60). When enabled, 100% of gratuity is exempt instead of RM1,000/year (para 25).",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_malaysia_presence_days"
   }
 ]
