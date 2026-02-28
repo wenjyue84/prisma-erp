@@ -168,6 +168,7 @@ def validate_document_for_lhdn(doc, method=None):
     Dispatches to doctype-specific checks:
     - Employee: validates custom_id_type / custom_id_value
     - Salary Slip: checks minimum wage compliance (Minimum Wages Order 2025)
+                   and OT rate compliance (Employment Act S.60A(3))
 
     Hooked via hooks.py:
       Employee    → validate
@@ -181,6 +182,7 @@ def validate_document_for_lhdn(doc, method=None):
 
     if doctype == "Salary Slip":
         _validate_salary_slip_minimum_wage(doc)
+        _validate_salary_slip_ot(doc)
     else:
         # Default: Employee ID validation
         id_type = doc.get("custom_id_type")
@@ -224,3 +226,55 @@ def _validate_salary_slip_minimum_wage(doc):
             title="Minimum Wage Warning",
             indicator="orange",
         )
+
+
+def _validate_salary_slip_ot(doc):
+    """Check OT rate compliance for EA-covered employees on a Salary Slip.
+
+    For each earnings component with custom_day_type and custom_ot_hours_claimed set,
+    verifies the component amount meets the statutory OT minimum
+    (Employment Act S.60A(3): 1.5x Normal, 2.0x Rest Day, 3.0x Public Holiday).
+
+    Issues a non-blocking frappe.msgprint warning per underpaid OT component.
+    Only applies to employees earning <= RM4,000/month.
+
+    Args:
+        doc: Salary Slip document.
+    """
+    from lhdn_payroll_integration.utils.employment_compliance import check_overtime_rate
+
+    basic_pay = float(doc.get("base_gross_pay") or doc.get("gross_pay") or 0)
+
+    # Get contracted hours from linked Employee for accurate hourly ORP
+    contracted_hours = None
+    employee_name = doc.get("employee")
+    if employee_name and frappe.db.exists("Employee", employee_name):
+        emp = frappe.get_cached_doc("Employee", employee_name)
+        contracted_hours = emp.get("custom_contracted_hours_per_month")
+
+    # Iterate through earnings components
+    earnings = doc.get("earnings") or []
+    for comp in earnings:
+        day_type = comp.get("custom_day_type")
+        ot_hours = comp.get("custom_ot_hours_claimed")
+
+        # Skip non-OT components (no day_type or hours claimed)
+        if not day_type or not ot_hours:
+            continue
+
+        amount = comp.get("amount") or comp.get("default_amount") or 0
+
+        result = check_overtime_rate(
+            monthly_salary=basic_pay,
+            component_amount=amount,
+            ot_hours_claimed=ot_hours,
+            day_type=day_type,
+            contracted_hours_per_month=contracted_hours,
+        )
+
+        if not result["compliant"] and result.get("warning"):
+            frappe.msgprint(
+                msg=result["warning"],
+                title="Overtime Rate Warning",
+                indicator="orange",
+            )

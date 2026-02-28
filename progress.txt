@@ -4982,3 +4982,30 @@ Incomplete: Fix SEC-06 CSRF enforcement test â€” incorrect test design (ID:
 - Recalculate contributions from statutory tables rather than reading salary slip components — ensures upload file is always correct regardless of payroll configuration errors
 - custom_field.json field updates: docker cp then bench migrate (standard pattern)
 
+## Iteration 24 - Sat, Feb 28, 2026  6:11:53 PM
+Incomplete: Fix SEC-06 CSRF enforcement test â€” incorrect test design (ID: US-099) — attempt 1/3
+
+
+## Iteration N — US-069: Implement Ordinary Rate of Pay (ORP) Calculator and Overtime Validation
+
+**Type:** IMPL
+**TDD Phase:** GREEN (34/34 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_orp_validation`
+**Result:** PASS — 34 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/employment_compliance.py` — Added ORP_SALARY_THRESHOLD, OT_MULTIPLIERS, calculate_orp(), check_overtime_rate()
+- `lhdn_payroll_integration/utils/validation.py` — Added _validate_salary_slip_ot() and hooked into validate_document_for_lhdn()
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added custom_day_type (Select) and custom_ot_hours_claimed (Float) on Salary Component
+- `lhdn_payroll_integration/tests/test_orp_validation.py` — 34 tests covering ORP constants, calculate_orp, check_overtime_rate, validate_document_for_lhdn OT integration
+
+### Patterns discovered
+- `bench migrate` orphan-deletes the LHDN Payroll workspace — always follow with sync_fixtures after migrate
+- `frappe.db.exists` check in validation.py needs to be patched in tests (mock_val_frappe.db.exists.return_value = True/False)
+- MagicMock `.get()` pattern with dict dispatch works well for mocking Salary Slip docs and child components
+
+### Key implementation
+- ORP daily = monthly_salary / 26; ORP hourly = monthly_salary / contracted_hours
+- Fallback when no contracted_hours: daily/8 (standard 8h day)
+- check_overtime_rate() only runs for salary <= RM4,000/month (EA coverage ceiling)
+- OT_MULTIPLIERS: Normal=1.5x, Rest Day=2.0x, Public Holiday=3.0x
