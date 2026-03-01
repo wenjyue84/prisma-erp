@@ -14,7 +14,7 @@ Relief caps — version-controlled by Assessment Year (YA):
     medical_insurance       : RM 3,000
     education_fees_self     : RM 7,000
     sspn                    : RM 8,000
-    childcare_fees          : RM 3,000
+    childcare_fees          : RM 2,000
     lifestyle_expenses      : RM 2,500
     prs_contribution        : RM 3,000
     serious_illness_expenses: RM 10,000
@@ -34,6 +34,11 @@ Relief caps — version-controlled by Assessment Year (YA):
 
   YA2026 and later (TP1(1/2026) Budget 2026 changes):
     All YA2025 caps unchanged, plus:
+    childcare_fees                    : RM 3,000  (RAISED from RM 2,000 — Budget 2026 merged
+                                                    RM 2,000 base + RM 1,000 time-bound into
+                                                    permanent RM 3,000 combined relief; eligible
+                                                    premises now include JKM-registered daily care
+                                                    and after-school transit centres, children ≤12)
     children_life_medical_insurance   : RM 3,000  (NEW — children life/takaful ins.)
     child_education_medical_insurance : RM 4,000  (NEW — children education/medical ins.)
     childcare_fees_extended           : RM 3,000  (NEW — ages 6–12 after-school care)
@@ -84,7 +89,7 @@ _CAPS_DEFAULT = {
     "medical_insurance": 3_000,
     "education_fees_self": 7_000,
     "sspn": 8_000,
-    "childcare_fees": 3_000,
+    "childcare_fees": 2_000,
     "lifestyle_expenses": 2_500,
     "prs_contribution": 3_000,
     "serious_illness_expenses": 10_000,
@@ -116,6 +121,9 @@ _CAPS_YA2026 = {
     # Children's education/medical insurance (NEW — shares combined RM4,000 pool with medical_insurance)
     # Individual field cap equals the combined cap (medical_insurance + this <= RM4,000)
     "child_education_medical_insurance": 4_000,
+    # Childcare fees: Budget 2026 merged RM2,000 base + RM1,000 time-bound into
+    # permanent RM3,000 combined relief for JKM-registered centres, children aged ≤12
+    "childcare_fees": 3_000,
     # Extended childcare for ages 6-12 in Ministry of Education-registered
     # after-school care programmes (previously only age ≤6)
     "childcare_fees_extended": 3_000,
