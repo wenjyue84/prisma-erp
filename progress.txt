@@ -1,3 +1,27 @@
+## Iteration N — US-242: e-Invoice Mandatory Phase Readiness Check for Employer Company Records
+
+**Type:** IMPL
+**TDD Phase:** GREEN (109/109 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_us242_einvoice_readiness
+**Result:** PASS — 109 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/einvoice_readiness_service.py` — Core service: determine_mandate_phase() (revenue→phase mapping), get_phase_effective_date(), is_mandatory_phase(), is_phase_active() (date-based activation), has_myinvois_credentials(), check_credentials_complete() (detailed credential status), assess_company_readiness() (single company evaluation), assess_multiple_companies() (batch), generate_readiness_report() (aggregated compliance report with rates), detect_phase_transition() (revenue-change-driven phase change detection), build_phase_transition_alert() (notification for phase changes), build_credentials_warning() (missing credential alerts), generate_dashboard_summary() (phase/status counts + action items)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_us242_einvoice_readiness.py` — 109 tests across 14 classes: TestEInvoiceReadinessConstants, TestDetermineMandatePhase, TestGetPhaseEffectiveDate, TestIsMandatoryPhase, TestIsPhaseActive, TestHasMyInvoisCredentials, TestCheckCredentialsComplete, TestAssessCompanyReadiness, TestAssessMultipleCompanies, TestGenerateReadinessReport, TestDetectPhaseTransition, TestBuildPhaseTransitionAlert, TestBuildCredentialsWarning, TestGenerateDashboardSummary
+
+### Patterns discovered
+- LHDN e-invoice mandate uses revenue thresholds (>RM100M, >RM25M, >RM150K) with strict greater-than comparison — exact boundary falls to next lower phase
+- Phase 4 (all remaining businesses) has no finalized date — treated as TBD/not-yet-active
+- Phase 1 effective Aug 2024, Phase 2 Jan 2025, Phase 3 Jul 2025
+- Compliance rate computed only against mandatory companies (voluntary excluded from denominator)
+- Pre-flight guard pattern: warns but does not block payroll runs
+
+### Gotchas
+- Python `open('prd.json', 'w')` truncates the file on open BEFORE writing — use binary read/write or jq for prd.json updates to avoid data loss if encoding errors occur
+- prd.json contains UTF-8 encoded em-dashes that fail with cp1252 codec on Windows — always specify encoding='utf-8'
+
+---
+
 ## Iteration N — US-220: Worker Classification Flag: Contract-of-Service vs Contract-for-Service for PCB/WHT Routing
 
 **Type:** IMPL
@@ -8102,4 +8126,5 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 
 ## Iteration 50 - Sun, Mar  1, 2026  6:51:29 PM
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 2/3
+
 
