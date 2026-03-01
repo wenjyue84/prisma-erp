@@ -6347,3 +6347,33 @@ Completed: Generate PERKESO Borang 34 Accident Notification Within 48-Hour Statu
 - EP policy default thresholds hardcoded as fallback; DocType rows take precedence
 - Default EP category option is "Not Applicable" so existing employees are unaffected by default
 - EP validation only activates for period_end >= 2026-06-01
+## Iteration 8 - Sun, Mar  1, 2026 10:20:16 AM
+Completed: Employment Pass Minimum Salary Threshold Validator (June 2026 Revised EP Policy) (ID: US-142) in 13m
+
+
+## Iteration N — US-142: Employment Pass Minimum Salary Threshold Validator (June 2026 Revised EP Policy)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 19 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_ep_salary_validator`
+**Result:** PASS — 19/19 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/ep_salary_threshold/` — New DocType (category, minimum_salary_rm, effective_date, notes)
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/ep_salary_validator.py` — Service with get_ep_threshold(), validate_ep_salary_before_submit(), get_ep_holder_compliance()
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/expatriate_ep_salary_compliance/` — Script Report listing all EP holders with compliance status
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — Added 5 new fields (Employee: EP section/category/number/expiry; Salary Slip: EP override justification)
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/ep_salary_threshold.json` — Fixture data: Cat I=RM20k, Cat II=RM10k, Cat III=RM5k (effective 2026-06-01)
+- `lhdn_payroll_integration/lhdn_payroll_integration/hooks.py` — Added before_submit hook + EP Salary Threshold to fixtures list
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_ep_salary_validator.py` — 19 tests across 4 test classes
+
+### Patterns discovered
+- EP Salary Threshold DocType uses `autoname: "field:category"` for stable primary keys (matches fixture name field)
+- String format indices must be sequential (0,1,2,3...) — cannot use named positional like {2_gross}
+- New services in the nested path (lhdn_payroll_integration.lhdn_payroll_integration.services.*) need the full double-nested module path in hooks.py
+- Fixtures for new DocTypes: create both the DocType JSON (in doctype/) AND the fixture data JSON (in fixtures/) AND register {"dt": "DocType Name"} in hooks.py fixtures list
+
+### Gotchas
+- Migrate deletes the LHDN Payroll workspace as an "orphan" — must run sync_fixtures after migrate to restore it
+- bench execute frappe.utils.fixtures.sync_fixtures seeds fixture data from all registered fixture files
+- report/ subdirectories need `docker exec -u root` to mkdir (permission denied otherwise)

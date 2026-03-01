@@ -363,6 +363,72 @@ def step_submit_slip(slip_name, current_docstatus):
         return False
 
 
+CUSTOM_PRINT_FORMAT = "EA S.61 Payslip (Custom)"
+
+
+def step_fix_print_format():
+    """Ensure the custom print format exists in the database with HTML content.
+
+    The standard 'EA S.61 Payslip' cannot be updated via API (standard=Yes).
+    We create a duplicate 'EA S.61 Payslip (Custom)' with custom_format=1,
+    standard=No, and the HTML baked in — exactly what a user would do via
+    Setup → Print Format → New → copy HTML.
+    """
+    rows = _list("Print Format", [["name", "=", CUSTOM_PRINT_FORMAT]], fields=["name", "html"])
+    if rows and rows[0].get("html") and len(rows[0]["html"]) > 100:
+        print(f"  → [pre] Custom Print Format '{CUSTOM_PRINT_FORMAT}' already exists")
+        return
+
+    # Find the HTML file relative to this script's repo root
+    script_dir   = os.path.dirname(os.path.abspath(__file__))
+    repo_root    = os.path.dirname(script_dir)
+    html_search  = [
+        os.path.join(repo_root, "lhdn_payroll_integration", "lhdn_payroll_integration",
+                     "lhdn_payroll_integration", "print_format", "ea_s61_payslip", "ea_s61_payslip.html"),
+        os.path.join(repo_root, "lhdn_payroll_integration", "lhdn_payroll_integration",
+                     "print_format", "ea_s61_payslip", "ea_s61_payslip.html"),
+    ]
+    html_content = None
+    for path in html_search:
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                html_content = f.read()
+            break
+
+    if not html_content:
+        print(f"  ⚠ [pre] Print Format HTML file not found — PDF output may be blank")
+        return
+
+    payload = {
+        "doctype":              "Print Format",
+        "name":                 CUSTOM_PRINT_FORMAT,
+        "doc_type":             "Salary Slip",
+        "module":               "LHDN Payroll Integration",
+        "custom_format":        1,
+        "standard":             "No",
+        "print_format_type":    "Jinja",
+        "print_format_builder_beta": 0,
+        "disabled":             0,
+        "html":                 html_content,
+        "font":                 "Default",
+        "margin_top":           15,
+        "margin_bottom":        15,
+        "margin_left":          15,
+        "margin_right":         15,
+        "page_number":          "Hide",
+        "show_section_headings": 0,
+        "align_labels_right":   0,
+    }
+
+    if rows:
+        # Exists but html was empty — update it
+        _update("Print Format", CUSTOM_PRINT_FORMAT, payload)
+        print(f"✓ [pre] Custom Print Format '{CUSTOM_PRINT_FORMAT}' HTML updated ({len(html_content)} chars)")
+    else:
+        _create("Print Format", payload)
+        print(f"✓ [pre] Custom Print Format '{CUSTOM_PRINT_FORMAT}' created ({len(html_content)} chars)")
+
+
 def step_download_pdf(slip_name):
     """Download the payslip as PDF (or HTML fallback) to the Desktop."""
     print(f"  [9/9] Requesting payslip PDF for {slip_name} ...")
@@ -370,7 +436,7 @@ def step_download_pdf(slip_name):
     params = {
         "doctype":       "Salary Slip",
         "name":          slip_name,
-        "format":        "EA S.61 Payslip",
+        "format":        CUSTOM_PRINT_FORMAT,
         "no_letterhead": 1,
         "_lang":         "en",
     }
@@ -424,6 +490,7 @@ def main():
     slip_name, docstatus = step_salary_slip(employee, struct, company)
     step_verify_pcb(slip_name)
     step_submit_slip(slip_name, docstatus)
+    step_fix_print_format()
     out_file = step_download_pdf(slip_name)
 
     print()
