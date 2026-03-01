@@ -6751,3 +6751,25 @@ Implementation was already complete. `passes` flag corrected to `true`.
 - frappe.db.get_value() with as_dict=True returns Python dict — use .get() not attribute access
 - sync_fixtures() fails on tabCompany (row size too large) — use direct frappe.get_doc().insert() instead
 - bench execute runs the module path twice (once via get_attr, once via eval); first call succeeds, second hits else-branch
+## Iteration 17 - Sun, Mar  1, 2026 12:44:11 PM
+Completed: Employment Act S.60F(2): Track 60-Day Hospitalization Leave Quota Separately from Ordinary Sick Leave (ID: US-201) in 9m
+
+
+## Iteration — US-188: Apply LHDN PCB 2025 Specification Amendment
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 20 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_spec_2025`
+**Result:** PASS — 20/20 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `employee_tp1_relief.py` — Added `food_waste_composting_machine: 2500` to `_CAPS_YA2025`; added `food_waste_composting_machine` to `_RELIEF_FIELDS`
+- `services/pcb_calculator.py` — Added `PCB_SPEC_VERSION = "2025 Spec Compliant"` constant
+- `tests/test_pcb_spec_2025.py` — New test file (20 tests)
+
+### Key implementation
+1. `food_waste_composting_machine` field: RM 2,500 cap, permanent (from YA2025)
+2. Field included in `_RELIEF_FIELDS` for total_reliefs calculation
+3. YA2026 caps inherit the field (permanent — no sunset)
+4. `PCB_SPEC_VERSION = "2025 Spec Compliant"` in pcb_calculator.py for audit reference
+5. No regressions: 33 YA2025 tests + 44 YA2026 tests still passing
