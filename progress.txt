@@ -7552,3 +7552,32 @@ Implementation was already complete. Verified all 28 tests pass green.
 
 
 
+
+
+---
+
+## Iteration N — US-206: Employment Act S.60A Annual Leave Carry-Forward Cap and Cash-Out Enforcement at Year-End
+
+**Type:** IMPL
+**TDD Phase:** GREEN (72/72 tests pass across 2 test files)
+**Bench commands:**
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_annual_leave_expiry_us206` — 72 tests, PASS
+- `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_us206_annual_leave_expiry` — 52 tests, PASS
+**Result:** PASS — all tests green
+
+### Files created/modified
+- `lhdn_payroll_integration/services/annual_leave_expiry_service.py` — Core service: `get_max_carry_forward_days()`, `calculate_expiring_days()`, `calculate_cash_out_amount()`, `build_leave_expiry_notice()`, `validate_decision()`, `build_audit_entry()`, `can_close_leave_year()`, `get_employees_without_decision()`, `record_leave_expiry_decision()`
+- `lhdn_payroll_integration/services/leave_expiry_service.py` — Alternate service module with EA annual leave tier constants and DB helpers
+- `lhdn_payroll_integration/tests/test_annual_leave_expiry_us206.py` — 72 tests across 8 classes (constants, carry-forward cap, expiring days, cash-out, notice, validate decision, audit entry, can-close, list employees)
+- `lhdn_payroll_integration/tests/test_us206_annual_leave_expiry.py` — 52 additional tests via alternate service module
+
+### Patterns discovered
+- EA S.60A cash-out divisor is 26 (working days/month per EA basic rate formula)
+- Three valid decisions: "Carry Forward", "Cash Out", "Mutual Forfeiture Agreement" (decision matching is case-sensitive)
+- Carry-forward cap = entitlement × multiplier (default multiplier=1, floored to int)
+- Leave year close blocked if employee has balance > 0 AND no decision recorded
+- DocType "LHDN Leave Expiry Decision" stores employee, leave_year, decision, hr_manager, approved_at, employee_acknowledged_at
+
+### Gotchas
+- Container had two separate service files (`annual_leave_expiry_service.py` and `leave_expiry_service.py`) serving different test modules — both synced to local
+- Module path for bench run-tests uses `lhdn_payroll_integration.tests.*` not `lhdn_payroll_integration.lhdn_payroll_integration.tests.*`
