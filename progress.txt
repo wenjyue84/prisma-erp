@@ -1,3 +1,27 @@
+## Iteration N — US-184: Enforce Part-Time Employee Minimum Hourly Rate Against RM1,700 Monthly Wage Floor Proration
+
+**Type:** IMPL
+**TDD Phase:** GREEN (64/64 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_us184_part_time_min_hourly
+**Result:** PASS — 64 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/part_time_min_hourly_service.py` — Core service: compute_minimum_hourly_rate() (RM1,700÷208=RM8.17/hour), validate_part_time_hourly_rate() (compliant/blocked/exempt check with shortfall), generate_part_time_compliance_report() (batch validation with PASS/FAIL/EXEMPT per employee)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_us184_part_time_min_hourly.py` — 64 tests across 7 classes: TestPartTimeMinHourlyConstants, TestComputeMinimumHourlyRate, TestValidatePartTimeHourlyRateCompliant, TestValidatePartTimeHourlyRateNonCompliant, TestValidatePartTimeHourlyRateExemptions, TestValidatePartTimeHourlyRateAutoAdjust, TestGeneratePartTimeComplianceReport
+
+### Patterns discovered
+- Minimum Wages Order 2022 (P.U.(A) 268/2022): RM1,700/month effective 1 Feb 2023
+- Part-time proration: RM1,700 ÷ 26 working days ÷ 8 hours/day = RM1,700 ÷ 208 = RM8.17/hour
+- Micro-employer extension from August 2025: applies to ALL employers including <5 employees
+- NWCC Act exemptions: apprentice, disabled_worker, trainee — suppress payroll block but still flag non-compliant
+- Auto-adjusts when minimum wage changes (monthly_minimum parameter propagates through all functions)
+- Uses MINIMUM_WAGE_MONTHLY from utils.employment_compliance — single source of truth
+
+### Gotchas
+- Files already existed in container from a prior SPIRAL iteration but weren't synced to local repo or marked in prd.json
+
+---
+
 ## Iteration N — US-233: CP500 Bi-Monthly Advance Tax Installment Awareness Panel for Directors with Non-Salary Income
 
 **Type:** IMPL
@@ -7996,4 +8020,7 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 
 ## Iteration 46 - Sun, Mar  1, 2026  6:13:44 PM
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 1/3
+
+## Iteration 47 - Sun, Mar  1, 2026  6:20:43 PM
+Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 2/3
 
