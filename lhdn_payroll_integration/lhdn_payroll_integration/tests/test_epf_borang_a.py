@@ -4,15 +4,20 @@ Verifies output columns and row shape for EPF (KWSP) Borang A,
 compatible with EPF i-Akaun upload format.
 
 US-067: Added tests for generate_iakaun_file() and custom_epf_employer_registration field.
+US-165: Added tests for three-account (75/15/10) split in i-Akaun file and Borang A columns.
 """
+from unittest.mock import patch
+
 import frappe
 from frappe.tests.utils import FrappeTestCase
 
 from lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a import (
     execute,
     generate_iakaun_file,
+    get_citizen_type_code,
     get_columns,
     get_data,
+    validate_account_split,
 )
 
 REQUIRED_FIELDNAMES = {
@@ -23,6 +28,16 @@ REQUIRED_FIELDNAMES = {
     "employee_epf",
     "employer_epf",
     "total_contribution",
+}
+
+# US-165: Three-account split fieldnames required in columns and get_data() rows
+THREE_ACCOUNT_FIELDNAMES = {
+    "ee_akaun_persaraan",
+    "ee_akaun_sejahtera",
+    "ee_akaun_fleksibel",
+    "er_akaun_persaraan",
+    "er_akaun_sejahtera",
+    "er_akaun_fleksibel",
 }
 
 
@@ -75,6 +90,32 @@ class TestEPFBorangAColumns(FrappeTestCase):
         columns = get_columns()
         fieldnames = [c.get("fieldname") for c in columns if isinstance(c, dict)]
         self.assertIn("total_contribution", fieldnames)
+
+    # US-165: Three-account split columns
+    def test_get_columns_three_account_ee_columns_present(self):
+        """get_columns() must include all three employee account split columns."""
+        columns = get_columns()
+        fieldnames = [c.get("fieldname") for c in columns if isinstance(c, dict)]
+        for fn in ("ee_akaun_persaraan", "ee_akaun_sejahtera", "ee_akaun_fleksibel"):
+            self.assertIn(fn, fieldnames, f"Missing three-account column: {fn}")
+
+    def test_get_columns_three_account_er_columns_present(self):
+        """get_columns() must include all three employer account split columns."""
+        columns = get_columns()
+        fieldnames = [c.get("fieldname") for c in columns if isinstance(c, dict)]
+        for fn in ("er_akaun_persaraan", "er_akaun_sejahtera", "er_akaun_fleksibel"):
+            self.assertIn(fn, fieldnames, f"Missing three-account column: {fn}")
+
+    def test_get_columns_three_account_columns_are_currency(self):
+        """All six three-account split columns must be Currency type with MYR option."""
+        columns = get_columns()
+        col_map = {c["fieldname"]: c for c in columns if isinstance(c, dict)}
+        for fn in THREE_ACCOUNT_FIELDNAMES:
+            self.assertIn(fn, col_map, f"Column {fn} missing")
+            self.assertEqual(col_map[fn].get("fieldtype"), "Currency",
+                             f"Column {fn} must be Currency type")
+            self.assertEqual(col_map[fn].get("options"), "MYR",
+                             f"Column {fn} must have MYR options")
 
 
 class TestEPFBorangAData(FrappeTestCase):
@@ -159,6 +200,53 @@ class TestEPFBorangAData(FrappeTestCase):
         for row in rows:
             self.assertIn("epf_member_number", row)
 
+    # US-165: Three-account split keys in get_data() rows
+    def test_get_data_rows_have_three_account_keys(self):
+        """Rows must contain all six three-account split keys."""
+        filters = frappe._dict({"year": 2026})
+        rows = get_data(filters)
+        if not rows:
+            self.skipTest("No data — three-account key test skipped")
+        for row in rows:
+            for key in THREE_ACCOUNT_FIELDNAMES:
+                self.assertIn(key, row, f"Row missing three-account key: {key}")
+
+    def test_get_data_ee_split_sums_to_employee_epf(self):
+        """Employee three-account split amounts must sum to employee_epf."""
+        filters = frappe._dict({"year": 2026})
+        rows = get_data(filters)
+        if not rows:
+            self.skipTest("No data — employee split sum test skipped")
+        for row in rows:
+            ee_total = row.get("employee_epf") or 0
+            ee_split_sum = (
+                (row.get("ee_akaun_persaraan") or 0)
+                + (row.get("ee_akaun_sejahtera") or 0)
+                + (row.get("ee_akaun_fleksibel") or 0)
+            )
+            self.assertAlmostEqual(
+                ee_split_sum, ee_total, places=2,
+                msg=f"Employee EPF split sum {ee_split_sum} ≠ {ee_total} for {row.get('salary_slip')}"
+            )
+
+    def test_get_data_er_split_sums_to_employer_epf(self):
+        """Employer three-account split amounts must sum to employer_epf."""
+        filters = frappe._dict({"year": 2026})
+        rows = get_data(filters)
+        if not rows:
+            self.skipTest("No data — employer split sum test skipped")
+        for row in rows:
+            er_total = row.get("employer_epf") or 0
+            er_split_sum = (
+                (row.get("er_akaun_persaraan") or 0)
+                + (row.get("er_akaun_sejahtera") or 0)
+                + (row.get("er_akaun_fleksibel") or 0)
+            )
+            self.assertAlmostEqual(
+                er_split_sum, er_total, places=2,
+                msg=f"Employer EPF split sum {er_split_sum} ≠ {er_total} for {row.get('salary_slip')}"
+            )
+
 
 class TestEPFBorangAExecute(FrappeTestCase):
     """Tests for execute() function (the entrypoint called by Frappe)."""
@@ -180,30 +268,59 @@ class TestEPFBorangAExecute(FrappeTestCase):
         self.assertIsInstance(data, list)
 
 
+class TestValidateAccountSplit(FrappeTestCase):
+    """Tests for validate_account_split() helper — US-165."""
+
+    def test_valid_split_returns_empty_string(self):
+        """No warning when split sums to total."""
+        accounts = [
+            {"amount": 750.0},
+            {"amount": 150.0},
+            {"amount": 100.0},
+        ]
+        result = validate_account_split(1000.0, accounts)
+        self.assertEqual(result, "")
+
+    def test_mismatch_returns_warning_string(self):
+        """Warning returned when split sum differs from total by > RM0.02."""
+        accounts = [
+            {"amount": 700.0},
+            {"amount": 150.0},
+            {"amount": 100.0},
+        ]
+        result = validate_account_split(1000.0, accounts)
+        self.assertIsInstance(result, str)
+        self.assertGreater(len(result), 0, "Expected a warning for mismatched split")
+
+    def test_rounding_within_tolerance_no_warning(self):
+        """Rounding difference of RM0.01 must not trigger a warning."""
+        accounts = [
+            {"amount": 749.99},
+            {"amount": 150.0},
+            {"amount": 100.0},
+        ]
+        # sum = 999.99, total = 1000.00, diff = 0.01 <= tolerance
+        result = validate_account_split(1000.0, accounts)
+        self.assertEqual(result, "")
+
+    def test_empty_accounts_returns_empty_string(self):
+        """Empty accounts list must return empty string (no warning)."""
+        result = validate_account_split(1000.0, [])
+        self.assertEqual(result, "")
+
+    def test_zero_total_zero_split_no_warning(self):
+        """Zero total with zero splits must not produce a warning."""
+        accounts = [{"amount": 0.0}, {"amount": 0.0}, {"amount": 0.0}]
+        result = validate_account_split(0.0, accounts)
+        self.assertEqual(result, "")
+
+
 class TestEPFIAkaunFile(FrappeTestCase):
     """Tests for generate_iakaun_file() — EPF i-Akaun electronic upload format.
 
     US-067: File structure correct for payroll; EPF registration number in header.
+    US-165: Detail rows include three-account split columns.
     """
-
-    def _make_mock_rows(self, count=3):
-        """Return a list of mock EPF row dicts for testing."""
-        rows = []
-        for i in range(1, count + 1):
-            rows.append({
-                "employee": f"HR-EMP-{i:05d}",
-                "employee_name": f"Employee {i}",
-                "nric": f"87010114{i:04d}",
-                "epf_member_number": f"EPF{i:06d}",
-                "wages": 5000.00 * i,
-                "employee_epf": 550.00 * i,
-                "employer_epf": 650.00 * i,
-                "total_contribution": 1200.00 * i,
-                "period": "2026-01",
-                "salary_slip": f"Sal/00{i}",
-                "epf_rate_warning": "",
-            })
-        return rows
 
     def test_generate_iakaun_file_returns_string(self):
         """generate_iakaun_file() must return a string."""
@@ -236,14 +353,11 @@ class TestEPFIAkaunFile(FrappeTestCase):
         lines = content.strip().split("\n")
         header = lines[0]
         parts = header.split("|")
-        # H|EPF_REG|PERIOD|COUNT
         self.assertGreaterEqual(len(parts), 4, f"Header has too few fields: {header!r}")
-        # Count must be an integer
         try:
             count = int(parts[3])
         except (ValueError, IndexError):
             self.fail(f"Header employee count not an integer: {header!r}")
-        # Detail rows = total lines - header - trailer
         detail_count = len(lines) - 2
         self.assertEqual(count, detail_count, "Header count does not match detail row count")
 
@@ -276,12 +390,9 @@ class TestEPFIAkaunFile(FrappeTestCase):
 
     def test_generate_iakaun_file_epf_reg_in_header(self):
         """EPF employer registration number must appear in the header."""
-        # Use a company that has EPF registration set, or verify field position
         content = generate_iakaun_file(frappe._dict())
         header = content.split("\n")[0]
         parts = header.split("|")
-        # Second field (index 1) is EPF reg number (may be empty if not configured)
-        # Must have at least 4 pipe-delimited fields: H|REG|PERIOD|COUNT
         self.assertGreaterEqual(len(parts), 4, f"Header missing EPF reg field: {header!r}")
 
     def test_generate_iakaun_file_employer_epf_registration_field_on_company(self):
@@ -303,3 +414,228 @@ class TestEPFIAkaunFile(FrappeTestCase):
             "fieldtype",
         )
         self.assertEqual(field, "Data")
+
+
+class TestIAkaunThreeAccountFormat(FrappeTestCase):
+    """US-165: Three-account (75/15/10) split in EPF i-Akaun upload file."""
+
+    def _make_mock_row(self, employee_epf=1000.0, employer_epf=1300.0, is_foreign=0):
+        """Return a mock EPF row with pre-computed three-account split amounts."""
+        return frappe._dict({
+            "employee": "EMP-TEST-001",
+            "employee_name": "Ahmad bin Ali",
+            "nric": "9001011234",
+            "epf_member_number": "12345678",
+            "wages": 5000.00,
+            "employee_epf": employee_epf,
+            "employer_epf": employer_epf,
+            "total_contribution": employee_epf + employer_epf,
+            "is_domestic_servant": 0,
+            "is_foreign_worker": is_foreign,
+            # Three-account split: 75% / 15% / 10% (with fleksibel absorbing rounding)
+            "ee_akaun_persaraan": round(employee_epf * 0.75, 2),
+            "ee_akaun_sejahtera": round(employee_epf * 0.15, 2),
+            "ee_akaun_fleksibel": round(employee_epf - round(employee_epf * 0.75, 2) - round(employee_epf * 0.15, 2), 2),
+            "er_akaun_persaraan": round(employer_epf * 0.75, 2),
+            "er_akaun_sejahtera": round(employer_epf * 0.15, 2),
+            "er_akaun_fleksibel": round(employer_epf - round(employer_epf * 0.75, 2) - round(employer_epf * 0.15, 2), 2),
+            "period": "2026-01",
+            "salary_slip": "Sal/2026/001",
+            "epf_rate_warning": "",
+            "split_warning": "",
+            "end_date": "2026-01-31",
+        })
+
+    def test_detail_row_includes_fifteen_fields(self):
+        """Detail row must have 15 pipe-separated fields (D + 14 values)."""
+        mock_rows = [self._make_mock_row()]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "01", "year": 2026}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        self.assertEqual(len(detail_lines), 1)
+        parts = detail_lines[0].split("|")
+        self.assertEqual(
+            len(parts), 15,
+            f"Expected 15 fields in detail row, got {len(parts)}: {detail_lines[0]}"
+        )
+
+    def test_detail_row_ee_persaraan_75pct(self):
+        """Employee Akaun Persaraan in detail row must be 75% of employee EPF."""
+        mock_rows = [self._make_mock_row(employee_epf=1000.0)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "01", "year": 2026}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        parts = detail_lines[0].split("|")
+        # Format: D|seq|nric|epf|name|wages|ee_epf|er_epf|ee_persaraan|ee_sejahtera|ee_fleksibel|er_persaraan|er_sejahtera|er_fleksibel|citizen_type
+        ee_persaraan = float(parts[8])
+        self.assertAlmostEqual(ee_persaraan, 750.0, places=2,
+                               msg="Employee Akaun Persaraan must be 75% of RM1,000 = RM750")
+
+    def test_detail_row_ee_sejahtera_15pct(self):
+        """Employee Akaun Sejahtera in detail row must be 15% of employee EPF."""
+        mock_rows = [self._make_mock_row(employee_epf=1000.0)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "01", "year": 2026}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        parts = detail_lines[0].split("|")
+        ee_sejahtera = float(parts[9])
+        self.assertAlmostEqual(ee_sejahtera, 150.0, places=2,
+                               msg="Employee Akaun Sejahtera must be 15% of RM1,000 = RM150")
+
+    def test_detail_row_ee_fleksibel_10pct(self):
+        """Employee Akaun Fleksibel in detail row must be 10% of employee EPF."""
+        mock_rows = [self._make_mock_row(employee_epf=1000.0)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "01", "year": 2026}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        parts = detail_lines[0].split("|")
+        ee_fleksibel = float(parts[10])
+        self.assertAlmostEqual(ee_fleksibel, 100.0, places=2,
+                               msg="Employee Akaun Fleksibel must be 10% of RM1,000 = RM100")
+
+    def test_detail_row_er_persaraan_75pct(self):
+        """Employer Akaun Persaraan in detail row must be 75% of employer EPF."""
+        mock_rows = [self._make_mock_row(employer_epf=1000.0)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "01", "year": 2026}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        parts = detail_lines[0].split("|")
+        er_persaraan = float(parts[11])
+        self.assertAlmostEqual(er_persaraan, 750.0, places=2,
+                               msg="Employer Akaun Persaraan must be 75% of RM1,000 = RM750")
+
+    def test_detail_row_er_sejahtera_15pct(self):
+        """Employer Akaun Sejahtera in detail row must be 15% of employer EPF."""
+        mock_rows = [self._make_mock_row(employer_epf=1000.0)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "01", "year": 2026}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        parts = detail_lines[0].split("|")
+        er_sejahtera = float(parts[12])
+        self.assertAlmostEqual(er_sejahtera, 150.0, places=2,
+                               msg="Employer Akaun Sejahtera must be 15% of RM1,000 = RM150")
+
+    def test_detail_row_er_fleksibel_10pct(self):
+        """Employer Akaun Fleksibel in detail row must be 10% of employer EPF."""
+        mock_rows = [self._make_mock_row(employer_epf=1000.0)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "01", "year": 2026}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        parts = detail_lines[0].split("|")
+        er_fleksibel = float(parts[13])
+        self.assertAlmostEqual(er_fleksibel, 100.0, places=2,
+                               msg="Employer Akaun Fleksibel must be 10% of RM1,000 = RM100")
+
+    def test_detail_row_citizen_type_is_last_field(self):
+        """Citizen type code must be the last field in the detail row."""
+        mock_rows = [self._make_mock_row(is_foreign=0)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "01", "year": 2026}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        self.assertTrue(
+            detail_lines[0].endswith("|1"),
+            f"Malaysian employee detail row must end with '|1', got: {detail_lines[0]}"
+        )
+
+    def test_detail_row_foreign_worker_citizen_type_2(self):
+        """Foreign worker detail row must have citizen type '2' as the last field."""
+        mock_rows = [self._make_mock_row(employee_epf=60.0, employer_epf=60.0, is_foreign=1)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "10", "year": 2025}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        self.assertTrue(
+            detail_lines[0].endswith("|2"),
+            f"Foreign worker detail row must end with '|2', got: {detail_lines[0]}"
+        )
+
+    def test_detail_row_split_amounts_are_decimal_formatted(self):
+        """All three-account amounts in detail row must be formatted as 2 decimal places."""
+        mock_rows = [self._make_mock_row(employee_epf=1000.0, employer_epf=1300.0)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "01", "year": 2026}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        parts = detail_lines[0].split("|")
+        # Fields 8-13 are the six split amounts
+        for i in range(8, 14):
+            val = parts[i]
+            self.assertRegex(val, r"^\d+\.\d{2}$",
+                             f"Field {i} '{val}' must be formatted with 2 decimal places")
+
+    def test_detail_row_three_account_ee_sums_to_ee_epf(self):
+        """Sum of three employee account fields must equal ee_epf in the detail row."""
+        mock_rows = [self._make_mock_row(employee_epf=1000.0, employer_epf=1300.0)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "01", "year": 2026}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        parts = detail_lines[0].split("|")
+        ee_epf = float(parts[6])
+        ee_split_sum = float(parts[8]) + float(parts[9]) + float(parts[10])
+        self.assertAlmostEqual(ee_split_sum, ee_epf, places=2,
+                               msg=f"EE split sum {ee_split_sum} ≠ ee_epf {ee_epf}")
+
+    def test_detail_row_three_account_er_sums_to_er_epf(self):
+        """Sum of three employer account fields must equal er_epf in the detail row."""
+        mock_rows = [self._make_mock_row(employee_epf=1000.0, employer_epf=1300.0)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "01", "year": 2026}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        parts = detail_lines[0].split("|")
+        er_epf = float(parts[7])
+        er_split_sum = float(parts[11]) + float(parts[12]) + float(parts[13])
+        self.assertAlmostEqual(er_split_sum, er_epf, places=2,
+                               msg=f"ER split sum {er_split_sum} ≠ er_epf {er_epf}")
+
+    def test_foreign_worker_flat_2pct_gets_75_15_10_split(self):
+        """Foreign worker flat 2% contribution (RM60 EE + RM60 ER) must use 75/15/10 split."""
+        # RM60 employee EPF: Persaraan=45, Sejahtera=9, Fleksibel=6
+        mock_rows = [self._make_mock_row(employee_epf=60.0, employer_epf=60.0, is_foreign=1)]
+        with patch(
+            "lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a.epf_borang_a.get_data",
+            return_value=mock_rows,
+        ):
+            result = generate_iakaun_file(frappe._dict({"month": "10", "year": 2025}))
+        detail_lines = [l for l in result.split("\n") if l.startswith("D|")]
+        parts = detail_lines[0].split("|")
+        ee_persaraan = float(parts[8])
+        ee_sejahtera = float(parts[9])
+        ee_fleksibel = float(parts[10])
+        # RM60 * 75% = RM45, * 15% = RM9, remainder = RM6
+        self.assertAlmostEqual(ee_persaraan, 45.0, places=2)
+        self.assertAlmostEqual(ee_sejahtera, 9.0, places=2)
+        self.assertAlmostEqual(ee_fleksibel, 6.0, places=2)

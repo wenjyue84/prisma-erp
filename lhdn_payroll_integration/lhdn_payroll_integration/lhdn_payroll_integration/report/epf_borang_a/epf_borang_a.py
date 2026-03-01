@@ -17,13 +17,27 @@ US-073: Added employer EPF rate validation against statutory rates.
 US-067: Added EPF i-Akaun electronic upload file generation.
   - generate_iakaun_file(filters) returns pipe-delimited .txt content
   - Company custom_epf_employer_registration used in file header
+
+US-131: Added citizen type code to i-Akaun detail lines.
+  - '1' for Malaysian citizens/PR (custom_is_foreign_worker = 0)
+  - '2' for non-Malaysian foreign workers (custom_is_foreign_worker = 1)
+  - get_citizen_type_code(is_foreign) helper exported for reuse
+
+US-165: Updated i-Akaun file to include three-account (75/15/10) split per employee.
+  - Detail rows now include: EE_PERSARAAN|EE_SEJAHTERA|EE_FLEKSIBEL|ER_PERSARAAN|ER_SEJAHTERA|ER_FLEKSIBEL
+  - Borang A report includes six new currency columns showing per-account breakdown
+  - validate_account_split() ensures split amounts sum to total contribution
+  - Effective 11 May 2024: all contributions use 75% Persaraan / 15% Sejahtera / 10% Fleksibel
 """
 import frappe
-from frappe.utils import flt
+from frappe.utils import flt, getdate
 
 from lhdn_payroll_integration.lhdn_payroll_integration.utils.statutory_rates import (
     calculate_epf_employer_rate,
     EPF_LOWER_SALARY_THRESHOLD,
+)
+from lhdn_payroll_integration.lhdn_payroll_integration.services.epf_account_split_service import (
+    compute_epf_account_split,
 )
 
 # Salary component names used for EPF
@@ -32,6 +46,43 @@ _EPF_EMPLOYER_COMPONENTS = {"EPF - Employer", "KWSP - Employer", "EPF Employer",
 
 # Tolerance for employer EPF rate deviation (5%)
 EPF_RATE_TOLERANCE = 0.05
+
+# Tolerance for three-account split rounding (MYR 0.02)
+_SPLIT_TOLERANCE = 0.02
+
+
+def get_citizen_type_code(is_foreign):
+    """Return KWSP i-Akaun citizen type code.
+
+    Args:
+        is_foreign: Truthy value if employee is a non-Malaysian foreign worker.
+
+    Returns:
+        '1' for Malaysian citizen/PR, '2' for non-Malaysian (foreign worker).
+    """
+    return "2" if is_foreign else "1"
+
+
+def validate_account_split(total, accounts):
+    """Return warning string if account split amounts do not sum to the total contribution.
+
+    Args:
+        total: float — total EPF contribution amount (employee or employer).
+        accounts: list of dicts with 'amount' key (from compute_epf_account_split).
+
+    Returns:
+        str: Warning message if mismatch > RM0.02; empty string if valid.
+    """
+    if not accounts:
+        return ""
+    split_sum = round(sum(acc["amount"] for acc in accounts), 2)
+    total_rounded = round(flt(total), 2)
+    if abs(split_sum - total_rounded) > _SPLIT_TOLERANCE:
+        return (
+            f"EPF split mismatch: account split total RM{split_sum:.2f} "
+            f"does not match contribution total RM{total_rounded:.2f}"
+        )
+    return ""
 
 
 def get_columns():
@@ -89,6 +140,50 @@ def get_columns():
             "options": "MYR",
             "width": 180,
         },
+        # US-165: Three-account employee split columns
+        {
+            "label": "EE Akaun Persaraan (MYR)",
+            "fieldname": "ee_akaun_persaraan",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 180,
+        },
+        {
+            "label": "EE Akaun Sejahtera (MYR)",
+            "fieldname": "ee_akaun_sejahtera",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 180,
+        },
+        {
+            "label": "EE Akaun Fleksibel (MYR)",
+            "fieldname": "ee_akaun_fleksibel",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 180,
+        },
+        # US-165: Three-account employer split columns
+        {
+            "label": "ER Akaun Persaraan (MYR)",
+            "fieldname": "er_akaun_persaraan",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 180,
+        },
+        {
+            "label": "ER Akaun Sejahtera (MYR)",
+            "fieldname": "er_akaun_sejahtera",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 180,
+        },
+        {
+            "label": "ER Akaun Fleksibel (MYR)",
+            "fieldname": "er_akaun_fleksibel",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 180,
+        },
         {
             "label": "Period",
             "fieldname": "period",
@@ -105,6 +200,12 @@ def get_columns():
         {
             "label": "EPF Rate Warning",
             "fieldname": "epf_rate_warning",
+            "fieldtype": "Data",
+            "width": 300,
+        },
+        {
+            "label": "Split Warning",
+            "fieldname": "split_warning",
             "fieldtype": "Data",
             "width": 300,
         },
@@ -205,6 +306,29 @@ def _build_conditions(filters):
     return where, values
 
 
+def _get_three_account_amounts(total_epf, payroll_date):
+    """Compute three-account split amounts for a given EPF total.
+
+    Returns a dict with keys: persaraan, sejahtera, fleksibel.
+    """
+    split = compute_epf_account_split(total_epf, employee_doc=None, payroll_date=payroll_date)
+    accounts = {acc["name"]: acc["amount"] for acc in split["accounts"]}
+
+    if split["use_legacy"]:
+        # Legacy two-account: map Akaun 1 → persaraan, Akaun 2 → sejahtera, fleksibel = 0
+        return {
+            "persaraan": accounts.get("Akaun 1 (Persaraan)", 0.0),
+            "sejahtera": accounts.get("Akaun 2 (Kesejahteraan)", 0.0),
+            "fleksibel": 0.0,
+        }
+
+    return {
+        "persaraan": accounts.get("Akaun Persaraan (Retirement)", 0.0),
+        "sejahtera": accounts.get("Akaun Sejahtera (Well-being)", 0.0),
+        "fleksibel": accounts.get("Akaun Fleksibel (Flexible)", 0.0),
+    }
+
+
 def get_data(filters=None):
     if filters is None:
         filters = frappe._dict()
@@ -230,8 +354,10 @@ def get_data(filters=None):
             ss.employee_name                                 AS employee_name,
             COALESCE(e.custom_id_value, '')                 AS nric,
             COALESCE(e.custom_is_domestic_servant, 0)        AS is_domestic_servant,
+            COALESCE(e.custom_is_foreign_worker, 0)          AS is_foreign_worker,
             COALESCE(e.custom_epf_member_number, '')        AS epf_member_number,
             ss.gross_pay                                     AS wages,
+            ss.end_date                                      AS end_date,
             COALESCE(SUM(CASE
                 WHEN sd.salary_component IN ({emp_placeholders})
                      AND sd.parentfield = 'deductions'
@@ -268,15 +394,59 @@ def get_data(filters=None):
             row.get("employer_epf", 0),
         )
 
+        # US-165: Three-account split per row
+        try:
+            payroll_date = getdate(row.get("end_date")) if row.get("end_date") else None
+        except Exception:
+            payroll_date = None
+
+        ee_split = _get_three_account_amounts(row.get("employee_epf") or 0, payroll_date)
+        er_split = _get_three_account_amounts(row.get("employer_epf") or 0, payroll_date)
+
+        row["ee_akaun_persaraan"] = ee_split["persaraan"]
+        row["ee_akaun_sejahtera"] = ee_split["sejahtera"]
+        row["ee_akaun_fleksibel"] = ee_split["fleksibel"]
+        row["er_akaun_persaraan"] = er_split["persaraan"]
+        row["er_akaun_sejahtera"] = er_split["sejahtera"]
+        row["er_akaun_fleksibel"] = er_split["fleksibel"]
+
+        # Validate that split sums equal total
+        ee_accounts = [
+            {"amount": ee_split["persaraan"]},
+            {"amount": ee_split["sejahtera"]},
+            {"amount": ee_split["fleksibel"]},
+        ]
+        er_accounts = [
+            {"amount": er_split["persaraan"]},
+            {"amount": er_split["sejahtera"]},
+            {"amount": er_split["fleksibel"]},
+        ]
+        ee_warn = validate_account_split(row.get("employee_epf") or 0, ee_accounts)
+        er_warn = validate_account_split(row.get("employer_epf") or 0, er_accounts)
+        row["split_warning"] = "; ".join(filter(None, [ee_warn, er_warn]))
+
     return rows
 
 
 def generate_iakaun_file(filters=None):
-    """Generate KWSP i-Akaun electronic upload file content.
+    """Generate KWSP i-Akaun electronic upload file content (US-165 three-account format).
 
     Returns pipe-delimited text with:
-      - Header: EPF_EMPLOYER_REG|YEAR_MONTH|TOTAL_EMPLOYEES
-      - Detail rows: SEQ|NRIC_NO_HYPHENS|EPF_MEMBER_NO|EMPLOYEE_NAME|WAGES|EE_EPF|ER_EPF
+      - Header: H|EPF_EMPLOYER_REG|YEAR_MONTH|TOTAL_EMPLOYEES
+      - Detail rows:
+          D|SEQ|NRIC|EPF_MEMBER_NO|NAME|WAGES|EE_EPF|ER_EPF|
+            EE_PERSARAAN|EE_SEJAHTERA|EE_FLEKSIBEL|
+            ER_PERSARAAN|ER_SEJAHTERA|ER_FLEKSIBEL|CITIZEN_TYPE
+      - Trailer: T|TOTAL_ROWS|TOTAL_EE_EPF|TOTAL_ER_EPF
+
+    Account allocation (effective 11 May 2024):
+      Akaun Persaraan (Retirement):  75%
+      Akaun Sejahtera (Well-being):  15%
+      Akaun Fleksibel (Flexible):    10%
+
+    Citizen type codes (US-131):
+      '1' = Malaysian citizen / permanent resident
+      '2' = Non-Malaysian foreign worker
 
     Args:
         filters: frappe._dict with company, month, year keys.
@@ -301,13 +471,12 @@ def generate_iakaun_file(filters=None):
     period = f"{year}{str(month).zfill(2)}"
 
     # US-130: exclude foreign domestic servants (EPF exempt per KWSP Oct 2025 circular)
-    rows = [r for r in get_data(filters) if not r.get("is_domestic_servant")]
+    all_rows = get_data(filters)
+    rows = [r for r in all_rows if not r.get("is_domestic_servant")]
 
     lines = []
-    # Header line (domestic servant rows already excluded)
     lines.append(f"H|{epf_reg_no}|{period}|{len(rows)}")
 
-    # Detail lines (1-indexed sequence)
     for seq, row in enumerate(rows, start=1):
         # NRIC: strip hyphens and spaces
         nric = (row.get("nric") or "").replace("-", "").replace(" ", "")
@@ -316,7 +485,24 @@ def generate_iakaun_file(filters=None):
         wages = f"{flt(row.get('wages'), 2):.2f}"
         ee_epf = f"{flt(row.get('employee_epf'), 2):.2f}"
         er_epf = f"{flt(row.get('employer_epf'), 2):.2f}"
-        lines.append(f"D|{seq}|{nric}|{epf_member}|{name}|{wages}|{ee_epf}|{er_epf}")
+
+        # US-165: Three-account split amounts
+        ee_persaraan = f"{flt(row.get('ee_akaun_persaraan', 0), 2):.2f}"
+        ee_sejahtera = f"{flt(row.get('ee_akaun_sejahtera', 0), 2):.2f}"
+        ee_fleksibel = f"{flt(row.get('ee_akaun_fleksibel', 0), 2):.2f}"
+        er_persaraan = f"{flt(row.get('er_akaun_persaraan', 0), 2):.2f}"
+        er_sejahtera = f"{flt(row.get('er_akaun_sejahtera', 0), 2):.2f}"
+        er_fleksibel = f"{flt(row.get('er_akaun_fleksibel', 0), 2):.2f}"
+
+        # US-131: citizen type code
+        citizen_type = get_citizen_type_code(row.get("is_foreign_worker", 0))
+
+        lines.append(
+            f"D|{seq}|{nric}|{epf_member}|{name}|{wages}|{ee_epf}|{er_epf}"
+            f"|{ee_persaraan}|{ee_sejahtera}|{ee_fleksibel}"
+            f"|{er_persaraan}|{er_sejahtera}|{er_fleksibel}"
+            f"|{citizen_type}"
+        )
 
     # Trailer line with totals
     total_ee = flt(sum(row.get("employee_epf") or 0 for row in rows), 2)

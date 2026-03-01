@@ -7070,3 +7070,39 @@ Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and
 - EIS ceiling RM6,000 (Oct 2024 amendment) applies to both employer and employee EIS
 - Hook path for nested module: `lhdn_payroll_integration.lhdn_payroll_integration.services.eis_recovery_validator.validate_no_employer_eis_deduction`
 - ALWAYS copy service to both outer and inner paths (existing MEMORY.md pattern confirmed)
+## Iteration 22 - Sun Mar  1 14:13:32 MPST 2026
+Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging (ID: US-210) — attempt 2/3
+
+
+## Iteration N — US-165: Update EPF i-Akaun CSV for Three-Account (75/15/10) Allocation
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 51 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_epf_borang_a`
+**Result:** PASS — 51/51 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/report/epf_borang_a/epf_borang_a.py`
+  - Added import for `compute_epf_account_split` from `epf_account_split_service`
+  - Added `validate_account_split()` helper — warns if split > RM0.02 from total
+  - Added `_get_three_account_amounts()` internal helper
+  - Updated `get_columns()` — 6 new Currency columns (ee/er × persaraan/sejahtera/fleksibel) + split_warning
+  - Updated `get_data()` — SQL adds `end_date`; rows now include all 6 split amounts + split_warning
+  - Updated `generate_iakaun_file()` — detail rows now 15 fields: D|seq|nric|epf|name|wages|ee|er|ee_pers|ee_sej|ee_flek|er_pers|er_sej|er_flek|citizen_type
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_epf_borang_a.py`
+  - Fixed old tests (total_epf → total_contribution)
+  - Added TestValidateAccountSplit (5 tests)
+  - Added TestIAkaunThreeAccountFormat (13 tests) verifying 75/15/10 in detail rows
+  - Added three-account column tests in TestEPFBorangAColumns
+  - Added three-account key/sum tests in TestEPFBorangAData
+
+### Patterns discovered
+- `_get_three_account_amounts()` helper maps legacy vs. three-account split to flat dict {persaraan, sejahtera, fleksibel}
+- Fleksibel absorbs rounding remainder: `amount - persaraan - sejahtera`
+- Detail row field index mapping: D|0|nric(2)|epf(3)|name(4)|wages(5)|ee(6)|er(7)|ee_pers(8)|ee_sej(9)|ee_flek(10)|er_pers(11)|er_sej(12)|er_flek(13)|citizen(14)
+- Foreign worker 2%+2% flat rate still gets 75/15/10 split (same as citizens per EPF policy)
+
+### Gotchas
+- Container nested path MUST be updated (tests import from `lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a`)
+- Test file goes in OUTER path (`lhdn_payroll_integration/tests/`) — bench runs from there
+- Patching `get_data` in tests with mock rows requires all six split fields pre-populated
