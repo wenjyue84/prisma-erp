@@ -5367,7 +5367,7 @@
         "Fix CP39 CSV Format — Add All Mandatory LHDN e-PCB Plus Columns"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-228",

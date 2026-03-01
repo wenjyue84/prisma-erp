@@ -34,6 +34,17 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Employee-custom_employee_tin",
+    "dt": "Employee",
+    "fieldname": "custom_employee_tin",
+    "fieldtype": "Data",
+    "label": "Employee TIN (e-PCB Plus)",
+    "description": "Tax Identification Number for monthly PCB/e-PCB Plus submission. Format: IG/SG prefix + 11 digits (e.g. IG12345678901). Required for CP39 e-Data PCB upload.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_tin"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Employee-custom_id_type",
     "dt": "Employee",
     "fieldname": "custom_id_type",
@@ -42,7 +53,7 @@
     "options": "NRIC\nPassport\nBRN\nArmy ID",
     "mandatory_depends_on": "eval:doc.custom_requires_self_billed_invoice",
     "module": "LHDN Payroll Integration",
-    "insert_after": "custom_lhdn_tin"
+    "insert_after": "custom_employee_tin"
   },
   {
     "doctype": "Custom Field",
@@ -1702,26 +1713,73 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Employee-custom_tax_residency_section",
+    "dt": "Employee",
+    "fieldname": "custom_tax_residency_section",
+    "fieldtype": "Section Break",
+    "label": "Tax Residency",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_ep_expiry_date"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_tax_residency_status",
+    "dt": "Employee",
+    "fieldname": "custom_tax_residency_status",
+    "fieldtype": "Select",
+    "label": "Tax Residency Status",
+    "options": "\nResident\nNon-Resident\nPending Determination",
+    "default": "Resident",
+    "description": "LHDN tax residency status. Non-Resident: 30% flat PCB, no TP1 reliefs. Resident: progressive PCB with reliefs.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_tax_residency_section",
+    "in_list_view": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_tax_residency_effective_date",
+    "dt": "Employee",
+    "fieldname": "custom_tax_residency_effective_date",
+    "fieldtype": "Date",
+    "label": "Residency Status Effective Date",
+    "description": "The date from which the new tax residency status applies for PCB calculation.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_tax_residency_status"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee TP1 Relief-custom_reliefs_suspended",
+    "dt": "Employee TP1 Relief",
+    "fieldname": "custom_reliefs_suspended",
+    "fieldtype": "Check",
+    "label": "Reliefs Suspended (Non-Resident)",
+    "default": "0",
+    "description": "Set to 1 when the employee is Non-Resident. Suspends all TP1 reliefs for this assessment year.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "total_reliefs",
+    "read_only": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_epf_iakaun_registration_confirmed",
     "dt": "Employee",
     "fieldname": "custom_epf_iakaun_registration_confirmed",
     "fieldtype": "Check",
     "label": "EPF i-Akaun Registration Confirmed",
-    "insert_after": "custom_is_domestic_servant",
-    "description": "Tick when foreign worker EPF i-Akaun registration is confirmed in the i-Akaun Employer portal (mandatory within 30 days for foreign workers from Oct 2025).",
     "default": "0",
+    "description": "Tick once the foreign employee has been registered in EPF i-Akaun Employer portal.",
     "module": "LHDN Payroll Integration",
-    "name": "Employee-custom_epf_iakaun_registration_confirmed"
+    "insert_after": "custom_tax_residency_effective_date"
   },
   {
     "doctype": "Custom Field",
+    "name": "Employee-custom_epf_iakaun_registration_date",
     "dt": "Employee",
     "fieldname": "custom_epf_iakaun_registration_date",
     "fieldtype": "Date",
     "label": "EPF i-Akaun Registration Date",
-    "insert_after": "custom_epf_iakaun_registration_confirmed",
-    "description": "Date when EPF i-Akaun registration was confirmed for this foreign worker.",
-    "depends_on": "eval:doc.custom_epf_iakaun_registration_confirmed == 1",
+    "description": "Date the EPF i-Akaun registration was confirmed in the employer portal.",
     "module": "LHDN Payroll Integration",
-    "name": "Employee-custom_epf_iakaun_registration_date"
+    "insert_after": "custom_epf_iakaun_registration_confirmed"
   }
 ]

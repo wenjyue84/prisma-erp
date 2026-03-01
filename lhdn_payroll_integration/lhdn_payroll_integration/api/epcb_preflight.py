@@ -57,7 +57,7 @@ def get_employee_data_gaps(company, month, year):
             ss.name                         AS salary_slip,
             ss.employee                     AS employee,
             ss.employee_name                AS employee_name,
-            COALESCE(e.custom_lhdn_tin, '') AS tin,
+            COALESCE(NULLIF(e.custom_employee_tin, ''), e.custom_lhdn_tin, '') AS tin,
             COALESCE(e.custom_pcb_category, '') AS pcb_category,
             COALESCE(e.custom_id_type, '')  AS id_type
         FROM

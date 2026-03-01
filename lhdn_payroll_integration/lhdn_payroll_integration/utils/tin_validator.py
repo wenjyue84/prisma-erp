@@ -2,10 +2,44 @@
 
 Validates an employee's TIN against the LHDN MyInvois API before submission,
 preventing costly 400/422 rejections caused by incorrect TIN values.
+
+Also provides local format validation for Malaysian TIN (US-227).
 """
+
+import re
 
 import frappe
 import requests
+
+# Malaysian TIN format: IG/SG/OG prefix + 11 digits, or D/C prefix + 11 digits
+_TIN_FORMAT_RE = re.compile(r"^(IG|SG|OG|[DC])\d{11}$")
+
+
+def validate_tin_format(tin):
+    """Validate Malaysian TIN format without calling the LHDN API.
+
+    Accepted formats (per LHDN spec):
+        - IG + 11 digits  (individual, general)
+        - SG + 11 digits  (individual, salary earner)
+        - OG + 11 digits  (individual, business)
+        - D  + 11 digits  (company / director)
+        - C  + 11 digits  (company)
+
+    Args:
+        tin (str): TIN string to validate.
+
+    Returns:
+        tuple: (is_valid: bool, error_msg: str or None)
+    """
+    if not tin or not tin.strip():
+        return False, "TIN is empty"
+    if _TIN_FORMAT_RE.match(tin.strip()):
+        return True, None
+    return (
+        False,
+        f"Invalid TIN format '{tin}'. Expected IG/SG/OG/D/C prefix followed by 11 digits "
+        f"(e.g. IG12345678901 or SG12345678901).",
+    )
 
 # Map Frappe ID type values to LHDN API schemeID codes
 _ID_TYPE_MAP = {

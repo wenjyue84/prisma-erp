@@ -176,7 +176,7 @@ def get_data(filters=None):
             ss.name                                          AS salary_slip,
             ss.employee                                      AS employee,
             ss.employee_name                                 AS employee_name,
-            COALESCE(e.custom_lhdn_tin, '')                 AS employee_tin,
+            COALESCE(NULLIF(e.custom_employee_tin, ''), e.custom_lhdn_tin, '') AS employee_tin,
             COALESCE(e.custom_id_value, '')                 AS employee_nric,
             COALESCE(e.custom_pcb_category, '1')            AS pcb_category,
             ss.company                                       AS company,

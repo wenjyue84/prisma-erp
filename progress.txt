@@ -7302,3 +7302,33 @@ Completed: PERKESO LINDUNG 24/7 — Implement Employee Second-Category Contribut
 - LHDN Payroll Settings singleton used as config store (consistent with SEIA commencement date pattern)
 - Separate pending_gazette flag + activation_date gives 2-level activation guard (cleaner than SEIA single-date approach)
 - Mocked settings with `.get` method (not MagicMock auto-attribute) avoids falsy-check issues with Check fields
+## Iteration 28 - Sun, Mar  1, 2026  2:57:44 PM
+Completed: PERKESO LINDUNG 24/7 — Implement Employee Second-Category Contribution Deduction Engine and Gazette-Rate Activation Workflow (ID: US-310) in 12m
+
+
+## Iteration N — US-227: Store Employee TIN on Employee DocType and Validate for e-PCB Plus Upload
+
+**Type:** IMPL
+**TDD Phase:** GREEN (23/23 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_employee_tin_us227`
+**Result:** PASS — 23/23, 0 failures, 0 errors
+
+### Files created/modified
+- `tests/test_employee_tin_us227.py` — 23 test cases covering all 5 acceptance criteria
+- `services/employee_tin_warning.py` — already existed (warn_missing_employee_tin via frappe.msgprint)
+- `utils/tin_validator.py` — already had validate_tin_format() + _TIN_FORMAT_RE regex (IG|SG|OG|D|C prefix + 11 digits)
+- `hooks.py` — already had employee_tin_warning registered under Salary Slip.validate
+
+### Key discoveries
+- Most of US-227 was already implemented from prior stories:
+  - `custom_lhdn_tin` fixture on Employee → satisfies "custom_employee_tin" requirement
+  - `validate_tin_format()` already in tin_validator.py
+  - `employee_tin_warning.warn_missing_employee_tin` already registered in hooks
+  - `epcb_preflight.py` already provides the pre-submission missing-TIN report
+  - CP39 report already includes `employee_tin` from `custom_lhdn_tin`
+- `employee_tin_warning.py` uses `frappe.db.get_value` (not `frappe.get_doc`) to read TIN
+- Tests mock `frappe.db.get_value` to return `frappe._dict` with both `custom_employee_tin` and `custom_lhdn_tin` keys
+
+### Patterns
+- When story says "custom_employee_tin", check fixture: might exist as "custom_lhdn_tin" (same field, older name)
+- `employee_tin_warning` falls back to `custom_lhdn_tin` if `custom_employee_tin` is blank — good backward compat

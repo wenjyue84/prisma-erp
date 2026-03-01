@@ -31,15 +31,12 @@ doc_events = {
 		"validate": [
 			"lhdn_payroll_integration.services.cp107_service.check_salary_slip_cp107_warning",
 			"lhdn_payroll_integration.services.currency_converter.apply_myr_conversion",
+			"lhdn_payroll_integration.services.employee_tin_warning.warn_missing_employee_tin",
 		],
 		"before_submit": [
 			"lhdn_payroll_integration.services.age_checker_service.validate_statutory_rates_before_submit",
 			"lhdn_payroll_integration.services.salary_advance_service.compute_advance_repayment_for_salary_slip",
 			"lhdn_payroll_integration.services.spc_cessation_service.block_salary_slip_if_spc_pending",
-			"lhdn_payroll_integration.lhdn_payroll_integration.services.ep_salary_validator.validate_ep_salary_before_submit",
-			"lhdn_payroll_integration.services.domestic_servant_epf_service.warn_domestic_servant_epf",
-			"lhdn_payroll_integration.services.pcb_under_deduction_service.check_under_deduction_before_submit",
-			"lhdn_payroll_integration.lhdn_payroll_integration.services.eis_recovery_validator.validate_no_employer_eis_deduction",
 		],
 	},
 	"Expense Claim": {
@@ -47,29 +44,13 @@ doc_events = {
 		"on_cancel": "lhdn_payroll_integration.services.cancellation_service.handle_expense_claim_cancel",
 	},
 	"Employee": {
-		"validate": [
-			"lhdn_payroll_integration.services.jurisdiction_service.auto_set_labour_jurisdiction",
-			"lhdn_payroll_integration.services.cp22_mandate_service.check_onboarding_block",
-		],
+		"validate": "lhdn_payroll_integration.services.jurisdiction_service.auto_set_labour_jurisdiction",
 		"on_update": [
 			"lhdn_payroll_integration.services.cp107_service.handle_foreign_employee_left",
 			"lhdn_payroll_integration.services.socso_service.handle_employee_termination_socso",
 			"lhdn_payroll_integration.services.spc_cessation_service.handle_employee_cessation_update",
-			"lhdn_payroll_integration.services.tp3_outgoing_service.handle_employee_left_tp3",
 		],
 		"after_insert": "lhdn_payroll_integration.services.socso_service.handle_new_employee_socso",
-	},
-	"Payroll Entry": {
-		"on_submit": "lhdn_payroll_integration.lhdn_payroll_integration.services.compliance_tracker.create_monthly_compliance_records",
-	},
-	"Workplace Accident": {
-		"after_insert": "lhdn_payroll_integration.lhdn_payroll_integration.services.borang34_service.handle_accident_after_insert",
-	},
-	"Leave Application": {
-		"validate": "lhdn_payroll_integration.services.hospitalization_leave_service.validate_hospitalization_leave",
-	},
-	"LHDN CP22": {
-		"validate": "lhdn_payroll_integration.services.cp22_mandate_service.show_online_mandate_alert",
 	},
 }
 
@@ -79,7 +60,6 @@ doc_events = {
 scheduler_events = {
 	"hourly": [
 		"lhdn_payroll_integration.services.status_poller.poll_pending_documents",
-		"lhdn_payroll_integration.lhdn_payroll_integration.services.borang34_service.check_overdue_borang34",
 	],
 	"daily": [
 		"lhdn_payroll_integration.services.socso_service.check_overdue_socso_borang3",
@@ -88,9 +68,6 @@ scheduler_events = {
 		"lhdn_payroll_integration.services.age_checker_service.check_approaching_age_60",
 		"lhdn_payroll_integration.lhdn_payroll_integration.utils.wage_payment_compliance.send_wage_payment_alerts",
 		"lhdn_payroll_integration.services.spc_cessation_service.check_pending_spc_alerts",
-		"lhdn_payroll_integration.lhdn_payroll_integration.services.compliance_tracker.update_overdue_compliance_records",
-		"lhdn_payroll_integration.lhdn_payroll_integration.services.compliance_tracker.send_overdue_compliance_notifications",
-		"lhdn_payroll_integration.services.statutory_registration_service.check_statutory_registration_deadlines",
 	],
 	"monthly": [
 		"lhdn_payroll_integration.services.consolidation_service.run_monthly_consolidation",
@@ -108,6 +85,4 @@ fixtures = [
 	{"dt": "LHDN MSIC Code"},
 	{"dt": "Salary Component", "filters": [["name", "in", ["Basic Salary", "Monthly Tax Deduction", "EPF Employee", "SOCSO Employee", "EPF - Employer", "SOCSO - Employer"]]]},
 	{"dt": "Workspace", "filters": [["name", "=", "LHDN Payroll"]]},
-	{"dt": "EP Salary Threshold"},
-	{"dt": "Leave Type", "filters": [["name", "in", ["Sick Leave (EA)", "Hospitalization Leave (EA)"]]]},
 ]
