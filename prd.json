@@ -5858,7 +5858,7 @@
         "Generate SOCSO and EIS e-Caruman Upload File (PERKESO ASSIST Portal)"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-248",
@@ -7243,6 +7243,197 @@
         "Implement TP3 Carry-Forward Declaration for New Hires (Prior Employer YTD)"
       ],
       "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-302",
+      "title": "ITA Section 83(3): Payroll Final Pay Retention Workflow — Block Release Until e-SPC Tax Clearance Letter Received",
+      "priority": "high",
+      "description": "Under Section 83(3) of the Income Tax Act 1967, employers who have notified LHDN of an employee's cessation or departure (via CP21/CP22A/CP22B submitted through e-SPC) are legally required to withhold any moneys due to the employee for up to 90 days from notification, until LHDN issues the Surat Penyelesaian Cukai (SPC/Tax Clearance Letter). Releasing final pay before SPC receipt constitutes a statutory breach. This workflow is not covered by any existing CP21/CP22A story, which cover notification submission only.",
+      "acceptanceCriteria": [
+        "When a CP21 or CP22A is submitted via e-SPC, system sets a 'Final Pay Hold' flag on the employee record with hold_expiry_date = submission_date + 90 days",
+        "Payroll processing for the terminated employee blocks final payment disbursement if SPC has not yet been recorded on the employee record",
+        "HR user can manually record SPC receipt (SPC reference number and date) which clears the hold and enables final pay release in next payroll run",
+        "System sends alert to HR Manager at 14-day and 7-day intervals before the 90-day hold expires if no SPC has been received",
+        "Audit log records: SPC receipt date, reference number, cleared-by user"
+      ],
+      "technicalNotes": [
+        "Income Tax Act 1967 Section 83(3): employer must retain moneys due to the employee for 90 days after notifying LHDN",
+        "e-SPC processing time is approximately 14 working days; employer should not release pay before SPC confirmed",
+        "Fields to add on Employee DocType: custom_spc_hold_start_date, custom_spc_hold_expiry_date, custom_spc_reference_number, custom_spc_received_date",
+        "Integrates with CP21/CP22A/CP22B workflow; from 1 January 2025 all three forms mandatory online via e-SPC on MyTax"
+      ],
+      "dependencies": [
+        "Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-303",
+      "title": "SOCSO/EIS RM6,000 Ceiling: Post-Grace Period Retroactive Contribution Correction Audit Tool",
+      "priority": "high",
+      "description": "The SOCSO and EIS wage ceiling increased from RM5,000 to RM6,000 effective October 1, 2024, with a six-month grace period that expired on March 31, 2025. After the grace period, full compliance is mandatory with penalties applying. Employers who failed to update contributions for employees earning RM5,001–RM6,000 during the grace window may have underpaid. An audit tool to identify affected payroll periods and generate correction schedules is needed — distinct from the existing enforcement story which covers ongoing forward compliance only.",
+      "acceptanceCriteria": [
+        "Audit report identifies all salary slips from October 2024 to March 2025 where employee gross wages were between RM5,001 and RM6,000 and SOCSO/EIS contributions were calculated on the old RM5,000 ceiling",
+        "Report quantifies the contribution shortfall per employee per month (employer portion and employee portion separately for SOCSO and EIS)",
+        "Report generates a suggested correction schedule showing additional contributions required to bring each affected period to compliance",
+        "Summary view shows total employer liability across all affected employees and periods",
+        "Corrected contribution amounts are exportable in PERKESO e-Caruman format for submission via PERKESO ASSIST portal"
+      ],
+      "technicalNotes": [
+        "Old ceiling: RM5,000; new ceiling: RM6,000; transition window: October 1, 2024 to March 31, 2025",
+        "Grace period confirmed: Crowe Malaysia advisory states no penalties during Oct 2024 – Mar 2025 transition; full compliance required from April 1, 2025",
+        "Contribution table lookup must compare salary slips against both old and new Jadual Kadar Caruman tables",
+        "PERKESO ASSIST portal accepts corrected submission via e-Caruman batch upload"
+      ],
+      "dependencies": [
+        "Enforce SOCSO/EIS Wage Ceiling Update to RM6,000 (October 2024 Amendment)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-304",
+      "title": "TP3(1/2026) PCB Calculator Integration: Apply Prior Employer YTD Taxable Income, EPF, and PCB Paid to Reduce Current MTD",
+      "priority": "high",
+      "description": "When a new employee submits TP3(1/2026), the new employer is obligated to incorporate the prior employer's Year-to-Date data — taxable income earned, EPF contributions paid, and PCB already deducted — into the PCB calculation for the remaining months of the year. Without this integration, the new employer over-deducts PCB. The existing story 'Implement TP3 Carry-Forward Declaration for New Hires (Prior Employer YTD)' creates the DocType; this story specifically implements the mathematical feed-through into the MTD calculation engine using the updated TP3(1/2026) form fields aligned with Budget 2026 relief line items.",
+      "acceptanceCriteria": [
+        "When a TP3(1/2026) record exists for an employee, the MTD calculation engine adds the TP3 prior-employer taxable income to the YTD income base before computing remaining-month tax liability",
+        "The TP3 EPF YTD amount reduces the EPF deduction allowance available for the remaining months under the current employer",
+        "The TP3 PCB YTD amount is deducted from the total annual tax liability before spreading the balance across remaining months",
+        "PCB calculator test case: employee joining in June with TP3 showing RM30,000 prior income, RM1,650 EPF, and RM800 PCB; computed MTD for July–December must reconcile correctly against annual liability",
+        "TP3 data entry form is updated to match FORM PCB TP3 (1/2026) field layout including new Budget 2026 relief line items (domestic tourism, childcare age update)"
+      ],
+      "technicalNotes": [
+        "TP3 formula per LHDN MTD spec: Annual tax on (P + prior_ytd_income) minus annual tax on (prior_ytd_income), distributed over remaining months",
+        "TP3(1/2026) form updated to reflect Budget 2026 relief categories; DocType must capture matching fields",
+        "LHDN requires employers to retain TP3 for 7 years; TP3 is not submitted to LHDN",
+        "FORM PCB TP3 (1/2026) available for download from hasil.gov.my employer payroll data specification page"
+      ],
+      "dependencies": [
+        "Implement TP3 Carry-Forward Declaration for New Hires (Prior Employer YTD)",
+        "Implement MTD Method 2 (Year-to-Date Recalculation Formula)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-305",
+      "title": "TP1(1/2026): Add CCTV Systems to EV Charging Relief and Enforce Biennial (Once per 2-YA) Claim Restriction",
+      "priority": "medium",
+      "description": "Budget 2026 amended the EV Charging Facility Relief under TP1 to include CCTV systems for household use as newly eligible expenses alongside EV charging equipment. Additionally, the relief may only be claimed once every two Years of Assessment (YA), not annually. The existing story covers the YA2027 extension and RM2,500 cap but does not implement the CCTV category addition or the biennial claim frequency guard.",
+      "acceptanceCriteria": [
+        "TP1 form UI and PCB calculator accept 'CCTV systems for household use' as a valid EV Charging Relief expense category alongside existing EV charging equipment",
+        "System enforces that a claim for EV Charging Relief is only accepted once per two consecutive Years of Assessment per employee; if claimed in YA2026, system rejects YA2027 claim and generates an alert",
+        "Claim frequency tracker stores the last claimed YA per employee so validation persists across payroll periods",
+        "TP1(1/2026) form correctly labels and presents the combined EV + CCTV relief with the biennial restriction visible to HR users"
+      ],
+      "technicalNotes": [
+        "Store last_ev_charging_claim_ya on TP1 relief record; validate current YA != last_ev_charging_claim_ya AND current YA != last_ev_charging_claim_ya + 1",
+        "Relief cap remains RM2,500; CCTV addition does not increase the cap",
+        "Source form: FORM PCB TP1 (1/2026) from hasil.gov.my PCB 2026 specification",
+        "Extends existing story 'Budget 2026 TP1 — EV Charging Facility Relief (RM2,500) as a Distinct Line Item Extended to YA2027'"
+      ],
+      "dependencies": [
+        "Budget 2026 TP1 — EV Charging Facility Relief (RM2,500) as a Distinct Line Item Extended to YA2027"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-306",
+      "title": "TP1(1/2026): Update Child Care Centre Relief Age Eligibility Validator from 6 to 12 Years",
+      "priority": "medium",
+      "description": "Budget 2026 amended TP1 to extend child care centre relief eligibility to children up to 12 years old (previously capped at 6 years), covering registered daily care and after-school transit centres. The existing story 'Budget 2026 TP1: Permanent RM3,000 Childcare Relief for JKM-Registered Transit Centres' focuses on JKM-registered centre classification, but does not update the core age eligibility validation rule from ≤6 to ≤12 in the PCB calculation engine. This is a distinct validator change in the MTD calculator.",
+      "acceptanceCriteria": [
+        "TP1 child care relief validator accepts child ages 1–12 years; children aged 7–12 previously rejected are now accepted",
+        "RM3,000 relief cap is maintained regardless of how many children in the 1–12 age range are declared",
+        "PCB recalculation triggers correctly when an employee adds a child aged 7–12 to their TP1 declaration",
+        "Existing children aged ≤6 on prior TP1 records are unaffected; new age upper bound of 12 applies from YA2026 onward"
+      ],
+      "technicalNotes": [
+        "Update age validation rule in TP1 child care section: child.age <= 12 (was child.age <= 6)",
+        "Applies to licensed/registered daily care centres and after-school transit centres; registration type validation unchanged",
+        "Source form: FORM PCB TP1 (1/2026); effective from YA2026"
+      ],
+      "dependencies": [
+        "Budget 2026 TP1: Permanent RM3,000 Childcare Relief for JKM-Registered Transit Centres"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-307",
+      "title": "PCB MTD Minimum Deduction Guard: Zero Out Monthly Deduction When Computed PCB Amount Is Less Than RM10",
+      "priority": "medium",
+      "description": "LHDN guidelines specify that PCB/MTD amounts less than RM10 per month must not be deducted from employees' wages. The PCB calculator must include a minimum-threshold guard as a final post-computation step: if the computed monthly PCB falls between RM0.01 and RM9.99, the deduction for that month must be set to RM0. This edge case is not explicitly addressed in any existing PCB calculation story and can cause payroll discrepancies and LHDN reconciliation issues for low-income employees near the PCB threshold.",
+      "acceptanceCriteria": [
+        "After applying the full MTD formula (including all reliefs and rebates), if the resulting monthly PCB amount is between RM0.01 and RM9.99 inclusive, the system sets the salary slip PCB deduction to RM0",
+        "The system does not carry forward sub-RM10 amounts to subsequent months; each month's calculation is independent",
+        "Salary slip clearly shows RM0 PCB deduction with a tooltip/note: 'PCB below RM10 monthly threshold — not deducted per LHDN guideline'",
+        "PCB calculator test suite includes cases where computed PCB rounds to RM8.50, RM9.99, RM10.00, and RM10.01 to verify correct handling at the boundary"
+      ],
+      "technicalNotes": [
+        "LHDN guideline: 'PCB amounts less than RM10 per month are not deducted' — applies after full MTD computation",
+        "Typically affects employees earning just above the PCB threshold (RM2,851 single / RM3,851 married) with significant reliefs",
+        "Threshold is RM10 per month, not annual — do not aggregate across months",
+        "Implementation: add a final check in the PCB calculation function: if pcb_amount < 10: return 0"
+      ],
+      "dependencies": [
+        "Implement MTD Method 2 (Year-to-Date Recalculation Formula)"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-308",
+      "title": "Employment Act S.26 Payment in Lieu of Notice: PCB-Taxable but EPF/SOCSO/EIS-Exempt Payroll Classification",
+      "priority": "medium",
+      "description": "Under Employment Act Section 26 and EPF/SOCSO legislation, Payment in Lieu of Notice (PILON) — compensation paid when an employer terminates without serving the contractual notice period — is treated as employment income subject to PCB, but is specifically excluded from EPF contributions (not 'wages' under EPF Act) and SOCSO/EIS contributions. Many payroll systems incorrectly calculate EPF and SOCSO on PILON amounts. A dedicated PILON salary component type with correct statutory flags is required, distinct from contractual severance gratuity.",
+      "acceptanceCriteria": [
+        "A 'Payment in Lieu of Notice (PILON)' salary component type exists with is_pcb_component=True, is_epf_applicable=False, is_socso_applicable=False, is_eis_applicable=False",
+        "When PILON is included in a final salary slip, PCB is calculated on the PILON amount as employment income, but EPF/SOCSO/EIS contributions are not triggered",
+        "PILON amount appears in EA Form Part B as additional taxable employment income for the year",
+        "System prevents PILON from being auto-classified as contractual severance gratuity (which may qualify for ITA Schedule 4B tax exemption)",
+        "Test case: employee with monthly salary RM5,000 receives 2-month PILON (RM10,000); verify PCB computed on RM10,000 and EPF/SOCSO/EIS at RM0"
+      ],
+      "technicalNotes": [
+        "EPF Act 1991 definition of 'wages' in Schedule 3 excludes gratuities and payments in lieu of notice",
+        "SOCSO Act 1969 Section 2: 'wages' excludes PILON — no contribution required",
+        "PCB treatment: PILON is taxable employment income per ITA 1967 Section 13(1)(a)",
+        "Distinct from termination benefits/gratuity which may be exempt under ITA Schedule 4B"
+      ],
+      "dependencies": [
+        "Add bonus/irregular payment classification for PCB differentiation",
+        "Implement Termination and Lay-Off Benefits Calculator"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-309",
+      "title": "Foreign-Sourced Income Remittance PCB Exemption Treatment for Malaysian Tax Residents (Effective to YA2026)",
+      "priority": "medium",
+      "description": "Under current exemption orders, certain foreign-sourced income received by Malaysian tax residents and remitted into Malaysia is exempt from income tax (investment income exempt until December 31, 2036; other categories until December 31, 2026). For expatriates and Malaysian employees with offshore income, employers need to distinguish foreign-sourced exempt remittances from Malaysian employment income when computing PCB, and correctly exclude qualifying amounts from the PCB taxable base. This is distinct from the existing DTA 183-day tracker which handles treaty-based exemptions for short-term visiting employees.",
+      "acceptanceCriteria": [
+        "Employee record allows flagging of 'Foreign-Sourced Income Exemption' with: source country, exemption basis (Remittance Exemption Order / DTA Article), exempt amount declared for the year, and expiry YA",
+        "PCB calculator excludes declared foreign-sourced exempt remittances from annual taxable income when computing monthly MTD for residents",
+        "System validates that exemption is only applied to tax residents (≥182 days in Malaysia) and rejects for non-residents",
+        "HR records the exemption order reference number for LHDN audit trail",
+        "Warning fires if exemption is claimed for income types not covered by the remittance exemption orders (e.g., active business income from foreign operations)"
+      ],
+      "technicalNotes": [
+        "Exemption under ITA 1967 via P.U.(A) exemption orders: certain FSI remitted by residents exempt until Dec 31, 2026 (investment income until Dec 31, 2036)",
+        "Distinct from DTA-based exemption (existing story covers 183-day rule); this covers statutory FSI remittance exemption order",
+        "Not applicable to income from employment performed in Malaysia — only to offshore/investment income remitted to Malaysia",
+        "PWC Malaysia tax summary 2025 confirms transitional FSI exemption rules in force"
+      ],
+      "dependencies": [
+        "Implement DTA 183-Day Residency Tracker and Short-Term Assignee PCB Exemption Workflow",
+        "Implement Expatriate Gross-Up Calculator and DTA Country Table"
+      ],
+      "estimatedComplexity": "medium",
       "passes": false
     }
   ]

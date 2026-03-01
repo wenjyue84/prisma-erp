@@ -7036,3 +7036,37 @@ Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and
 ### Gotchas
 - Must update BOTH copies of employment_compliance.py (nested path and outer path in container)
 - The "grace_period" flag is set False for domestic worker exemptions (it's a type exemption, not time-based)
+
+## Iteration 23 - Sun, Mar  1, 2026  2:05:23 PM
+Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging (ID: US-210) — attempt 1/3
+
+
+## Iteration 24 — US-247: EIS Amendment 2025 — Prohibit Employer EIS Recovery from Employee Wages
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 21 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_eis_employer_recovery`
+**Result:** PASS — 21/21 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/eis_recovery_validator.py` — New service
+- `lhdn_payroll_integration/services/eis_recovery_validator.py` — Outer path copy (MEMORY.md pattern)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_eis_employer_recovery.py` — 21 tests
+- `lhdn_payroll_integration/hooks.py` — Added before_submit hook
+
+### What was implemented
+1. `validate_no_employer_eis_deduction(doc, method=None)` — raises ValidationError if any Salary Slip deduction has both `custom_is_eis_component=1` AND `is_employer_contribution=1`
+2. `get_eis_compliance_rows(filters=None)` — Returns EIS breakdown rows with employer_recoverable='No', employee_recoverable='Yes', RM6,000 ceiling applied
+3. `get_employer_eis_violation_salary_structures()` — Pre-migration scanner for illegal employer EIS salary structure components
+4. Hook wired to Salary Slip `before_submit` in hooks.py
+
+### Test classes (21 tests)
+- `TestEisRecoveryValidatorConstants` — rate/ceiling constants
+- `TestValidateNoEmployerEisDeduction` — 8 validation behaviour tests
+- `TestGetEisComplianceRows` — 6 report row tests (recoverable flags, rates, ceiling)
+- `TestGetEmployerEisViolationSalaryStructures` — 3 pre-migration helper tests
+
+### Patterns discovered
+- EIS ceiling RM6,000 (Oct 2024 amendment) applies to both employer and employee EIS
+- Hook path for nested module: `lhdn_payroll_integration.lhdn_payroll_integration.services.eis_recovery_validator.validate_no_employer_eis_deduction`
+- ALWAYS copy service to both outer and inner paths (existing MEMORY.md pattern confirmed)

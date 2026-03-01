@@ -39,6 +39,7 @@ doc_events = {
 			"lhdn_payroll_integration.lhdn_payroll_integration.services.ep_salary_validator.validate_ep_salary_before_submit",
 			"lhdn_payroll_integration.services.domestic_servant_epf_service.warn_domestic_servant_epf",
 			"lhdn_payroll_integration.services.pcb_under_deduction_service.check_under_deduction_before_submit",
+			"lhdn_payroll_integration.lhdn_payroll_integration.services.eis_recovery_validator.validate_no_employer_eis_deduction",
 		],
 	},
 	"Expense Claim": {
