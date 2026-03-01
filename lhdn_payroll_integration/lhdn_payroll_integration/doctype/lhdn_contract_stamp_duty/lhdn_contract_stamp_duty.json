@@ -1,0 +1,160 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "format:LHDN-CONT-{###}",
+ "creation": "2026-03-01 00:00:00.000000",
+ "docstatus": 0,
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "company",
+  "section_contract",
+  "contract_signing_date",
+  "gross_monthly_salary",
+  "stamp_duty_exempt",
+  "section_stamping",
+  "eduti_stamp_reference",
+  "contract_stamping_date",
+  "stamping_deadline",
+  "days_overdue",
+  "compliance_status",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "fetch_from": "employee.employee_name",
+   "in_list_view": 1,
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_contract",
+   "fieldtype": "Section Break",
+   "label": "Contract Details"
+  },
+  {
+   "fieldname": "contract_signing_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Contract Signing Date",
+   "reqd": 1,
+   "description": "Date the employment contract was signed. Must be stamped within 30 days via e-Duti Setem (MyTax) from 1 Jan 2026."
+  },
+  {
+   "fieldname": "gross_monthly_salary",
+   "fieldtype": "Currency",
+   "label": "Gross Monthly Salary (MYR)",
+   "reqd": 1,
+   "description": "Gross monthly salary at time of signing. Exempt if <= RM3,000/month (Finance Bill 2025, effective 1 Jan 2026)."
+  },
+  {
+   "fieldname": "stamp_duty_exempt",
+   "fieldtype": "Check",
+   "label": "Stamp Duty Exempt",
+   "read_only": 1,
+   "description": "Auto-set. Contract is exempt from stamp duty if gross salary <= RM3,000/month."
+  },
+  {
+   "fieldname": "section_stamping",
+   "fieldtype": "Section Break",
+   "label": "Stamping Details (e-Duti Setem)"
+  },
+  {
+   "fieldname": "eduti_stamp_reference",
+   "fieldtype": "Data",
+   "label": "e-Duti Setem Reference No.",
+   "description": "Stamp reference number from mytax.hasil.gov.my e-Duti Setem portal. Enter after stamping."
+  },
+  {
+   "fieldname": "contract_stamping_date",
+   "fieldtype": "Date",
+   "label": "Contract Stamping Date",
+   "description": "Date the employment contract was stamped. Must be within 30 days of signing date."
+  },
+  {
+   "fieldname": "stamping_deadline",
+   "fieldtype": "Date",
+   "label": "Stamping Deadline",
+   "read_only": 1,
+   "description": "Auto-calculated: contract_signing_date + 30 days."
+  },
+  {
+   "fieldname": "days_overdue",
+   "fieldtype": "Int",
+   "label": "Days Overdue",
+   "read_only": 1
+  },
+  {
+   "fieldname": "compliance_status",
+   "fieldtype": "Select",
+   "label": "Compliance Status",
+   "options": "Pending\nStamped\nExempt\nOverdue",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "is_submittable": 0,
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LHDN Payroll Integration",
+ "name": "LHDN Contract Stamp Duty",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User",
+   "share": 1,
+   "write": 0
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -6512,3 +6512,30 @@ Incomplete: Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyT
 ### Gotchas
 - `test_foreign_worker_epf.py` used `frappe` without importing it — fixed by adding `import frappe` at top
 - Report files only exist in the nested path (not the outer non-nested services path)
+
+
+## Iteration — US-175: Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyTax
+
+**Type:** IMPL
+**TDD Phase:** GREEN (24/24 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_stamp_duty`
+**Result:** PASS — 24 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_contract_stamp_duty/__init__.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_contract_stamp_duty/lhdn_contract_stamp_duty.json` — DocType with 11 fields (employee, company, contract_signing_date, gross_monthly_salary, stamp_duty_exempt Check, eduti_stamp_reference, contract_stamping_date, stamping_deadline, days_overdue, compliance_status Select, notes)
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_contract_stamp_duty/lhdn_contract_stamp_duty.py` — before_save auto-sets stamp_duty_exempt based on salary threshold
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/stamp_duty_service.py` — STAMP_DUTY_AMOUNT=10, EXEMPTION_THRESHOLD=3000, STAMPING_WINDOW_DAYS=30, SAS_EFFECTIVE_DATE=2026-01-01, _parse_date(), is_stamp_duty_exempt(), calculate_late_penalty(), get_pending_stamp_records(), send_stamp_duty_alerts()
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_stamp_duty.py` — 24 tests across 5 test classes
+
+### Patterns discovered
+- Test module path: use `lhdn_payroll_integration.tests.test_XXX` (short path), NOT the double-nested `lhdn_payroll_integration.lhdn_payroll_integration.tests.test_XXX`
+- Container had two stamp duty doctypes (lhdn_contract_stamp_duty and lhdn_employment_contract_stamp_duty) from prior iterations — the correct one is lhdn_contract_stamp_duty
+
+### Statutory constants verified
+- Stamp Duty SAS effective date: 1 January 2026 (e-Duti Setem via MyTax)
+- Fixed stamp duty: RM10 per contract (Item 4, First Schedule, Stamp Act 1949)
+- Exemption threshold: RM3,000/month (raised from RM300 by Finance Bill 2025)
+- Stamping window: 30 days from contract signing date
+- Late penalties: 31-90 days = max(RM50, 10%); >90 days = max(RM100, 20%)
+- 2026 grace year: no penalties for applications submitted in 2026
