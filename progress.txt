@@ -6205,3 +6205,24 @@ Incomplete: Track Statutory Compliance Submission Calendar and Auto-Escalate Ove
 ### Patterns discovered
 - Two copies of utils/ in container (nested and doubly-nested); use `docker exec -u root cp` to sync doubly-nested path
 - `/tmp` in Write tool vs bash have different path mappings on Windows/MINGW64; use project dir for temp files instead
+
+
+## Iteration N — US-121: Track Statutory Compliance Submission Calendar and Auto-Escalate Overdue Filings
+
+**Type:** IMPL
+**TDD Phase:** GREEN (21/21 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_compliance_tracker`
+**Result:** PASS — 21 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/statutory_compliance_submission/` — New DocType: fields for compliance_type (Select: PCB/EPF/SOCSO/EIS/HRDF/EA Form/Borang E/CP22/CP21), company, payroll_period (YYYY-MM), due_date, submission_status (Pending/Submitted/Overdue), submission_date, reference_number, penalty_info, payroll_entry
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/compliance_tracker.py` — Core service: create_monthly_compliance_records (Payroll Entry on_submit hook), create_annual_compliance_records, update_overdue_compliance_records (daily scheduler), send_overdue_compliance_notifications (daily scheduler), get_compliance_status_for_dashboard
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_compliance_tracker.py` — 21 tests across 5 test classes
+- `hooks.py` — Added Payroll Entry on_submit hook + 2 daily scheduler entries
+
+### Patterns discovered
+- `frappe.new_doc("DocType Name")` passes the doctype name as positional arg — mock `side_effect` functions must accept `*args`
+- `bench migrate` creates the DB table for new DocTypes; confirm with `bench execute frappe.db.table_exists`
+
+### Gotchas
+- `mock_new_doc.side_effect = lambda: MagicMock()` fails — use `lambda *args: MagicMock()` or a named factory function with `*args`

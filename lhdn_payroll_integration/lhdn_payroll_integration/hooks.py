@@ -51,6 +51,9 @@ doc_events = {
 		],
 		"after_insert": "lhdn_payroll_integration.services.socso_service.handle_new_employee_socso",
 	},
+	"Payroll Entry": {
+		"on_submit": "lhdn_payroll_integration.lhdn_payroll_integration.services.compliance_tracker.create_monthly_compliance_records",
+	},
 }
 
 # Scheduled Tasks
@@ -67,6 +70,8 @@ scheduler_events = {
 		"lhdn_payroll_integration.services.age_checker_service.check_approaching_age_60",
 		"lhdn_payroll_integration.lhdn_payroll_integration.utils.wage_payment_compliance.send_wage_payment_alerts",
 		"lhdn_payroll_integration.services.spc_cessation_service.check_pending_spc_alerts",
+		"lhdn_payroll_integration.lhdn_payroll_integration.services.compliance_tracker.update_overdue_compliance_records",
+		"lhdn_payroll_integration.lhdn_payroll_integration.services.compliance_tracker.send_overdue_compliance_notifications",
 	],
 	"monthly": [
 		"lhdn_payroll_integration.services.consolidation_service.run_monthly_consolidation",
