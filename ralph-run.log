@@ -340,3 +340,13 @@ warning: in the working copy of 'tests/__init__.py', LF will be replaced by CRLF
 [2m[5:55][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /tmp/add_custom...[0m
 [2m[5:59][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd / && python3 /t...[0m
 [2m[6:05][0m 💻 [36mBash[0m [2mdocker exec -u root prisma-erp-backend-1 bash -c "cd / && py...[0m
+[2m[6:13][0m [37mNow let me copy the updated fixture back to the local repo:[0m
+[2m[6:15][0m 💻 [36mBash[0m [2mdocker cp prisma-erp-backend-1:/home/frappe/frappe-bench/app...[0m
+[2m[6:21][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[6:23][0m [37mNow create the report files:[0m
+[2m[6:27][0m ✏️ [36mWrite[0m [2mpending_cp22_submissions.json[0m
+[2m[6:46][0m ✏️ [36mWrite[0m [2mpending_cp22_submissions.py[0m
+[2m[6:49][0m [37mNow copy the service and report files into the container:[0m
+[2m[6:51][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[6:56][0m 💻 [36mBash[0m [2mdocker exec -u root prisma-erp-backend-1 bash -c "mkdir -p /...[0m
+[2m[7:02][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
