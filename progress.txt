@@ -1,3 +1,26 @@
+## Iteration N — US-217: Budget 2026 TP1 — Increase Children's Learning Disability Diagnostic Relief to RM10,000
+
+**Type:** IMPL
+**TDD Phase:** GREEN (34/34 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_us217_learning_disability_relief
+**Result:** PASS — 34 tests, 0 failures; existing TP1 tests (26/26) and US-216 childcare tests (22/22) also pass
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_us217_learning_disability_relief.py` — 34 tests across 9 classes: TestLearningDisabilityCapsConstants, TestGetCapsForYearAutismOku, TestApplyCapsAutismOku, TestPreYA2026FieldZeroed, TestHistoricalDataIntegrity, TestTotalReliefsWithAutismOku, TestPCBIntegrationAutismOku, TestValidationMessage, TestNoPermanentExpiry
+
+### Patterns discovered
+- child_relief_autism_oku field is YA2026+ only (zeroed for pre-2026 by _zero_ya2026_fields_for_pre_2026)
+- RM10,000 cap already present in _CAPS_YA2026 from the parent TP1(1/2026) story — US-217 validates and tests it
+- Budget 2026 / Finance Bill 2025: increased from RM6,000 to RM10,000 for autism, ADHD, GDD, intellectual disability, Down syndrome, dyslexia, dyspraxia, dyscalculia
+- Relief covers diagnostic, early intervention, and rehabilitation treatment expenses for children under 18
+- No sunset clause — RM10,000 cap is permanent from YA2026 onward
+
+### Gotchas
+- prd.json was truncated (again, same issue as US-208) — restored from git before jq update
+- The pre-2026 RM6,000 learning disability relief was conceptually part of child_relief_disabled (general disabled child), not a separate TP1 field — child_relief_autism_oku is a NEW YA2026 field at RM10,000
+
+---
+
 ## Iteration N — US-208: PDPA 2024 Data Processor Agreement Compliance Checklist for External Payroll Service Vendors
 
 **Type:** IMPL
@@ -7916,4 +7939,7 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 - prd.json has surrogate characters from UTF-8 encoding issues — use `errors='surrogateescape'` when reading and `ensure_ascii=True` when writing
 ## Iteration 39 - Sun Mar  1 17:48:04 MPST 2026
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 1/3
+
+## Iteration 44 - Sun, Mar  1, 2026  5:49:29 PM
+Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 2/3
 
