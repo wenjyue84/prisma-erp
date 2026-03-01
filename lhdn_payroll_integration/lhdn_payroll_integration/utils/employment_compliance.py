@@ -6,6 +6,9 @@ Covers:
   RM8.17/hour for part-time workers
 - Micro-Employer Minimum Wage Grace Period (US-144)
   Aug 2025 gazette extension: micro-employers (1-4 employees) exempted until 2025-08-01
+- Apprenticeship Contract Minimum Wage Extension (US-164)
+  NWCC Amendment Act 2025 (effective 1 Aug 2025): apprentices and contract trainees now
+  subject to RM1,700 minimum wage. Domestic workers remain the sole exempt category.
 - Ordinary Rate of Pay (ORP) and Overtime Validation — Employment Act S.60A(3)
   OT multipliers: 1.5x Normal, 2.0x Rest Day, 3.0x Public Holiday
   Applies to EA-covered employees earning <= RM4,000/month
@@ -45,6 +48,13 @@ PART_TIME_DEFINITION_THRESHOLD = 0.70  # < 70% of normal full-time hours = part-
 # Working Hours Compliance — Employment Act 1955 Section 60A(1) post-2022 amendment
 MAX_WEEKLY_HOURS = 45  # Maximum hours per week (reduced from 48 by EA Amendment 2022)
 WEEKS_PER_MONTH = 4.33  # Average weeks per calendar month
+
+# US-164: Apprenticeship Contract Minimum Wage Extension (NWCC Amendment Act 2025)
+# Effective 1 August 2025 — apprentices and contract trainees now subject to RM1,700/month.
+# Domestic workers remain the SOLE exempt category per NWCC Act 2011.
+APPRENTICE_ENFORCEMENT_DATE = "2025-08-01"
+APPRENTICE_TYPES = {"Apprentice", "Contract Trainee"}
+DOMESTIC_WORKER_TYPES = {"Domestic Worker", "Domestic", "Domestic Help"}
 
 
 def check_minimum_wage(monthly_salary, employment_type=None, worked_days=None, total_days=None, contracted_hours=None):
@@ -1265,7 +1275,9 @@ def check_minimum_wage_with_headcount(
         monthly_salary: Basic monthly salary in RM.
         period_end_date: Payroll period end date (str 'YYYY-MM-DD' or datetime.date).
         employer_headcount: Number of active employees on the Company.
-        employment_type: 'Full-time', 'Part-time', or 'Contract'.
+        employment_type: 'Full-time', 'Part-time', 'Contract', 'Apprentice',
+            'Contract Trainee', or 'Domestic Worker'. Apprentices/Contract Trainees
+            are checked from 2025-08-01 only. Domestic Workers are always exempt.
         contracted_hours: Total contracted hours per month (for part-time hourly check).
         mohr_exemption_ref: MOHR exemption reference — if set, validation is skipped.
 
@@ -1291,6 +1303,71 @@ def check_minimum_wage_with_headcount(
             "actual": float(monthly_salary),
             "grace_period": False,
             "mohr_exempt": True,
+        }
+
+    # US-164: Domestic workers are the sole exempt category — skip all validation
+    if employment_type in DOMESTIC_WORKER_TYPES:
+        return {
+            "compliant": True,
+            "warning": None,
+            "employment_type": employment_type,
+            "minimum": None,
+            "actual": float(monthly_salary),
+            "grace_period": False,
+            "mohr_exempt": False,
+        }
+
+    # US-164: Apprentice / Contract Trainee — enforced from 2025-08-01 only
+    # Before Aug 2025 they were not covered; no false positives for historical payrolls.
+    if employment_type in APPRENTICE_TYPES:
+        from datetime import date as _date
+        if isinstance(period_end_date, str):
+            try:
+                ped = _date.fromisoformat(period_end_date)
+            except (ValueError, TypeError):
+                ped = None
+        else:
+            ped = period_end_date
+
+        apprentice_enforcement = _date.fromisoformat(APPRENTICE_ENFORCEMENT_DATE)
+        if ped is None or ped < apprentice_enforcement:
+            # Before enforcement date — no validation for apprentices
+            return {
+                "compliant": True,
+                "warning": None,
+                "employment_type": employment_type,
+                "minimum": None,
+                "actual": float(monthly_salary),
+                "grace_period": True,
+                "mohr_exempt": False,
+            }
+
+        # From Aug 2025 — RM1,700 applies regardless of employer headcount
+        basic_pay = float(monthly_salary)
+        if basic_pay < MINIMUM_WAGE_MONTHLY:
+            return {
+                "compliant": False,
+                "warning": (
+                    f"Apprentice/Contract Trainee monthly salary RM{basic_pay:.2f} is below "
+                    f"the national minimum wage of RM{MINIMUM_WAGE_MONTHLY:.2f}/month. "
+                    "The NWCC Amendment Act 2025 (effective 1 August 2025) extended minimum "
+                    "wage coverage to apprenticeship contract workers. Non-compliance carries "
+                    "a fine of up to RM10,000 per affected worker."
+                ),
+                "employment_type": employment_type,
+                "minimum": MINIMUM_WAGE_MONTHLY,
+                "actual": basic_pay,
+                "grace_period": False,
+                "mohr_exempt": False,
+            }
+        return {
+            "compliant": True,
+            "warning": None,
+            "employment_type": employment_type,
+            "minimum": MINIMUM_WAGE_MONTHLY,
+            "actual": basic_pay,
+            "grace_period": False,
+            "mohr_exempt": False,
         }
 
     applicable_minimum = get_applicable_minimum_wage(period_end_date, employer_headcount)

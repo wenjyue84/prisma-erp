@@ -7016,3 +7016,23 @@ Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and
 
 ### Gotchas
 - `bench migrate` raises (1118) Row size too large for `tabCompany` — pre-existing issue from multiple stories adding custom varchar columns. DocTypes still created via the migrate loop before reaching Company.
+
+## Iteration N — US-164: Extend Minimum Wage Enforcement to Apprenticeship Contract Workers
+
+**Type:** IMPL
+**TDD Phase:** GREEN (37/37 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_apprentice_min_wage_us164`
+**Result:** PASS — 37 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/employment_compliance.py` — Added APPRENTICE_TYPES, DOMESTIC_WORKER_TYPES, APPRENTICE_ENFORCEMENT_DATE constants; extended check_minimum_wage_with_headcount() to handle apprentice/domestic worker types
+- `lhdn_payroll_integration/tests/test_apprentice_min_wage_us164.py` — 37 tests across 5 test classes
+
+### Patterns discovered
+- Apprentice enforcement is date-gated to Aug 1, 2025 (NWCC Amendment Act 2025) — no headcount threshold
+- Domestic Workers are the SOLE exempt category per NWCC Act 2011; all other worker types subject to RM1,700
+- Added type-specific branching BEFORE the headcount schedule lookup in check_minimum_wage_with_headcount
+
+### Gotchas
+- Must update BOTH copies of employment_compliance.py (nested path and outer path in container)
+- The "grace_period" flag is set False for domestic worker exemptions (it's a type exemption, not time-based)
