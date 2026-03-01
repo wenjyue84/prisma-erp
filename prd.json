@@ -5715,26 +5715,26 @@
       "passes": false
     },
     {
-      “id”: “US-242”,
-      “title”: “e-Invoice Mandatory Phase Readiness Check for Employer Company Records”,
-      “priority”: “medium”,
-      “description”: “LHDN's e-invoice mandate rolls out in phases based on annual turnover: Phase 1 (>RM100M, Aug 2024), Phase 2 (>RM25M, Jan 2025), Phase 3 (>RM150Kâ€”RM500K, July 2025), and Phase 4+ (all remaining businesses). Many employers using the payroll app are SMEs who crossed Phase 3 threshold in July 2025 and must now have MyInvois credentials configured. The payroll system should detect whether the employer's revenue tier requires active e-invoice compliance and warn HR if MyInvois API credentials are missing or the configuration is incomplete.”,
-      “acceptanceCriteria”: [
-        “Company DocType includes custom_annual_revenue (Currency) and a read-only custom_einvoice_mandate_phase (Data) field auto-derived from revenue: '>RM100M (Phase 1)', '>RM25M (Phase 2)', '>RM150K (Phase 3)', 'All Businesses (Phase 4+)', or 'Below RM150K (Voluntary)'”,
-        “On Company save, if einvoice_mandate_phase is not 'Below RM150K' and custom_client_id or custom_client_secret is blank, a prominent warning banner is shown: 'e-Invoice mandatory for this company â€” MyInvois API credentials are missing'”,
-        “An e-Invoice Readiness Report lists all Companies in the system, their mandate phase, and compliance status (Compliant / Credentials Missing / Voluntary / Not Applicable)”,
-        “Alert email is sent to HR Admin when a Company's custom_annual_revenue change moves it into a new mandatory phase”,
-        “The readiness check is a pre-flight guard only â€” it does not prevent payroll runs but flags the MyInvois gap for action”
+      "id": "US-242",
+      "title": "e-Invoice Mandatory Phase Readiness Check for Employer Company Records",
+      "priority": "medium",
+      "description": "LHDN's e-invoice mandate rolls out in phases based on annual turnover: Phase 1 (>RM100M, Aug 2024), Phase 2 (>RM25M, Jan 2025), Phase 3 (>RM150Kâ€“RM500K, July 2025), and Phase 4+ (all remaining businesses). Many employers using the payroll app are SMEs who crossed Phase 3 threshold in July 2025 and must now have MyInvois credentials configured. The payroll system should detect whether the employer's revenue tier requires active e-invoice compliance and warn HR if MyInvois API credentials are missing or the configuration is incomplete.",
+      "acceptanceCriteria": [
+        "Company DocType includes custom_annual_revenue (Currency) and a read-only custom_einvoice_mandate_phase (Data) field auto-derived from revenue: '>RM100M (Phase 1)', '>RM25M (Phase 2)', '>RM150K (Phase 3)', 'All Businesses (Phase 4+)', or 'Below RM150K (Voluntary)'",
+        "On Company save, if einvoice_mandate_phase is not 'Below RM150K' and custom_client_id or custom_client_secret is blank, a prominent warning banner is shown: 'e-Invoice mandatory for this company â€” MyInvois API credentials are missing'",
+        "An e-Invoice Readiness Report lists all Companies in the system, their mandate phase, and compliance status (Compliant / Credentials Missing / Voluntary / Not Applicable)",
+        "Alert email is sent to HR Admin when a Company's custom_annual_revenue change moves it into a new mandatory phase",
+        "The readiness check is a pre-flight guard only â€” it does not prevent payroll runs but flags the MyInvois gap for action"
       ],
-      “technicalNotes”: [
-        “LHDN e-Invoice phase schedule: https://www.hasil.gov.my/en/e-invoice/”,
-        “Phase 3 (from July 2025): taxpayers with annual revenue RM150Kâ€”RM500K are now mandatory”,
-        “Phase 4/5 (all remaining taxpayers with any turnover): LHDN has not finalized the date for the final phase â€” configure as 'TBD' or rely on LHDN announcement”,
-        “This check complements the existing myinvois_erpgulf app setup â€” it validates the payroll employer configuration, not the e-invoice submission flow itself”
+      "technicalNotes": [
+        "LHDN e-Invoice phase schedule: https://www.hasil.gov.my/en/e-invoice/",
+        "Phase 3 (from July 2025): taxpayers with annual revenue RM150Kâ€“RM500K are now mandatory",
+        "Phase 4/5 (all remaining taxpayers with any turnover): LHDN has not finalized the date for the final phase â€” configure as 'TBD' or rely on LHDN announcement",
+        "This check complements the existing myinvois_erpgulf app setup â€” it validates the payroll employer configuration, not the e-invoice submission flow itself"
       ],
-      “dependencies”: [],
-      “estimatedComplexity”: “small”,
-      “passes”: true
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
     },
     {
       "id": "US-243",
