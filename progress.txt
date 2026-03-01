@@ -1,3 +1,28 @@
+## Iteration N — US-233: CP500 Bi-Monthly Advance Tax Installment Awareness Panel for Directors with Non-Salary Income
+
+**Type:** IMPL
+**TDD Phase:** GREEN (81/81 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cp500_tracker
+**Result:** PASS — 81 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/cp500_tracker_service.py` — Core service: is_cp500_payer(), get_annual_installment_amount(), get_per_installment_amount(), generate_installment_schedule() (6 bi-monthly: Mar/May/Jul/Sep/Nov/Jan), get_next_due_date(), get_days_until_next_installment(), create_installment_record(), mark_installment_paid(), is_installment_overdue(), get_revision_deadlines() (30 Jun + 31 Oct), can_revise_cp500(), get_next_revision_deadline(), get_payroll_advisory() (advisory note for PCB), get_upcoming_installments() (30-day window), get_overdue_installments(), get_directors_with_upcoming_cp500(), get_dashboard_summary(), validate_cp500_config()
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_cp500_tracker.py` — 81 tests across 17 classes: TestCP500Constants, TestIsCp500Payer, TestGetAnnualInstallmentAmount, TestGetPerInstallmentAmount, TestGenerateInstallmentSchedule, TestGetNextDueDate, TestGetDaysUntilNextInstallment, TestCreateInstallmentRecord, TestMarkInstallmentPaid, TestIsInstallmentOverdue, TestRevisionDeadlines, TestGetPayrollAdvisory, TestGetUpcomingInstallments, TestGetOverdueInstallments, TestGetDirectorsWithUpcomingCp500, TestGetDashboardSummary, TestValidateCp500Config
+
+### Patterns discovered
+- CP500 is issued to individuals with non-salary income (dividends, rental, business profits)
+- 6 bi-monthly installments: March, May, July, September, November, January (Jan is next calendar year)
+- Due date is 15th of each installment month
+- First CP500 revision deadline: 30 June; second: 31 October of assessment year
+- System is advisory/tracking only — CP500 is paid directly by individual to LHDN, never auto-deducted via payroll
+- Advisory note warns HR not to over-deduct PCB when employee also has CP500 obligations
+- Dashboard widget shows directors with upcoming CP500 within 30-day window
+
+### Gotchas
+- None — clean implementation, pure Python service with no Frappe dependencies needed
+
+---
+
 ## Iteration N — US-183: Gig Workers Act 2025 — 7-Day Payment Deadline Alert for Informal Gig Engagements Without Payment Schedule
 
 **Type:** IMPL
@@ -7968,4 +7993,7 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 ## Iteration 44 - Sun, Mar  1, 2026  5:49:29 PM
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 2/3
 
+
+## Iteration 46 - Sun, Mar  1, 2026  6:13:44 PM
+Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 1/3
 
