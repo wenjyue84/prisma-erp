@@ -3565,7 +3565,7 @@
         "Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export"
       ],
       "estimatedComplexity": "large",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-156",
@@ -3800,7 +3800,7 @@
         "Extend Minimum Wage Validation to Cover Micro-Employers from August 1, 2025"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-165",
@@ -6974,6 +6974,273 @@
       "dependencies": [
         "EIS Amendment 2025 (S.45F) — Employer Job Vacancy Pre-Notification and 7-Day Post-Filling PERKESO Alert",
         "Track Statutory Compliance Submission Calendar and Auto-Escalate Overdue Filings"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-292",
+      "title": "EP June 2026 New Salary Threshold Pre-Renewal Alert for Existing Below-Threshold EP Holders",
+      "priority": "high",
+      "description": "Malaysia's Ministry of Home Affairs revised EP minimum salary thresholds effective 1 June 2026: Category I jumps from RM10,000 to RM20,000; Category II from RM5,000–RM9,999 to RM10,000–RM19,999; Category III from RM3,000–RM4,999 to RM5,000–RM9,999. Existing EP holders whose current payroll salary falls below the new threshold for their category face renewal rejection unless salary is raised before renewal. The payroll system must proactively flag these employees distinct from the new-hire application validator.",
+      "acceptanceCriteria": [
+        "Employee record stores EP Category (I / II / III) and EP expiry date fields",
+        "Payroll system computes whether current gross monthly salary meets the new threshold per EP category",
+        "Auto-alert raised 90 days before EP expiry when employee salary is below the new threshold for their category",
+        "Dashboard view shows all EP holders with: current salary, required threshold, monthly shortfall, and renewal date",
+        "Alert suppressed if employee's salary has already been updated to meet or exceed the new threshold",
+        "System stores the Cabinet-approved enforcement date (1 June 2026) as the threshold validation trigger date"
+      ],
+      "technicalNotes": [
+        "New thresholds effective 1 June 2026 (all new and renewal EP applications): Cat I ≥ RM20,000; Cat II RM10,000–RM19,999; Cat III RM5,000–RM9,999",
+        "Cabinet approval: 17 October 2025; announcement: ESD/MOHA January 2026",
+        "Distinct from existing 'Employment Pass Minimum Salary Threshold Validator (June 2026 Revised EP Policy)' which validates new applications — this story alerts for EXISTING holders approaching renewal",
+        "Category II and III holders also require succession plans filed with renewal application — succession plan status should be tracked alongside salary alert",
+        "Sources: KPMG flash alert 2026-017, Baker McKenzie, ESD official announcement"
+      ],
+      "dependencies": [
+        "Employment Pass Minimum Salary Threshold Validator (June 2026 Revised EP Policy)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-293",
+      "title": "PERKESO ASSIST e-Caruman API Response Parsing and Contribution Correction Workflow",
+      "priority": "high",
+      "description": "When SOCSO/EIS contribution files are submitted via the PERKESO ASSIST portal, the portal returns a structured response indicating which employee contribution lines were accepted, rejected, or flagged for correction (e.g., missing PERKESO number, IC mismatch, wage ceiling exceeded). Without parsing this response, errors go undetected and contributions remain unposted to the employee's PERKESO account. The payroll system must parse the response and generate an actionable correction list for HR to resolve before the payment deadline.",
+      "acceptanceCriteria": [
+        "After e-Caruman file submission, system reads the PERKESO ASSIST portal response and maps rejection codes to human-readable correction instructions",
+        "Rejected records listed with: employee name, IC, error code, error description, and recommended fix (e.g., 'Update PERKESO number on Employee record')",
+        "Correction workflow allows HR to fix errors inline and regenerate only the rejected lines for resubmission (delta re-upload, not full re-upload)",
+        "System stores submission status per employee per month: Pending / Accepted / Rejected / Corrected",
+        "Dashboard shows monthly SOCSO/EIS submission health: acceptance rate, count of pending corrections, deadline countdown",
+        "If no response is received within 24 hours of upload, system alerts HR to manually check ASSIST portal status"
+      ],
+      "technicalNotes": [
+        "PERKESO ASSIST portal: https://assist.perkeso.gov.my/",
+        "Common rejection reasons: employee not yet registered with PERKESO, IC mismatch, wage above RM6,000 ceiling without bracketed table correction, foreign worker not covered under SOCSO Employment Injury scheme",
+        "October 2024 PERKESO wage ceiling update to RM6,000 — submissions still using old RM5,000 ceiling are rejected",
+        "This story complements 'Generate SOCSO and EIS e-Caruman Upload File (PERKESO ASSIST Portal)' — that story generates the file; this story handles the response processing",
+        "EIS rejections may occur when employee is above age 60 or is a non-resident exempt from EIS — exemption flags must be pre-set on Employee record"
+      ],
+      "dependencies": [
+        "Generate SOCSO and EIS e-Caruman Upload File (PERKESO ASSIST Portal)",
+        "Enforce SOCSO/EIS Wage Ceiling Update to RM6,000 (October 2024 Amendment)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-294",
+      "title": "PTPTN Payroll Deduction Facilitation and Monthly Remittance Tracking Module",
+      "priority": "medium",
+      "description": "Employers who facilitate PTPTN (National Higher Education Fund) student loan repayments via salary deduction must obtain written employee consent under the PTPTN Act 1997 and Section 24 of the Employment Act before processing the deduction. The deducted amount must be remitted monthly to PTPTN separately from statutory deductions, and must be excluded from the PCB computation base and excluded from EA Form employment income columns.",
+      "acceptanceCriteria": [
+        "Employee PTPTN consent record (written authorisation date, reference number, repayment schedule) stored on Employee DocType",
+        "Monthly PTPTN deduction is processed as a non-statutory deduction in Salary Slip — separate from EPF/SOCSO/EIS/PCB",
+        "PTPTN deduction amount is excluded from Gross Taxable Salary when computing PCB/MTD",
+        "Payslip clearly labels PTPTN deduction in a dedicated 'Other Authorised Deductions' section",
+        "Monthly PTPTN remittance schedule generated (employee IC, PTPTN reference number, deduction amount) for HR upload to MyPTPN portal",
+        "EA Form Part B does NOT include PTPTN deduction as an income reduction — it is purely a payroll facilitation pass-through"
+      ],
+      "technicalNotes": [
+        "PTPTN Act 1997 Section 22 authorises salary deduction with borrower consent — employer is a facilitator only, not a statutory collector",
+        "PTPTN repayment is NOT a tax-deductible relief for the employee (unlike EPF or life insurance); exclude from TP1 relief fields",
+        "Remittance file format: MyPTPN employer portal at https://myptptn.ptptn.gov.my/",
+        "Employment Act Section 24(2)(d) allows authorised deductions; combined total of all non-statutory deductions must not reduce net pay below RM1,700 statutory minimum wage"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-295",
+      "title": "TP1 Form Version Enforcement — Reject Superseded TP1(1/2025) After January 2026 PCB Period",
+      "priority": "medium",
+      "description": "LHDN releases an updated TP1 form each year incorporating Budget changes. TP1(1/2026) became mandatory from January 2026 and contains new relief line items (life/medical insurance extended to children, domestic tourism RM1,000, EV charging RM2,500, autism relief RM10,000). Employees who submit the superseded TP1(1/2025) after January 2026 will declare incorrect reliefs. The payroll system must detect and reject outdated TP1 versions on upload and prompt employees to resubmit using the current form.",
+      "acceptanceCriteria": [
+        "System stores TP1 form version metadata (1/2025 or 1/2026) when an employee submits a TP1 form",
+        "Any TP1(1/2025) submission received from January 2026 onwards triggers a validation warning and is not processed for PCB reduction",
+        "Employee shown actionable error: 'You submitted TP1(1/2025). Please download and resubmit using TP1(1/2026) from hasil.gov.my'",
+        "Link to official LHDN TP1(1/2026) PDF surfaced in the error message",
+        "Batch report shows all employees with an active but superseded TP1 on file as of January 2026",
+        "Form version check implemented as a configurable 'active TP1 version' setting in Company payroll config (e.g., '1/2026') to enable annual update without code deployment"
+      ],
+      "technicalNotes": [
+        "TP1(1/2026) official PDF: https://www.hasil.gov.my/media/gjuhcbc2/bi-tp1-form-2026.pdf",
+        "TP1(1/2025) official PDF: https://www.hasil.gov.my/media/qrulhwku/tp1-2025-en.pdf",
+        "Version indicator '(1/2026)' appears in the form title — detection can use submission date as proxy (TP1 submitted on or after January 2026 must use 1/2026 form)",
+        "PCB 2026 Specification confirms no MTD formula change but amended TP1 deduction items mandatory from January 2026",
+        "Same pattern repeats annually — configurable active version avoids annual code changes"
+      ],
+      "dependencies": [
+        "Update TP1(1/2026) Relief Categories and PCB Computation Engine for YA2026 Budget Changes"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-296",
+      "title": "First Home Loan Interest Relief 3-Year Rolling Claim Window Tracker on TP1 (SPA Jan2025–Dec2027)",
+      "priority": "medium",
+      "description": "The Budget 2025 first home loan interest relief (RM7,000/year for homes ≤RM500K; RM5,000 for RM500K–RM750K) is claimable for three consecutive assessment years from the year of first interest payment, applicable only for SPAs executed between 1 January 2025 and 31 December 2027. The payroll system must track each employee's claim start year to prevent overclaiming beyond year 3 and enforce the SPA date and property value eligibility conditions.",
+      "acceptanceCriteria": [
+        "TP1 captures: SPA execution date, property purchase price category (≤RM500K or RM500K–RM750K), and Year of Assessment when first interest was paid",
+        "PCB engine applies RM7,000 or RM5,000 housing loan interest relief based on property value bracket",
+        "System enforces SPA date eligibility: SPA must be between 1 January 2025 and 31 December 2027",
+        "Relief is NOT applied in Year 4 or beyond — system blocks claim renewal after 3 consecutive YA periods from the first claim year",
+        "Property declared as primary residence (not income-generating); employer stores employee self-declaration against TP1 record",
+        "Year-end review flags employees who claimed in YA2025 that their eligibility window ends after YA2027"
+      ],
+      "technicalNotes": [
+        "Introduced in Budget 2025; effective from YA2025, continuing to YA2026 and YA2027 for eligible claimants",
+        "Relief is DISTINCT from any general housing loan interest relief — applies only to first residential home purchased under qualifying SPA",
+        "BERNAMA official announcement: https://bernama.com/en/news.php?id=2353589",
+        "Home must not be used to generate rental or business income — employee self-declaration stored against TP1 record",
+        "3-year window example: employee with SPA in March 2025 first pays interest in April 2025 (YA2025) — can claim for YA2025, YA2026, YA2027 only",
+        "This differs from the existing 'Update PCB TP1 Relief Tables for YA2025 (New Housing Loan Interest Relief...)' which adds the relief field — this story adds the 3-year period enforcement and eligibility date guard"
+      ],
+      "dependencies": [
+        "Update PCB TP1 Relief Tables for YA2025 (New Housing Loan Interest Relief and Increased Disability Amounts)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-297",
+      "title": "Statutory Contribution Compliance Certificate Bundle Export for Government Procurement Tender",
+      "priority": "medium",
+      "description": "Malaysian government and GLC procurement regulations require suppliers to provide proof of EPF, SOCSO, EIS, and LHDN PCB compliance before bid qualification. Procurement officers request recent contribution payment records and submission histories. The payroll module should auto-generate a formatted compliance evidence bundle covering the last 3–6 months of all statutory submissions, exportable as a structured PDF for tender submission without manual HR compilation.",
+      "acceptanceCriteria": [
+        "Export covers EPF, SOCSO, EIS, and PCB for a configurable date range (last 3 or 6 months), with submission dates, payment references, and total amounts per month",
+        "Bundle header displays: company name, employer registration numbers (EPF No., SOCSO No., EIS No., PCB Employer No.), and the date range covered",
+        "PDF export formatted for government procurement submission: clear table per statutory body with monthly submission date, amount paid, and payment reference",
+        "Data sourced from existing submission tracking records already stored by the payroll module (no re-entry required)",
+        "Export generates an index page summarising all statutory bodies, total contributions, and last submission date",
+        "Report is accessible from the LHDN Payroll workspace as a one-click export"
+      ],
+      "technicalNotes": [
+        "Legal basis: Arahan Perbendaharaan (Treasury Instructions) and UKAS procurement guidelines for government suppliers in Malaysia",
+        "This report aggregates data from: CP39 remittance records, EPF Borang A records, SOCSO Borang 8A records, EIS submission records",
+        "Actual statutory body compliance letters (from KWSP, PERKESO, LHDN) must still be obtained directly from those bodies — this export provides the supporting payroll evidence",
+        "EPF compliance portal: https://www.kwsp.gov.my/en/employer, SOCSO: https://assist.perkeso.gov.my/, LHDN: https://www.hasil.gov.my/en/employers/"
+      ],
+      "dependencies": [
+        "Generate CP39 monthly PCB remittance file",
+        "Generate EPF Borang A monthly contribution schedule",
+        "Generate SOCSO Borang 8A monthly contribution schedule"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-298",
+      "title": "MyTax Wakil Majikan Authorization Annual Validity Review and Re-Registration Alert",
+      "priority": "medium",
+      "description": "The MyTax Employer Representative (Wakil Majikan) role authorisation — required for e-CP22, e-SPC (CP21/22A/22B), e-PCB Plus, and Borang E e-submissions — is person-specific and tied to an individual employee. If the authorised representative resigns or their access lapses without renewal, all LHDN e-service submissions on behalf of the employer are blocked. The payroll system must track the representative's employment status and alert HR to re-register before any submissions are blocked.",
+      "acceptanceCriteria": [
+        "Company-level record stores Wakil Majikan name, IC number, and the date they were registered on MyTax",
+        "Annual alert raised 60 and 30 days after the anniversary of registration date, prompting HR to verify the representative is still an active employee with valid MyTax access",
+        "If the Wakil Majikan's employee record is terminated in the system, an immediate critical alert is raised: 'Wakil Majikan [Name] has left — re-register a new authorised representative on MyTax before next e-service submission'",
+        "Dashboard widget on LHDN Payroll workspace shows current Wakil Majikan status (Active / Requires Review / Unregistered)",
+        "Admin can update Wakil Majikan details after re-registration without developer intervention",
+        "Before any e-CP22, e-SPC, or e-PCB Plus batch submission, system checks that a Wakil Majikan is on record and alerts if missing"
+      ],
+      "technicalNotes": [
+        "Wakil Majikan role registration required via MyTax — roles include: PCB Administrator, Employer Representative",
+        "Relates to but extends existing story 'MyTax Employer Representative (Wakil Majikan) Configuration on Company for e-Services Submissions' — that story covers initial setup; this covers ongoing validity monitoring",
+        "LHDN e-PCB Plus transition guide: https://pandahrms.com/lhdns-early-announcement-transition-to-e-pcb-plus-system/",
+        "The authorisation does not have a published LHDN expiry date — but employee turnover makes annual review a compliance best practice",
+        "For companies with multiple branches, each branch may need a separate Wakil Majikan registration — consider multi-branch support"
+      ],
+      "dependencies": [
+        "MyTax Employer Representative (Wakil Majikan) Configuration on Company for e-Services Submissions"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-299",
+      "title": "HRD Corp eTRIS Grant Approval Status API Sync for Automatic Levy Utilisation Ledger Update",
+      "priority": "medium",
+      "description": "Employers with HRD Corp training grants under SBL-KHAS or other schemes currently check grant status manually on the eTRIS portal. The internal levy utilisation ledger in the payroll system becomes stale between manual updates. An API-based or scheduled sync with the eTRIS portal should automatically pull grant approval status, claim payment dates, and confirmed utilisation amounts, keeping the HRD levy balance accurate without manual HR intervention.",
+      "acceptanceCriteria": [
+        "eTRIS API or portal credentials stored securely on Company record (employer ID, eTRIS login reference)",
+        "Scheduled daily sync pulls: pending grant applications, newly approved grants, paid claims, and rejected claims from eTRIS",
+        "Levy utilisation ledger updated automatically: approved grants reduce available levy balance; confirmed paid claims mark utilisation as final",
+        "Alert raised when a previously approved grant is rejected by HRD Corp (e.g., post-training audit failure or documentation deficiency)",
+        "Training activity records linked to eTRIS grant application IDs for traceability",
+        "Manual sync option available for immediate refresh before levy balance review or internal audit"
+      ],
+      "technicalNotes": [
+        "HRD Corp eTRIS portal: https://etris.hrdcorp.gov.my/",
+        "HRD Corp FAQ: https://hrdcorp.gov.my/faq",
+        "Extends existing stories: 'HRD Corp eTRIS Training Claim Recording and Levy Utilization Dashboard' (manual tracking UI) and 'HRD Corp SBL-KHAS Grant Pre-Approval Compliance and 6-Month Post-Training Claim Deadline Alert' (deadline alerts) — this adds the automation/sync layer",
+        "If HRD Corp eTRIS does not expose a public REST API, sync can use authenticated browser automation (Playwright headless) as a fallback",
+        "Monthly levy payment (1% of Malaysian wages, due by 15th) is separate from this story — this handles utilisation tracking post-payment",
+        "HRD Corp RM50,000 forfeiture rule and 15% auto-deduction reconciliation (separate story) depend on accurate real-time levy balance from this sync"
+      ],
+      "dependencies": [
+        "HRD Corp eTRIS Training Claim Recording and Levy Utilization Dashboard",
+        "Track HRD Corp Levy Utilization Rate and Alert on 15% Under-Utilisation Penalty",
+        "HRD Corp RM50,000 Levy Balance Threshold Tracker and 15% Auto-Deduction Ledger Reconciliation"
+      ],
+      "estimatedComplexity": "large",
+      "passes": false
+    },
+    {
+      "id": "US-300",
+      "title": "Progressive Wage Policy Monthly Payroll Evidence Package Assembly for SOCSO/JTK Compliance Audit",
+      "priority": "medium",
+      "description": "Employers participating in Malaysia's Progressive Wage Policy (PWP) receive a government wage subsidy (up to RM200–RM300/employee/month for 12 months) conditional on meeting occupation-based wage floors and providing at least 21 annual training hours per employee. Monthly payroll evidence (wage level records + training hour logs) must be maintained and are auditable by SOCSO and the Ministry of Human Resources. The payroll system should auto-assemble this evidence package monthly without requiring HR to compile records manually.",
+      "acceptanceCriteria": [
+        "Monthly report lists all PWP-enrolled employees with: current monthly gross wage, minimum required wage per occupation code, compliance status (met/breach), and training hours accumulated YTD",
+        "Government subsidy received per employee per month recorded on Employee record and reconciled against SOCSO disbursement",
+        "Training hours tracked at employee level with date, hours, training provider, and HRD Corp grant reference — cumulative YTD total visible",
+        "Alert raised in Q4 when an enrolled employee has accumulated fewer than 21 annual training hours (with hours deficit shown)",
+        "Monthly evidence package export (PDF/Excel) contains: employee wage list, training log, and SOCSO subsidy receipts — formatted per SOCSO/JTK audit requirements",
+        "If SOCSO suspends subsidy for wage floor breach, alert HR with specific employee, reason, and corrective action required"
+      ],
+      "technicalNotes": [
+        "PWP launched January 2025; SOCSO administers the subsidy for eligible employees earning RM1,700–RM4,999/month in covered industries",
+        "Government subsidy: up to RM200/month (entry-level) or RM300/month (higher positions) for 12 months per enrolled employee",
+        "21-hour annual training must use HRD Corp-registered providers or TVET institutions — link with HRD Corp eTRIS training records",
+        "SOCSO as administrator: https://www.perkeso.gov.my/; employers must register participation via SOCSO",
+        "This story extends existing stories: 'Progressive Wage Policy (PWP) Eligibility Flag' (eligibility) and 'Progressive Wage Policy — 21-Hour Annual Training Completion Tracking' (annual tracking) — this adds monthly evidence assembly for audit",
+        "Reference: https://www.businesstoday.com.my/2026/02/23/over-51000-workers-benefit-from-progressive-wage-policy/"
+      ],
+      "dependencies": [
+        "Progressive Wage Policy (PWP) Eligibility Flag and Wage Escalation Compliance Report",
+        "Progressive Wage Policy — 21-Hour Annual Training Completion Tracking per Eligible Employee",
+        "Progressive Wage Policy Government Incentive Subsidy Claim Tracking Workflow"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-301",
+      "title": "Mid-Year TP1 or TP3 Submission PCB Recalibration Notification to Employee",
+      "priority": "low",
+      "description": "When an employee submits a TP1 (relief declaration) or TP3 (prior employer YTD income) mid-year, the PCB deduction for all subsequent months changes — sometimes significantly. Employees are frequently confused when their net pay changes without explanation, generating avoidable HR queries. The payroll system should auto-generate a concise PCB recalibration notice on the next payslip showing the old PCB, the new PCB, the reason for the change, and the effective date.",
+      "acceptanceCriteria": [
+        "When a new TP1 or TP3 form is processed and changes the employee's PCB computation, the next salary slip is flagged for a recalibration notice",
+        "Notice on payslip displays: 'PCB Updated — Previous: RM X/month → New: RM Y/month (effective [Date]). Reason: [TP1 tax relief declaration received / TP3 prior income declared]'",
+        "Notice appears only on the first payslip after the change — not repeated on subsequent payslips",
+        "If both TP1 and TP3 are processed simultaneously, a single combined notice summarises both impacts",
+        "Employee self-service portal shows a notification banner: 'Your PCB deduction has been updated — tap to see details'",
+        "HR can suppress the notice per employee via a checkbox on the Salary Slip for testing or special cases"
+      ],
+      "technicalNotes": [
+        "PCB recalibration mechanics: when TP1 received in month M, use updated YTD income and new reliefs to compute remaining months' PCB (Method 1 or Method 2 per config)",
+        "For TP3 (prior employer income declaration), the YTD taxable income base increases — PCB for remaining months often increases significantly to catch up",
+        "This is a UX/communication story rather than a new regulatory requirement — improves transparency and reduces HR query volume",
+        "LHDN PCB 2026 Specification (no formula change from 2025): https://www.hasil.gov.my/media/arvlrzh5/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2026.pdf",
+        "Implementation: store 'previous PCB' on Salary Slip before recalibration and 'recalibration_reason' field; Jinja template in payslip format uses these to render the notice"
+      ],
+      "dependencies": [
+        "Implement TP1 Employee Relief Declaration DocType and PCB Integration",
+        "Implement TP3 Carry-Forward Declaration for New Hires (Prior Employer YTD)"
       ],
       "estimatedComplexity": "small",
       "passes": false
