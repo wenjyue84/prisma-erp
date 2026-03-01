@@ -1,3 +1,27 @@
+## Iteration N — US-206: Employment Act S.60A Annual Leave Carry-Forward Cap and Cash-Out Enforcement
+
+**Type:** IMPL
+**TDD Phase:** GREEN (41/41 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_annual_leave_s60a
+**Result:** PASS — 41 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/services/annual_leave_s60a_service.py` — Core service: `compute_carry_forward_cap()`, `calculate_cashout_amount()`, `generate_leave_expiry_notice()`, `record_leave_expiry_decision()`, `check_leave_year_close_eligibility()`, `get_leave_audit_log()`
+- `lhdn_payroll_integration/tests/test_annual_leave_s60a.py` — 41 tests across 7 classes covering constants, carry-forward cap, cash-out calculation, expiry notice, decision recording, close eligibility, and audit log
+
+### Patterns discovered
+- Cash-out formula: `(Monthly Basic Salary / 26) × days`; WORKING_DAYS_PER_MONTH = 26 is the EA default, overridable per contract
+- Carry-forward cap: default = 1× annual entitlement (EA S.60A(4)); `custom_cap` restricted to ≤ entitlement
+- EA 2022 Amendment: "Mutual Forfeiture Agreement" requires `employee_acknowledged=True` — raises ValidationError otherwise
+- Dual persistence: uses DocType "Leave Expiry Decision Log" if it exists, falls back to frappe cache for unit tests
+- `generate_leave_expiry_notice()` returns empty `options` list when `days_expiring == 0` (no decision needed)
+
+### Gotchas
+- `frappe.db.exists("DocType", ...)` pattern needed to detect whether the DocType is installed before calling `frappe.get_all`
+- Unit tests must patch `_upsert_leave_decision_log` (not `frappe.db`) to avoid DB writes in test isolation
+
+---
+
 ## Iteration N — US-205: HRD Corp SBL-KHAS Grant Pre-Approval Compliance and 6-Month Post-Training Claim Deadline Alert
 
 **Type:** IMPL
@@ -7581,3 +7605,6 @@ Implementation was already complete. Verified all 28 tests pass green.
 ### Gotchas
 - Container had two separate service files (`annual_leave_expiry_service.py` and `leave_expiry_service.py`) serving different test modules — both synced to local
 - Module path for bench run-tests uses `lhdn_payroll_integration.tests.*` not `lhdn_payroll_integration.lhdn_payroll_integration.tests.*`
+## Iteration 32 - Sun Mar  1 16:38:46 MPST 2026
+Completed: MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging (ID: US-210) in 6m
+
