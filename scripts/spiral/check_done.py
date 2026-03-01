@@ -8,6 +8,7 @@ import argparse
 import json
 import os
 import sys
+import time
 
 
 def find_latest_report(reports_dir: str) -> str | None:
@@ -59,6 +60,14 @@ def main() -> int:
         )
         print("[check_done] RESULT: INCOMPLETE (no test report)")
         return 1
+
+    report_age_min = (time.time() - os.path.getmtime(report_path)) / 60
+    if report_age_min > 120:
+        print(
+            f"[check_done] WARNING: Test report is {report_age_min:.0f} min old — "
+            "results may be stale; re-run tests for accurate check",
+            file=sys.stderr,
+        )
 
     with open(report_path, encoding="utf-8") as f:
         report = json.load(f)

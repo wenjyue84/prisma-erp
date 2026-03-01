@@ -45,6 +45,14 @@ Do NOT create stories for topics already covered. Here are the existing story ti
 - __EXISTING_TITLES__
 ```
 
+## Already Pending — Do NOT Duplicate
+
+These stories are already queued for implementation (not yet complete). Do NOT suggest anything that overlaps with these:
+
+```
+- __PENDING_TITLES__
+```
+
 ## Focus Areas (NOT yet in PRD — prioritize these)
 
 Based on gap analysis, focus especially on:

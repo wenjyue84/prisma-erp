@@ -1,0 +1,26 @@
+[
+	{
+		"doctype": "EP Salary Threshold",
+		"name": "Cat I",
+		"category": "Cat I",
+		"minimum_salary_rm": 20000.0,
+		"effective_date": "2026-06-01",
+		"notes": "ESD Announcement 266 (Cabinet approval 17 Oct 2025): Category I EP minimum raised from RM10,000 to RM20,000 effective 1 June 2026."
+	},
+	{
+		"doctype": "EP Salary Threshold",
+		"name": "Cat II",
+		"category": "Cat II",
+		"minimum_salary_rm": 10000.0,
+		"effective_date": "2026-06-01",
+		"notes": "ESD Announcement 266: Category II EP minimum raised from RM5,000-RM9,999 to RM10,000-RM19,999 effective 1 June 2026. Category II also requires JTKSM approval (s.60K) and Local Succession Plan."
+	},
+	{
+		"doctype": "EP Salary Threshold",
+		"name": "Cat III",
+		"category": "Cat III",
+		"minimum_salary_rm": 5000.0,
+		"effective_date": "2026-06-01",
+		"notes": "ESD Announcement 266: Category III EP minimum raised from RM3,000-RM4,999 to RM5,000-RM9,999 effective 1 June 2026. Category III requires Local Succession Plan from June 1, 2026."
+	}
+]

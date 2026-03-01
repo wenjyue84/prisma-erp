@@ -14,9 +14,10 @@
 #   C) CHECK DONE  — exit 0 if complete, else loop
 #
 # Non-interactive (Claude Code / CI):
-#   bash spiral.sh 1 --gate proceed     # auto-proceed at every gate
-#   bash spiral.sh 1 --gate skip        # research+merge only, skip ralph
+#   bash spiral.sh 1 --gate proceed          # auto-proceed at every gate
+#   bash spiral.sh 1 --gate skip             # research+merge only, skip ralph
 #   bash spiral.sh 3 --gate proceed --ralph-iters 60
+#   bash spiral.sh 5 --gate proceed --skip-research  # impl-only (no web research)
 #
 # Crash recovery:
 #   If SPIRAL is interrupted mid-iteration, re-running resumes from the
@@ -28,6 +29,7 @@ set -euo pipefail
 MAX_SPIRAL_ITERS=20
 GATE_DEFAULT=""        # empty = interactive; "proceed"|"skip"|"quit" = auto
 RALPH_MAX_ITERS=120
+SKIP_RESEARCH=0        # 1 = skip Phase R (Claude web research); T and M still run
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -35,6 +37,8 @@ while [[ $# -gt 0 ]]; do
       GATE_DEFAULT="$2"; shift 2 ;;
     --ralph-iters)
       RALPH_MAX_ITERS="$2"; shift 2 ;;
+    --skip-research)
+      SKIP_RESEARCH=1; shift ;;
     --*)
       echo "[spiral] Unknown flag: $1"; exit 1 ;;
     *)
@@ -78,6 +82,14 @@ if [[ ! -f "$PYTHON" ]]; then
   PYTHON="python3"
 fi
 
+# ── Tee all output to log file ────────────────────────────────────────────────
+mkdir -p "$SPIRAL_DIR"
+exec > >(tee "$SPIRAL_DIR/_last_run.log") 2>&1
+
+# ── Backup prd.json before any modifications ──────────────────────────────────
+cp "$PRD_FILE" "${PRD_FILE}.bak"
+echo "[spiral] Backup: ${PRD_FILE}.bak"
+
 # ── Helper: stats from prd.json ───────────────────────────────────────────────
 prd_stats() {
   TOTAL=$("$JQ" '[.userStories | length] | .[0]' "$PRD_FILE")
@@ -117,16 +129,19 @@ build_research_prompt() {
   local existing_titles
   existing_titles=$("$JQ" -r '[.userStories[].title] | join("\n- ")' "$PRD_FILE")
 
+  local pending_titles
+  pending_titles=$("$JQ" -r '[.userStories[] | select(.passes != true) | .title] | join("\n- ")' "$PRD_FILE")
+
   # Build injected prompt via sed substitutions
   local prompt_content
   prompt_content=$(cat "$SPIRAL_DIR/research_prompt.md")
   prompt_content="${prompt_content//__SPIRAL_ITER__/$iter}"
   prompt_content="${prompt_content//__NEXT_ID_NUM__/$next_id_num}"
   prompt_content="${prompt_content//__OUTPUT_PATH__/$output_path}"
-  # Replace __EXISTING_TITLES__ placeholder
-  # Use printf to avoid issues with special chars in titles
+  # Replace __EXISTING_TITLES__ and __PENDING_TITLES__ placeholders
   printf '%s' "$prompt_content" | \
-    awk -v titles="$existing_titles" '{gsub(/__EXISTING_TITLES__/, titles); print}'
+    awk -v existing="$existing_titles" -v pending="$pending_titles" \
+      '{gsub(/__EXISTING_TITLES__/, existing); gsub(/__PENDING_TITLES__/, pending); print}'
 }
 
 # ── SPIRAL banner ─────────────────────────────────────────────────────────────
@@ -139,6 +154,7 @@ echo "  ║  PRD:         $PRD_FILE"
 echo "  ║  Stories:     $DONE/$TOTAL complete ($PENDING pending)"
 echo "  ║  Max iters:   $MAX_SPIRAL_ITERS"
 echo "  ║  Ralph iters: $RALPH_MAX_ITERS per phase"
+[[ "$SKIP_RESEARCH" -eq 1 ]] && echo "  ║  Mode:        --skip-research (Phase R skipped)"
 echo "  ╚══════════════════════════════════════════════╝"
 echo ""
 
@@ -159,6 +175,8 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
   SPIRAL_ITER=$((SPIRAL_ITER + 1))
 
   prd_stats
+  ADDED=0      # new stories added this iter (set in Phase M; default 0 if skipped)
+  RALPH_RAN=0  # set to 1 if ralph actually executed this iter (controls Phase V)
   echo ""
   echo "  ┌─────────────────────────────────────────────────────┐"
   echo "  │  SPIRAL Iteration $SPIRAL_ITER / $MAX_SPIRAL_ITERS"
@@ -172,6 +190,10 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
 
   if checkpoint_phase_done "R"; then
     echo "  [R] Skipping (checkpoint: already done this iter)"
+  elif [[ "$SKIP_RESEARCH" -eq 1 ]]; then
+    echo "  [R] Skipping (--skip-research flag set)"
+    echo '{"stories":[]}' > "$RESEARCH_OUTPUT"
+    write_checkpoint "$SPIRAL_ITER" "R"
   else
     INJECTED_PROMPT=$(build_research_prompt "$SPIRAL_ITER" "$RESEARCH_OUTPUT")
     echo "  [R] Spawning Claude research agent (max 30 turns)..."
@@ -291,8 +313,21 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
       proceed|p|"")
         # ── Phase I: IMPLEMENT (Ralph) ──────────────────────────────────
         echo ""
-        echo "  [Phase I] IMPLEMENT — running ralph ($RALPH_MAX_ITERS inner iterations)..."
 
+        # Short-circuit if nothing to implement
+        prd_stats
+        if [[ "$PENDING" -eq 0 ]]; then
+          echo "  [Phase I] IMPLEMENT — skipping (no pending stories)"
+        else
+        echo "  [Phase I] IMPLEMENT — running ralph ($RALPH_MAX_ITERS inner iterations)..."
+        echo "  [I] Pending stories ($PENDING):"
+        "$JQ" -r '.userStories[] | select(.passes != true) | "    [\(.id)] \(.title)"' "$PRD_FILE" \
+          | head -20
+        PENDING_SHOWN=$("$JQ" '[.userStories[] | select(.passes != true)] | length' "$PRD_FILE")
+        [[ "$PENDING_SHOWN" -gt 20 ]] && echo "    ... and $((PENDING_SHOWN - 20)) more"
+        echo ""
+
+        RALPH_RAN=1
         DONE_BEFORE=$("$JQ" '[.userStories[] | select(.passes == true)] | length' "$PRD_FILE")
 
         RALPH_TIMEOUT=3600  # 1 hour
@@ -341,6 +376,7 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
           fi
           echo "  [I] Continuing to check-done phase..."
         fi
+        fi  # end PENDING > 0 block
         ;;
       *)
         echo "  [G] Unrecognized input '$GATE_INPUT' — treating as skip"
@@ -356,6 +392,9 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
 
   if checkpoint_phase_done "V"; then
     echo "  [V] Skipping (checkpoint: already done this iter)"
+  elif [[ "$RALPH_RAN" -eq 0 ]]; then
+    echo "  [V] Skipping (ralph did not run — test results unchanged)"
+    write_checkpoint "$SPIRAL_ITER" "V"
   else
     if [[ -f "$PYTHON" ]]; then
       (cd "$REPO_ROOT" && "$PYTHON" tests/run_tests.py \
@@ -404,7 +443,13 @@ PYEOF
 
   # Clear checkpoint before next iteration (crash in next iter starts that iter fresh)
   rm -f "$CHECKPOINT_FILE"
-  echo "  [C] Not done yet — looping back to Phase R"
+  prd_stats
+  echo "  [C] Not done yet — $PENDING stories remaining"
+  if [[ "${RALPH_PROGRESS:-0}" -gt 0 ]]; then
+    ITERS_LEFT=$(( (PENDING + RALPH_PROGRESS - 1) / RALPH_PROGRESS ))
+    echo "  [C] Velocity: ~${RALPH_PROGRESS} stories/iter | ~${ITERS_LEFT} more iters to completion"
+  fi
+  echo "  [C] Looping back to Phase R"
   echo ""
 done
 
