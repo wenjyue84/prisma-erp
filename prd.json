@@ -5391,7 +5391,7 @@
         "Update Minimum Wage Validation to RM1,700 (Feb 2025 Amendment)"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-229",
@@ -6085,6 +6085,371 @@
       ],
       "dependencies": [
         "Implement TP1 Employee Relief Declaration DocType and PCB Integration"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-258",
+      "title": "Employment Act S.60 Rest Day Pay — Enforce RM4,000 Wage Threshold and Tiered Rate Calculation",
+      "priority": "high",
+      "description": "The Employment (Amendment) Act 2022 (effective 1 January 2023) restricts mandatory rest day pay entitlements to employees earning RM4,000 per month or below. Above this threshold, rest day pay is governed by contract only. The payroll system must enforce this threshold during Salary Slip computation: employees above RM4,000 should not receive statutory rest day pay automatically, and the three-tier rate (0.5x ORP / 1.0x ORP / 2.0x hourly rate) must be correctly applied for eligible employees. Currently the system applies rest day pay without the wage threshold check.",
+      "acceptanceCriteria": [
+        "Salary Slip computation applies statutory rest day pay rates (0.5x ORP for ≤half normal hours; 1.0x ORP for >half but ≤normal hours; 2.0x hourly rate for overtime beyond normal hours on rest day) only when employee monthly wage ≤ RM4,000",
+        "When employee wage > RM4,000 and a rest day work component is added, the system displays a warning: 'Statutory rest day pay (S.60 EA) does not apply to this employee. Use contractual rate instead.' and blocks the statutory component",
+        "Ordinary Rate of Pay (ORP) divisor is 26 for monthly-rated employees; the computed ORP and resulting rest day component value are shown on the Salary Slip detail panel",
+        "A payroll audit report 'Rest Day Pay Compliance Check' lists employees who received rest day pay in the selected period and flags those above RM4,000 monthly salary for HR review",
+        "Unit test: employee at RM3,999 receives statutory rest day pay; employee at RM4,001 does not, and a warning is logged"
+      ],
+      "technicalNotes": [
+        "Employment (Amendment) Act 2022 Section 60(3): overtime/rest day pay provisions excluded for employees above RM4,000/month",
+        "Three-tier rest day pay rates per S.60(3): work ≤ half normal hours = 0.5 day ORP; work > half but ≤ normal hours = 1 day ORP; work beyond normal hours = 2x hourly rate",
+        "ORP divisor: monthly salary ÷ 26 (Employment Act S.60I) — do not use 30 or calendar days",
+        "Manual workers (defined in EA S.2) are entitled to rest day pay regardless of wage — add an is_manual_worker flag on Employee to override the RM4,000 threshold"
+      ],
+      "dependencies": [
+        "Ordinary Rate of Pay (ORP) Calculator"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-259",
+      "title": "Budget 2026 TP1 — Extend Medical Relief to Grandparents and Add Vaccination Sub-Limit for Parents",
+      "priority": "high",
+      "description": "Budget 2026 expands the scope of Malaysia's medical expense tax relief. Grandparents are now eligible under the RM8,000 medical care relief (previously restricted to parents). Additionally, within the existing RM10,000 total medical relief cap, taxpayers may now include vaccination costs for parents (not just full medical check-ups). Employees who declare these reliefs on TP1 will reduce their monthly PCB deduction. The TP1 Declaration DocType must accommodate the grandparent category and separate vaccination sub-limit for PCB computation accuracy.",
+      "acceptanceCriteria": [
+        "TP1 Declaration DocType adds custom_medical_grandparents_relief (Currency, max RM8,000) separate from the existing custom_medical_parents_relief field",
+        "TP1 Declaration DocType adds custom_vaccination_parents_relief (Currency, max RM1,000) as a sub-field within custom_medical_parents_relief (both count toward the RM10,000 combined medical relief cap)",
+        "PCB calculation sums grandparent + parent + vaccination medical reliefs and caps the total at RM10,000 before applying to the tax computation",
+        "EA Form Part C correctly reflects the grandparent and vaccination relief sub-categories using the LHDN TP1(1/2026) section codes",
+        "Unit test: employee claiming RM8,000 grandparents + RM1,000 parent vaccination + RM1,000 parent check-up = RM10,000 total; system caps at RM10,000 and does not allow an additional RM1,000"
+      ],
+      "technicalNotes": [
+        "Budget 2026 change: grandparents now included in medical care relief (RM8,000) — previously only parents were eligible",
+        "Vaccination costs for parents now claimable under the RM1,000 full medical check-up sub-limit within the RM10,000 cap",
+        "LHDN TP1(1/2026) form published at hasil.gov.my — verify exact section code and cap structure in the official form",
+        "This story is distinct from the already-covered 'Budget 2026 TP1: Expand Vaccination Relief Scope to All NPRA-Approved Vaccines' which covers the employee's own vaccination relief"
+      ],
+      "dependencies": [
+        "Implement TP1 Employee Relief Declaration DocType and PCB Integration"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-260",
+      "title": "EPF Automatic Foreign Worker i-Akaun Registration (October 2025) — Suppress Manual Registration for EP/VP Holders",
+      "priority": "high",
+      "description": "Effective October 2025, EPF automatically registers non-Malaysian citizen employees who hold a Visitor's Pass (Temporary Employment) or Employment Pass directly upon employer contribution submission — eliminating the need for employees to visit EPF offices or for employers to manually register them via i-Akaun. The payroll system currently prompts HR to manually trigger EPF registration for new foreign hires. This workflow must be updated so that for EP and VP holders hired from October 2025 onwards, the system relies on EPF's auto-registration and only alerts if the employee's pass type is a work permit (which still requires manual registration).",
+      "acceptanceCriteria": [
+        "Employee DocType custom_pass_type field (Select: Employment Pass | Visitor Pass (Temporary Employment) | Work Permit | Malaysia PR | Citizen | Other) is used to differentiate auto-registration eligibility",
+        "For employees with custom_pass_type = 'Employment Pass' or 'Visitor Pass (Temporary Employment)' hired from 2025-10-01 onwards, the new employee onboarding checklist shows 'EPF Auto-Registration (via contribution submission)' — no manual registration step required",
+        "For employees with custom_pass_type = 'Work Permit', the onboarding checklist retains the 'Register EPF Member — i-Akaun' manual step with a 7-day deadline alert",
+        "An informational banner on the foreign worker EPF section states: 'EP and VP holders (from Oct 2025): EPF membership is auto-registered when first contribution is submitted. Verify employee details on i-Akaun (Employer) after the first contribution month.'",
+        "Unit test: new EP employee hired Nov 2025 does not generate a manual EPF registration ToDo; Work Permit employee does"
+      ],
+      "technicalNotes": [
+        "KWSP announcement: 'Automatic Registration Eases Process For Employers Of Non-Malaysian Citizen Employees' (Oct 2025) — https://www.kwsp.gov.my/en/w/news/automatic-registration-eases-process-for-employers-of-non-malaysian-citizen-employees",
+        "Auto-registration applies to Employment Pass and Visitor's Pass (Temporary Employment) holders; Work Permit holders still require manual employer-initiated registration",
+        "Employer must still verify the EPF member number appears correctly on i-Akaun (Employer) after the first contribution submission",
+        "This story is distinct from the existing '30-Day EPF i-Akaun Registration Deadline Alert for Newly Eligible Foreign Workers' which covers the October 2025 mandatory contribution requirement"
+      ],
+      "dependencies": [
+        "Enforce 30-Day EPF i-Akaun Registration Deadline Alert for Newly Eligible Foreign Workers (Oct 2025)"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-261",
+      "title": "CP38 Additional Deduction — Include in e-PCB Plus Monthly Upload Alongside CP39",
+      "priority": "high",
+      "description": "The e-PCB Plus system (launched 3 February 2025) integrates CP39 (monthly PCB) and CP38 (additional tax deduction orders) under a single MyTax employer portal. Previously, CP38 payments were made separately via the ByrHASiL portal. Employers must now ensure that CP38 deduction amounts are included in the monthly e-PCB Plus submission data alongside the normal CP39 PCB figures. The payroll system generates the CP39 upload file but does not currently append CP38 data. Both must be submitted by the 15th of the following month.",
+      "acceptanceCriteria": [
+        "The monthly PCB submission file generator includes CP38 deduction rows for any employee who has an active CP38 Tax Deduction Order with amount > 0 for the payroll period",
+        "CP38 and CP39 rows in the upload file are distinguishable by their transaction type code (per LHDN e-PCB Plus file format specification)",
+        "The LHDN Payroll Compliance Report shows a combined 'e-PCB Plus Monthly Submission' row with sub-totals for CP39 (normal PCB) and CP38 (additional deductions) separately",
+        "A warning alert fires if an employee has a CP38 order active but the payroll module generated no CP38 row in the upload (e.g., zero salary month) — HR must be notified to handle the missed deduction",
+        "Unit test: employee with active CP38 order of RM200 and normal PCB of RM500 produces an upload file with two rows — one CP39 row (RM500) and one CP38 row (RM200) for that employee"
+      ],
+      "technicalNotes": [
+        "e-PCB Plus launched 3 February 2025 on MyTax portal — replaces separate e-CP39, e-Data PCB, and ByrHASiL CP38 portals",
+        "CP38 = additional tax deduction order issued by LHDN to recover outstanding tax balance via employer payroll deductions",
+        "Payment deadline for both CP39 and CP38: 15th of the month following salary payment",
+        "LHDN CP38 guide: https://www.hasil.gov.my — search for 'CP38 Tax Deduction Order'; e-PCB Plus file format spec available via e-PCB Plus portal documentation"
+      ],
+      "dependencies": [
+        "Generate CP39 CSV with Mandatory LHDN e-PCB Plus Columns",
+        "CP38 Additional Deduction Fields on Salary Slip"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-262",
+      "title": "Self-Billed e-Invoice for Employee Expense Claims and Perquisite Reimbursements (MyInvois Phase 4)",
+      "priority": "high",
+      "description": "While regular salary and payroll are exempt from Malaysia's e-invoicing mandate, employee expense claim reimbursements, medical claims, travel allowances paid as reimbursements, and employer-provided perquisite benefits are not exempt. Effective 1 January 2026 (Phase 4: RM1M–RM5M turnover), employers must issue self-billed e-invoices via MyInvois when reimbursing employees for business expenses where a third-party invoice exists. The payroll system's Expense Claim module must generate a self-billed e-invoice XML and submit it to the MyInvois API when an Expense Claim is approved and paid.",
+      "acceptanceCriteria": [
+        "When an Expense Claim is approved and the submitting Company's custom_einvoice_mandatory_phase is Phase 4 or earlier, a 'Submit Self-Billed e-Invoice' button appears on the Expense Claim form",
+        "Clicking the button generates a LHDN-compliant UBL XML self-billed e-invoice with: seller = employee, buyer = company, line items from Expense Claim items, and submits to the MyInvois API",
+        "The Expense Claim stores the returned LHDN submission UUID, document number, and validation status in custom_myinvois_uuid, custom_myinvois_doc_no, and custom_myinvois_status fields",
+        "A compliance report 'Unpaired Expense Claims (e-Invoice Missing)' lists Expense Claims above RM50 that are approved-and-paid but have no MyInvois UUID, filtered by company mandate phase and claim date",
+        "Regular salary slip payments (BASIC, EPF, SOCSO, PCB deductions) do not trigger an e-invoice — only Expense Claim reimbursements do"
+      ],
+      "technicalNotes": [
+        "LHDN e-invoice exemption list: employment income (salary, wages, bonuses) is exempt; expense claim reimbursements are NOT exempt when a supplier e-invoice exists",
+        "Self-billed e-invoice: company issues the invoice on behalf of the employee-supplier (employee is the 'seller' in the UBL XML)",
+        "Phase 4 effective: 1 January 2026 for companies with RM1M–RM5M annual turnover",
+        "Use existing myinvois_erpgulf API integration (createxml module) for the UBL XML generation; map Expense Claim fields to UBL line items"
+      ],
+      "dependencies": [
+        "MyInvois Phase 4 (January 2026) — Set Mandatory e-Invoice Flag for Companies with RM1M–RM5M Annual Revenue"
+      ],
+      "estimatedComplexity": "large",
+      "passes": false
+    },
+    {
+      "id": "US-263",
+      "title": "SOCSO Foreign Worker Invalidity Scheme — Enforce 0.5% Employee Deduction on Payslip from July 2024",
+      "priority": "high",
+      "description": "Effective 1 July 2024, foreign workers who are under 55 when first contributing to PERKESO must be enrolled in the Invalidity Scheme in addition to the Employment Injury Scheme. This adds a 0.5% employee-share deduction from the foreign worker's salary (employer also pays 0.5% invalidity on top of the existing 1.25% employment injury). The payroll system must enforce this additional employee deduction for eligible foreign workers and reflect the new combined contribution rate (employer 1.75%, employee 0.5%) for all PERKESO contributions on the SOCSO summary report.",
+      "acceptanceCriteria": [
+        "For employees where custom_is_foreign_worker = True and age_at_first_perkeso_contribution < 55, the SOCSO deduction engine applies the 0.5% Invalidity Scheme employee deduction in addition to the Employment Injury Scheme",
+        "Payslip shows two SOCSO deduction rows for eligible foreign workers: 'SOCSO Employment Injury (Employer)' (1.25% — employer borne) and 'SOCSO Invalidity Scheme (Employee)' (0.5% — deducted from salary)",
+        "The SOCSO contribution report separates Employment Injury and Invalidity Scheme contribution totals with effective date 2024-07-01 as the cutoff for foreign worker invalidity enrollment",
+        "Employees who were 55 or older at first PERKESO enrollment are flagged as 'Invalidity Scheme Not Applicable (age ≥55 at enrollment)' and only the Employment Injury rate (1.25% employer, 0% employee) is applied",
+        "Unit test: foreign worker enrolled at age 40 has both Employment Injury and Invalidity deductions; foreign worker enrolled at age 56 has only Employment Injury deduction"
+      ],
+      "technicalNotes": [
+        "PERKESO gazette: Employees' Social Security (Amendment of First Schedule) Order 2024 — effective 1 July 2024",
+        "New total SOCSO rates for foreign workers (age <55 at enrollment): employer 1.75% (1.25% EI + 0.5% IS), employee 0.5% (IS only)",
+        "Foreign workers age ≥55 at first enrollment: employer 1.25% (EI only), employee 0% — they are in the Employment Injury Scheme but not Invalidity",
+        "Payment to PERKESO: via the combined SOCSO+EIS txt file on ASSIST portal — the Invalidity Scheme contribution appears as a separate row type in the file"
+      ],
+      "dependencies": [
+        "SOCSO Foreign Worker Invalidity Scheme Inclusion Flag and Rate Update (July 2024)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-264",
+      "title": "Minimum Wage Enforcement — Penalty Quantum Awareness Panel and Ongoing Violation Daily Fine Tracker",
+      "priority": "high",
+      "description": "Effective 1 August 2025, the RM1,700 minimum wage applies to all employers including those with fewer than 5 employees. Non-compliance carries fines of up to RM10,000 per employee for a first offence, up to RM1,000 per day for continuing offences after conviction, and up to RM20,000 or 5 years imprisonment for repeat offences. The payroll system's minimum wage validation already blocks non-compliant salary slips, but there is no dashboard showing the penalty exposure if violations are found in an audit (e.g., total underpaid months × RM10,000 per employee).",
+      "acceptanceCriteria": [
+        "The Minimum Wage Compliance Report gains a 'Penalty Exposure Estimate' column: for each employee-month where salary < RM1,700 is detected, the system calculates a worst-case penalty of RM10,000 × number_of_non_compliant_employees and displays the aggregate total",
+        "A payroll dashboard widget 'Minimum Wage Compliance' shows: total employees checked this month, count of compliant employees, count of non-compliant employees, and the aggregate penalty exposure estimate",
+        "The widget displays three penalty tier descriptions: First offence: RM10,000 per employee; Continuing offence: RM1,000/day post-conviction; Repeat offence: RM20,000 or 5 years imprisonment",
+        "An audit history panel shows all payroll periods where minimum wage violations were detected or overridden, with the HR user who approved the override and the stated reason",
+        "The system confirms that domestic servants (with custom_is_domestic_servant = True) and apprentices (with custom_is_apprentice = True) are excluded from the minimum wage check and penalty calculation"
+      ],
+      "technicalNotes": [
+        "Minimum Wages Order 2024 enforcement from 1 August 2025 for all employers (Gazette P.U.(A) 479/2024)",
+        "Penalty provisions: National Wages Consultative Council Act 2011 (Act 732), S.36 — fine up to RM10,000 per employee per offence; S.37 — continuing offence up to RM1,000/day",
+        "Domestic servants, certain contract apprentices, and commission-only workers (where gross wage including commission ≥ RM1,700) may have special treatment",
+        "Enforcement authority: Department of Labour (JTK) — inspections and back-pay recovery orders are common enforcement actions"
+      ],
+      "dependencies": [
+        "Enforce RM1,700 Minimum Wage for ALL Employers Effective 1 August 2025",
+        "Domestic Servant Minimum Wage Exclusion Flag and Alternative Remuneration Tracker"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-265",
+      "title": "Domestic Servant Minimum Wage Exclusion Flag and Alternative Remuneration Tracker",
+      "priority": "medium",
+      "description": "The Minimum Wages Order 2024 explicitly excludes domestic servants (maids, gardeners, personal drivers employed in a household) from the RM1,700 minimum wage requirement. The payroll system must allow HR to designate employees as domestic servants so the minimum wage validation does not incorrectly flag them. Labour rights advocacy and government reviews are ongoing for a separate domestic servant wage order; the system should record the agreed contractual wage for future comparison when a dedicated order is gazetted.",
+      "acceptanceCriteria": [
+        "Employee DocType gains a field custom_is_domestic_servant (Checkbox, default unchecked) with a tooltip: 'Tick if employee is a domestic servant as defined under EA 1955 S.2. Minimum Wages Order 2024 does not apply.'",
+        "When custom_is_domestic_servant = 1, the minimum wage validation (RM1,700 enforcement) is suppressed for that employee and no compliance alert is generated",
+        "A payroll report 'Domestic Servant Wage Register' lists all employees with custom_is_domestic_servant = 1, their agreed contractual wage, and a column 'Domestic Wage Order Applicable' (currently 'None — Pending Gazette')",
+        "When a Domestic Servant Minimum Wage Order is gazetted, the system settings allow HR to enter the new prescribed rate and the validation resumes for domestic servants at the new rate",
+        "An audit log records when the custom_is_domestic_servant flag is toggled, capturing who changed it and the date"
+      ],
+      "technicalNotes": [
+        "Minimum Wages Order 2024 (P.U.(A) 479/2024): Section 3 explicitly excludes domestic servants as defined in EA 1955 and Labour Ordinances (Sabah/Sarawak)",
+        "Domestic servant definition (EA S.2): person employed in connection with domestic work in a private dwelling house and who resides in that dwelling house",
+        "Government indicated a separate review for domestic servant wages — system should support future gazette activation without a code change",
+        "SOCSO ASSIST portal: domestic worker SOCSO contributions are mandatory since February 2021 — this flag must not affect SOCSO contribution calculation"
+      ],
+      "dependencies": [
+        "Enforce RM1,700 Minimum Wage for ALL Employers Effective 1 August 2025"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-266",
+      "title": "HRD Corp SBL-KHAS — Direct Payment to Training Provider and Levy Utilisation Ledger",
+      "priority": "medium",
+      "description": "Under HRD Corp's SBL-Khas (Special Training Assistance Scheme), HRD Corp pays the approved training provider directly from the employer's accumulated levy — the employer does not pay upfront. The payroll system tracks levy contributions but does not record approved SBL-Khas grants, resulting in an inflated 'available levy balance' display that does not reflect committed training expenditures. A training grant ledger is needed to show the real available balance: total levy paid minus claimed or committed grants.",
+      "acceptanceCriteria": [
+        "A 'HRD Corp Training Grant' DocType records: grant_type (SBL / SBL-Khas / Industrial), approval_date, training_start_date, training_end_date, training_provider, approved_amount, payment_status (Pending HRD Payment / Paid / Rejected)",
+        "HRDF Levy Settings displays a computed field custom_available_levy_balance = total_levy_paid_ytd - sum(approved_training_grants_ytd_unpaid)",
+        "When payment_status = 'Paid', the approved_amount is deducted from the total available balance; when 'Rejected', the amount is reinstated",
+        "A report 'HRD Corp Levy Utilisation Ledger' shows month-by-month: levy contributed, grants approved, grants paid, grants rejected, and running available balance",
+        "An alert fires if custom_available_levy_balance falls below RM500, warning HR that the levy balance may be insufficient for pending training claims"
+      ],
+      "technicalNotes": [
+        "SBL-Khas: HRD Corp pays training provider directly — no reimbursement to employer; employer's levy balance is debited when HRD Corp issues payment",
+        "HRD Corp levy rates: 1% of monthly salary for employers with 10+ employees; 0.5% voluntary for 5–9 employee SMEs",
+        "Grant submission via eTRiS portal at hrdcorp.gov.my — claims must be submitted within 6 months of training completion",
+        "Forfeiture rule: no claim for 2 years = levy forfeited (up to RM10,000 retained by HRD Corp) — related to the 'HRD Corp 2-Year Unclaimed Levy Forfeiture Alert' story"
+      ],
+      "dependencies": [
+        "HRDF Levy Contribution Base Classifier",
+        "HRD Corp 2-Year Unclaimed Levy Forfeiture Alert"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-267",
+      "title": "Flexible Work Arrangement (FWA) Payroll Impact Tracker — Adjusted PCB Basis and Payslip Annotation",
+      "priority": "medium",
+      "description": "Under Employment Act S.60P (effective January 2023), employees on approved FWA arrangements may vary their hours, days, or place of work. Where an FWA results in reduced contractual hours or a shift from full-time to part-time (e.g., a 3-day work week), the ordinary rate of pay (ORP), overtime thresholds, and minimum wage compliance calculation must be prorated accordingly. The payroll system approves FWA requests (per the existing S.60P tracker) but does not automatically adjust the ORP divisor, overtime caps, or minimum wage check when an FWA changes the employee's effective working pattern.",
+      "acceptanceCriteria": [
+        "The FWA Record DocType (from existing S.60P story) gains fields: custom_fwa_hours_per_week (Float) and custom_fwa_days_per_week (Integer) to capture the approved reduced work pattern",
+        "When an active FWA record exists for an employee, the payroll engine uses custom_fwa_hours_per_week to compute the prorated ORP divisor and overtime threshold for that payroll period",
+        "Minimum wage compliance check for FWA employees uses the prorated hourly rate: RM1,700 ÷ 26 ÷ normal daily hours × fwa_daily_hours — a warning fires if the prorated rate falls below RM10.42/hour (RM1,700 ÷ 26 ÷ 8 × 1.6 rounded)",
+        "Payslips for employees on FWA include an annotation: 'FWA approved from [start_date] to [end_date]: [N] days/[H] hours per week'",
+        "Unit test: full-time employee (5 days, 8h/day) converted to FWA (3 days, 8h/day) has ORP computed on 15.6 days per month (3/5 × 26), not 26"
+      ],
+      "technicalNotes": [
+        "Employment Act S.60P: employee may apply to vary hours/days/place of work; employer must respond within 60 days — FWA request tracker already built",
+        "Prorated ORP for part-time FWA: follow Employment Act S.60I (ORP = monthly salary ÷ 26) but adjust salary to the prorated contracted amount",
+        "Minimum hourly rate: RM1,700 minimum wage ÷ 26 working days ÷ 8 hours = RM8.17/hour; FWA employees must still receive at least this per hour worked",
+        "PCB for FWA employees: PCB is calculated on actual gross remuneration — no special formula, but ORP-based allowances and rest day pay must reflect the FWA hours"
+      ],
+      "dependencies": [
+        "Track Flexible Work Arrangement Requests and 60-Day Employer Response"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-268",
+      "title": "Budget 2026 — Civil Servant Voluntary EPF Contribution Tax Relief on TP1",
+      "priority": "medium",
+      "description": "Budget 2026 proposes extending the RM3,000 tax relief for voluntary EPF contributions to civil servants who are in pensionable positions (and thus do not make mandatory EPF contributions). Previously this relief was only available to private sector employees making voluntary top-up contributions. Civil servants who voluntarily contribute to EPF on top of their pension deductions can now claim this relief on their TP1, reducing their monthly PCB. The payroll system must add a civil servant voluntary EPF relief field to TP1 and adjust PCB computation accordingly.",
+      "acceptanceCriteria": [
+        "TP1 Declaration DocType adds custom_voluntary_epf_civil_servant (Currency, max RM3,000) visible only when employee custom_employment_sector = 'Government / Pensionable'",
+        "PCB calculator applies the RM3,000 deduction for civil servant voluntary EPF relief, combined within the existing RM4,000 EPF+life insurance combined relief cap",
+        "Employee DocType gains custom_employment_sector (Select: Private / Government / Pensionable / Statutory Body / Other) to distinguish civil servants from private sector employees",
+        "A validation warning prevents a private sector employee from claiming the civil servant voluntary EPF relief, with a message explaining it only applies to pensionable government employees",
+        "Unit test: civil servant employee claiming RM3,000 voluntary EPF + RM1,500 life insurance = RM4,500 total; system caps EPF+life insurance at RM4,000 and reduces life insurance to RM1,000"
+      ],
+      "technicalNotes": [
+        "Budget 2026 source: KPMG Malaysia flash alert — 'Budget 2026: Key Highlights Affecting Individuals' at kpmg.com/xx/en/our-insights/gms-flash-alert/flash-alert-2025-207.html",
+        "Pensionable civil servants make pension deductions (not EPF) — they can optionally open an EPF account for voluntary contributions",
+        "RM3,000 voluntary EPF relief sits within the combined RM4,000 cap (EPF + life insurance/takaful) under ITA Schedule 9",
+        "This is separate from the existing 'EPF i-Topup (Voluntary Excess Contribution)' story which covers private sector voluntary top-ups"
+      ],
+      "dependencies": [
+        "Implement TP1 Employee Relief Declaration DocType and PCB Integration"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-269",
+      "title": "Employee Share Option (ESOS) Year-of-Award PCB Assessment and Year-of-Exercise Payslip Annotation",
+      "priority": "medium",
+      "description": "LHDN treats gains from employee share option schemes (ESOS) as employment perquisites under ITA S.4(b), taxable in the year of award — not the year of exercise. This creates a mismatch: the employee exercises the option and realises cash in year N, but the tax was assessable in year N-X (when the option was awarded). The payroll system must capture the award date, award price, and market value at award for each ESOS grant, compute the perquisite value for the year of award, and include this in the EA Form for the correct year. The exercise event generates only a payslip annotation with no additional PCB impact.",
+      "acceptanceCriteria": [
+        "A 'Share Option Grant' DocType records: employee, grant_date, number_of_options, option_price, market_value_at_grant, vesting_schedule, exercise_date (nullable), exercise_market_value (nullable)",
+        "At grant date, the system computes perquisite_value = (market_value_at_grant - option_price) × number_of_options and creates a draft Salary Component entry for inclusion in the EA Form for the grant year",
+        "The EA Form for the award year includes the ESOS perquisite value under the correct income section (perquisites) even if the employee has not yet exercised the option",
+        "When an exercise event is recorded, the Salary Slip for that month shows an informational annotation: 'ESOS exercised: [N] shares at RM[X]; PCB assessed in year of award [YYYY] — no additional PCB this month'",
+        "A report 'ESOS Grant Register' lists all active grants per employee with: grant date, award year, perquisite value assessed, exercise status, and EA Form inclusion status"
+      ],
+      "technicalNotes": [
+        "ITA S.4(b) perquisite treatment: ESOS gain = lower of (market value on exercise date - option price) or (market value on first exercisable date - option price); assessable in year of award",
+        "Source: Azmi & Associates legal guide at azmilaw.com on ESOS tax treatment in Malaysia",
+        "LHDN Public Ruling No. 11/2012 (Employee Share Scheme) — verify if superseded by a more recent ruling for post-2024 grants",
+        "This story handles the PCB/EA Form implications only; the corporate tax deduction for ESOS costs is a separate topic outside payroll scope"
+      ],
+      "dependencies": [
+        "ESOS/Share Option Gain Calculation"
+      ],
+      "estimatedComplexity": "large",
+      "passes": false
+    },
+    {
+      "id": "US-270",
+      "title": "PCB 2026 Spec — Up-Skilling and Self-Enhancement Course Fee Relief Extension to YA2026",
+      "priority": "medium",
+      "description": "Budget 2026 extends the RM2,000 individual tax relief for up-skilling and self-enhancement course fees (claimable by employees) from YA2024 through YA2026. This relief covers HRDC-approved courses and other accredited training. The TP1 Declaration DocType must accept this relief for payroll years 2025 and 2026, and the PCB calculator must correctly exclude it for years where the relief has not been legislated (post-YA2026 unless further extended). A relief validity window must be enforced so the calculator does not incorrectly apply a time-limited relief in a future year.",
+      "acceptanceCriteria": [
+        "TP1 Declaration DocType field custom_upskilling_relief (Currency, max RM2,000) is available for tax years YA2024, YA2025, and YA2026 only; for YA2027 and beyond, the field is hidden with a tooltip: 'Up-skilling relief expired at YA2026 — check for gazette extension'",
+        "PCB calculator applies the RM2,000 up-skilling deduction only when the payroll year is 2024, 2025, or 2026; a warning appears if an employee has declared the relief for an out-of-scope year",
+        "LHDN Payroll Settings DocType has a 'TP1 Relief Validity' child table where each relief type stores: relief_name, max_amount, valid_from_ya, valid_to_ya — up-skilling is seeded as valid YA2024–YA2026",
+        "When the valid_to_ya is reached and no extension is detected, the system sends an annual reminder to LHDN Payroll Admin to verify and update the relief table",
+        "Unit test: employee declares RM2,000 up-skilling relief in YA2025 → deduction applied; same declaration in YA2027 → blocked with warning"
+      ],
+      "technicalNotes": [
+        "Budget 2026 source: LHDN PCB 2026 Amendment Spec and Ramco Malaysia Budget 2026 payroll summary at ramco.com",
+        "Up-skilling relief scope: courses recognized by Department of Skills Development (DSD) or approved by HRD Corp; maximum RM2,000 per assessment year",
+        "This relief is separate from the RM1,000 lifestyle relief — it has its own RM2,000 cap",
+        "Gazette reference: confirm via LHDN hasil.gov.my/en/legislation — search 'Income Tax (Relief for Up-Skilling Course) Order'"
+      ],
+      "dependencies": [
+        "Implement TP1 Employee Relief Declaration DocType and PCB Integration",
+        "Generate LHDN PCB 2026 Specification Annual Update Checklist and Version Flag"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-271",
+      "title": "EIS Amendment 2025 — Enhanced Job Search Allowance and Training Benefits Display on Termination",
+      "priority": "medium",
+      "description": "The Employment Insurance System (Amendment) Bill 2025, tabled in Parliament 4 November 2025, proposes increasing the training fee ceiling from RM4,000 to RM7,000, the daily training allowance to RM30, and the early re-employment allowance from 25% to 50% of unpaid Job Search Allowance. When processing employee termination or redundancy in the payroll system, the EIS benefit entitlement panel must display these updated proposed rates clearly, helping HR teams communicate accurately with retrenched employees about their EIS benefits while noting the pending gazette status.",
+      "acceptanceCriteria": [
+        "The Employee Termination form includes an 'EIS Benefit Entitlement Summary' panel that shows: Job Search Allowance rate table (% of last salary by months of contribution), Training Fee Allowance (RM7,000 max — proposed), Daily Training Allowance (RM30 — proposed), Early Re-employment Allowance (50% of remaining JSA — proposed)",
+        "The panel displays a banner: 'Rates marked as proposed are based on EIS (Amendment) Bill 2025 (tabled 4 Nov 2025). Confirm gazette date before quoting to employees.'",
+        "EIS benefit rates are stored in a configurable 'EIS Benefit Rate Settings' DocType (not hardcoded) with a gazette_status field (Proposed / Gazetted / Effective) per rate",
+        "When gazette_status = 'Gazetted', the 'proposed' banner is automatically replaced with an 'Effective from [date]' label",
+        "A link to the PERKESO ASSIST portal EIS claim page is displayed on the termination form for the employee's self-service claim submission"
+      ],
+      "technicalNotes": [
+        "EIS (Amendment) Bill 2025: Dewan Rakyat 4 November 2025; as of research date (March 2026) gazette status to be confirmed",
+        "Current (pre-amendment) EIS training fee max: RM4,000; proposed: RM7,000",
+        "Early re-employment allowance: currently 25% of unpaid JSA; proposed 50%",
+        "FMM (Federation of Malaysian Manufacturers) supports the Bill: https://www.thestar.com.my/news/nation/2025/11/06/fmm-supports-enhancement-of-eis-benefits"
+      ],
+      "dependencies": [
+        "EIS Contribution Ceiling RM6,000"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-272",
+      "title": "e-PCB Plus Transition — Archive and Decommission Legacy e-Data PCB and eCP39 File Submission Workflows",
+      "priority": "medium",
+      "description": "The LHDN e-PCB Plus system (fully operational from 3 February 2025) replaces the legacy e-PCB, e-Data PCB, and eCP39 portals. Employers who continue to use legacy file formats or submission paths will encounter upload rejections. The payroll system must decommission legacy PCB submission options, migrate any historic submission records to the new e-PCB Plus status tracking model, and display a clear migration guide for HR teams still using the old workflows. Legacy submission records must be retained for audit purposes but clearly labelled as historical.",
+      "acceptanceCriteria": [
+        "Legacy PCB submission options ('Submit via e-Data PCB', 'Submit via eCP39') are hidden from the UI and replaced by a single 'Submit via e-PCB Plus (MyTax)' workflow with a link to the MyTax portal",
+        "Any existing submission records created under the legacy e-Data PCB or eCP39 workflow are migrated to a 'Legacy (Pre-Feb 2025)' status category and retained in the audit history",
+        "A migration banner is displayed on the LHDN Payroll module home page until dismissed by HR Admin: 'e-PCB Plus is now mandatory from February 2025. Legacy e-Data PCB / eCP39 submissions are no longer accepted by LHDN.'",
+        "The Statutory Compliance Calendar replaces 'e-Data PCB submission' and 'eCP39 submission' events with a single 'e-PCB Plus Monthly Submission (due 15th)' recurring event",
+        "Unit test: attempting to create a new submission record with status_type = 'e-Data PCB' raises a validation error redirecting the user to the e-PCB Plus workflow"
+      ],
+      "technicalNotes": [
+        "e-PCB Plus launch: 24 September 2024 (pilot); mandatory from 3 February 2025 at MyTax portal",
+        "LHDN directive: all employers using e-PCB, e-Data PCB, and eCP39 must migrate to e-PCB Plus by 15 January 2025 for December 2024 submissions",
+        "Legacy portals are being phased out — employers uploading to the old portals after the cutoff receive error: 'Service discontinued'",
+        "Source: The Rakyat Post (8 Jan 2025), Pandahrms e-PCB Plus guide, and LHDN official announcement at hasil.gov.my"
+      ],
+      "dependencies": [
+        "Generate CP39 CSV with Mandatory LHDN e-PCB Plus Columns",
+        "e-PCB Plus Successful Submission — Store Acknowledgement Reference"
       ],
       "estimatedComplexity": "small",
       "passes": false

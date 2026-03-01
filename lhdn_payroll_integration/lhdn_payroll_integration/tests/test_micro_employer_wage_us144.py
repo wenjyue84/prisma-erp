@@ -259,8 +259,8 @@ class TestSalarySlipMinimumWageIntegration(FrappeTestCase):
         return doc
 
     @patch("lhdn_payroll_integration.utils.validation.frappe")
-    def test_post_aug_micro_employer_below_wage_warns(self, mock_frappe):
-        """Post Aug 2025 micro-employer with RM1,500 triggers warning."""
+    def test_post_aug_micro_employer_below_wage_throws(self, mock_frappe):
+        """Post Aug 2025 micro-employer with RM1,500 triggers hard ValidationError (US-228)."""
         mock_frappe.db.exists.return_value = True
         mock_frappe.db.count.return_value = 2  # micro-employer
         emp = MagicMock()
@@ -273,7 +273,9 @@ class TestSalarySlipMinimumWageIntegration(FrappeTestCase):
         doc = self._make_doc(1500, period_end="2025-08-31")
         from lhdn_payroll_integration.utils.validation import _validate_salary_slip_minimum_wage
         _validate_salary_slip_minimum_wage(doc)
-        mock_frappe.msgprint.assert_called_once()
+        # US-228: post-Aug 2025 violations raise hard error, not soft warning
+        mock_frappe.throw.assert_called_once()
+        mock_frappe.msgprint.assert_not_called()
 
     @patch("lhdn_payroll_integration.utils.validation.frappe")
     def test_grace_period_micro_employer_no_warning(self, mock_frappe):

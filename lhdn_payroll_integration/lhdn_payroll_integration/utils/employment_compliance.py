@@ -1346,9 +1346,10 @@ def check_minimum_wage_with_headcount(
             "compliant": False,
             "warning": (
                 f"Monthly salary RM{basic_pay:.2f} is below the national minimum wage "
-                f"of RM{applicable_minimum:.2f}/month (Minimum Wages Order 2022). "
-                f"Applies to all employers from 1 Aug 2025. Non-compliance is an offence "
-                "under Employment Act Section 99J (fine up to RM10,000 per contravention)."
+                f"of RM{applicable_minimum:.2f}/month (Minimum Wages Order 2024 - universal "
+                f"enforcement from 1 August 2025). Non-compliance carries a fine of up to "
+                "RM10,000 per employee per offence (National Wages Consultative Council "
+                "Act 2011)."
             ),
             "employment_type": employment_type,
             "minimum": applicable_minimum,
@@ -1366,3 +1367,31 @@ def check_minimum_wage_with_headcount(
         "grace_period": False,
         "mohr_exempt": False,
     }
+
+
+def get_min_wage_migration_alert_employees(company=None):
+    """Return recently submitted salary slips in the RM1,500-RM1,699.99 range.
+
+    These represent employees who will be in violation of the universal RM1,700
+    minimum wage effective 1 August 2025 (Minimum Wages Order 2024). Use this
+    to generate a one-time migration alert for HR before the August 2025 cutover.
+
+    Args:
+        company: Optional company name to filter by.
+
+    Returns:
+        list of dict: Salary slip records with 'employee', 'employee_name',
+            'gross_pay', 'company' fields.
+    """
+    filters = {
+        "docstatus": 1,
+        "gross_pay": ["between", [1500, 1699.99]],
+    }
+    if company:
+        filters["company"] = company
+
+    return frappe.get_all(
+        "Salary Slip",
+        filters=filters,
+        fields=["employee", "employee_name", "gross_pay", "company"],
+    )

@@ -1,7 +1,21 @@
 """Validation utilities for LHDN payroll integration."""
 import re
+from datetime import date
 
 import frappe
+
+_UNIVERSAL_ENFORCEMENT_DATE = date(2025, 8, 1)
+
+
+def _period_is_post_aug_2025(period_end):
+    """Return True if payroll period end is on or after 2025-08-01 (US-228)."""
+    if not period_end:
+        return False
+    try:
+        ped = date.fromisoformat(str(period_end)) if isinstance(period_end, str) else period_end
+        return ped >= _UNIVERSAL_ENFORCEMENT_DATE
+    except (ValueError, TypeError):
+        return False
 
 
 def validate_tin(tin, id_type, is_foreign_worker=False):
@@ -194,12 +208,14 @@ def validate_document_for_lhdn(doc, method=None):
 def _validate_salary_slip_minimum_wage(doc):
     """Check minimum wage compliance on a Salary Slip before submission.
 
-    Issues a frappe.msgprint warning (non-blocking) if salary is below
-    RM1,700/month or RM8.17/hour for part-time employees.
+    Issues a frappe.msgprint warning (non-blocking) for grace-period violations,
+    or frappe.throw (hard error) for payroll periods >= 2025-08-01.
 
     US-144: Applies headcount-sensitive grace period — micro-employers (1-4 active
     employees) are exempt from the RM1,700 minimum until 2025-08-01.
-    A MOHR exemption reference on the Salary Slip suppresses the warning entirely.
+    US-228: From 1 August 2025, RM1,700 is universal for ALL employers — violations
+    raise a ValidationError (hard block) citing Minimum Wages Order 2024.
+    A MOHR exemption reference on the Salary Slip suppresses validation entirely.
 
     Args:
         doc: Salary Slip document.
@@ -242,11 +258,20 @@ def _validate_salary_slip_minimum_wage(doc):
     )
 
     if not result["compliant"] and result.get("warning"):
-        frappe.msgprint(
-            msg=result["warning"],
-            title="Minimum Wage Warning",
-            indicator="orange",
-        )
+        # US-228: From 1 August 2025, RM1,700 is universal — raise a hard error.
+        # Before August 2025 (grace period for micro-employers): warn only.
+        if _period_is_post_aug_2025(period_end):
+            frappe.throw(
+                result["warning"],
+                exc=frappe.ValidationError,
+                title="Minimum Wage Violation — Minimum Wages Order 2024",
+            )
+        else:
+            frappe.msgprint(
+                msg=result["warning"],
+                title="Minimum Wage Warning",
+                indicator="orange",
+            )
 
 
 def _validate_salary_slip_ot(doc):

@@ -6808,3 +6808,36 @@ Completed: Employment Act S.60F(2): Track 60-Day Hospitalization Leave Quota Sep
 - bench migrate fails with InnoDB row size error (pre-existing, not caused by our change)
 - Select field options are metadata-only — no DB migration needed for adding options
 - bench clear-cache is sufficient for DocType metadata updates (JSON changes)
+## Iteration 18 - Sun, Mar  1, 2026 12:59:36 PM
+Incomplete: Enforce e-CP22 Online-Only Mandatory Submission and MyTax Employer Representative Authorization Check (ID: US-203) — attempt 1/3
+
+## Iteration 16 - Sun Mar  1 13:06:27 MPST 2026
+Incomplete: Enforce e-CP22 Online-Only Mandatory Submission and MyTax Employer Representative Authorization Check (ID: US-203) — attempt 2/3
+
+
+## Iteration — US-228: Enforce RM1,700 Minimum Wage for ALL Employers Effective 1 August 2025
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 29 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_universal_min_wage_us228`
+**Result:** PASS — 29/29 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/employment_compliance.py` — Updated warning text to cite "Minimum Wages Order 2024", "1 August 2025", "RM10,000 per employee per offence"; added `get_min_wage_migration_alert_employees()` function
+- `lhdn_payroll_integration/utils/validation.py` — Added `_period_is_post_aug_2025()` helper; changed `_validate_salary_slip_minimum_wage()` to call `frappe.throw` for periods >= 2025-08-01 (instead of `msgprint`)
+- `lhdn_payroll_integration/tests/test_universal_min_wage_us228.py` — New test file (29 tests)
+- `lhdn_payroll_integration/tests/test_micro_employer_wage_us144.py` — Updated `test_post_aug_micro_employer_below_wage_warns` → `test_post_aug_micro_employer_below_wage_throws` to reflect new throw behavior
+
+### Acceptance criteria met
+1. RM1,700 floor for ALL employees from Aug 2025 — via existing MINIMUM_WAGE_SCHEDULE (threshold_headcount=None for Aug entry)
+2. Employee-count conditional removed for >= 2025-08-01 — already done in US-144; US-228 adds hard error
+3. Migration alert function `get_min_wage_migration_alert_employees()` — queries Salary Slips with gross_pay between RM1,500-RM1,699.99
+4. Hard validation error (frappe.throw + ValidationError) for Aug 2025+ payslips below RM1,700
+5. Penalty text updated to cite "RM10,000 per employee per offence"
+
+### Patterns discovered
+- When changing from soft warning to hard error, must update existing integration tests in other test files that expected `msgprint` (US-144 test file had one such test)
+- `frappe.get_all` `fields` parameter includes "company" as a return field, so testing "no company filter" via string match fails — must check `call_kwargs['filters']` dict directly
+
+### Gotchas
+- Both copies of utils/ must be updated: outer path and nested Frappe module path (standard for this project)
