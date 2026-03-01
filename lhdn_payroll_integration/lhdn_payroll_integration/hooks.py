@@ -46,7 +46,10 @@ doc_events = {
 		"on_cancel": "lhdn_payroll_integration.services.cancellation_service.handle_expense_claim_cancel",
 	},
 	"Employee": {
-		"validate": "lhdn_payroll_integration.services.jurisdiction_service.auto_set_labour_jurisdiction",
+		"validate": [
+			"lhdn_payroll_integration.services.jurisdiction_service.auto_set_labour_jurisdiction",
+			"lhdn_payroll_integration.services.cp22_mandate_service.check_onboarding_block",
+		],
 		"on_update": [
 			"lhdn_payroll_integration.services.cp107_service.handle_foreign_employee_left",
 			"lhdn_payroll_integration.services.socso_service.handle_employee_termination_socso",
@@ -63,6 +66,9 @@ doc_events = {
 	},
 	"Leave Application": {
 		"validate": "lhdn_payroll_integration.services.hospitalization_leave_service.validate_hospitalization_leave",
+	},
+	"LHDN CP22": {
+		"validate": "lhdn_payroll_integration.services.cp22_mandate_service.show_online_mandate_alert",
 	},
 }
 

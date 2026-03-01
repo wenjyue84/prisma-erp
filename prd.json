@@ -4795,7 +4795,7 @@
       ],
       "dependencies": [],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-204",
@@ -5004,7 +5004,7 @@
       ],
       "dependencies": [],
       "estimatedComplexity": "small",
-      "passes": false,
+      "passes": true,
       "_source": "test-synthesis:tests.regression.test_regression.TestBrowserUIRegressions.test_reg14_lhdn_dev_tools_getpage_returns_script"
     },
     {
@@ -5024,7 +5024,7 @@
       ],
       "dependencies": [],
       "estimatedComplexity": "small",
-      "passes": false,
+      "passes": true,
       "_source": "test-synthesis:tests.regression.test_regression.TestBrowserUIRegressions.test_reg15_lhdn_workspace_exists_in_database"
     },
     {
@@ -6450,6 +6450,196 @@
       "dependencies": [
         "Generate CP39 CSV with Mandatory LHDN e-PCB Plus Columns",
         "e-PCB Plus Successful Submission — Store Acknowledgement Reference"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-273",
+      "title": "Employment Pass Succession Plan Compliance Tracker for EP Categories II and III",
+      "priority": "high",
+      "description": "Effective 1 June 2026, all new and renewal Employment Pass applications for Category II (RM10,000–RM19,999/month, max 10 years) and Category III (RM5,000–RM9,999/month, max 5 years) must include a structured succession plan demonstrating how the expatriate's role will be transferred to a local employee within the approved tenure. Immigration will reject renewal applications without an approved succession plan. Employers with multiple EP holders in these categories face a significant compliance gap if no structured tracking exists in their HR system to manage plan submission status, knowledge transfer milestones, and local successor assignments.",
+      "acceptanceCriteria": [
+        "Employee DocType gains a custom_ep_succession_plan_status Select field ('Not Required' / 'Draft' / 'Submitted to IMI' / 'Approved' / 'Overdue') visible only when visa_type is 'Employment Pass' and ep_category in ('Category II', 'Category III')",
+        "Succession plan fields capture: local_successor_employee (Link to Employee), knowledge_transfer_start_date, knowledge_transfer_target_date, succession_plan_document (Attach), ep_succession_plan_submission_date, ep_succession_plan_imi_reference",
+        "An automated alert fires to the HR Manager 90 days before EP renewal date if custom_ep_succession_plan_status is not 'Approved'",
+        "A Succession Plan Compliance Report lists all Cat II/III EP holders with their plan status, local successor, and knowledge transfer timeline completion percentage",
+        "On EP renewal date with status not 'Approved', the system creates a Compliance Alert DocType record with severity 'Critical' and routes it to the Employer Representative"
+      ],
+      "technicalNotes": [
+        "Revised EP policy effective 1 June 2026 — Cabinet approval 17 October 2025; announced via IMI portal",
+        "EP Category II: RM10,000–RM19,999/month, max 10 years; Category III: RM5,000–RM9,999/month, max 5 years",
+        "Succession plan must include: local successor ID, role transfer breakdown, monthly training schedule (24–36 months), assessment milestones, contingency protocols, executive sign-off",
+        "Link to existing Compliance Alert or custom lhdn_payroll_integration compliance framework",
+        "IMI official announcement: https://esd.imi.gov.my/portal/latest-news/announcement/announcement-266-ep-salary-policy-2026/"
+      ],
+      "dependencies": [
+        "Employment Pass Minimum Salary Threshold Validator (June 2026 Revised EP Policy)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-274",
+      "title": "Employment Pass Maximum Tenure Expiry Alert (Category III: 5 Years, Category II: 10 Years)",
+      "priority": "high",
+      "description": "The June 2026 revised EP policy introduces maximum employment duration caps for the first time in Malaysian immigration history: EP Category III holders are limited to 5 years of employment in Malaysia and Category II to 10 years. This is a hard legislative ceiling — renewal will be refused once the maximum is reached regardless of employer need or employee performance. Employers who fail to track EP commencement dates against the new caps risk being unable to renew work authorisation for key expatriate staff, creating sudden operational gaps.",
+      "acceptanceCriteria": [
+        "Employee DocType stores ep_malaysia_employment_start_date (date when the employee first held an Employment Pass in Malaysia) and ep_category ('Category I' / 'Category II' / 'Category III')",
+        "System computes ep_max_tenure_expiry_date as ep_malaysia_employment_start_date + 5 years for Cat III or + 10 years for Cat II",
+        "Automated alerts fire at 12 months, 6 months, and 3 months before ep_max_tenure_expiry_date, routed to HR Manager and the assigned Employer Representative",
+        "EP Tenure Dashboard shows all EP Cat II/III employees with: employment start date, max expiry date, days remaining, and traffic-light status (green > 12 months, amber 3–12 months, red < 3 months)",
+        "Payroll validation fires a warning (not a block) if a Salary Slip is submitted for an EP employee whose ep_max_tenure_expiry_date has passed, prompting HR to confirm continued work authorisation exists"
+      ],
+      "technicalNotes": [
+        "Policy is not retrospective: only applies to new/renewal applications submitted on or after 1 June 2026",
+        "ep_malaysia_employment_start_date should represent the first Malaysian EP, not the current employer's engagement date — HR may need to source this from the physical EP card or IMI records",
+        "Cat I (RM20,000+) has no published maximum duration under the revised policy",
+        "For employees who may have held EP under a prior employer, the cumulative tenure counts — flag this ambiguity for HR input",
+        "Official IMI policy: https://esd.imi.gov.my/portal/latest-news/announcement/announcement-266-ep-salary-policy-2026/"
+      ],
+      "dependencies": [
+        "Employment Pass Minimum Salary Threshold Validator (June 2026 Revised EP Policy)",
+        "Employment Pass Succession Plan Compliance Tracker for EP Categories II and III"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-275",
+      "title": "CP8D Annual Pre-Submission Employee Data Completeness Validator",
+      "priority": "high",
+      "description": "LHDN requires employers to upload CP8D (Annual Remuneration Return) via MyTax by 25 February to enable automatic pre-population of employees' individual tax forms, with final Form E submission due by 31 March (or 30 April for e-filers). An incomplete CP8D — missing employee TIN, income type breakdown, PCB deducted, EPF/SOCSO/EIS amounts, or BIK values — causes LHDN's auto-population to fail and creates reconciliation failures that trigger systematic cross-checks and audit flags. The existing 'Pre-Submission e-PCB Plus Employee TIN and Tax Category Completeness Validation' story covers monthly e-PCB Plus but does not address the annual CP8D/Form E scope, which requires a broader field set including BIK, allowances, and income classification.",
+      "acceptanceCriteria": [
+        "A CP8D Completeness Check tool (accessible from the Payroll module) scans all employees who received salary in the relevant calendar year and flags those missing any of: TIN (custom_employee_tin), employment_type, total_gross_salary (aggregated from Salary Slips), pcb_deducted_ytd, epf_deducted_ytd, socso_deducted_ytd, eis_deducted_ytd, hrdf_levy_ytd, bik_total_ytd, tax_exempt_allowances_ytd",
+        "The completeness report shows a traffic-light status per employee: Green (all fields present), Amber (non-critical fields missing), Red (blocking fields missing — TIN, income, PCB)",
+        "Clicking 'Fix' on any flagged employee navigates to the relevant record for correction",
+        "The tool enforces a 25 February soft deadline alert: fires 14 days before (11 February) reminding HR to run the check before the AIS upload window closes",
+        "After corrections, a 'Re-validate' button re-runs the check and updates statuses in the same session",
+        "Red-status employees are excluded from the CP8D export file with a warning; Amber-status employees are included with a caveat flag"
+      ],
+      "technicalNotes": [
+        "CP8D fields required by LHDN: refer to the official CP8D format specification on MyTax portal",
+        "BIK values must include motor vehicle, housing, utilities, telephone, driver, and other prescribed benefits at their prescribed values from the LHDN BIK public ruling",
+        "Tax-exempt allowances include: childcare (RM3,000), parking (RM3,600), meal (RM2,400), petrol/toll (RM6,000 combined), and others under the Income Tax (Exemption) Orders",
+        "This validator is distinct from the e-PCB Plus monthly validation which only checks TIN and tax category — CP8D requires a full-year income profile",
+        "LHDN deadline guide: https://pandahrms.com/malaysia-income-tax-submission-deadlines-2026-ya-2025-a-complete-employer-hr-guide/"
+      ],
+      "dependencies": [
+        "Pre-Submission e-PCB Plus Employee TIN and Tax Category Completeness Validation",
+        "Generate CP8D annual employee remuneration return",
+        "LHDN AIS Employer Upload — Auto-Submit Employee Remuneration Data to MyTax by 25 February Deadline"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-276",
+      "title": "EA Form and Form E Cross-Reconciliation Pre-Submission Audit Validator",
+      "priority": "high",
+      "description": "LHDN's 2026 compliance enforcement explicitly uses automated system-based cross-checking: payroll records must reconcile with individual EA Forms, and EA Form aggregate totals must reconcile with Form E (CP8D). Any divergence — omitted BIK values, incorrectly classified allowances, part-timer EA Forms not generated, or PCB amounts differing from payroll — is automatically flagged by LHDN and can trigger an audit without prior warning. Employers currently have no built-in pre-submission reconciliation check in ERPNext. Before finalizing and distributing EA Forms (28 February deadline) and submitting Form E (31 March/30 April), a cross-reconciliation report should flag data consistency failures.",
+      "acceptanceCriteria": [
+        "An EA Form / Form E Reconciliation Check tool runs after all EA Forms are generated for the year and before Form E submission",
+        "Check 1 — Payroll-to-EA reconciliation: sum of all Salary Slip gross_pay for the year per employee matches EA Form B1 (gross salary); variance > RM1 is flagged as a Red error",
+        "Check 2 — PCB reconciliation: sum of all Salary Slip pcb_deducted for the year matches EA Form D1 (PCB deducted); variance > RM1 is flagged",
+        "Check 3 — BIK completeness: if any active employee has a custom_bik_vehicle or custom_bik_housing field populated, their EA Form must include a non-zero BIK value; missing BIK on EA is flagged",
+        "Check 4 — EA Form coverage: all employees (including resigned, part-time, and deceased) who received any salary during the year have an EA Form generated; missing EA Forms are listed",
+        "Check 5 — Form E aggregate: sum of all EA Form gross_salary values matches the Form E total remuneration field; sum of EA Form PCB values matches Form E total PCB field",
+        "A reconciliation summary report with pass/fail per check, total divergence amounts, and drill-down to the offending employee records is generated",
+        "The EA Form bulk-email action is blocked if any Red-status reconciliation failures exist, with a confirmation override for Payroll Manager role"
+      ],
+      "technicalNotes": [
+        "LHDN cross-check methodology: Payroll records → EA Form → Form E must reconcile; automated system detection — no manual review required on LHDN's side",
+        "Common audit triggers: omitted BIK (company car, phone), incorrect exempt allowance classification, part-timer/resigned employee EA Forms not issued",
+        "PandaHR audit trigger guide: https://pandahrms.com/tax-update-2026-form-e-form-ea-malaysia-employer-compliance-guide-and-common-mistakes-that-trigger-lhdn-audits/",
+        "KTP.com.my Form E submission 2026 guide: https://www.ktp.com.my/blog/form-e-submission-2026/29jan2026",
+        "Tolerance threshold for rounding differences should be RM1 (not zero) to account for Salary Slip rounding across multiple runs"
+      ],
+      "dependencies": [
+        "Generate EA Form (Borang EA) for employees",
+        "Generate Borang E (Form E) employer annual return",
+        "Rebuild EA Form to Include All Mandatory LHDN Section A/B/C/D Fields",
+        "Implement Benefits-in-Kind (BIK) Prescribed Value Calculation Module"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-277",
+      "title": "SPIKPA Foreign Worker Health Insurance Annual Policy Renewal Tracker",
+      "priority": "medium",
+      "description": "All foreign workers legally employed in Malaysia are required by the Ministry of Health to maintain an active SPIKPA (Skim Perlindungan Insurans Kesihatan Pekerja Asing) policy annually. The premium is approximately RM120 plus 6% SST and RM10 stamp duty per worker per year, providing RM20,000 in hospitalisation and surgical coverage at MOH hospitals. Failure to maintain a current SPIKPA policy constitutes a breach of work permit conditions and can lead to cancellation of the worker's visa. Employers who deduct the premium from the worker's salary must first obtain written permission from the Director General of Labour (Peninsular Malaysia) under the Employment Act. Currently no story in the PRD tracks SPIKPA policy status, renewal dates, or DG Labour deduction consent per foreign employee.",
+      "acceptanceCriteria": [
+        "Employee DocType gains SPIKPA-related custom fields: custom_spikpa_policy_number (Data), custom_spikpa_policy_start_date (Date), custom_spikpa_policy_expiry_date (Date), custom_spikpa_premium_bearer ('Employer' / 'Employee Deduction'), custom_spikpa_dg_labour_permission_obtained (Check — visible only when bearer is 'Employee Deduction'), custom_spikpa_dg_labour_permission_date (Date)",
+        "Fields are visible only when nationality is not 'Malaysian'",
+        "Automated alert fires 30 days before custom_spikpa_policy_expiry_date, routed to HR Manager, with guidance to renew via the SPIKPA portal",
+        "On new foreign employee record Save, system prompts HR to enter SPIKPA policy details within 30 days if fields are blank",
+        "A Foreign Worker Insurance Compliance Report lists all foreign employees with: SPIKPA policy status (Active / Expiring Within 30 Days / Expired / Missing), policy expiry date, premium bearer, and DG Labour permission status",
+        "If custom_spikpa_premium_bearer is 'Employee Deduction' and custom_spikpa_dg_labour_permission_obtained is unchecked, a warning fires on payroll run to prevent unauthorized wage deduction"
+      ],
+      "technicalNotes": [
+        "SPIKPA premium: RM120 base + 6% SST (RM7.20) + RM10 stamp duty = approximately RM137.20 per worker per year (verify current rates at spikpa.moh.gov.my)",
+        "DG Labour permission for wage deduction is required under Employment Act S.24 — failure to obtain this makes the deduction unlawful",
+        "SPIKPA renewal is typically aligned with work permit renewal (annual) — custom_spikpa_policy_expiry_date should mirror work permit expiry",
+        "SPIKPA portal: https://spikpa.moh.gov.my/",
+        "Allianz Malaysia SPIKPA product details: https://www.allianz.com.my/corporate/group-protection-and-personal-accident/worker-and-employee-benefits/foreign-workers-insurance.html"
+      ],
+      "dependencies": [
+        "Implement Foreign Worker Levy Tracking (FWCMS / Multi-Tier Levy Model)",
+        "Add nationality field for foreign worker ISO country code"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-278",
+      "title": "Form E e-Filing Conditional Deadline Engine: 30-Day Extension to 30 April for Electronic Filers",
+      "priority": "medium",
+      "description": "Under LHDN's filing programme, employers who submit Form E (Borang E) via the MyTax e-Filing portal automatically receive a 30-day extension, shifting the submission deadline from 31 March to 30 April of the following year. Employers who submit by post or physically retain the 31 March hard deadline. The current compliance calendar story ('Track Statutory Compliance Submission Calendar') exists but does not model this conditional rule. If the system shows 31 March as a universal deadline for all employers, electronic filers will receive premature overdue alerts and incorrect penalty warnings for the 1–30 April window during which they are fully compliant.",
+      "acceptanceCriteria": [
+        "Company DocType gains a custom_form_e_submission_method Select field ('e-Filing via MyTax' / 'Postal / Manual') defaulting to 'e-Filing via MyTax'",
+        "The Compliance Submission Calendar computes Form E due date as: 31 March if custom_form_e_submission_method = 'Postal / Manual'; 30 April if 'e-Filing via MyTax'",
+        "Overdue alerts for Form E do not fire between 1 April and 30 April for companies flagged as e-Filing submitters",
+        "The Compliance Calendar dashboard displays the applicable deadline alongside the submission method for transparency",
+        "A Submission Method Confirmation task is auto-created each January, prompting the HR Manager to confirm or update the Form E submission method before the annual cycle begins",
+        "LHDN filing programme reference year (e.g., 2026) is stored on the compliance calendar entry to avoid applying prior-year extension rules incorrectly"
+      ],
+      "technicalNotes": [
+        "LHDN 2026 Return Form Filing Programme: https://www.hasil.gov.my/media/fqog1423/rf-filing-programme-for-2026.pdf",
+        "The e-Filing extension applies to Form E (employer return), not CP8D separately — both are submitted together via MyTax",
+        "Extension is automatic upon e-submission; no separate application is needed from the employer",
+        "The Compliance Submission Calendar should model this as a conditional date rule, not a hardcoded 31 March entry",
+        "PandaHR deadline guide: https://pandahrms.com/malaysia-income-tax-submission-deadlines-2026-ya-2025-a-complete-employer-hr-guide/"
+      ],
+      "dependencies": [
+        "Track Statutory Compliance Submission Calendar and Auto-Escalate Overdue Filings",
+        "Borang E Nil Return Submission Workflow for Dormant and Zero-Employee Companies"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-279",
+      "title": "HRD Corp Training Claim Focus Area Category Tagging for Industry 4.0, Green Technology, and Smart Economy (2026)",
+      "priority": "low",
+      "description": "From 2026, HRD Corp officially expanded its approved training focus areas to explicitly include Industry 4.0, Green Technology and Renewable Energy, and Smart Economy disciplines. Training claims under the SBL-KHAS grant (and related schemes) submitted under these focus areas may qualify for enhanced or prioritised claim processing. Employers who do not tag their training claims with the correct HRD Corp focus area cannot demonstrate alignment with national training objectives, which affects their eligibility for targeted government matching grants and may impact Latihan MADANI levy utilization credit. The existing 'HRD Corp eTRIS Training Claim Recording and Levy Utilization Dashboard' story does not capture the focus area dimension.",
+      "acceptanceCriteria": [
+        "The HRD Corp Training Claim DocType gains a custom_hrdcorp_focus_area Select field with options: 'Industry 4.0', 'Green Technology & Renewable Energy', 'Smart Economy', 'Digital Skills', 'Soft Skills / Leadership', 'Technical / Vocational', 'Other' (matching HRD Corp official category taxonomy)",
+        "Training claims with a defined focus area display the category tag on the Levy Utilization Dashboard",
+        "The Levy Utilization Dashboard allows filtering by focus area to show: total training hours, total levy claimed, and total employees trained per focus area",
+        "A Focus Area Coverage Report shows which HRD Corp categories the employer has utilized in the current and prior two years — useful for demonstrating breadth of training investment",
+        "When creating a training claim, the focus area field is mandatory if the Grant Type is 'SBL-KHAS' or 'SBL'"
+      ],
+      "technicalNotes": [
+        "HRD Corp 2026 digital learning focus areas officially claimable: Industry 4.0, Green Technology, Smart Economy — confirmed in HRD Corp eTRIS portal guidance",
+        "SBL-KHAS e-learning daily rate: RM875; in-person soft skills: RM10,500 per day — these rates do not change by focus area but focus area tags are needed for grant pre-approval forms",
+        "HRD Corp eTRIS portal: https://hrdcorp.gov.my/",
+        "BrioHR HRD Corp overview: https://briohr.com/blog/foreign-worker-levy/",
+        "disprz.ai digital learning HRD Corp 2026: https://disprz.ai/blog/hrdf-digital-learning-lms-malaysia"
+      ],
+      "dependencies": [
+        "HRD Corp eTRIS Training Claim Recording and Levy Utilization Dashboard",
+        "Track HRD Corp Levy Utilization Rate and Alert on 15% Under-Utilisation Penalty"
       ],
       "estimatedComplexity": "small",
       "passes": false

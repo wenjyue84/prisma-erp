@@ -712,6 +712,39 @@
   },
   {
     "doctype": "Custom Field",
+    "name": "Company-custom_mytax_employer_rep_name",
+    "dt": "Company",
+    "fieldname": "custom_mytax_employer_rep_name",
+    "fieldtype": "Data",
+    "label": "MyTax Employer Representative Name (Wakil Majikan)",
+    "description": "Name of the Wakil Majikan registered on MyTax portal for e-CP22 submission.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_mytax_client_secret"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_mytax_employer_rep_login_id",
+    "dt": "Company",
+    "fieldname": "custom_mytax_employer_rep_login_id",
+    "fieldtype": "Data",
+    "label": "MyTax Employer Representative Login ID",
+    "description": "MyTax portal login ID (email/NRIC) of the Wakil Majikan authorized to submit e-CP22.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_mytax_employer_rep_name"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_mytax_employer_rep_auth_date",
+    "dt": "Company",
+    "fieldname": "custom_mytax_employer_rep_auth_date",
+    "fieldtype": "Date",
+    "label": "MyTax Employer Representative Authorization Date",
+    "description": "Date when the Wakil Majikan was authorized as Employer Representative on MyTax.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_mytax_employer_rep_login_id"
+  },
+  {
+    "doctype": "Custom Field",
     "name": "Company-custom_epf_employer_registration",
     "dt": "Company",
     "fieldname": "custom_epf_employer_registration",
@@ -1428,7 +1461,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_statutory_deductions_section",
-    "description": "Potongan Cukai Bulanan — auto-calculated from PCB salary component on payroll processing."
+    "description": "Potongan Cukai Bulanan \u00e2\u20ac\u201d auto-calculated from PCB salary component on payroll processing."
   },
   {
     "doctype": "Custom Field",
@@ -1440,7 +1473,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_pcb_amount",
-    "description": "Employee EPF (KWSP) contribution amount — auto-calculated from salary component."
+    "description": "Employee EPF (KWSP) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1452,7 +1485,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_epf_employee",
-    "description": "Employer EPF (KWSP) contribution amount — auto-calculated from salary component."
+    "description": "Employer EPF (KWSP) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1464,7 +1497,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_epf_employer",
-    "description": "Employee SOCSO (PERKESO) contribution amount — auto-calculated from salary component."
+    "description": "Employee SOCSO (PERKESO) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1476,7 +1509,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_socso_employee",
-    "description": "Employer SOCSO (PERKESO) contribution amount — auto-calculated from salary component."
+    "description": "Employer SOCSO (PERKESO) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1488,7 +1521,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_socso_employer",
-    "description": "Employee EIS (SIP) contribution amount — auto-calculated from salary component."
+    "description": "Employee EIS (SIP) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1500,7 +1533,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_eis_employee",
-    "description": "Employer EIS (SIP) contribution amount — auto-calculated from salary component."
+    "description": "Employer EIS (SIP) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1649,7 +1682,7 @@
     "fieldname": "custom_hospitalization_discharge_date",
     "fieldtype": "Date",
     "label": "Hospital Discharge Date",
-    "description": "Date of discharge from hospital (EA S.60F(2) — required for Hospitalization Leave)",
+    "description": "Date of discharge from hospital (EA S.60F(2) \u00e2\u20ac\u201d required for Hospitalization Leave)",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_lhdn_ea_leave_section",
     "depends_on": "eval:doc.leave_type == 'Hospitalization Leave (EA)'"
