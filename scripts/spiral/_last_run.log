@@ -582,3 +582,21 @@
   ║    → [US-117] Implement EPF i-Topup (Voluntary Excess Contribution) Payroll Deduction and RM7,000 PCB Relief Tracking
   ╚══════════════════════════════════════════╝
 
+
+  ╔══════════════════════════════════════════╗
+  ║   📊 15-MIN PROGRESS REPORT — 09:06  ║
+  ╠══════════════════════════════════════════╣
+  ║  Completed:  109 / 140 stories
+  ║  Remaining:  31 stories
+  ║
+  ║  Recently done:
+  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
+  ║    ✓ [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
+  ║    ✓ [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
+  ║
+  ║  Up next:
+  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
+  ║    → [US-117] Implement EPF i-Topup (Voluntary Excess Contribution) Payroll Deduction and RM7,000 PCB Relief Tracking
+  ║    → [US-118] Apply YA2025 PCB Schedule 1 Tax Brackets Including New 30% Tier for Income Exceeding RM2 Million
+  ╚══════════════════════════════════════════╝
+

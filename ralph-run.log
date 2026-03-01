@@ -499,3 +499,167 @@ warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the
 [2m[7:25][0m 🔨 [36mTodoWrite[0m [2m[0m
 [2m[7:31][0m 💻 [36mBash[0m [2mAPP_PATH="/home/frappe/frappe-bench/apps/lhdn_payroll_integr...[0m
 [2m[7:37][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[8:42][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[8:48][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[8:56][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[9:22][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[9:46][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[9:53][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:02][0m [37mThe fields weren't applied. Let me force sync by clearing cache first then syncing:[0m
+[2m[10:03][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:26][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:30][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:36][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:41][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:47][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:57][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "md5sum /home/frapp...[0m
+[2m[11:03][0m [37mThe outer path has the old file. Let me sync both:[0m
+[2m[11:06][0m 💻 [36mBash[0m [2mdocker cp /c/Users/Jyue/Documents/1-projects/Projects/prisma...[0m
+[2m[11:11][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:34][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:39][0m [37mAll 6 fields are in the DB. Now run the tests:[0m
+[2m[11:40][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:47][0m [37m23/23 tests pass. Now mark the story complete, commit, and sync files back to the repo:[0m
+[2m[11:49][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[11:54][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[11:58][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[12:01][0m [37mNow sync the app files from the container back to the local repo and commit:[0m
+[2m[12:07][0m 💻 [36mBash[0m [2mAPP_SRC="/home/frappe/frappe-bench/apps/lhdn_payroll_integra...[0m
+[2m[12:12][0m 💻 [36mBash[0m [2mls /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/lh...[0m
+[2m[12:19][0m 💻 [36mBash[0m [2mAPP_SRC="/home/frappe/frappe-bench/apps/lhdn_payroll_integra...[0m
+[2m[12:23][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[12:39][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[12:44][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[12:54][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[12:58][0m 💻 [36mBash[0m [2mrm -rf /c/Users/Jyue/Documents/1-projects/Projects/prisma-er...[0m
+[2m[13:02][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[13:13][0m [37mNo problem — the temp directory is harmless and can be cleaned up manually. Here's a summary of what...[0m
+
+[32m[1m✓ Claude finished[0m [2m(66 tool calls in 13:13)[0m
+
+[2mStream ended (66 tool calls, 13:15 elapsed)[0m
+  ─────── Claude Output End ────────────
+  [time] Story took 13m
+
+  [done] Story completed: Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
+  ┌─ Quality Gates (Frappe/Docker) ────────────┐
+  │ [1/2] Docker container running... ✓ RUNNING
+  │ [2/2] bench run-tests... SKIP (no bench module in acceptance criteria)
+  └────────────────────────────────────────────┘
+  ✓ Quality gates passed (bench check skipped)
+warning: in the working copy of 'ralph-run.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/spiral/_last_run.log', LF will be replaced by CRLF the next time Git touches it
+[feature/lhdn-gap-closure 34dfa76] feat: US-115 - Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
+ 9 files changed, 3425 insertions(+), 7 deletions(-)
+ create mode 100644 tmp_us115/custom_field_orig.json
+ create mode 100644 tmp_us115/custom_field_updated.json
+ create mode 100644 tmp_us115/hooks_orig.py
+ create mode 100644 tmp_us115/hooks_updated.py
+ create mode 100644 tmp_us115/spc_cessation_service.py
+ create mode 100644 tmp_us115/test_spc_cessation.py
+
+  ╔══════════════════════════════════════╗
+  ║  Iteration 3/60
+  Progress: [███████████████████████░░░░░░░] 109/140 (77%)
+  ╚══════════════════════════════════════╝
+
+  ┌─ Story ─────────────────────────────┐
+  │ ID:       US-116
+  │ Title:    Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
+  │ Priority: high
+  │ Deps:     none
+  │ Attempt:  1/3
+  └─────────────────────────────────────┘
+
+  [baseline] Counting pre-story TS errors... 0 errors
+
+  [spawn] Fresh claude instance for US-116...
+  ─────── Claude Output Start ──────────
+[2m[0:46][0m 💻 [36mBash[0m [2mhead -80 /c/Users/Jyue/Documents/1-projects/Projects/prisma-...[0m
+[2m[0:50][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+
+  ╔══════════════════════════════════════════╗
+  ║   📊 15-MIN PROGRESS REPORT — 09:05  ║
+  ╠══════════════════════════════════════════╣
+  ║  Completed:  109 / 140 stories
+  ║  Remaining:  31 stories
+  ║
+  ║  Recently done:
+  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
+  ║    ✓ [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
+  ║    ✓ [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
+  ║
+  ║  Up next:
+  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
+  ║    → [US-117] Implement EPF i-Topup (Voluntary Excess Contribution) Payroll Deduction and RM7,000 PCB Relief Tracking
+  ║    → [US-118] Apply YA2025 PCB Schedule 1 Tax Brackets Including New 30% Tier for Income Exceeding RM2 Million
+  ╚══════════════════════════════════════════╝
+
+[2m[1:08][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:18][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
+[2m[1:20][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp &&...[0m
+[2m[1:27][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:28][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:36][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:37][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[1:46][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[1:53][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[2:02][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[2:11][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[2:21][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m
+[2m[2:26][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[2:31][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[2:37][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[2:53][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m
+[2m[2:54][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[3:00][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[3:05][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "wc -l /home/frappe...[0m
+[2m[3:19][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "python3 -c \" impo...[0m
+[2m[3:27][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[3:29][0m [37mNow let me implement US-116. I'll start by reading the local fixture file and updating it:[0m
+[2m[3:30][0m 💻 [36mBash[0m [2mls /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/lh...[0m
+[2m[3:35][0m 📖 [36mRead[0m [2mcustom_field.json[0m
+[2m[3:42][0m 💻 [36mBash[0m [2mpython3 -c " import json  with open('/c/Users/Jyue/Documents...[0m
+[2m[4:01][0m 💻 [36mBash[0m [2mpython3 -c " import json  path = 'C:/Users/Jyue/Documents/1-...[0m
+[2m[4:05][0m [37mNow update the workspace.json to add the setup checklist item:[0m
+[2m[4:07][0m 📖 [36mRead[0m [2mworkspace.json[0m
+[2m[4:16][0m 🔧 [36mEdit[0m [2mworkspace.json[0m
+[2m[4:24][0m 🔧 [36mEdit[0m [2mworkspace.json[0m
+[2m[4:27][0m [37mNow update the eCP39 service to validate e-PCB Plus registration status:[0m
+[2m[4:28][0m 📖 [36mRead[0m [2mecp39_service.py[0m
+[2m[4:31][0m 💻 [36mBash[0m [2mfind /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/...[0m
+[2m[4:36][0m 📖 [36mRead[0m [2mecp39_service.py[0m
+[2m[4:50][0m 🔧 [36mEdit[0m [2mecp39_service.py[0m
+[2m[4:54][0m [37mNow add the setup guide panel to the LHDN Dev Tools JS. Let me read the full JS file first:[0m
+[2m[4:56][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[5:02][0m 💻 [36mBash[0m [2mfind /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/...[0m
+[2m[5:06][0m 💻 [36mBash[0m [2mwc -l "/c/Users/Jyue/Documents/1-projects/Projects/prisma-er...[0m
+[2m[5:11][0m 📖 [36mRead[0m [2mlhdn_dev_tools.js[0m
+[2m[5:18][0m 🔧 [36mEdit[0m [2mlhdn_dev_tools.js[0m
+[2m[5:22][0m [37mNow add the setup guide panel method before the closing `}` of the class:[0m
+[2m[5:23][0m 📖 [36mRead[0m [2mlhdn_dev_tools.js[0m
+[2m[5:42][0m 🔧 [36mEdit[0m [2mlhdn_dev_tools.js[0m
+[2m[5:45][0m [37mNow add the constructor call and bind the "Open Company Settings" button. Let me update the construc...[0m
+[2m[5:48][0m 🔧 [36mEdit[0m [2mlhdn_dev_tools.js[0m
+[2m[5:51][0m [37mNow find and update the _bind_events method to add the company button handler:[0m
+[2m[5:53][0m 💻 [36mBash[0m [2mgrep -n "_bind_events\|btn-goto-company\|btn-refresh-status\...[0m
+[2m[5:59][0m 📖 [36mRead[0m [2mlhdn_dev_tools.js[0m
+[2m[6:05][0m 🔧 [36mEdit[0m [2mlhdn_dev_tools.js[0m
+[2m[6:12][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[6:15][0m [37mNow write the test file for US-116:[0m
+[2m[6:42][0m ✏️ [36mWrite[0m [2mtest_epcb_plus_registration.py[0m
+[2m[6:45][0m [37mNow copy all changed files into the container and run tests:[0m
+[2m[6:47][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[6:48][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[6:55][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[6:58][0m 💻 [36mBash[0m [2m# Also copy to the nested path (as per CRITICAL pattern in p...[0m
+[2m[7:03][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[7:04][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[7:10][0m [37mNow sync the fixtures and run migrate to apply the new custom fields:[0m
+[2m[7:11][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[7:16][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[7:23][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[7:32][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[7:40][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[7:48][0m [37mAll 6 e-PCB Plus fields created. Now run the tests:[0m
+[2m[7:49][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
