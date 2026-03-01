@@ -1,0 +1,120 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_pcb_spec",
+  "pcb_specification_version",
+  "pcb_specification_url",
+  "column_break_spec",
+  "last_confirmed_date",
+  "last_confirmed_by",
+  "section_version_notes",
+  "version_notes",
+  "section_checklist_hint",
+  "checklist_html"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_pcb_spec",
+   "fieldtype": "Section Break",
+   "label": "PCB Specification Version"
+  },
+  {
+   "fieldname": "pcb_specification_version",
+   "fieldtype": "Select",
+   "label": "Active PCB Specification Year",
+   "options": "2024\n2025\n2026",
+   "default": "2025",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "The LHDN PCB Computerised Calculation Method Specification year currently active. Select '2026' once the YA2026 specification is confirmed. This controls which Schedule 1 tax brackets and TP1 relief ceilings are used by the PCB calculation engine."
+  },
+  {
+   "fieldname": "pcb_specification_url",
+   "fieldtype": "Data",
+   "label": "LHDN Specification PDF URL",
+   "options": "URL",
+   "description": "Link to the official LHDN Spesifikasi Kaedah Pengiraan Berkomputer PCB PDF for the active specification year. Auto-populated when version is changed."
+  },
+  {
+   "fieldname": "column_break_spec",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_confirmed_date",
+   "fieldtype": "Date",
+   "label": "Last Confirmed Date",
+   "description": "Date when HR last verified the active specification against LHDN published documents."
+  },
+  {
+   "fieldname": "last_confirmed_by",
+   "fieldtype": "Data",
+   "label": "Last Confirmed By",
+   "description": "Name of the HR user who last confirmed the specification version."
+  },
+  {
+   "fieldname": "section_version_notes",
+   "fieldtype": "Section Break",
+   "label": "Version Notes"
+  },
+  {
+   "fieldname": "version_notes",
+   "fieldtype": "Small Text",
+   "label": "Notes",
+   "description": "Free-form notes about the current specification version or any pending amendments."
+  },
+  {
+   "fieldname": "section_checklist_hint",
+   "fieldtype": "Section Break",
+   "label": "Specification Changelog Reference"
+  },
+  {
+   "fieldname": "checklist_html",
+   "fieldtype": "HTML",
+   "label": "Changelog Summary",
+   "options": "<p class='text-muted small'>Save the document to see the checklist of changed parameters for your selected version. Review all items before confirming.</p>"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LHDN Payroll Integration",
+ "name": "LHDN Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

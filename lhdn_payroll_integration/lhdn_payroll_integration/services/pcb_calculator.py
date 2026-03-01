@@ -54,6 +54,21 @@ from lhdn_payroll_integration.utils.pcb_utils import round_pcb
 # Calculation Method Specification has been fully applied (US-188).
 PCB_SPEC_VERSION = "2025 Spec Compliant"
 
+
+def _get_active_spec_year() -> int:
+    """Read the active PCB Specification year from LHDN Payroll Settings (US-231, AC3).
+
+    Falls back to 2025 if settings are not configured or DocType does not exist yet.
+    """
+    try:
+        from lhdn_payroll_integration.services.pcb_spec_service import (
+            get_active_pcb_spec_version,
+        )
+        return get_active_pcb_spec_version()
+    except Exception:
+        return 2025
+
+
 # BIK integration (US-060) — lazy import to avoid circular dependency
 def _get_bik_for_employee(employee: str, slip_date) -> float:
     """Return monthly BIK for an employee based on the salary slip date.
@@ -328,9 +343,10 @@ def calculate_pcb(
     chargeable_income = max(0.0, annual_income - total_relief)
 
     # Select bracket table: use year-aware function when assessment_year provided,
-    # otherwise fall back to the default YA2024 bands for backward compatibility.
-    if assessment_year is not None:
-        _tax_fn = lambda ci: _compute_tax_for_year(ci, assessment_year)
+    # otherwise read from LHDN Payroll Settings (US-231, AC3).
+    _effective_year = assessment_year if assessment_year is not None else _get_active_spec_year()
+    if _effective_year != 2024:
+        _tax_fn = lambda ci: _compute_tax_for_year(ci, _effective_year)
     else:
         _tax_fn = _compute_tax_on_chargeable_income
 
