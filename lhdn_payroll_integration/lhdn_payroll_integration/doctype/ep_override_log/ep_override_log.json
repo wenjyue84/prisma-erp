@@ -1,0 +1,115 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "EPOVR-.YYYY.-.#####",
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "salary_slip",
+  "employee",
+  "column_break_1",
+  "ep_category",
+  "override_date",
+  "section_break_1",
+  "gross_salary",
+  "category_minimum",
+  "column_break_2",
+  "override_justification",
+  "override_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "salary_slip",
+   "fieldtype": "Link",
+   "label": "Salary Slip",
+   "options": "Salary Slip",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ep_category",
+   "fieldtype": "Select",
+   "label": "EP Category",
+   "options": "Cat I\nCat II\nCat III"
+  },
+  {
+   "fieldname": "override_date",
+   "fieldtype": "Datetime",
+   "label": "Override Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "gross_salary",
+   "fieldtype": "Currency",
+   "label": "Gross Salary at Override"
+  },
+  {
+   "fieldname": "category_minimum",
+   "fieldtype": "Currency",
+   "label": "Category Minimum at Override"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "override_justification",
+   "fieldtype": "Long Text",
+   "label": "Override Justification",
+   "reqd": 1
+  },
+  {
+   "fieldname": "override_by",
+   "fieldtype": "Link",
+   "label": "Override By",
+   "options": "User"
+  }
+ ],
+ "idx": 0,
+ "is_submittable": 0,
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LHDN Payroll Integration",
+ "name": "EP Override Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User"
+  }
+ ],
+ "sort_field": "override_date",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

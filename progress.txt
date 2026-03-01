@@ -6318,3 +6318,32 @@ Completed: Generate PERKESO Borang 34 Accident Notification Within 48-Hour Statu
 ### Gotchas
 - bench migrate deletes LHDN Payroll workspace; sync_fixtures or import_module_file needed after migrate
 - Custom fields always need to be in nested fixtures path: `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` (written as root, then synced to outer)
+## Iteration 7 - Sun, Mar  1, 2026 10:06:13 AM
+Completed: Generate PERKESO Borang 34 Accident Notification Within 48-Hour Statutory Deadline (ID: US-141) in 13m
+
+
+## Iteration — US-142: Employment Pass Minimum Salary Threshold Validator (June 2026 Revised EP Policy)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (33/33 pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_ep_validator`
+**Result:** PASS — 33/33 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `doctype/ep_salary_threshold/` — New DocType: configurable EP category minimum thresholds with effective date
+- `doctype/ep_override_log/` — New DocType: audit trail for HR override justifications
+- `services/ep_validator_service.py` — Validator service: get_ep_category_minimum, validate_ep_salary_before_submit, get_ep_expiry_alerts
+- `report/expatriate_ep_salary_compliance/` — Report: lists all EP holders with category, salary, minimum, compliance status
+- `tests/test_ep_validator.py` — 33 tests across 7 test classes
+- `hooks.py` — Added ep_validator_service.validate_ep_salary_before_submit to Salary Slip before_submit
+- `fixtures/custom_field.json` — Added 5 new fields: Employee-custom_ep_section, custom_ep_category, custom_ep_number, custom_ep_expiry_date; Salary Slip-custom_ep_override_justification
+
+### Patterns discovered
+- bench migrate orphan-deletes Workspace + Desktop Icon fixtures — always run sync_fixtures after migrate
+- Custom fields fixture must be updated at BOTH outer path (/lhdn_payroll_integration/fixtures/) AND inner nested path — frappe.get_app_path reads from outer path
+- Migrate deletes workspace with "Removing orphan Workspaces / Deleting entity Workspace LHDN Payroll" — sync_fixtures restores it
+
+### Gotchas
+- EP policy default thresholds hardcoded as fallback; DocType rows take precedence
+- Default EP category option is "Not Applicable" so existing employees are unaffected by default
+- EP validation only activates for period_end >= 2026-06-01

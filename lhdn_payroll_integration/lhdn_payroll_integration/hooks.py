@@ -36,6 +36,7 @@ doc_events = {
 			"lhdn_payroll_integration.services.age_checker_service.validate_statutory_rates_before_submit",
 			"lhdn_payroll_integration.services.salary_advance_service.compute_advance_repayment_for_salary_slip",
 			"lhdn_payroll_integration.services.spc_cessation_service.block_salary_slip_if_spc_pending",
+			"lhdn_payroll_integration.lhdn_payroll_integration.services.ep_validator_service.validate_ep_salary_before_submit",
 		],
 	},
 	"Expense Claim": {
