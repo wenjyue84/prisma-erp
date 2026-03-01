@@ -2791,7 +2791,7 @@
       ],
       "dependencies": [],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-126",
@@ -4147,6 +4147,237 @@
         "Build Platform SOCSO Deduction Engine Skeleton for Gig Workers Act 2025 (Act 872)"
       ],
       "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-179",
+      "title": "Section 107D ITA — WHT 2% Deduction, Monthly Remittance, and CP58 Integration for Agent/Dealer Payments",
+      "priority": "high",
+      "description": "Section 107D of the Income Tax Act 1967 requires payers to deduct 2% withholding tax (WHT) at source from monetary and non-monetary incentive payments to agents, dealers, or distributors exceeding RM5,000 per year. The WHT must be remitted to LHDN by the 15th of the following month and the deducted amount reported on the annual CP58 statement under Section 83A. This is a separate compliance workflow from the existing CP58 statement generation story, requiring payment tracking and remittance scheduling.",
+      "acceptanceCriteria": [
+        "System identifies payments to recipients classified as Agent/Dealer/Distributor and accumulates annual total per recipient",
+        "When cumulative payments to a recipient exceed RM5,000 in a calendar year, 2% WHT is computed on each subsequent payment",
+        "Monthly WHT remittance schedule is generated per payer company showing total WHT payable and recipient breakdown",
+        "WHT amounts are linked to corresponding CP58 records for annual reporting",
+        "LHDN payment reference (after WHT remittance) is stored on each remittance record",
+        "System tracks non-monetary incentive values (e.g., vehicles, property) at cost incurred by payer for WHT base calculation"
+      ],
+      "technicalNotes": [
+        "Section 107D ITA 1967 and Section 83A ITA 1967 (CP58 reporting obligation)",
+        "WHT rate: 2% of monetary/non-monetary incentive value; threshold: RM5,000/year per recipient",
+        "Remittance deadline: 15th of the following month; late payment attracts 10% penalty",
+        "CP58 must be issued to the agent/dealer by 31 March of the following year",
+        "Different from employment income PCB (Schedule A); targets commission-based non-employment income"
+      ],
+      "dependencies": [
+        "Implement CP58 Agent/Dealer Non-Employment Income Statement"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-180",
+      "title": "Gig Workers Act 2025 — Mandatory Service Agreement Compliance Tracker for Platform Providers",
+      "priority": "high",
+      "description": "The Gig Workers Act 2025 (passed by Parliament, 2025) requires platform providers (contracting entities) to sign written service agreements with each gig worker containing 7 specific mandatory terms: parties to the agreement, period, services provided, obligations, rate and payment method of earnings, and entitled benefits. Payment processing must be linked to a validated service agreement record, and agreements must be maintained for MOHR inspection.",
+      "acceptanceCriteria": [
+        "Gig Worker Service Agreement DocType captures all 7 mandatory terms specified in the Act",
+        "Payment processing for a gig worker is blocked until a valid signed service agreement is linked to their record",
+        "System flags service agreements that are expired (past end date) and blocks new payment cycles",
+        "Compliance report lists all active gig workers with agreement status (valid/expired/missing)",
+        "Service agreement records are retained for minimum 7 years for MOHR inspection",
+        "Alert is raised 30 days before any service agreement expiry to prompt renewal"
+      ],
+      "technicalNotes": [
+        "Gig Workers Act 2025 — passed by Malaysian Parliament; exact gazetted date to be confirmed",
+        "Contracting entities must also establish internal grievance mechanisms (30-day complaint window for workers)",
+        "Platform deactivation of gig workers requires adequate notice and hearing; max 14-day suspension before inquiry",
+        "Service agreement requirement applies to all platform providers using gig workers regardless of worker count"
+      ],
+      "dependencies": [
+        "Build Platform SOCSO Deduction Engine Skeleton for Gig Workers Act 2025 (Act 872)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-181",
+      "title": "Gig Workers Act 2025 — Auto-Register Gig Workers Under PERKESO SKSPS via ASSIST Portal API",
+      "priority": "high",
+      "description": "Under the Gig Workers Act 2025, platform providers must ensure mandatory registration of each gig worker under PERKESO's Self-Employment Social Security Scheme (SKSPS) before any SKSPS contributions can be deducted. This registration must be completed via the PERKESO ASSIST portal before the first SKSPS deduction is processed. This is a prerequisite step distinct from the contribution calculation engine.",
+      "acceptanceCriteria": [
+        "New Gig Worker onboarding triggers PERKESO ASSIST SKSPS registration API call automatically",
+        "Registration status (pending/approved/rejected) is stored on the Gig Worker record",
+        "SKSPS contribution deduction is blocked until registration status is confirmed as Active",
+        "PERKESO SKSPS registration reference number is stored on the Gig Worker profile",
+        "Failed registrations generate an HR task with specific PERKESO error code and resolution steps",
+        "Bulk registration batch job is available for onboarding multiple gig workers simultaneously"
+      ],
+      "technicalNotes": [
+        "PERKESO ASSIST portal: assist.perkeso.gov.my",
+        "Self-Employment Social Security Act 2017 (Act 789) and Gig Workers Act 2025",
+        "SKSPS covers employment injury and invalidity protection for gig/self-employed workers",
+        "PERKESO ASSIST API endpoint for SKSPS registration to be confirmed from PERKESO developer documentation"
+      ],
+      "dependencies": [
+        "Build Platform SOCSO Deduction Engine Skeleton for Gig Workers Act 2025 (Act 872)",
+        "Gig Workers Act 2025 — Mandatory Service Agreement Compliance Tracker for Platform Providers"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-182",
+      "title": "Gig Workers Act 2025 — SKSPS Per-Transaction Contribution Calculation and PERKESO Monthly Aggregate Remittance",
+      "priority": "high",
+      "description": "Under the Gig Workers Act 2025, platform providers must deduct SKSPS contributions from each completed gig transaction (ride, delivery, freelance job) and remit the monthly aggregate to PERKESO. Unlike standard SOCSO (monthly salary-based), SKSPS is computed per-transaction at 1.25%, requiring a distinct computation engine that accumulates transaction-level deductions and generates a monthly PERKESO remittance file.",
+      "acceptanceCriteria": [
+        "SKSPS deduction at 1.25% is computed per completed gig transaction value and attributed to the gig worker",
+        "Failed, cancelled, or refunded transactions are excluded from the SKSPS contribution base",
+        "Monthly aggregate SKSPS amount per gig worker is computed and held for PERKESO remittance",
+        "PERKESO monthly remittance file is generated with worker-level breakdown (NRIC/passport, SKSPS number, amount)",
+        "Transaction-level SKSPS deductions are reflected in the gig worker payslip with total SKSPS deducted",
+        "Monthly remittance is due by the 15th of the following month consistent with SOCSO payment cycle"
+      ],
+      "technicalNotes": [
+        "SKSPS contribution rate: 1.25% per transaction; full amount borne by platform provider",
+        "Contracting entity is responsible for both computing and remitting SKSPS (not split with worker)",
+        "Remittance to PERKESO via PERKESO ASSIST portal; file format to be confirmed from PERKESO documentation",
+        "Self-Employment Social Security Act 2017 (Act 789) and Gig Workers Act 2025"
+      ],
+      "dependencies": [
+        "Gig Workers Act 2025 — Auto-Register Gig Workers Under PERKESO SKSPS via ASSIST Portal API"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-183",
+      "title": "Gig Workers Act 2025 — 7-Day Payment Deadline Alert for Informal Gig Engagements Without Payment Schedule",
+      "priority": "high",
+      "description": "The Gig Workers Act 2025 requires contracting entities to remit payment to gig workers within 7 days of service completion when no formal agreement specifies a payment schedule. This is distinct from Employment Act S.19 7-day rule (which applies to regular employees under contracts of service). Payroll must track per-transaction payment deadlines and alert platform operators before violations occur.",
+      "acceptanceCriteria": [
+        "Gig transactions where no payment schedule is specified in the service agreement are flagged for 7-day payment deadline tracking",
+        "Alert is raised to the platform operator 1 day before the 7-day payment deadline lapses per transaction",
+        "Overdue gig payments (past 7 days without remittance confirmation) appear in a compliance violation log",
+        "Dashboard shows pending gig worker payments grouped by days remaining until 7-day deadline",
+        "Payment completion records the actual remittance date against the service completion date",
+        "Compliance report exportable for MOHR inspection showing all gig payment timelines and any overdue records"
+      ],
+      "technicalNotes": [
+        "Gig Workers Act 2025 — payment obligation clause for informal/no-agreement payment schedule engagements",
+        "Distinct from Employment Act S.19 7-day rule (which covers employees with contracts of service)",
+        "7-day clock starts from the date of service completion or delivery confirmation by platform",
+        "Failure to pay within 7 days constitutes a criminal offence under the Gig Workers Act 2025"
+      ],
+      "dependencies": [
+        "Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)",
+        "Gig Workers Act 2025 — Mandatory Service Agreement Compliance Tracker for Platform Providers"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-184",
+      "title": "Enforce Part-Time Employee Minimum Hourly Rate Against RM1,700 Monthly Wage Floor Proration",
+      "priority": "high",
+      "description": "The Minimum Wages Order sets RM1,700/month as the floor for all employees including part-time workers. The equivalent minimum hourly rate must be prorated: RM1,700 ÷ 26 working days ÷ 8 hours = RM8.17/hour. The payroll system currently calculates part-time ORP (earned wages based on hours worked) but does not validate that the agreed hourly rate meets the statutory minimum floor. This is a compliance gate preventing underpayment penalties from MOHR.",
+      "acceptanceCriteria": [
+        "Part-time employees' configured hourly rate is validated against the computed minimum hourly rate (RM1,700 ÷ 208 hours = RM8.17/hour) at payroll processing",
+        "Alert is raised for any part-time employee whose hourly rate falls below the minimum hourly rate",
+        "Payroll processing is blocked for non-compliant part-time employees unless an exemption reason is recorded",
+        "Exemptions (e.g., apprentices, disabled worker schemes, trainees) can be flagged on the Employee record to suppress the block",
+        "Minimum hourly rate is derived from the system-configured monthly minimum wage constant so it auto-adjusts when minimum wage changes",
+        "Compliance report lists all part-time employees with their actual hourly rate vs the minimum floor with pass/fail status"
+      ],
+      "technicalNotes": [
+        "Minimum Wages Order 2022 (P.U.(A) 268/2022): RM1,700/month effective 1 February 2023",
+        "Part-time proration formula: RM1,700 ÷ 26 working days ÷ 8 hours = RM8.17/hour minimum",
+        "Distinct from ORP proration story (which computes earned wages for part-timers based on hours worked, not validates minimum)",
+        "Micro-employer extension from August 2025: applies to ALL employers including those with fewer than 5 employees",
+        "NWCC Act exemptions: apprentices under the National Apprenticeship Act, disabled workers under specific MOHR schemes"
+      ],
+      "dependencies": [
+        "Implement Part-Time Employee ORP Proration and Overtime Eligibility under EA Third Schedule",
+        "Update Minimum Wage Validation to RM1,700 (Feb 2025 Amendment)"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-185",
+      "title": "Employment Act S.60A — Enforce 104-Hour Monthly Overtime Cap with Pre-Payroll Violation Alert",
+      "priority": "medium",
+      "description": "Section 60A(4) of the Employment Act 1955 (post-2022 amendment) limits overtime to a maximum of 104 hours per month for covered employees. The payroll system currently calculates OT pay amounts but does not validate whether total OT hours in a month exceed the statutory cap. Exceeding this cap without Director General approval is an offence; a pre-payroll cap check is required.",
+      "acceptanceCriteria": [
+        "Overtime hours entered per employee per month are accumulated and checked against the 104-hour statutory cap",
+        "Early warning alert is raised when any covered employee's monthly OT reaches 90 hours (threshold configurable)",
+        "Hard cap alert is raised when any covered employee's monthly OT exceeds 104 hours",
+        "Payroll finalisation is blocked (or requires documented manual override with justification) when cap is exceeded",
+        "Compliance report lists employees by OT hours for the month with cap utilisation percentage",
+        "System applies cap check only to employees covered under the Act (monthly wage ≤RM4,000 or manual labourers); managerial staff are excluded"
+      ],
+      "technicalNotes": [
+        "Employment Act 1955 Section 60A(4): maximum 104 OT hours per month",
+        "Covered employees: those earning ≤RM4,000/month, manual labourers regardless of wages, vehicle operators, supervisors of manual labourers",
+        "Does NOT apply to managerial/executive employees earning above the EA coverage threshold",
+        "Post-2022 amendment also reduced normal working week from 48 to 45 hours",
+        "Director General of Labour approval required to lawfully exceed 104-hour cap"
+      ],
+      "dependencies": [
+        "Implement Ordinary Rate of Pay (ORP) Calculator and Overtime Validation"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-186",
+      "title": "e-PCB Plus Successful Submission — Store Acknowledgement Reference Number on Salary Slip for LHDN Audit Trail",
+      "priority": "medium",
+      "description": "After a successful monthly PCB data submission via e-PCB Plus on MyTax, LHDN issues a submission acknowledgement reference number. This reference must be stored on the corresponding Salary Slip records to create an LHDN-traceable audit trail. This is distinct from the existing rejection tracking story (which records failures) — this story captures successful submission evidence needed during LHDN audits or PCB reconciliation queries.",
+      "acceptanceCriteria": [
+        "Successful e-PCB Plus submission response stores the acknowledgement/receipt reference number on the submission batch record",
+        "Acknowledgement reference is propagated to each Salary Slip included in the submitted batch",
+        "Salary Slip form displays e-PCB Plus submission reference as a read-only field in the LHDN/Statutory tab",
+        "PCB audit export report includes the e-PCB Plus acknowledgement reference per employee per month",
+        "If a month is resubmitted as an amendment, both the original and amendment acknowledgement references are retained (not overwritten)",
+        "Salary Slips can be searched by e-PCB Plus acknowledgement reference number for cross-referencing during LHDN queries"
+      ],
+      "technicalNotes": [
+        "e-PCB Plus accessible via MyTax portal (mytax.hasil.gov.my), operational from 3 February 2025",
+        "Distinct from MyInvois acknowledgement numbers (e-invoices) and from EIS/EPF submission acknowledgements",
+        "Distinct from existing 'e-PCB Plus Post-Submission Rejection Record Tracking' story (this covers successes, that covers rejections)",
+        "Submission acknowledgement format to be confirmed from e-PCB Plus API/portal response documentation"
+      ],
+      "dependencies": [
+        "Implement e-CP39 API Submission to LHDN MyTax / e-PCB Plus",
+        "e-PCB Plus Post-Submission Rejection Record Tracking and Targeted Resubmission Workflow"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-187",
+      "title": "Budget 2026 — Track Senior Citizen Employee Hiring Tax Deduction Eligibility Extended to YA2030",
+      "priority": "medium",
+      "description": "Malaysia Budget 2026 extended the employer additional income tax deduction for hiring senior citizens (aged 60 and above) for a further 5 years to YA2030. To claim this corporate tax deduction, employers must track which employees qualify, their period of employment, and wages paid. The payroll system must identify eligible senior citizen employees and generate an annual summary for corporate tax return attachment.",
+      "acceptanceCriteria": [
+        "Employee records where the employee is aged 60 or above are automatically flagged as 'Senior Citizen' in payroll (based on date of birth, not manual entry)",
+        "Annual payroll report generates a summary of senior citizen employees with total wages paid per year of assessment",
+        "Report covers YA2026 to YA2030 as the eligible years for the extended additional tax deduction",
+        "Senior citizen employee count and total wages are breakdow by department and entity for corporate tax attachment",
+        "System alerts when a senior citizen employee's contract end date approaches (to flag potential deduction eligibility lapse)",
+        "Historical flag captures which months/years each senior citizen was employed for the relevant YA"
+      ],
+      "technicalNotes": [
+        "This is an employer-side corporate income tax deduction (Form C/CE), not an employee PCB relief",
+        "Budget 2026 (announced October 2025): additional deduction extended to YA2030 (previously expiring earlier)",
+        "Senior citizen threshold: employee aged 60 and above at the time of employment",
+        "Double deduction typically applies on wages paid to eligible senior citizen employees — confirm rate from IRB public ruling",
+        "Claim documented via employer's annual corporate income tax return, not via PCB/CP39 monthly submission"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
       "passes": false
     }
   ]

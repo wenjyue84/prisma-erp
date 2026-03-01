@@ -6448,3 +6448,36 @@ Completed: Employer Statutory Registration Onboarding Checklist with Deadline Al
 - sync_fixtures cannot be used if schema sync would overflow row size
 - Must manually UPDATE tabCustom Field after manually ALTERing actual table
 - `bench --site frontend execute <function>` requires no imports or side effects in the function signature
+## Iteration 9 - Sun, Mar  1, 2026 10:43:12 AM
+Completed: Employer Statutory Registration Onboarding Checklist with Deadline Alerts (ID: US-156) in 22m
+
+
+## Iteration 10 — US-125: Approved Gratuity Fund Contribution and Tax-Exempt Gratuity Declaration for EA Form
+
+**Type:** IMPL
+**TDD Phase:** GREEN (22/22 pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_gratuity`
+**Result:** PASS — 22 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/gratuity_calculator.py` — New service: calculate_gratuity_exemption(), get_ea_form_gratuity_amounts(), get_gratuity_type_from_component()
+- `lhdn_payroll_integration/tests/test_gratuity.py` — 22 tests across 5 test classes
+- `lhdn_payroll_integration/fixtures/salary_component.json` — Added 3 gratuity components (Approved Fund, Non-Approved, Ex-Gratia)
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Unchanged (135 fields, no new column added)
+
+### Business Logic
+- ITA 1967 Schedule 6 paragraph 25: Approved Fund Gratuity exempt = min(total, RM1,000 x completed_years)
+- Non-Approved Gratuity: fully taxable (no para 25 exemption)
+- Ex-Gratia: no para 25 exemption (para 30 full exemption covered by US-085)
+- EA Form: all gratuity types map to B5 Gratuity section
+
+### Patterns discovered
+- 3 separate salary components (Gratuity - Approved Fund / Non-Approved / Ex-Gratia) instead of adding a new Select custom field column — avoids MariaDB row size overflow on tabSalary Component
+- salary_component.json classification code must be "022 : Others" (full string), not "022"
+- bench console insert: Salary Component inserts succeed directly; no schema ALTER required
+- sync_fixtures fails pre-existing due to tabCompany varchar overflow — use direct bench console insert for new Salary Component records
+
+### Gotchas
+- tabSalary Component may also be approaching varchar row size limit (do NOT add new Select/Data custom fields)
+- The PCB calculator already supports gratuity_amount + years_of_service params — no PCB service changes needed
+- Fractional years_of_service are floored to completed years for exemption calc
