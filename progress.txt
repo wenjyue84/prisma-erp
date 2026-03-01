@@ -6283,3 +6283,38 @@ Incomplete: Generate PERKESO Borang 34 Accident Notification Within 48-Hour Stat
 
 ### Gotchas
 - frappe.utils.now_datetime vs nowdatetime: always check `frappe.utils.data` for the canonical name when import errors occur
+## Iteration 4 - Sun Mar  1 10:04:38 MPST 2026
+Completed: Generate PERKESO Borang 34 Accident Notification Within 48-Hour Statutory Deadline (ID: US-141) in 6m
+
+
+## Iteration N — US-141: Generate PERKESO Borang 34 Accident Notification Within 48-Hour Statutory Deadline
+
+**Type:** IMPL
+**TDD Phase:** GREEN (39/39 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_borang34_us141`
+**Result:** PASS — 39 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/workplace_accident/` — New DocType: Workplace Accident (fields: employee, incident_date_time, accident_location, supervisor_witness_name, injury_description, statutory_deadline, borang34_status, borang34_attachment, wage_history_attachment)
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/borang34_service.py` — Core service: handle_accident_after_insert, _compute_and_set_deadline, _create_borang34_task, check_overdue_borang34, get_six_month_wage_history, get_borang34_data
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_borang34_us141.py` — 39 tests across 8 classes
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — 2 new fields: Employee-custom_socso_number, Company-custom_perkeso_employer_code
+- `lhdn_payroll_integration/lhdn_payroll_integration/hooks.py` — Added Workplace Accident after_insert hook; check_overdue_borang34 in hourly scheduler
+
+### Key logic implemented
+- `_compute_and_set_deadline(doc)` → 48h from incident_date_time, saved via db.set_value
+- `_create_borang34_task(doc)` → ToDo with [BORANG34-PENDING] marker, High priority, HR Manager role, Workplace Accident reference
+- `check_overdue_borang34()` → hourly: finds Draft accidents > 46h old, updates ToDo marker to [BORANG34-OVERDUE], sends notification
+- `get_six_month_wage_history(employee, incident_date)` → 6-entry list of {period, gross_pay} for 6 months before incident using dateutil.relativedelta
+- `get_borang34_data(accident_name)` → full dict with employee NRIC/SOCSO, employer PERKESO code, 6-month wages, average
+
+### Patterns discovered
+- `nowdatetime` not available in `frappe.utils` in this Frappe version — import from `frappe.utils.data`: `from frappe.utils.data import now_datetime as nowdatetime`
+- `frappe.utils.get_datetime()` correctly parses "YYYY-MM-DD HH:MM:SS" strings to datetime objects
+- DocType naming_series: "WPA-.YYYY.-.#####" generates WPA-2026-00001 style names
+- `get_six_month_wage_history` uses `dateutil.relativedelta` (already installed in frappe env)
+- Tests for overdue escalation: mock get_all twice (once for accidents, once for ToDo); get_value for description replacement
+
+### Gotchas
+- bench migrate deletes LHDN Payroll workspace; sync_fixtures or import_module_file needed after migrate
+- Custom fields always need to be in nested fixtures path: `lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` (written as root, then synced to outer)

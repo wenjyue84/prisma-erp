@@ -54,6 +54,9 @@ doc_events = {
 	"Payroll Entry": {
 		"on_submit": "lhdn_payroll_integration.lhdn_payroll_integration.services.compliance_tracker.create_monthly_compliance_records",
 	},
+	"Workplace Accident": {
+		"after_insert": "lhdn_payroll_integration.lhdn_payroll_integration.services.borang34_service.handle_accident_after_insert",
+	},
 }
 
 # Scheduled Tasks
@@ -62,6 +65,7 @@ doc_events = {
 scheduler_events = {
 	"hourly": [
 		"lhdn_payroll_integration.services.status_poller.poll_pending_documents",
+		"lhdn_payroll_integration.lhdn_payroll_integration.services.borang34_service.check_overdue_borang34",
 	],
 	"daily": [
 		"lhdn_payroll_integration.services.socso_service.check_overdue_socso_borang3",
