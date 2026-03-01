@@ -4173,7 +4173,7 @@
         "Implement CP58 Agent/Dealer Non-Employment Income Statement"
       ],
       "estimatedComplexity": "medium",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-180",

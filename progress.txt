@@ -1,3 +1,29 @@
+## Iteration N — US-179: Section 107D ITA — WHT 2% Deduction, Monthly Remittance, and CP58 Integration for Agent/Dealer Payments
+
+**Type:** IMPL
+**TDD Phase:** GREEN (49/49 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_wht_107d_us179
+**Result:** PASS — 49 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/wht_107d_service.py` — Full Section 107D WHT service: `compute_wht_for_payment()` with threshold-crossing logic, `generate_monthly_remittance_schedule()`, `build_cp58_wht_summary()`, `compute_late_penalty()`, `compute_payment_type_value()` for monetary/non-monetary, `get_remittance_deadline()`, `get_cp58_issuance_deadline()`, legacy DB-backed functions
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_wht_107d_us179.py` — 49 tests across 7 classes: TestWhtThreshold, TestRecipientClassification, TestMonthlyRemittanceSchedule, TestNonMonetaryPaymentTracking, TestCP58Integration, TestLatePaymentPenalty, TestAnnualAccumulation
+
+### Patterns discovered
+- WHT threshold is strict greater-than (> RM5,000), not >=; at exactly RM5,000 no WHT applies
+- When a payment crosses the threshold, only the excess portion above RM5,000 is taxable (partial WHT)
+- Once cumulative exceeds threshold, all subsequent payments get full 2% WHT
+- Non-monetary incentives (vehicles, property) use cost-incurred-by-payer as the WHT base — same formula as monetary
+- Late payment penalty is flat 10% of outstanding WHT amount (not per annum compounding)
+- CP58 issuance deadline: 31 March of year following assessment year
+- Remittance deadline: 15th of following month; December → January next year
+
+### Gotchas
+- Implementation and tests were already present in container from prior SPIRAL work
+- Synced files to local repo via docker cp
+
+---
+
 ## Iteration N — US-177: Add Life/Medical Insurance Relief Extension to Children on TP1 Form for YA2026
 
 **Type:** IMPL
@@ -7659,4 +7685,5 @@ Completed: MySIP Structured Internship Stipend Minimum Threshold Validation and 
 
 ## Iteration 33 - Sun Mar  1 16:43:55 MPST 2026
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package (ID: US-211) — attempt 1/3
+
 
