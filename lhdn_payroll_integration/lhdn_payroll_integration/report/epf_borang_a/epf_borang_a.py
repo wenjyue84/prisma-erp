@@ -17,6 +17,11 @@ US-073: Added employer EPF rate validation against statutory rates.
 US-067: Added EPF i-Akaun electronic upload file generation.
   - generate_iakaun_file(filters) returns pipe-delimited .txt content
   - Company custom_epf_employer_registration used in file header
+
+US-131: Added citizen type code to i-Akaun detail lines.
+  - '1' for Malaysian citizens/PR (custom_is_foreign_worker = 0)
+  - '2' for non-Malaysian foreign workers (custom_is_foreign_worker = 1)
+  - get_citizen_type_code(is_foreign) helper exported for reuse
 """
 import frappe
 from frappe.utils import flt
@@ -32,6 +37,18 @@ _EPF_EMPLOYER_COMPONENTS = {"EPF - Employer", "KWSP - Employer", "EPF Employer",
 
 # Tolerance for employer EPF rate deviation (5%)
 EPF_RATE_TOLERANCE = 0.05
+
+
+def get_citizen_type_code(is_foreign):
+    """Return KWSP i-Akaun citizen type code.
+
+    Args:
+        is_foreign: Truthy value if employee is a non-Malaysian foreign worker.
+
+    Returns:
+        '1' for Malaysian citizen/PR, '2' for non-Malaysian (foreign worker).
+    """
+    return "2" if is_foreign else "1"
 
 
 def get_columns():
@@ -229,6 +246,8 @@ def get_data(filters=None):
             ss.employee                                      AS employee,
             ss.employee_name                                 AS employee_name,
             COALESCE(e.custom_id_value, '')                 AS nric,
+            COALESCE(e.custom_is_domestic_servant, 0)        AS is_domestic_servant,
+            COALESCE(e.custom_is_foreign_worker, 0)          AS is_foreign_worker,
             COALESCE(e.custom_epf_member_number, '')        AS epf_member_number,
             ss.gross_pay                                     AS wages,
             COALESCE(SUM(CASE
@@ -274,8 +293,13 @@ def generate_iakaun_file(filters=None):
     """Generate KWSP i-Akaun electronic upload file content.
 
     Returns pipe-delimited text with:
-      - Header: EPF_EMPLOYER_REG|YEAR_MONTH|TOTAL_EMPLOYEES
-      - Detail rows: SEQ|NRIC_NO_HYPHENS|EPF_MEMBER_NO|EMPLOYEE_NAME|WAGES|EE_EPF|ER_EPF
+      - Header: H|EPF_EMPLOYER_REG|YEAR_MONTH|TOTAL_EMPLOYEES
+      - Detail rows: D|SEQ|NRIC_NO_HYPHENS|EPF_MEMBER_NO|EMPLOYEE_NAME|WAGES|EE_EPF|ER_EPF|CITIZEN_TYPE
+      - Trailer: T|TOTAL_ROWS|TOTAL_EE_EPF|TOTAL_ER_EPF
+
+    Citizen type codes (US-131):
+      '1' = Malaysian citizen / permanent resident
+      '2' = Non-Malaysian foreign worker
 
     Args:
         filters: frappe._dict with company, month, year keys.
@@ -299,10 +323,11 @@ def generate_iakaun_file(filters=None):
     month = filters.get("month") or str(frappe.utils.getdate().month).zfill(2)
     period = f"{year}{str(month).zfill(2)}"
 
-    rows = get_data(filters)
+    # US-130: exclude foreign domestic servants (EPF exempt per KWSP Oct 2025 circular)
+    rows = [r for r in get_data(filters) if not r.get("is_domestic_servant")]
 
     lines = []
-    # Header line
+    # Header line (domestic servant rows already excluded)
     lines.append(f"H|{epf_reg_no}|{period}|{len(rows)}")
 
     # Detail lines (1-indexed sequence)
@@ -314,7 +339,9 @@ def generate_iakaun_file(filters=None):
         wages = f"{flt(row.get('wages'), 2):.2f}"
         ee_epf = f"{flt(row.get('employee_epf'), 2):.2f}"
         er_epf = f"{flt(row.get('employer_epf'), 2):.2f}"
-        lines.append(f"D|{seq}|{nric}|{epf_member}|{name}|{wages}|{ee_epf}|{er_epf}")
+        # US-131: citizen type code — '1' Malaysian, '2' foreign worker
+        citizen_type = get_citizen_type_code(row.get("is_foreign_worker", 0))
+        lines.append(f"D|{seq}|{nric}|{epf_member}|{name}|{wages}|{ee_epf}|{er_epf}|{citizen_type}")
 
     # Trailer line with totals
     total_ee = flt(sum(row.get("employee_epf") or 0 for row in rows), 2)

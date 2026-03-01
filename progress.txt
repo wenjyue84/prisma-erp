@@ -6481,3 +6481,34 @@ Completed: Employer Statutory Registration Onboarding Checklist with Deadline Al
 - tabSalary Component may also be approaching varchar row size limit (do NOT add new Select/Data custom fields)
 - The PCB calculator already supports gratuity_amount + years_of_service params — no PCB service changes needed
 - Fractional years_of_service are floored to completed years for exemption calc
+## Iteration 10 - Sun, Mar  1, 2026 11:01:52 AM
+Incomplete: Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyTax (Mandatory from 2026) (ID: US-175) — attempt 1/3
+
+## Iteration 7 - Sun Mar  1 11:03:28 MPST 2026
+Incomplete: Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyTax (Mandatory from 2026) (ID: US-175) — attempt 2/3
+
+
+## Iteration N — US-131: EPF i-Akaun CSV Citizen Type Code
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 31 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_foreign_worker_epf`
+**Result:** PASS — 31/31 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/epf_borang_a/epf_borang_a.py`
+  - Added `get_citizen_type_code(is_foreign)` helper: returns "1" for Malaysian, "2" for foreign
+  - Updated SQL in `get_data()` to include `COALESCE(e.custom_is_foreign_worker, 0) AS is_foreign_worker`
+  - Updated `generate_iakaun_file()` detail line to append citizen type: `D|...|EE_EPF|ER_EPF|CITIZEN_TYPE`
+- `lhdn_payroll_integration/tests/test_foreign_worker_epf.py`
+  - Fixed: Added `import frappe` and `from unittest.mock import patch` at top (fixed 3 NameError failures)
+  - Added `TestIAkaunCitizenTypeCode` class (8 new tests for US-131)
+
+### Patterns discovered
+- `custom_is_foreign_worker` (Check field) on Employee is the flag for non-Malaysian workers
+- Only the nested path (`lhdn_payroll_integration/lhdn_payroll_integration/report/`) exists for report files
+- `patch()` path must use the full module path where the function is *called*, not where it's defined
+
+### Gotchas
+- `test_foreign_worker_epf.py` used `frappe` without importing it — fixed by adding `import frappe` at top
+- Report files only exist in the nested path (not the outer non-nested services path)

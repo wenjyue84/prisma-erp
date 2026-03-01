@@ -2952,7 +2952,7 @@
         "Foreign Worker EPF Oct 2025 Mandate: Domestic Servant Category Exclusion Flag"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-132",
@@ -4377,6 +4377,326 @@
         "Claim documented via employer's annual corporate income tax return, not via PCB/CP39 monthly submission"
       ],
       "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-188",
+      "title": "Apply LHDN PCB 2025 Specification Amendment — Revised TP1 Deduction Items and OKU Relief Update",
+      "priority": "critical",
+      "description": "LHDN published the official 2025 PCB Computerised Calculation Method Specification amendment (Spesifikasi Kaedah Pengiraan Berkomputer PCB 2025). The amendment includes updates to TP1 deduction items, an increase in disability (OKU) tax relief amounts, expanded scope of medical treatment relief, and a new food waste composting machine relief (RM2,500 permanent cap). These changes must be verified against the current PCB calculation engine to ensure the YA2025 computation is accurate before any Year-End EA Form generation or Borang E submission.",
+      "acceptanceCriteria": [
+        "PCB computation for YA2025 includes updated OKU disability relief amounts as per the 2025 spec amendment",
+        "Medical treatment relief scope is updated to reflect the 2025 expansion (confirm exact items from spec document)",
+        "Food waste composting machine relief (RM2,500, permanent limit) is added as a TP1 line item for YA2025",
+        "EV charging facility relief scope expansion is applied as per 2025 spec amendment",
+        "Unit test: employee with OKU status and composting machine relief — PCB reflects both correctly for YA2025",
+        "PCB calculation engine version is tagged as '2025 Spec Compliant' in system settings for audit reference"
+      ],
+      "technicalNotes": [
+        "Official document: Spesifikasi Kaedah Pengiraan Berkomputer PCB 2025 (hasil.gov.my/media/mdahzjwi/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2025.pdf)",
+        "Amendment is effective for YA2025 computations; MTD formula itself is unchanged",
+        "Changes include: TP1(2024)/TP3(2024) form amendments for deduction items",
+        "Distinct from YA2026 Budget changes story — this covers the official 2025 technical spec, not Budget 2026 proposals",
+        "Priority: must be applied before EA Form 2025 generation season (EA form due March 1, 2026)"
+      ],
+      "dependencies": [
+        "Implement TP1 Employee Relief Declaration DocType and PCB Integration"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-189",
+      "title": "Generate SOCSO Borang 2 First-Time Employee PERKESO Registration for ASSIST Portal",
+      "priority": "high",
+      "description": "When an employer hires a new employee who has never been registered with PERKESO before, the employer must complete Borang 2 (Employee Registration Form) within 30 days of the hire date and submit it via the PERKESO ASSIST portal. The existing PRD covers Borang 3 (new employment notification for already-registered employees) and Borang 4 (termination), but not Borang 2 for first-time registrations. Failure to register within 30 days is an offence under the Employees' Social Security Act 1969.",
+      "acceptanceCriteria": [
+        "New Employee record creation triggers a check: if employee has no existing SOCSO/PERKESO number, system flags for Borang 2 registration",
+        "Borang 2 PDF is generated with employee's IC/passport, full name, date of birth, address, and employer details pre-filled",
+        "30-day registration deadline alert is raised on Day 1, Day 20, and Day 28 if Borang 2 status remains unsubmitted",
+        "PERKESO registration number field on Employee record is populated after successful ASSIST portal submission",
+        "If employee already has a PERKESO number (prior employer), system routes to Borang 3 (new employment notification) instead",
+        "Compliance report lists employees without PERKESO numbers who have been employed for more than 30 days"
+      ],
+      "technicalNotes": [
+        "PERKESO ASSIST portal: assist.perkeso.gov.my — employer submits Borang 2 online",
+        "Employees' Social Security Act 1969: Section 7 requires employer registration of new employees within 30 days",
+        "Borang 2 is for first-time PERKESO registration; Borang 3 is for Notification of New Employment (employee already registered)",
+        "Foreign workers require a separate Foreign Worker Registration Form (not Borang 2) — distinguish by nationality",
+        "Domestic servants have separate registration form as per Social Security Act exemption amendments"
+      ],
+      "dependencies": [
+        "Implement SOCSO Borang 3 — New Employee Notification to PERKESO"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-190",
+      "title": "Update Employment Contract Stamp Duty Exemption Threshold to RM3,000 Monthly Wage (Budget 2026)",
+      "priority": "high",
+      "description": "Malaysia's Finance Bill 2025 (Budget 2026) raises the monthly wage exemption threshold for employment contract stamp duty from RM300 to RM3,000, effective 1 January 2026. Under the new self-assessment e-Duti Setem (e-DS) system launching on the same date, employers must self-assess, determine whether each new contract is exempt, and stamp dutiable contracts within 30 days of signing via MyTax. The existing stamp duty tracker must be updated to apply the new RM3,000 threshold for all contracts executed from 1 January 2026 onwards.",
+      "acceptanceCriteria": [
+        "Employment contracts for employees with monthly gross salary ≤RM3,000 are classified as EXEMPT from stamp duty for contracts dated on/after 1 January 2026",
+        "Employment contracts for employees with monthly gross salary >RM3,000 are classified as DUTIABLE (RM10 stamp duty per copy) for contracts dated on/after 1 January 2026",
+        "Contracts dated before 1 January 2026 continue to use the old RM300 exemption threshold",
+        "Payroll onboarding workflow shows stamp duty status (Exempt/Dutiable) automatically based on salary and contract date",
+        "For dutiable contracts, system generates a 30-day deadline alert from the contract signing date for e-Duti Setem submission",
+        "Threshold constant is configurable in system settings with effective-from date so future changes require no code change"
+      ],
+      "technicalNotes": [
+        "Finance Bill 2025 / Budget 2026: stamp duty exemption threshold raised from RM300 to RM3,000 monthly wage — effective 1 January 2026",
+        "e-Duti Setem (e-DS) self-assessment system launches 15 December 2025, mandatory from 1 January 2026",
+        "Stamp duty amount: RM10 per copy of employment contract (Item 4, First Schedule, Stamp Act 1949)",
+        "30-day stamping deadline from signing date; late stamping attracts penalty from 1 January 2026 under self-assessment regime",
+        "Relevant to the existing 'LHDN STAMPS Employment Contract Digital Stamp Status Tracker' story — update threshold logic"
+      ],
+      "dependencies": [
+        "Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyTax (Mandatory from 2026)"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-191",
+      "title": "New Hire Statutory Compliance Checklist with Multi-Agency Deadline Tracker",
+      "priority": "high",
+      "description": "When a new employee is hired, Malaysian law requires multiple statutory notifications and registrations across four agencies (LHDN, KWSP, PERKESO, and HRD Corp where applicable), each with different deadlines. Currently the system has individual features for each notification, but there is no unified onboarding compliance checklist that tracks all outstanding obligations in a single view with escalation alerts. Employers frequently miss one of the deadlines (e.g., SOCSO within 30 days, EPF within 7 days, CP22 within 30 days) because each is managed in isolation.",
+      "acceptanceCriteria": [
+        "On new Employee record creation, a New Hire Compliance Checklist is auto-generated with line items: CP22 submission (30 days), EPF new employee registration (7 days), SOCSO Borang 2/3 (30 days), EIS Form IA (30 days), HRD Corp notification (if applicable)",
+        "Each checklist item shows deadline date, current status (pending/submitted/overdue), and a quick-link to the relevant submission tool",
+        "Overdue items are highlighted in red on the Employee record and appear in a dedicated Compliance Alerts dashboard",
+        "Checklist auto-clears each item when the corresponding submission reference is recorded in the system",
+        "Daily digest email/notification is sent to HR Manager listing all employees with overdue new-hire compliance items",
+        "Checklist export can be used as a MOHR/statutory audit evidence document showing on-time compliance"
+      ],
+      "technicalNotes": [
+        "CP22: notify LHDN of new employment within 30 days — via e-CP22 MyTax portal",
+        "EPF: register new employee with KWSP within 7 days of employment commencement",
+        "SOCSO: register new employee within 30 days — Borang 2 (first-time) or Borang 3 (existing PERKESO member)",
+        "EIS: register new employee within 30 days via PERKESO ASSIST portal (Form IA)",
+        "HRD Corp: notify within 30 days if employer has 10+ Malaysian employees (compulsory levy payer)",
+        "This is an orchestration layer on top of the existing individual submission stories — not replacing them"
+      ],
+      "dependencies": [
+        "Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire",
+        "Alert on EPF New Employee Registration 7-Day Statutory Deadline",
+        "Generate SOCSO Borang 2 for First-Time Employee PERKESO Registration via ASSIST Portal",
+        "Auto-Generate EIS Form IA New Employee Registration File for PERKESO ASSIST"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-192",
+      "title": "Implement Returning Expert Programme (REP) 15% Flat PCB Rate on Employee Profile",
+      "priority": "medium",
+      "description": "TalentCorp's Returning Expert Programme (REP) grants approved returning Malaysians a flat 15% PCB rate on chargeable employment income for 5 consecutive years, as specified in their SATK (Surat Akuan Tarikh Kembali). Unlike TalentCorp's Career Comeback programme (for women), the REP applies to Malaysian professionals who have been based overseas and is approved via the MyHEART portal. Employers must apply the flat 15% rate instead of the graduated Schedule 1 tax table for the duration of the approval period.",
+      "acceptanceCriteria": [
+        "Employee record has REP status checkbox and SATK reference number field with approval start/end year",
+        "PCB calculation applies flat 15% on chargeable income (after EPF/TP1 deductions) when REP flag is active",
+        "System uses graduated Schedule 1 rates after approval period ends (auto-reversion based on approval end year)",
+        "EA Form correctly reflects the flat 15% PCB treatment with note of REP approval for employee",
+        "CP39 monthly submission uses REP employee's actual PCB amount (15% calculation) — not graduated",
+        "Alert raised to HR when REP approval period is within 3 months of expiry so renewal or reversion can be planned"
+      ],
+      "technicalNotes": [
+        "REP administered by TalentCorp Malaysia via MyHEART portal (myheart.my/rep/)",
+        "PCB rate: flat 15% on chargeable employment income for 5 consecutive approved years",
+        "SATK document specifies exact approval period; employer deducts at 15% from first employment month within approved window",
+        "Distinct from Career Comeback (for women returnees) — REP applies to any Malaysian returning from overseas employment",
+        "Employee files income tax via e-BT form each year; surplus PCB refunded by LHDN",
+        "Relevant ITA section: Section 25A incentive via Income Tax (Exemption) Order"
+      ],
+      "dependencies": [
+        "Implement MTD Method 2 (Year-to-Date Recalculation Formula)"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-193",
+      "title": "Progressive Wage Policy (PWP) Eligibility Flag and Wage Escalation Compliance Report",
+      "priority": "medium",
+      "description": "Malaysia's Progressive Wage Policy (PWP), launched June 2024 and expanded in 2025 with a RM200M allocation, incentivises MSMEs to raise employee wages through structured escalation. Participating employers must maintain minimum 6% annual salary increases for employees earning RM1,500–RM4,999/month and meet training requirements. As PWP adoption grows (50,000+ workers targeted by 2027), ERP payroll must be able to flag enrolled employees, track wage progression, and generate audit reports for the Ministry of Human Resources.",
+      "acceptanceCriteria": [
+        "Employee record has PWP enrolment flag and scheme entry date field",
+        "Payroll annual review computes wage increase percentage from prior year base for each PWP employee",
+        "Alert raised if a PWP employee's annual wage increment falls below 6% threshold at year-end payroll cycle",
+        "PWP eligibility check: employee's monthly salary must be in RM1,500–RM4,999 range at time of enrolment",
+        "Annual PWP compliance report shows each enrolled employee's salary at enrolment, current salary, year-over-year percentage increase, and compliance status (met/failed)",
+        "Report is exportable in MOHR-compatible format for PWP application/renewal submissions"
+      ],
+      "technicalNotes": [
+        "PWP administered by Ministry of Human Resources (MOHR); application via jobsmalaysia.gov.my or MOHR portal",
+        "PWP is voluntary but employers receive incentives/matching funds for participation",
+        "Wage escalation requirement: minimum 6% increase per year for enrolled employees",
+        "Eligible employees: Malaysian citizens, monthly wage RM1,500–RM4,999, employed by MSME",
+        "Training compliance is also required (eTRIS or HRD Corp training records) — link to HRD Corp story",
+        "As of February 2026 report, over 51,000 workers benefit and median entry-level wage rose from RM1,900 to RM2,200"
+      ],
+      "dependencies": [
+        "Update Minimum Wage Validation to RM1,700 (Feb 2025 Amendment)"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-194",
+      "title": "Track OKU (Disabled Employee) Kad OKU Status and Generate Double Deduction Annual Schedule",
+      "priority": "medium",
+      "description": "Employers who hire Malaysian citizens with a valid Disability Card (Kad OKU) from the Social Welfare Department are entitled to double deduction on remuneration paid to those employees, capped at RM48,000 per employee per year (applies when monthly remuneration does not exceed RM4,000). The payroll system must record OKU status, track the monthly remuneration cap, compute the eligible double deduction amount, and produce an annual supporting schedule for the employer's corporate income tax Form C submission.",
+      "acceptanceCriteria": [
+        "Employee record has OKU flag, Kad OKU number, and Kad OKU expiry date fields",
+        "Payroll calculation checks that OKU employee's monthly remuneration is ≤RM4,000 for double deduction eligibility",
+        "Annual double deduction amount is computed as min(total annual cash remuneration, RM48,000) per OKU employee",
+        "Warning raised when Kad OKU expiry date is within 60 days so employer can request renewal",
+        "Annual OKU Double Deduction Summary report lists each OKU employee with their total remuneration, eligible amount, and computed double deduction for the year of assessment",
+        "Report notes that double deduction extended to YA2030 per Budget 2026 and identifies applicable YA range"
+      ],
+      "technicalNotes": [
+        "Income Tax Act 1967: Section 34(6)(n) — additional deduction on remuneration paid to disabled employees",
+        "Eligible cash remuneration: basic salary, OT, bonus, commission, monthly fixed allowances — excludes non-cash BIK",
+        "Double deduction cap: RM48,000 per OKU employee per year of assessment",
+        "Monthly salary cap for eligibility: RM4,000/month (employee earning above this does not qualify)",
+        "Budget 2026 extended double deduction for hiring OKU employees; also extends to care workers training under KPWKM programmes",
+        "Employer records claim in corporate tax Form C — payroll provides the supporting schedule"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-195",
+      "title": "Implement Salary Sacrifice Arrangement PCB and EPF Contribution Base Reduction",
+      "priority": "medium",
+      "description": "Salary sacrifice (also called salary packaging) is a contractual arrangement where an employee foregoes part of their cash salary in exchange for employer-provided non-cash benefits (e.g., company car, laptop, gym membership, child care). For PCB purposes, the sacrificed salary amount is excluded from gross employment income only if the benefit received is a LHDN-approved BIK or perquisite exemption. For EPF, contributions must be computed on the agreed reduced salary (post-sacrifice), not the original salary. Payroll must correctly model this two-step adjustment to avoid over-deducting PCB and EPF.",
+      "acceptanceCriteria": [
+        "Salary Sacrifice salary component type reduces gross salary for both PCB and EPF contribution base calculation",
+        "System validates that the sacrificed amount corresponds to a mapped benefit component (BIK or exempt perquisite)",
+        "If the benefit received is a taxable BIK (not exempt), the BIK prescribed value is added back to PCB chargeable income",
+        "EPF monthly contribution for both employer and employee is computed on post-sacrifice gross salary",
+        "EA Form shows pre-sacrifice gross in aggregate income and shows sacrifice deduction and corresponding BIK separately",
+        "Report lists all salary sacrifice arrangements per employee with benefit type, sacrifice amount, and PCB/EPF impact"
+      ],
+      "technicalNotes": [
+        "LHDN Public Ruling 2/2013 on Employment Income covers salary sacrifice and BIK interaction",
+        "EPF contributions must be on 'wages' as defined in EPF Act — post-sacrifice amount counts as wages when sacrifice is validly documented",
+        "Key risk: if the sacrifice is not for an approved BIK or perquisite, the sacrificed amount remains taxable employment income",
+        "Common use cases: car parking, company car, petrol, laptop, childcare subsidy by employer",
+        "Distinguish from 'voluntary' EPF contributions — salary sacrifice reduces the contribution base; voluntary contributions top it up"
+      ],
+      "dependencies": [
+        "Implement Benefits-in-Kind (BIK) Prescribed Value Calculation Module",
+        "Implement Perquisite Exemption Thresholds on Salary Components"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-196",
+      "title": "Enforce Director Dividend Distribution PCB Exclusion to Prevent Incorrect PCB Deduction",
+      "priority": "medium",
+      "description": "Company directors who are also shareholders may receive dividend distributions from the company in addition to their director fee or salary. Under Section 25 of the Income Tax Act 1967, dividends are investment income (not employment income) and must NOT be subject to PCB deduction by the employer. The payroll system currently handles director fee vs director salary distinction, but lacks a classification guard to prevent payroll administrators from incorrectly routing dividend payments through the Salary Slip module, which would trigger an erroneous PCB deduction.",
+      "acceptanceCriteria": [
+        "A 'Dividend Distribution' salary component type is introduced and classified as non-employment income",
+        "When a dividend component is included in any Salary Slip, system raises a hard-block validation: 'Dividend distributions are not employment income — process via Journal Entry, not Salary Slip'",
+        "EA Form excludes any amount tagged as dividend distribution from Section A employment income totals",
+        "Director employee profile shows total dividend distributions for the year separately from salary/fee for reference (not for PCB)",
+        "System guide/tooltip explains correct accounting entry for dividend distributions vs director fee/salary",
+        "If dividend component is accidentally submitted on a Salary Slip, system logs a compliance warning and requires manual override with reason"
+      ],
+      "technicalNotes": [
+        "ITA 1967 Section 25: definition of employment income excludes dividends",
+        "Dividends are taxable under Schedule 7 (investment income) when received by individual shareholders — not subject to employer PCB withholding",
+        "Single-tier dividend system: company pays dividends from after-tax profits; recipient does not need to pay further tax",
+        "Director fee (Section 13 employment income) IS subject to PCB; dividend is NOT — payroll must clearly separate these",
+        "Distinct from 'Distinguish director fee vs director salary at invoice level' story — this covers dividend exclusion, not fee vs salary"
+      ],
+      "dependencies": [
+        "Distinguish director fee vs director salary at invoice level"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-197",
+      "title": "Calculate and Record EPF Late Contribution Interest Penalty per KWSP Act",
+      "priority": "medium",
+      "description": "Under the Employees Provident Fund Act 1991, employers who remit EPF contributions after the monthly payment deadline (15th of the following month, or last working day if 15th is a holiday) are liable to pay dividends/interest on late contributions at 1% per month or RM5 (whichever is higher) until full payment. The payroll system currently tracks EPF contribution schedules but does not compute or record late payment penalties, which are frequently incurred by SMEs and must be reconciled before the annual EPF audit.",
+      "acceptanceCriteria": [
+        "EPF Contribution Batch record has a Payment Date field capturing the actual remittance date",
+        "When Payment Date is after the statutory deadline, system computes penalty: 1% of unpaid amount per month (pro-rated daily) or RM5 minimum",
+        "Penalty amount is displayed on the EPF Contribution Batch record and flagged for payment in the next cycle",
+        "Monthly EPF reconciliation report shows: due date, actual payment date, days late, penalty amount per batch",
+        "System alerts the payroll administrator on the 13th of each month if the current month's EPF batch has not been marked as submitted",
+        "Annual late payment penalty summary is generated per year for corporate finance reporting"
+      ],
+      "technicalNotes": [
+        "EPF Act 1991 Section 45: late contribution penalty at 1% per month or RM5 minimum (whichever is higher)",
+        "Payment deadline: 15th of the month following the salary month; adjusted to previous business day if 15th is a weekend/holiday",
+        "KWSP may issue a penalty notice (Notice 1A) for persistent late payment; employer may appeal within 14 days",
+        "Penalty is calculated on total outstanding amount (employer + employee share) per contribution batch",
+        "Distinct from SOCSO late payment penalty (6% per annum, minimum RM5 per month)"
+      ],
+      "dependencies": [
+        "Generate EPF Borang A monthly contribution schedule"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-198",
+      "title": "Handle PERKESO Temporary Disablement Benefit (TDB) Salary Offset During Work Injury Leave",
+      "priority": "medium",
+      "description": "When an employee sustains a work-related injury covered by SOCSO Employment Injury Scheme, PERKESO pays a Temporary Disablement Benefit (TDB) at 80% of the employee's insured daily wage for each day of certified absence. During TDB-covered leave, the employer is typically NOT required to pay full salary (the PERKESO benefit substitutes it). However, many employers continue paying full salary and must reconcile the PERKESO benefit received. Payroll must track TDB periods, apply the correct salary treatment, and avoid double-payment of SOCSO and employer salary simultaneously.",
+      "acceptanceCriteria": [
+        "Employee Leave record has a 'SOCSO Work Injury Leave' type linked to PERKESO TDB claim number",
+        "During SOCSO injury leave, payroll salary calculation shows PERKESO TDB daily rate (80% of insured daily wage, capped at SOCSO contribution ceiling) as an offset against employer salary obligation",
+        "Employer salary payment during TDB period is configurable: Full Pay (employer tops up), Partial Pay, or No Pay (PERKESO-only)",
+        "EA Form correctly classifies PERKESO TDB receipts (not employment income) — employer payments during injury leave are shown as employment income",
+        "TDB claim tracking shows: injury date, TDB start date, end date, total TDB days, daily rate, total PERKESO amount expected",
+        "Warning if employee is being paid full employer salary AND TDB concurrently without a top-up arrangement documented"
+      ],
+      "technicalNotes": [
+        "SOCSO Employment Injury Scheme: TDB rate = 80% of insured daily wage rate (IDR)",
+        "TDB paid by PERKESO directly to employee, not through employer — employer's obligation is reduced accordingly",
+        "Insured Daily Rate cap based on SOCSO contribution table (wage ceiling RM6,000/month effective Oct 2024)",
+        "Employment Act S.60F: sick leave entitlement runs concurrently with TDB — but TDB replaces pay obligation",
+        "PERKESO TDB claim reference to be stored on the injury leave record for reconciliation",
+        "Relevant PERKESO forms: Borang 34 (accident notification, 48-hour deadline) — link to existing story"
+      ],
+      "dependencies": [
+        "Generate PERKESO Borang 34 Accident Notification Within 48-Hour Statutory Deadline"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-199",
+      "title": "Record FWCMS Monthly Levy Payment Receipt Reference on Foreign Employee Record",
+      "priority": "medium",
+      "description": "After paying the Foreign Worker Levy via the FWCMS portal (fwcms.gov.my), employers receive a payment receipt with a unique reference number per foreign worker per month. The existing PRD covers levy tracking and payment deadline alerts, but does not capture the post-payment receipt reference. MOHR and Immigration Department audits require employers to produce evidence of levy payment for each foreign worker — the receipt reference number is the primary evidence. This story closes the audit trail loop by storing the FWCMS receipt reference on the foreign employee's levy payment record.",
+      "acceptanceCriteria": [
+        "Foreign Worker Levy Payment record has a FWCMS Receipt Reference Number field",
+        "After levy payment is made on FWCMS portal, HR records the receipt reference and payment date on the employee's levy record",
+        "Monthly levy status per foreign employee shows: expected levy amount, payment date, FWCMS receipt reference, and payment confirmation flag",
+        "Annual audit export generates a report of all FWCMS payments per foreign employee with receipt references for Immigration/MOHR inspection",
+        "Alert is raised for any foreign employee levy month where payment date has passed but FWCMS receipt reference has not been recorded",
+        "Batch import of FWCMS receipt references is available (CSV/Excel upload) for employers with many foreign workers"
+      ],
+      "technicalNotes": [
+        "FWCMS portal: fwcms.gov.my — managed by Ministry of Home Affairs (MOHA)",
+        "Foreign Worker Levy payment deadline: 10th of each month (separate from EPF/SOCSO/EIS deadline of 15th)",
+        "Receipt reference format from FWCMS portal to be confirmed; typically an alphanumeric transaction ID",
+        "Multi-Tier Levy Model (MTLM): levy rate varies by sector, worker nationality, and tier — reference existing levy tracking story for rate calculation",
+        "Receipt reference must be retained for at least 7 years per MOHR record-keeping requirements"
+      ],
+      "dependencies": [
+        "Implement Foreign Worker Levy Tracking (FWCMS / Multi-Tier Levy Model)",
+        "FWCMS Foreign Worker Levy: 10th-of-Month Payment Deadline Alert Separate from EPF/SOCSO"
+      ],
       "estimatedComplexity": "small",
       "passes": false
     }
