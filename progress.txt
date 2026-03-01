@@ -6226,3 +6226,40 @@ Incomplete: Track Statutory Compliance Submission Calendar and Auto-Escalate Ove
 
 ### Gotchas
 - `mock_new_doc.side_effect = lambda: MagicMock()` fails — use `lambda *args: MagicMock()` or a named factory function with `*args`
+## Iteration 6 - Sun, Mar  1, 2026  9:52:44 AM
+Completed: Track Statutory Compliance Submission Calendar and Auto-Escalate Overdue Filings (ID: US-121) in 12m
+
+
+## Iteration 7 — US-118: Apply YA2025 PCB Schedule 1 Tax Brackets Including New 30% Tier
+
+**Type:** IMPL
+**TDD Phase:** GREEN (31/31 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_ya2025_tax_brackets`
+**Result:** PASS — 31 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `services/pcb_tax_brackets.py` — NEW: Year-keyed bracket registry for YA2024 and YA2025; `get_tax_bands(year)` returns (bands, lower_bounds) with graceful fallback
+- `services/pcb_calculator.py` — Added `_compute_tax_for_year(ci, year)` function; added `assessment_year=None` param to `calculate_pcb()` (backward-compat: None uses YA2024 default `_TAX_BANDS`); import `get_tax_bands` from pcb_tax_brackets
+- `tests/test_ya2025_tax_brackets.py` — NEW: 31 tests covering all 10 YA2025 tiers, the 6 LHDN income checkpoints, backward compat, personal rebate, and future-year fallback
+
+### YA2025 bracket table (confirmed cumulative values)
+| Band | Range | Rate | Cumulative at Lower |
+|------|-------|------|---------------------|
+| 1 | 0 – 5,000 | 0% | 0 |
+| 2 | 5,001 – 20,000 | 1% | 0 |
+| 3 | 20,001 – 35,000 | 3% | 150 |
+| 4 | 35,001 – 50,000 | 6% | 600 |
+| 5 | 50,001 – 70,000 | 11% | 1,500 |
+| 6 | 70,001 – 100,000 | 19% | 3,700 |
+| 7 | 100,001 – 250,000 | 25% | 9,400 |
+| 8 | 250,001 – 400,000 | 26% | 46,900 |
+| 9 | 400,001 – 2,000,000 | 28% | 85,900 |
+| 10 | above 2,000,000 | 30% | 533,900 |
+
+### Patterns discovered
+- `calculate_pcb(assessment_year=None)` defaults to YA2024 for backward compat — existing 81 tests unaffected (2 pre-existing failures unrelated)
+- `_compute_tax_for_year(ci, year)` is the year-aware tax function; `_compute_tax_on_chargeable_income` kept unchanged for backward compat
+- Lambda `_tax_fn = lambda ci: _compute_tax_for_year(ci, year)` cleanly routes in `calculate_pcb` without touching irregular payment logic
+
+### Gotchas
+- 2 pre-existing failures in test_pcb_calculator.py (TestValidatePcbAmount.test_non_resident_flag_triggers_flat_30_percent) — verified pre-existing via git stash/pop test; unrelated to US-118
