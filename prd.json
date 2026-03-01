@@ -5488,7 +5488,7 @@
         "Generate Employment Act S.61 Compliant Payslip with All Mandatory Fields"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-233",

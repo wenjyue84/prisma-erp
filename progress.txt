@@ -1,3 +1,25 @@
+## Iteration N — US-232: Implement Employment Act S.25A Digital Payslip Mandatory Fields Compliance Validator
+
+**Type:** IMPL
+**TDD Phase:** GREEN (36/36 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_payslip_s25a_us232
+**Result:** PASS — 36 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/services/payslip_s25a_service.py` — Core service: `check_s25a_fields()`, `validate_s25a_mandatory_fields()` (before_submit hook), `run_s25a_audit()` (historical audit)
+- `lhdn_payroll_integration/tests/test_payslip_s25a_us232.py` — 36 tests across 6 test classes
+- `lhdn_payroll_integration/hooks.py` — Added `payslip_s25a_service.validate_s25a_mandatory_fields` to Salary Slip `before_submit` hooks
+
+### Patterns discovered
+- EA S.61 payslip print format (from US-100) already contains gender, citizenship status, and all other S.25A mandatory fields — no template changes needed.
+- Mocking `_get_employee_field` with `patch()` is cleaner than mocking `frappe.db.get_value` directly for unit tests that need to test field-level behaviour.
+- Hook path pattern: `lhdn_payroll_integration.services.X` (not `lhdn_payroll_integration.lhdn_payroll_integration.services.X`) for doc_events hooks, matching existing before_submit entries.
+
+### Gotchas
+- Windows Python uses cp1252 encoding by default; always open prd.json with `encoding='utf-8'` on Windows.
+
+---
+
 ## Iteration N — US-204: Track EP Category Internship Obligation per 1:3 Internship Policy (TalentCorp/MOHR)
 
 **Type:** IMPL
@@ -7502,6 +7524,7 @@ Implementation was already complete. Verified all 28 tests pass green.
 - DocType autoname format:PCBERR-{YYYY}-{MM}-{#####} generates sortable audit-trail names
 - ignore_links=True in test _make_error_log() bypasses Employee FK validation safely
 - patch _get_mytax_access_token directly (not frappe.db.get_value) to avoid side effects in resubmission tests
+
 
 
 
