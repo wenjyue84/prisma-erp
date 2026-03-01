@@ -15,6 +15,7 @@ class LHDNDevTools {
         this._render_layout();
         this._load_system_status();
         this._load_recent_submissions();
+        this._load_epcb_registration_status();
     }
 
     _render_layout() {
@@ -26,6 +27,7 @@ class LHDNDevTools {
                         ${this._panel_system_status()}
                         ${this._panel_manual_triggers()}
                         ${this._panel_exemption_tester()}
+                        ${this._panel_epcb_plus_setup_guide()}
                     </div>
                     <!-- Right column -->
                     <div class="col-md-6">
@@ -211,6 +213,16 @@ class LHDNDevTools {
         $b.find('.btn-resubmit').on('click', () => this._resubmit());
 
         $b.find('.btn-retrieve-document').on('click', () => this._retrieve_document());
+
+        $b.find('.btn-goto-company').on('click', () => {
+            frappe.db.get_value('Company', { is_group: 0 }, 'name', (r) => {
+                if (r && r.name) {
+                    frappe.set_route('Form', 'Company', r.name);
+                } else {
+                    frappe.msgprint('No company found.');
+                }
+            });
+        });
     }
 
     /* ------------------------------------------------------------------ */
@@ -419,6 +431,71 @@ class LHDNDevTools {
                 });
             }
         );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Panel 8 — e-PCB Plus Setup Guide                                     */
+    /* ------------------------------------------------------------------ */
+
+    _panel_epcb_plus_setup_guide() {
+        return `
+        <div class="card mb-3" id="panel-epcb-setup">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>8 — e-PCB Plus Setup Guide</strong>
+                <span class="badge badge-warning">Mandatory since 3 Feb 2025</span>
+            </div>
+            <div class="card-body p-2">
+                <p class="text-muted" style="font-size:12px;margin-bottom:8px;">
+                    All PCB monthly submissions now flow through <strong>e-PCB Plus</strong> on the MyTax portal.
+                    You must designate a PCB Administrator before CP39 file upload will succeed.
+                </p>
+                <div id="epcb-registration-status" class="mb-2">
+                    <span class="text-muted" style="font-size:12px;">Checking registration status…</span>
+                </div>
+                <ol style="font-size:12px;padding-left:20px;margin-bottom:8px;">
+                    <li><strong>Log in to MyTax</strong> — go to <em>e-Services &gt; e-PCB Plus</em></li>
+                    <li><strong>Register Employer</strong> — enter your E Number, company TIN, and contact details</li>
+                    <li><strong>Designate PCB Administrator</strong> — provide the administrator's NRIC; they will receive an OTP to accept the role</li>
+                    <li><strong>Update Company record</strong> — fill in the <em>LHDN e-PCB Plus Settings</em> section and set Registration Status to <em>Registered</em></li>
+                </ol>
+                <a href="https://mytax.hasil.gov.my/" target="_blank" class="btn btn-xs btn-primary mr-1">
+                    Open MyTax Portal
+                </a>
+                <button class="btn btn-xs btn-default btn-goto-company">Open Company Settings</button>
+            </div>
+        </div>`;
+    }
+
+    _load_epcb_registration_status() {
+        frappe.call({
+            method: 'frappe.client.get_value',
+            args: {
+                doctype: 'Company',
+                filters: { is_group: 0 },
+                fieldname: ['name', 'custom_epcb_plus_registration_status', 'custom_epcb_plus_employer_e_number', 'custom_epcb_plus_pcb_admin_name'],
+            },
+            callback: (r) => {
+                const $el = this.$body.find('#epcb-registration-status');
+                if (r.exc || !r.message) {
+                    $el.html('<span class="text-muted" style="font-size:12px;">No company found.</span>');
+                    return;
+                }
+                const d = r.message;
+                const status = d.custom_epcb_plus_registration_status || 'Not Registered';
+                const badgeClass = status === 'Registered' ? 'badge-success' : 'badge-danger';
+                const admin = d.custom_epcb_plus_pcb_admin_name
+                    ? `<small class="text-muted ml-2">Admin: ${frappe.utils.escape_html(d.custom_epcb_plus_pcb_admin_name)}</small>`
+                    : '';
+                const enum = d.custom_epcb_plus_employer_e_number
+                    ? `<small class="text-muted ml-2">E No: ${frappe.utils.escape_html(d.custom_epcb_plus_employer_e_number)}</small>`
+                    : '';
+                $el.html(`
+                    <span class="badge ${badgeClass}">${frappe.utils.escape_html(status)}</span>
+                    ${enum}${admin}
+                    <small class="text-muted ml-1">(${frappe.utils.escape_html(d.name || '')})</small>
+                `);
+            }
+        });
     }
 
     /* ------------------------------------------------------------------ */

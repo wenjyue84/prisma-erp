@@ -6082,3 +6082,37 @@ Completed: Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
 - sync_fixtures requires BOTH outer fixtures path AND nested path to be updated (docker cp to both)
 - After bench migrate deletes workspace, run sync_fixtures again to restore all fixtures
 - clear-cache before sync_fixtures is required for new fixture records to be detected
+## Iteration 2 - Sun, Mar  1, 2026  9:04:17 AM
+Completed: Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure (ID: US-115) in 13m
+
+
+## Iteration N — US-116: Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_epcb_plus_registration`
+**Result:** PASS — 11/11 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `fixtures/custom_field.json` — Added 6 new Company fields (Section Break + 5 e-PCB Plus fields)
+- `services/ecp39_service.py` — Added `_validate_epcb_plus_registration()` + called at top of `submit_cp39_to_lhdn()`
+- `page/lhdn_dev_tools/lhdn_dev_tools.js` — Added Panel 8 (e-PCB Plus Setup Guide) with registration status check and "Open Company Settings" button
+- `fixtures/workspace.json` — Added "e-PCB Plus Setup Guide" shortcut (6th shortcut + content entry)
+- `tests/test_epcb_plus_registration.py` — 11 tests: custom field existence (6), validation logic (3), CP39 gate (2)
+
+### Fields added to Company
+- `custom_epcb_plus_section` (Section Break) — "LHDN e-PCB Plus Settings"
+- `custom_epcb_plus_registration_status` (Select: Not Registered/Registered)
+- `custom_epcb_plus_employer_e_number` (Data) — E Number from LHDN
+- `custom_epcb_plus_pcb_admin_nric` (Data) — PCB Administrator NRIC
+- `custom_epcb_plus_pcb_admin_name` (Data) — PCB Administrator Name
+- `custom_epcb_plus_employer_rep_nric` (Data) — Optional Employer Representative NRIC
+
+### Patterns discovered
+- bench console heredoc accepts multi-line Python for upsert operations on custom fields
+- When mocking frappe.db.get_value in CP39 integration tests, also mock _store_submission_log to avoid DocType module import errors in test runner
+- `_validate_epcb_plus_registration()` should be a standalone function (not inside submit_cp39) so tests can import and call it directly
+
+### Gotchas
+- bench console interacts via stdin; frappe.db.upsert is not available — use frappe.db.exists + frappe.get_doc.insert or frappe.db.set_value
+- prd.json must be opened with encoding='utf-8' on Windows (special chars in story titles cause cp1252 decode error)

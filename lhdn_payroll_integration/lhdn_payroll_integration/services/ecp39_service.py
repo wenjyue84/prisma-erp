@@ -106,6 +106,26 @@ def _store_submission_log(company_name, month, year, status, submission_referenc
 	return log.name
 
 
+def _validate_epcb_plus_registration(company_name):
+	"""Validate that the company has completed e-PCB Plus registration.
+
+	Raises frappe.ValidationError if e-PCB Plus Registration Status is not 'Registered'.
+	Mandatory since 3 February 2025: all PCB submission flows through e-PCB Plus on MyTax.
+	"""
+	status = frappe.db.get_value(
+		"Company", company_name, "custom_epcb_plus_registration_status"
+	)
+	if status != "Registered":
+		frappe.throw(
+			f"e-PCB Plus registration is required before submitting CP39. "
+			f"Company '{company_name}' has e-PCB Plus Registration Status = '{status or 'Not Registered'}'. "
+			"Please register a PCB Administrator on MyTax e-PCB Plus and update the "
+			"'LHDN e-PCB Plus Settings' section on the Company record. "
+			"See the e-PCB Plus Setup Guide in LHDN Developer Tools for instructions.",
+			frappe.ValidationError,
+		)
+
+
 def submit_cp39_to_lhdn(company_name, month, year):
 	"""Submit CP39 PCB remittance data to LHDN MyTax e-PCB Plus API.
 
@@ -118,6 +138,9 @@ def submit_cp39_to_lhdn(company_name, month, year):
 		dict with keys: success (bool), log_name (str), reference (str), message (str)
 	"""
 	try:
+		# Step 0: Validate e-PCB Plus registration (mandatory since 3 Feb 2025)
+		_validate_epcb_plus_registration(company_name)
+
 		# Step 1: Authenticate
 		access_token = _get_mytax_access_token(company_name)
 

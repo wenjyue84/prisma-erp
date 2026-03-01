@@ -10,7 +10,7 @@
     "icon": "accounting",
     "public": 1,
     "is_hidden": 0,
-    "content": "[{\"id\":\"lhdn-sc-1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Slip\",\"col\":4}},{\"id\":\"lhdn-sc-2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Expense Claim\",\"col\":4}},{\"id\":\"lhdn-sc-3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"LHDN Payroll Compliance\",\"col\":4}},{\"id\":\"lhdn-sc-4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"LHDN Developer Tools\",\"col\":4}},{\"id\":\"lhdn-sc-5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payroll Wage Register\",\"col\":4}}]",
+    "content": "[{\"id\":\"lhdn-sc-1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Slip\",\"col\":4}},{\"id\":\"lhdn-sc-2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Expense Claim\",\"col\":4}},{\"id\":\"lhdn-sc-3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"LHDN Payroll Compliance\",\"col\":4}},{\"id\":\"lhdn-sc-4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"LHDN Developer Tools\",\"col\":4}},{\"id\":\"lhdn-sc-5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payroll Wage Register\",\"col\":4}},{\"id\":\"lhdn-sc-6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"e-PCB Plus Setup Guide\",\"col\":4}}]",
     "shortcuts": [
       {
         "doctype": "Workspace Shortcut",
@@ -46,6 +46,13 @@
         "link_to": "Payroll Wage Register",
         "label": "Payroll Wage Register",
         "icon": "list"
+      },
+      {
+        "doctype": "Workspace Shortcut",
+        "type": "Page",
+        "link_to": "lhdn-dev-tools",
+        "label": "e-PCB Plus Setup Guide",
+        "icon": "setting"
       }
     ],
     "links": [

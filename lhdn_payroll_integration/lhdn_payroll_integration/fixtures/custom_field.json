@@ -1247,5 +1247,72 @@
     "description": "Date SPC clearance letter received from LHDN. Required audit trail per ITA 1967.",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_spc_reference_number"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_epcb_plus_section",
+    "dt": "Company",
+    "fieldname": "custom_epcb_plus_section",
+    "fieldtype": "Section Break",
+    "label": "LHDN e-PCB Plus Settings",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_foreign_employee_count"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_epcb_plus_registration_status",
+    "dt": "Company",
+    "fieldname": "custom_epcb_plus_registration_status",
+    "fieldtype": "Select",
+    "label": "e-PCB Plus Registration Status",
+    "options": "Not Registered\nRegistered",
+    "default": "Not Registered",
+    "description": "e-PCB Plus is mandatory from 3 February 2025 for all PCB submissions via MyTax portal. Register the PCB Administrator via MyTax before submitting CP39.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_epcb_plus_section"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_epcb_plus_employer_e_number",
+    "dt": "Company",
+    "fieldname": "custom_epcb_plus_employer_e_number",
+    "fieldtype": "Data",
+    "label": "Employer Reference Number (E Number)",
+    "description": "E Number issued by LHDN during employer registration. Required on all e-PCB Plus submissions.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_epcb_plus_registration_status"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_epcb_plus_pcb_admin_nric",
+    "dt": "Company",
+    "fieldname": "custom_epcb_plus_pcb_admin_nric",
+    "fieldtype": "Data",
+    "label": "PCB Administrator NRIC",
+    "description": "NRIC of the individual designated as PCB Administrator on MyTax e-PCB Plus.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_epcb_plus_employer_e_number"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_epcb_plus_pcb_admin_name",
+    "dt": "Company",
+    "fieldname": "custom_epcb_plus_pcb_admin_name",
+    "fieldtype": "Data",
+    "label": "PCB Administrator Name",
+    "description": "Full name of the PCB Administrator as registered on MyTax.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_epcb_plus_pcb_admin_nric"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-custom_epcb_plus_employer_rep_nric",
+    "dt": "Company",
+    "fieldname": "custom_epcb_plus_employer_rep_nric",
+    "fieldtype": "Data",
+    "label": "Employer Representative NRIC",
+    "description": "Optional: NRIC of the Employer Representative if different from PCB Administrator. Role hierarchy: Employer > Employer Representative > PCB Administrator.",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_epcb_plus_pcb_admin_name"
   }
 ]
