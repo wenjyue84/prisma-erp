@@ -1,3 +1,29 @@
+## Iteration N — US-182: Gig Workers Act 2025 — SKSPS Per-Transaction Contribution Calculation and PERKESO Monthly Aggregate Remittance
+
+**Type:** IMPL
+**TDD Phase:** GREEN (62/62 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_sksps_contribution
+**Result:** PASS — 62 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/sksps_contribution_service.py` — Core service: compute_transaction_sksps() (1.25% per-txn), is_transaction_eligible() (status filtering), aggregate_monthly_sksps() (monthly rollup), get_remittance_deadline() (15th next month), is_remittance_overdue(), get_worker_transaction_summary() (payslip read), generate_perkeso_remittance_file() (CSV), batch_compute_sksps_for_period() (multi-worker batch)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_sksps_contribution.py` — 62 tests across 9 classes: TestSkspsContributionConstants, TestComputeTransactionSksps, TestIsTransactionEligible, TestAggregateMonthlySksps, TestGetRemittanceDeadline, TestIsRemittanceOverdue, TestGetWorkerTransactionSummary, TestGeneratePerkesoRemittanceFile, TestBatchComputeSkspsForPeriod, TestSkspsRateAccuracy
+
+### Patterns discovered
+- SKSPS contribution is 1.25% per-transaction (NOT 2% like SEIA monthly) — full amount borne by platform provider
+- Failed, Cancelled, and Refunded transactions are EXCLUDED from SKSPS contribution base; only "Completed" qualifies
+- Python banker's rounding: `round(0.625, 2)` → 0.62 (not 0.63); test expectations must match Python's rounding behavior
+- Remittance deadline is always 15th of the following month, with December rolling to January of next year
+- PERKESO remittance CSV includes worker-level breakdown: NRIC/passport, SKSPS ref, transaction count, total value, contribution amount
+- Module-level `frappe` mock: use `@patch("lhdn_payroll_integration.services.sksps_contribution_service.frappe")` for DB-dependent tests
+
+### Gotchas
+- Pre-existing `test_lindung247_ecaruman_us311.py` in container (from previous iteration) had broken double-nested import path and was blocking ALL test discovery — had to remove it
+- The stale pycache file also needed cleanup to prevent import caching issues
+- Single-prefix import path (`lhdn_payroll_integration.services.*`) is the correct path for new code
+
+---
+
 ## Iteration N — US-216: Budget 2026 TP1 — Permanent RM3,000 Childcare Relief for JKM-Registered Transit Centres
 
 **Type:** IMPL
@@ -7772,4 +7798,7 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 
 ## Iteration 41 - Sun, Mar  1, 2026  5:16:19 PM
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package (ID: US-211) — attempt 1/3
+
+## Iteration 36 - Sun Mar  1 17:17:52 MPST 2026
+Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package (ID: US-211) — attempt 2/3
 

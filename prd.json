@@ -2388,7 +2388,7 @@
         "Implement TP1 Employee Relief Declaration DocType and PCB Integration"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-110",
@@ -4249,7 +4249,7 @@
         "Gig Workers Act 2025 — Auto-Register Gig Workers Under PERKESO SKSPS via ASSIST Portal API"
       ],
       "estimatedComplexity": "medium",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-183",
