@@ -6136,3 +6136,42 @@ Completed: Register PCB Administrator Role on MyTax e-PCB Plus and Store Credent
 ### Patterns discovered
 - US-117 was already fully implemented before this iteration; all acceptance criteria already met
 - All 24 tests pass: Fixture, Employee field, TP1 field, Combined cap enforcement, PCB relief, SOCSO/EIS exclusion
+## Iteration 1 - Sun Mar  1 09:26:37 MPST 2026
+Completed: Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire (ID: US-114) in 410m
+
+## Iteration 4 - Sun, Mar  1, 2026  9:30:38 AM
+Incomplete: Track Statutory Compliance Submission Calendar and Auto-Escalate Overdue Filings (ID: US-121) — attempt 1/3
+
+
+## Iteration — US-119: Implement Public Holiday Work Pay Calculator (Section 60D Employment Act)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 70 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_public_holiday_pay`
+**Result:** PASS — 70/70 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/employment_compliance.py` — Appended 6 new functions + 3 constants for Section 60D
+- `lhdn_payroll_integration/tests/test_public_holiday_pay.py` — 70 tests across 7 test classes
+
+### New exports added to employment_compliance.py
+- Constants: `PH_WORK_PREMIUM_MULTIPLIER=2`, `PH_OT_MULTIPLIER=3`, `NORMAL_DAILY_HOURS=8`, `MALAYSIA_FIXED_PUBLIC_HOLIDAYS`
+- `calculate_public_holiday_work_premium(monthly_salary, normal_daily_hours=8)` — 2x ORP daily premium
+- `calculate_public_holiday_ot_pay(monthly_salary, ot_hours, normal_daily_hours=8)` — 3x hourly OT
+- `check_ea_coverage_for_public_holiday(monthly_salary)` — EA coverage check (≤RM4,000)
+- `get_public_holiday_oil_balance(employee_name)` — reads custom_ph_oil_balance from Employee
+- `add_public_holiday_oil_credit(employee_name, days=1)` — increments OIL balance
+- `is_malaysia_public_holiday(date_value, state=None)` — checks fixed-date federal public holidays
+
+### Patterns discovered
+- Appending to employment_compliance.py works cleanly (file already large ~450+ lines)
+- `custom_ph_oil_balance` Float custom field on Employee already existed in fixtures
+- Nested path sync still required (both paths appended)
+- Test module runs with `lhdn_payroll_integration.tests.test_public_holiday_pay` (non-nested import style)
+- All 70 tests pass on first run
+
+### Key formulas (EA 1955)
+- ORP daily = monthly_salary / 26 (S.60I)
+- PH work premium = ORP_daily × 2 (S.60D — base pay already in salary, +2 days extra)
+- PH OT = ORP_daily / normal_daily_hours × 3 × ot_hours (S.60A)
+- EA coverage: salary ≤ RM4,000/month (post-2022 amendment)

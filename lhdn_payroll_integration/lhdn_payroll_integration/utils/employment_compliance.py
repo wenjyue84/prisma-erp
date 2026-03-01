@@ -733,3 +733,457 @@ def validate_weekly_hours(salary_slip):
         "contracted_weekly_hours": contracted_weekly_hours,
         "ot_hours_monthly": ot_hours_monthly,
     }
+
+
+# ---------------------------------------------------------------------------
+# Public Holiday Work Pay — Employment Act 1955 Section 60D (US-119)
+# ---------------------------------------------------------------------------
+# Section 60D: EA-covered employees entitled to 11 paid PH per year.
+# Working on PH: employer must pay ordinary daily wage PLUS 2 additional
+# days' wages (i.e., the base daily pay is already in regular salary, so the
+# additional premium = 2 x ORP daily).
+# Section 60A: OT beyond normal working hours on PH = 3x hourly rate.
+# Section 60I: ORP daily = monthly_salary / 26 for monthly-rated employees.
+# EA coverage: employees earning <= RM4,000/month (post-2022 amendment).
+# ---------------------------------------------------------------------------
+
+# Number of gazetted public holidays EA employees are entitled to per year
+EA_PUBLIC_HOLIDAYS_PER_YEAR = 11
+
+# PH work additional premium multiplier (base day already covered by salary)
+PH_WORK_ADDITIONAL_MULTIPLIER = 2.0   # 2x ORP per day = total 3x including regular day pay
+
+# OT on PH: beyond normal working hours at 3x hourly rate
+PH_OT_HOURLY_MULTIPLIER = 3.0
+
+
+def calculate_ph_work_premium(monthly_salary, normal_daily_hours=8):
+    """Calculate the additional pay premium for working on a Public Holiday.
+
+    Employment Act 1955 Section 60D: when an EA-covered employee works on a
+    public holiday, the employer must pay the ordinary daily wage plus TWO
+    additional days' wages.  Since the base daily pay is already embedded in
+    the regular monthly salary, the *additional* premium due is:
+
+        premium = 2 x ORP_daily   (where ORP_daily = monthly_salary / 26)
+
+    Overtime beyond normal working hours is handled separately by
+    ``calculate_ph_overtime()``.
+
+    Args:
+        monthly_salary: Basic monthly salary in RM.
+        normal_daily_hours: Normal daily working hours (default 8). Used only
+            for documentation / context; the premium is per-day, not per-hour.
+
+    Returns:
+        dict with keys:
+            'premium':        float -- additional premium in RM (2 x ORP daily)
+            'orp_daily':      float -- ORP per day (monthly_salary / 26)
+            'multiplier':     float -- always 2.0 (the additional multiplier)
+            'ea_covered':     bool  -- True if salary <= RM4,000 (EA applies)
+            'warning':        str or None -- advisory if employee is not EA-covered
+    """
+    try:
+        salary = float(monthly_salary)
+    except (TypeError, ValueError):
+        salary = 0.0
+
+    orp_daily = salary / 26.0
+    premium = PH_WORK_ADDITIONAL_MULTIPLIER * orp_daily
+    ea_covered = salary <= ORP_SALARY_THRESHOLD
+
+    warning = None
+    if not ea_covered:
+        warning = (
+            f"Employee monthly salary RM{salary:.2f} exceeds the EA coverage threshold of "
+            f"RM{ORP_SALARY_THRESHOLD:.0f}/month. Public holiday work pay for this employee "
+            f"is governed by the employment contract, not Section 60D of the Employment Act."
+        )
+
+    return {
+        "premium": premium,
+        "orp_daily": orp_daily,
+        "multiplier": PH_WORK_ADDITIONAL_MULTIPLIER,
+        "ea_covered": ea_covered,
+        "warning": warning,
+    }
+
+
+def calculate_ph_overtime(monthly_salary, ot_hours, normal_daily_hours=8):
+    """Calculate overtime pay for hours worked beyond normal hours on a Public Holiday.
+
+    Employment Act 1955 Section 60A: overtime performed on a public holiday
+    is compensated at THREE times the hourly ORP:
+
+        OT_pay = 3 x ORP_hourly x ot_hours
+        ORP_hourly = ORP_daily / normal_daily_hours = monthly_salary / 26 / normal_daily_hours
+
+    Args:
+        monthly_salary: Basic monthly salary in RM.
+        ot_hours: Number of overtime hours worked beyond normal daily hours on the PH.
+        normal_daily_hours: Normal daily working hours (default 8) for deriving hourly ORP.
+
+    Returns:
+        dict with keys:
+            'ot_pay':           float -- overtime pay in RM
+            'orp_hourly':       float -- hourly ORP (monthly_salary / 26 / normal_daily_hours)
+            'multiplier':       float -- always 3.0
+            'ot_hours':         float -- OT hours input
+            'ea_covered':       bool  -- True if salary <= RM4,000
+            'warning':          str or None -- advisory if not EA-covered
+    """
+    try:
+        salary = float(monthly_salary)
+        hours = float(ot_hours) if ot_hours is not None else 0.0
+        daily_hours = float(normal_daily_hours) if normal_daily_hours else 8.0
+    except (TypeError, ValueError):
+        return {
+            "ot_pay": 0.0,
+            "orp_hourly": 0.0,
+            "multiplier": PH_OT_HOURLY_MULTIPLIER,
+            "ot_hours": 0.0,
+            "ea_covered": False,
+            "warning": None,
+        }
+
+    orp_daily = salary / 26.0
+    orp_hourly = orp_daily / daily_hours if daily_hours > 0 else 0.0
+    ot_pay = PH_OT_HOURLY_MULTIPLIER * orp_hourly * hours
+    ea_covered = salary <= ORP_SALARY_THRESHOLD
+
+    warning = None
+    if not ea_covered:
+        warning = (
+            f"Employee monthly salary RM{salary:.2f} exceeds the EA coverage threshold of "
+            f"RM{ORP_SALARY_THRESHOLD:.0f}/month. Public holiday OT pay is governed by the "
+            f"employment contract, not Section 60A of the Employment Act."
+        )
+
+    return {
+        "ot_pay": ot_pay,
+        "orp_hourly": orp_hourly,
+        "multiplier": PH_OT_HOURLY_MULTIPLIER,
+        "ot_hours": hours,
+        "ea_covered": ea_covered,
+        "warning": warning,
+    }
+
+
+def add_ph_oil_credit(employee_name, days=1.0):
+    """Add Off-In-Lieu (OIL) credit to an employee's PH OIL balance.
+
+    When HR chooses to offer an Off-In-Lieu replacement day instead of
+    triple pay, call this function to increment the employee's OIL counter.
+
+    Args:
+        employee_name: Frappe Employee document name.
+        days: Number of OIL days to credit (default 1.0).
+
+    Returns:
+        dict with keys:
+            'employee':    str -- employee name
+            'days_added':  float -- days credited
+            'new_balance': float -- updated OIL balance
+            'success':     bool
+            'error':       str or None
+    """
+    try:
+        emp = frappe.get_doc("Employee", employee_name)
+        current = float(getattr(emp, "custom_ph_oil_balance", 0) or 0)
+        new_balance = current + float(days)
+        emp.custom_ph_oil_balance = new_balance
+        emp.save(ignore_permissions=True)
+        return {
+            "employee": employee_name,
+            "days_added": float(days),
+            "new_balance": new_balance,
+            "success": True,
+            "error": None,
+        }
+    except Exception as e:
+        return {
+            "employee": employee_name,
+            "days_added": float(days),
+            "new_balance": None,
+            "success": False,
+            "error": str(e),
+        }
+
+
+def flag_payroll_public_holiday_dates(payroll_dates, malaysia_public_holidays):
+    """Flag which payroll dates fall on Malaysia public holidays.
+
+    Used to alert payroll officers that employees who worked on those dates
+    may be entitled to public holiday work pay under Section 60D.
+
+    Args:
+        payroll_dates: list of date strings ('YYYY-MM-DD') or date objects.
+        malaysia_public_holidays: list of date strings or date objects (gazette PH list).
+
+    Returns:
+        dict with keys:
+            'flagged_dates': list[str] -- dates in payroll_dates that are public holidays
+            'count':         int -- number of flagged dates
+    """
+    from frappe.utils import getdate
+
+    ph_set = set()
+    for d in malaysia_public_holidays:
+        try:
+            ph_set.add(str(getdate(d)))
+        except Exception:
+            pass
+
+    flagged = []
+    for d in payroll_dates:
+        try:
+            if str(getdate(d)) in ph_set:
+                flagged.append(str(getdate(d)))
+        except Exception:
+            pass
+
+    return {"flagged_dates": flagged, "count": len(flagged)}
+
+
+# ---------------------------------------------------------------------------
+# Public Holiday Work Pay — Employment Act 1955 Section 60D (US-119)
+# ---------------------------------------------------------------------------
+# EA 1955 S.60D: Working on public holiday entitlements:
+#   - Employee entitled to 11 gazetted paid public holidays per year
+#   - When required to work on PH: ordinary day wage + 2 additional days' wages (triple pay)
+#   - The base day pay is already in regular salary; premium = 2x ORP daily
+#   - OT beyond normal hours on PH: 3x hourly rate (EA S.60A)
+#   - Alternative: employer may grant Off-In-Lieu (OIL) replacement day instead of triple-pay
+# EA 1955 S.60I: ORP for monthly-rated employees = monthly_salary / 26
+
+PH_WORK_PREMIUM_MULTIPLIER = 2    # 2x ORP daily (additional premium; base already in salary)
+PH_OT_MULTIPLIER = 3              # 3x hourly rate for OT hours on a public holiday
+NORMAL_DAILY_HOURS = 8            # Standard working day hours (default)
+
+# Malaysia Fixed-Date Federal Public Holidays (gazetted by MOHR, applied nationwide)
+# Format: (month, day) tuples — year-agnostic for recurring fixed-date holidays
+# Note: Lunar-calendar holidays (Hari Raya, CNY, Deepavali, Wesak Day, etc.) vary by year
+#       and require a year-specific gazette lookup.
+MALAYSIA_FIXED_PUBLIC_HOLIDAYS = frozenset([
+    (1, 1),    # New Year's Day
+    (5, 1),    # Workers' Day / Labour Day
+    (8, 31),   # Merdeka Day / National Day
+    (9, 16),   # Malaysia Day
+    (12, 25),  # Christmas Day
+])
+
+
+def calculate_public_holiday_work_premium(monthly_salary, normal_daily_hours=8):
+    """Calculate the additional premium for working on a Malaysian public holiday (EA S.60D).
+
+    Under Employment Act 1955 S.60D, when an EA-covered employee (salary <= RM4,000)
+    is required to work on a gazetted public holiday, the employer must pay:
+      - The normal day's wage (already included in regular monthly salary)
+      - PLUS two additional days' wages as a premium
+
+    This function computes the ADDITIONAL premium only (2x ORP daily).
+    The base day pay is already included in the employee's regular monthly salary.
+
+    ORP daily = monthly_salary / 26 (Employment Act S.60I)
+    Premium   = ORP daily * 2
+
+    Args:
+        monthly_salary: Monthly salary in RM.
+        normal_daily_hours: Normal working hours per day (default 8, unused in premium calc
+            but kept for API consistency with the OT function).
+
+    Returns:
+        dict with keys:
+            'premium':    float — additional premium payable (2x ORP daily)
+            'orp_daily':  float — ORP per day (monthly / 26)
+            'multiplier': int   — premium multiplier (always 2)
+            'ea_covered': bool  — True if salary <= RM4,000
+    """
+    try:
+        salary = float(monthly_salary)
+    except (TypeError, ValueError):
+        salary = 0.0
+
+    orp_daily = salary / 26.0
+    premium = orp_daily * PH_WORK_PREMIUM_MULTIPLIER
+    ea_covered = salary <= ORP_SALARY_THRESHOLD
+
+    return {
+        "premium": premium,
+        "orp_daily": orp_daily,
+        "multiplier": PH_WORK_PREMIUM_MULTIPLIER,
+        "ea_covered": ea_covered,
+    }
+
+
+def calculate_public_holiday_ot_pay(monthly_salary, ot_hours, normal_daily_hours=8):
+    """Calculate overtime pay for hours worked beyond normal hours on a public holiday.
+
+    Under Employment Act 1955 S.60A(3), OT on a public holiday is paid at 3x hourly rate.
+
+    ORP daily  = monthly_salary / 26                           (EA S.60I)
+    ORP hourly = ORP daily / normal_daily_hours
+    OT pay     = ORP hourly * 3 * ot_hours
+
+    Example: RM3,000/month, 8h normal day, 2h OT on PH:
+      ORP daily  = 3000 / 26 = RM115.38
+      ORP hourly = 115.38 / 8 = RM14.42
+      OT pay     = 14.42 * 3 * 2 = RM86.54
+
+    Args:
+        monthly_salary: Monthly salary in RM.
+        ot_hours: Overtime hours worked beyond normal daily hours.
+        normal_daily_hours: Normal working hours per day (default 8).
+
+    Returns:
+        dict with keys:
+            'ot_pay':     float — OT pay for PH overtime
+            'orp_hourly': float — ORP per hour
+            'multiplier': int   — OT multiplier (always 3)
+            'ot_hours':   float — OT hours claimed
+            'ea_covered': bool  — True if salary <= RM4,000
+    """
+    try:
+        salary = float(monthly_salary)
+        hours = float(ot_hours) if ot_hours else 0.0
+        daily_hours = float(normal_daily_hours) if normal_daily_hours else 8.0
+    except (TypeError, ValueError):
+        salary, hours, daily_hours = 0.0, 0.0, 8.0
+
+    orp_daily = salary / 26.0
+    orp_hourly = orp_daily / daily_hours if daily_hours > 0 else 0.0
+    ot_pay = orp_hourly * PH_OT_MULTIPLIER * hours
+    ea_covered = salary <= ORP_SALARY_THRESHOLD
+
+    return {
+        "ot_pay": ot_pay,
+        "orp_hourly": orp_hourly,
+        "multiplier": PH_OT_MULTIPLIER,
+        "ot_hours": hours,
+        "ea_covered": ea_covered,
+    }
+
+
+def check_ea_coverage_for_public_holiday(monthly_salary):
+    """Check EA coverage for public holiday pay purposes (Employment Act S.60D).
+
+    EA 1955 covers employees with monthly wages not exceeding RM4,000 for
+    public holiday, overtime and rest day purposes (post-2022 amendment).
+
+    Employees above RM4,000/month are not covered by EA public holiday pay provisions;
+    their entitlements are governed by their employment contract.
+
+    Args:
+        monthly_salary: Monthly salary in RM.
+
+    Returns:
+        dict with keys:
+            'covered':  bool  — True if EA applies
+            'reminder': str or None — message for above-threshold employees
+            'salary':   float
+    """
+    try:
+        salary = float(monthly_salary)
+    except (TypeError, ValueError):
+        salary = 0.0
+
+    if salary <= ORP_SALARY_THRESHOLD:
+        return {"covered": True, "reminder": None, "salary": salary}
+
+    return {
+        "covered": False,
+        "reminder": (
+            f"Employee monthly salary RM{salary:.2f} exceeds the EA coverage threshold "
+            f"of RM{ORP_SALARY_THRESHOLD:.0f}/month. Public holiday pay terms are governed "
+            "by the employment contract, not Employment Act Section 60D."
+        ),
+        "salary": salary,
+    }
+
+
+def get_public_holiday_oil_balance(employee_name):
+    """Retrieve the Off-In-Lieu (OIL) balance for public holiday work.
+
+    The balance is stored in the custom field `custom_ph_oil_balance` on the Employee record.
+    HR credits OIL days when an employee elects replacement leave instead of triple-pay.
+
+    Args:
+        employee_name: Frappe Employee document name.
+
+    Returns:
+        float: Number of OIL days available (0.0 if not set or employee not found).
+    """
+    try:
+        emp = frappe.get_doc("Employee", employee_name)
+        return float(emp.get("custom_ph_oil_balance") or 0.0)
+    except Exception:
+        return 0.0
+
+
+def add_public_holiday_oil_credit(employee_name, days=1):
+    """Add Off-In-Lieu (OIL) credit to an employee for a public holiday worked.
+
+    Increments the `custom_ph_oil_balance` field on the Employee record.
+    HR uses this when converting a public holiday worked into an OIL day instead of triple-pay.
+    The OIL day must be taken within 30 days of the public holiday per EA S.60D.
+
+    Args:
+        employee_name: Frappe Employee document name.
+        days: Number of OIL days to credit (default 1).
+
+    Returns:
+        dict with keys:
+            'success':       bool
+            'new_balance':   float — updated OIL balance
+            'days_credited': float
+    """
+    try:
+        emp = frappe.get_doc("Employee", employee_name)
+        current = float(emp.get("custom_ph_oil_balance") or 0.0)
+        new_balance = current + float(days)
+        emp.custom_ph_oil_balance = new_balance
+        emp.save(ignore_permissions=True)
+        return {"success": True, "new_balance": new_balance, "days_credited": float(days)}
+    except Exception:
+        return {"success": False, "new_balance": 0.0, "days_credited": 0.0}
+
+
+def is_malaysia_public_holiday(date_value, state=None):
+    """Check if a given date is a gazetted Malaysia public holiday.
+
+    Checks against the fixed annual federal public holidays only (New Year's Day,
+    Workers' Day, Merdeka Day, Malaysia Day, Christmas Day). Lunar-calendar holidays
+    (Hari Raya Aidilfitri, CNY, Deepavali, Wesak Day, etc.) are not included as they
+    vary by year and require a year-specific gazette lookup.
+
+    Args:
+        date_value: Date string 'YYYY-MM-DD' or Python date object.
+        state: Optional state code (reserved for state-specific holiday lookup;
+               not implemented in this version).
+
+    Returns:
+        dict with keys:
+            'is_public_holiday': bool
+            'date':              str — date string 'YYYY-MM-DD'
+            'note':              str — explains partial coverage
+    """
+    from frappe.utils import getdate
+
+    try:
+        d = getdate(date_value)
+        month_day = (d.month, d.day)
+        is_ph = month_day in MALAYSIA_FIXED_PUBLIC_HOLIDAYS
+        return {
+            "is_public_holiday": is_ph,
+            "date": str(d),
+            "note": (
+                "Fixed-date federal holidays only. Lunar holidays (Hari Raya, CNY, etc.) "
+                "require a year-specific gazette lookup."
+            ),
+        }
+    except Exception:
+        return {
+            "is_public_holiday": False,
+            "date": str(date_value),
+            "note": "Invalid date provided.",
+        }
