@@ -3493,7 +3493,7 @@
       ],
       "dependencies": [],
       "estimatedComplexity": "small",
-      "passes": false,
+      "passes": true,
       "_source": "test-synthesis:tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp07_custom_lhdn_status_field_exists"
     },
     {
@@ -3513,7 +3513,7 @@
       ],
       "dependencies": [],
       "estimatedComplexity": "small",
-      "passes": false,
+      "passes": true,
       "_source": "test-synthesis:tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp09_epf_fields_exist"
     },
     {
@@ -3539,7 +3539,7 @@
         "Generate Employment Act S.61 Compliant Payslip with All Mandatory Fields"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-155",

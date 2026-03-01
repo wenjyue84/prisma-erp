@@ -197,6 +197,12 @@
   {%- set employer_epf = namespace(total=0) %}
   {%- set employer_socso = namespace(total=0) %}
   {%- set employer_eis = namespace(total=0) %}
+  {%- set employee_epf = namespace(total=0) %}
+  {%- for row in doc.deductions %}
+    {%- if "EPF" in row.salary_component and "Employee" in row.salary_component %}
+      {%- set employee_epf.total = employee_epf.total + row.amount %}
+    {%- endif %}
+  {%- endfor %}
   {%- for row in doc.earnings %}
     {%- if "EPF" in row.salary_component and "Employer" in row.salary_component %}
       {%- set employer_epf.total = employer_epf.total + row.amount %}
@@ -206,6 +212,55 @@
       {%- set employer_eis.total = employer_eis.total + row.amount %}
     {%- endif %}
   {%- endfor %}
+
+  <!-- ===== EPF AKAUN FLEKSIBEL THREE-ACCOUNT SPLIT (US-154) ===== -->
+  {%- set epf_account_split = frappe.get_attr("lhdn_payroll_integration.lhdn_payroll_integration.services.epf_account_split_service.compute_epf_account_split") %}
+  {%- set emp_epf_split = epf_account_split(employee_epf.total, payroll_date=frappe.utils.getdate(doc.end_date or doc.posting_date)) %}
+  {%- set employer_epf_split = epf_account_split(employer_epf.total, payroll_date=frappe.utils.getdate(doc.end_date or doc.posting_date)) %}
+
+  <div class="section-title">EPF Contribution Account Breakdown / Pecahan Akaun Caruman KWSP</div>
+  <table>
+    <thead>
+      <tr>
+        <th>EPF Account / Akaun KWSP</th>
+        <th class="amount">Employee Share / Caruman Pekerja ({{ currency }})</th>
+        <th class="amount">Employer Share / Caruman Majikan ({{ currency }})</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- if emp_epf_split.use_legacy %}
+        {%- for acc in emp_epf_split.accounts %}
+        {%- set employer_acc = employer_epf_split.accounts[loop.index0] %}
+        <tr>
+          <td>{{ acc.name }} ({{ (acc.rate * 100) | int }}%)</td>
+          <td class="amount">{{ frappe.utils.fmt_money(acc.amount, currency=currency) }}</td>
+          <td class="amount">{{ frappe.utils.fmt_money(employer_acc.amount, currency=currency) }}</td>
+        </tr>
+        {%- endfor %}
+        <tr style="font-size:8pt; color:#888;">
+          <td colspan="3"><em>Legacy two-account structure applies (age above 55, pre-11 May 2024 members)</em></td>
+        </tr>
+      {%- else %}
+        {%- for acc in emp_epf_split.accounts %}
+        {%- set employer_acc = employer_epf_split.accounts[loop.index0] %}
+        <tr>
+          <td>{{ acc.name }} ({{ (acc.rate * 100) | int }}%)</td>
+          <td class="amount">{{ frappe.utils.fmt_money(acc.amount, currency=currency) }}</td>
+          <td class="amount">{{ frappe.utils.fmt_money(employer_acc.amount, currency=currency) }}</td>
+        </tr>
+        {%- endfor %}
+        <tr style="font-size:8pt; color:#888;">
+          <td colspan="3"><em>Three-account structure effective 11 May 2024 (KWSP). Split: Persaraan 75% / Sejahtera 15% / Fleksibel 10%</em></td>
+        </tr>
+      {%- endif %}
+      <tr class="subtotal">
+        <td>Total EPF / Jumlah KWSP</td>
+        <td class="amount">{{ frappe.utils.fmt_money(employee_epf.total, currency=currency) }}</td>
+        <td class="amount">{{ frappe.utils.fmt_money(employer_epf.total, currency=currency) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
   <div class="section-title">Employer Statutory Contributions / Caruman Majikan (For Reference)</div>
   <table>
     <thead>
@@ -215,7 +270,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr><td>EPF Employer Contribution</td><td class="amount">{{ frappe.utils.fmt_money(employer_epf.total, currency=currency) }}</td></tr>
+      <tr><td>EPF Employer Contribution (Total)</td><td class="amount">{{ frappe.utils.fmt_money(employer_epf.total, currency=currency) }}</td></tr>
       <tr><td>SOCSO Employer Contribution</td><td class="amount">{{ frappe.utils.fmt_money(employer_socso.total, currency=currency) }}</td></tr>
       <tr><td>EIS Employer Contribution</td><td class="amount">{{ frappe.utils.fmt_money(employer_eis.total, currency=currency) }}</td></tr>
     </tbody>

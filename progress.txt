@@ -6962,3 +6962,30 @@ Completed: Fix failing test: AIChatIntegration — int10 chat preserves conversa
 - Must add date column first (3 bytes), then TEXT column (off-page, 0 bytes) — both succeed separately
 - varchar(50) with utf8mb4 = 202 bytes still fails despite 230 bytes apparent headroom (MariaDB's internal accounting differs)
 - Custom Field records can exist in tabCustom Field even when the physical column add failed (partial sync state)
+## Iteration 21 - Sun, Mar  1, 2026  1:39:13 PM
+Completed: Enforce e-CP22 Online-Only Mandatory Submission and MyTax Employer Representative Authorization Check (ID: US-203) in 15m
+
+
+## Iteration N — US-154: Display EPF Akaun Fleksibel Three-Account Contribution Split on Payslip
+
+**Type:** IMPL
+**TDD Phase:** GREEN (32/32 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_epf_account_split`
+**Result:** PASS — 32 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/epf_account_split_service.py` — new service: compute_epf_account_split(), get_epf_split_for_salary_slip(), is_three_account_applicable()
+- `lhdn_payroll_integration/tests/test_epf_account_split.py` — 32 tests across 6 test classes
+- `lhdn_payroll_integration/print_format/ea_s61_payslip/ea_s61_payslip.html` — added EPF three-account split section
+
+### Patterns discovered
+- Both nested and non-nested copies of print_format HTML must be updated (both paths exist in container)
+- `import frappe` must be at module level (not inside function) for `@patch` to work in tests
+- EPF three-account: 75% Persaraan / 15% Sejahtera / 10% Fleksibel (effective 11 May 2024)
+- Legacy two-account (70% Akaun 1 / 30% Akaun 2) applies pre-11 May 2024 and for above-55 employees with custom_epf_three_account=0
+
+### Acceptance criteria verified
+1. RM1,000 EPF splits as RM750 / RM150 / RM100 (test_rm1000_splits_as_750_150_100)
+2. Employee and employer EPF both split correctly
+3. Above-55 employees with flag=0 get legacy two-account split
+4. Payslip HTML shows all three accounts and references epf_account_split service
