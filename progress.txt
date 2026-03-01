@@ -1,3 +1,28 @@
+## Iteration N — US-183: Gig Workers Act 2025 — 7-Day Payment Deadline Alert for Informal Gig Engagements Without Payment Schedule
+
+**Type:** IMPL
+**TDD Phase:** GREEN (76/76 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_gig_payment_deadline
+**Result:** PASS — 76 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/gig_payment_deadline_service.py` — Core service: compute_payment_deadline(), get_days_remaining(), is_payment_overdue(), classify_urgency() (4 tiers: Overdue/Critical/Warning/On Track), has_payment_schedule(), needs_deadline_tracking(), evaluate_transaction(), record_payment_completion(), should_alert(), get_transactions_needing_alerts(), get_overdue_transactions(), group_by_days_remaining() (5 buckets), get_dashboard_summary(), generate_compliance_report() (MOHR export)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_gig_payment_deadline.py` — 76 tests across 15 classes: TestConstants, TestComputePaymentDeadline, TestGetDaysRemaining, TestIsPaymentOverdue, TestClassifyUrgency, TestHasPaymentSchedule, TestNeedsDeadlineTracking, TestEvaluateTransaction, TestRecordPaymentCompletion, TestShouldAlert, TestGetTransactionsNeedingAlerts, TestGetOverdueTransactions, TestGroupByDaysRemaining, TestGetDashboardSummary, TestGenerateComplianceReport
+
+### Patterns discovered
+- Gig Workers Act 2025 (Act 872) 7-day payment rule is DISTINCT from Employment Act S.19 7-day rule
+- 7-day clock starts from service_completion_date (platform delivery confirmation)
+- Transactions with a formal payment_schedule are exempt from 7-day tracking
+- Alert raised 1 day before deadline (ALERT_DAYS_BEFORE_DEADLINE = 1)
+- Dashboard groups: overdue, due_today, due_tomorrow, due_2_3_days, on_track
+- Compliance report tracks 4 categories: paid_on_time, paid_late, unpaid_within_deadline, unpaid_overdue
+- Service builds on gig_worker_agreement_service.py (US-180) and sksps_contribution_service.py (US-182)
+
+### Gotchas
+- prd.json was truncated (again) — restored from git HEAD before jq update
+
+---
+
 ## Iteration N — US-217: Budget 2026 TP1 — Increase Children's Learning Disability Diagnostic Relief to RM10,000
 
 **Type:** IMPL
@@ -7942,4 +7967,5 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 
 ## Iteration 44 - Sun, Mar  1, 2026  5:49:29 PM
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 2/3
+
 

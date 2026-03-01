@@ -4275,7 +4275,7 @@
         "Gig Workers Act 2025 â€” Mandatory Service Agreement Compliance Tracker for Platform Providers"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-184",
