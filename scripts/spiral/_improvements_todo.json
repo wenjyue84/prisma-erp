@@ -1,0 +1,19 @@
+{
+  "task": "SPIRAL improvements implementation checklist",
+  "items": [
+    { "id": 1, "done": false, "desc": "Add CHECKPOINT_FILE variable after PRD_FILE declaration" },
+    { "id": 2, "done": false, "desc": "Add write_checkpoint() helper function after prd_stats()" },
+    { "id": 3, "done": false, "desc": "Add checkpoint_phase_done() helper function after prd_stats()" },
+    { "id": 4, "done": false, "desc": "Add checkpoint read + ZERO_PROGRESS_COUNT init after banner" },
+    { "id": 5, "done": false, "desc": "Wrap Phase R with checkpoint_phase_done check + write_checkpoint at end" },
+    { "id": 6, "done": false, "desc": "Wrap Phase T with checkpoint_phase_done check + write_checkpoint at end" },
+    { "id": 7, "done": false, "desc": "Wrap Phase M with checkpoint_phase_done check + write_checkpoint at end" },
+    { "id": 8, "done": false, "desc": "Wrap Phase G+I with checkpoint_phase_done check + write_checkpoint at end" },
+    { "id": 9, "done": false, "desc": "Add timeout wrapper (1h) around ralph.sh call" },
+    { "id": 10, "done": false, "desc": "Replace zero-progress warning with halt-after-2 logic" },
+    { "id": 11, "done": false, "desc": "Add auto git commit after ralph makes progress" },
+    { "id": 12, "done": false, "desc": "Wrap Phase V with checkpoint_phase_done check + write_checkpoint at end" },
+    { "id": 13, "done": false, "desc": "Clear checkpoint on success exit (Phase C) and before loop restart" },
+    { "id": 14, "done": false, "desc": "Delete this temp file" }
+  ]
+}

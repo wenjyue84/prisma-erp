@@ -16,6 +16,18 @@ Tax bands (Assessment Year 2024 — Jadual PCB):
     25%     : 600,001 – 2,000,000
     26%     : above 2,000,000
 
+Tax bands (Assessment Year 2025 — Jadual PCB, LHDN PCB Specification 2025):
+    0%      : 0 – 5,000
+    1%      : 5,001 – 20,000
+    3%      : 20,001 – 35,000
+    6%      : 35,001 – 50,000
+    11%     : 50,001 – 70,000
+    19%     : 70,001 – 100,000
+    25%     : 100,001 – 250,000
+    26%     : 250,001 – 400,000
+    28%     : 400,001 – 2,000,000
+    30%     : above 2,000,000
+
 Non-resident: flat 30% on gross income (no reliefs applied).
 
 Irregular payments (bonus, commission, gratuity):
@@ -23,10 +35,18 @@ Irregular payments (bonus, commission, gratuity):
     bonus_pcb = tax_on(annual_income + bonus_amount - reliefs)
                 - tax_on(annual_income - reliefs)
     Total PCB for that period = regular_monthly_pcb + bonus_pcb
+
+Assessment-year-aware calculation:
+    Pass ``assessment_year`` to calculate_pcb() to select the correct Schedule 1
+    bracket table (e.g. assessment_year=2025 for YA2025 rates).  When omitted,
+    the function defaults to YA2024 for backward compatibility.
+    Bracket tables are maintained in services/pcb_tax_brackets.py.
 """
 import datetime
 
 import frappe
+
+from lhdn_payroll_integration.services.pcb_tax_brackets import get_tax_bands
 
 # BIK integration (US-060) — lazy import to avoid circular dependency
 def _get_bik_for_employee(employee: str, slip_date) -> float:
@@ -86,7 +106,11 @@ _WARNING_THRESHOLD = 0.10
 
 
 def _compute_tax_on_chargeable_income(chargeable_income: float) -> float:
-    """Compute annual income tax using LHDN progressive bands.
+    """Compute annual income tax using LHDN progressive bands (YA2024 default).
+
+    This function uses the default ``_TAX_BANDS`` / ``_LOWER_BOUNDS`` (YA2024)
+    and is preserved for backward compatibility.  For year-aware calculations
+    use ``_compute_tax_for_year(chargeable_income, assessment_year)`` instead.
 
     Args:
         chargeable_income: Annual chargeable income after reliefs (RM).
@@ -106,6 +130,33 @@ def _compute_tax_on_chargeable_income(chargeable_income: float) -> float:
     return 0.0
 
 
+def _compute_tax_for_year(chargeable_income: float, assessment_year: int) -> float:
+    """Compute annual income tax using the Schedule 1 brackets for a given assessment year.
+
+    Selects the correct Jadual Pertama bracket table from ``pcb_tax_brackets``
+    keyed by ``assessment_year``.  Falls back gracefully when the requested year
+    is outside the defined range (see ``get_tax_bands`` for fall-back logic).
+
+    Args:
+        chargeable_income: Annual chargeable income after reliefs (RM).
+        assessment_year: Tax assessment year (e.g. 2024, 2025).
+
+    Returns:
+        float: Annual income tax (RM). Zero if chargeable_income <= 0.
+    """
+    if chargeable_income <= 0:
+        return 0.0
+
+    bands, lower_bounds = get_tax_bands(int(assessment_year))
+
+    for i, (upper, rate, cumulative) in enumerate(bands):
+        if chargeable_income <= upper:
+            excess = chargeable_income - lower_bounds[i]
+            return cumulative + excess * rate
+
+    return 0.0
+
+
 def calculate_pcb(
     annual_income: float,
     resident: bool = True,
@@ -121,6 +172,7 @@ def calculate_pcb(
     annual_zakat: float = 0.0,
     approved_pension_scheme: bool = False,
     employee_age: int = 0,
+    assessment_year: int = None,
 ) -> float:
     """Calculate monthly PCB/MTD deduction amount.
 
@@ -199,6 +251,10 @@ def calculate_pcb(
             >= 55, the full gratuity amount is exempt (overrides para 25). Default False.
         employee_age: Employee's age in years at the time of gratuity payment. Used with
             approved_pension_scheme to determine full exemption eligibility. Default 0.
+        assessment_year: Tax assessment year for Schedule 1 bracket selection (e.g. 2025).
+            When None (default), uses the YA2024 brackets for backward compatibility.
+            Pass the payroll year (January–December = YA = calendar year) to obtain
+            year-specific rates.  Bracket tables are defined in pcb_tax_brackets.py.
 
     Returns:
         float: Monthly PCB amount (RM), rounded to 2 decimal places.
@@ -264,7 +320,15 @@ def calculate_pcb(
     total_relief += max(0.0, float(tp1_total_reliefs or 0))
 
     chargeable_income = max(0.0, annual_income - total_relief)
-    annual_tax = _compute_tax_on_chargeable_income(chargeable_income)
+
+    # Select bracket table: use year-aware function when assessment_year provided,
+    # otherwise fall back to the default YA2024 bands for backward compatibility.
+    if assessment_year is not None:
+        _tax_fn = lambda ci: _compute_tax_for_year(ci, assessment_year)
+    else:
+        _tax_fn = _compute_tax_on_chargeable_income
+
+    annual_tax = _tax_fn(chargeable_income)
 
     # ITA 1967 s.6A: Apply RM400 personal rebate and RM400 spouse rebate
     # for residents with chargeable income <= RM35,000 (US-058).
@@ -284,7 +348,7 @@ def calculate_pcb(
     if total_irregular > 0:
         # LHDN Schedule D one-twelfth annualisation rule:
         total_chargeable = max(0.0, annual_income + total_irregular - total_relief)
-        tax_with_irregular = _compute_tax_on_chargeable_income(total_chargeable)
+        tax_with_irregular = _tax_fn(total_chargeable)
         irregular_pcb = tax_with_irregular - annual_tax
         gross_monthly = regular_monthly_pcb + irregular_pcb
     else:
