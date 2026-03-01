@@ -1,0 +1,176 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "format:PCBLOG-{employee}-{####}",
+ "creation": "2026-02-28 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "payroll_period",
+  "column_break_1",
+  "company",
+  "salary_slip",
+  "section_change_details",
+  "change_type",
+  "old_pcb_amount",
+  "new_pcb_amount",
+  "column_break_2",
+  "changed_by",
+  "change_datetime",
+  "section_notes",
+  "reason"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "fetch_from": "employee.employee_name",
+   "fetch_if_empty": 1,
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "payroll_period",
+   "fieldtype": "Data",
+   "label": "Payroll Period",
+   "description": "e.g. 2026-01 or the end_date of the salary slip",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "fetch_from": "employee.company",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "salary_slip",
+   "fieldtype": "Link",
+   "label": "Salary Slip",
+   "options": "Salary Slip",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "section_change_details",
+   "fieldtype": "Section Break",
+   "label": "Change Details"
+  },
+  {
+   "fieldname": "change_type",
+   "fieldtype": "Select",
+   "label": "Change Type",
+   "options": "\nTP1 Update\nCP38 Applied\nCategory Change\nManual Override\nRecalculation\nUnder-Deduction Acknowledged",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "old_pcb_amount",
+   "fieldtype": "Currency",
+   "label": "Old PCB Amount (RM)",
+   "default": "0"
+  },
+  {
+   "fieldname": "new_pcb_amount",
+   "fieldtype": "Currency",
+   "label": "New PCB Amount (RM)",
+   "default": "0"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "changed_by",
+   "fieldtype": "Link",
+   "label": "Changed By",
+   "options": "User",
+   "default": "__user"
+  },
+  {
+   "fieldname": "change_datetime",
+   "fieldtype": "Datetime",
+   "label": "Change Date/Time",
+   "default": "now"
+  },
+  {
+   "fieldname": "section_notes",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Small Text",
+   "label": "Reason / Notes"
+  }
+ ],
+ "links": [
+  {
+   "group": "PCB Change Log",
+   "label": "PCB Change Log",
+   "link_doctype": "PCB Change Log",
+   "link_fieldname": "employee"
+  }
+ ],
+ "modified": "2026-02-28 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LHDN Payroll Integration",
+ "name": "PCB Change Log",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "print": 1,
+   "role": "HR User"
+  }
+ ],
+ "read_only": 1,
+ "sort_field": "change_datetime",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "employee_name",
+ "track_changes": 0
+}

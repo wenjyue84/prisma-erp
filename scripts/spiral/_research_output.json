@@ -1,223 +1,164 @@
 {
   "stories": [
     {
-      "title": "SOCSO Foreign Worker Invalidity Scheme Inclusion Flag and Rate Update (July 2024)",
+      "title": "Employment Pass Succession Plan Compliance Tracker for EP Categories II and III",
       "priority": "high",
-      "description": "Effective July 1, 2024, PERKESO extended the SOCSO Invalidity Scheme to foreign workers under age 60, who were previously only covered under the Employment Injury Scheme alone. Employers must now contribute at the full First Category rate (Employment Injury + Invalidity combined) for eligible foreign workers, and the PERKESO ASSIST e-Caruman upload must use the correct scheme category code per employee. Any employer still remitting at the old employment-injury-only rate is under-contributing and faces PERKESO penalty exposure from the enforcement date.",
+      "description": "Effective 1 June 2026, all new and renewal Employment Pass applications for Category II (RM10,000–RM19,999/month, max 10 years) and Category III (RM5,000–RM9,999/month, max 5 years) must include a structured succession plan demonstrating how the expatriate's role will be transferred to a local employee within the approved tenure. Immigration will reject renewal applications without an approved succession plan. Employers with multiple EP holders in these categories face a significant compliance gap if no structured tracking exists in their HR system to manage plan submission status, knowledge transfer milestones, and local successor assignments.",
       "acceptanceCriteria": [
-        "Employee DocType includes a socso_scheme_category Select field ('First Category (EI + Invalidity)' / 'Second Category (EI Only)'); foreign workers under age 60 hired on or after 2024-07-01 default to 'First Category'",
-        "PCB/payroll engine computes SOCSO contribution using the correct First Category rate for eligible foreign workers (combined EI + Invalidity scheme contribution amount from Jadual Kadar Caruman)",
-        "PERKESO ASSIST e-Caruman TXT upload uses correct scheme code per employee based on socso_scheme_category and age at payroll run date",
-        "Existing foreign employees hired before July 2024 with blank or incorrect socso_scheme_category are flagged in a migration report for HR review",
-        "A hard validation warning fires on Salary Slip submission if a foreign worker under age 60 has socso_scheme_category set to 'Second Category'"
+        "Employee DocType gains a custom_ep_succession_plan_status Select field ('Not Required' / 'Draft' / 'Submitted to IMI' / 'Approved' / 'Overdue') visible only when visa_type is 'Employment Pass' and ep_category in ('Category II', 'Category III')",
+        "Succession plan fields capture: local_successor_employee (Link to Employee), knowledge_transfer_start_date, knowledge_transfer_target_date, succession_plan_document (Attach), ep_succession_plan_submission_date, ep_succession_plan_imi_reference",
+        "An automated alert fires to the HR Manager 90 days before EP renewal date if custom_ep_succession_plan_status is not 'Approved'",
+        "A Succession Plan Compliance Report lists all Cat II/III EP holders with their plan status, local successor, and knowledge transfer timeline completion percentage",
+        "On EP renewal date with status not 'Approved', the system creates a Compliance Alert DocType record with severity 'Critical' and routes it to the Employer Representative"
       ],
       "technicalNotes": [
-        "PERKESO official FAQ for foreign worker Invalidity Scheme extension: https://www.perkeso.gov.my/images/pekerja_asing/250724%20-FAQ%20-%20INVALIDITY%20SCHEME%20FOREIGN%20WORKER.pdf",
-        "First Category (under 60): employer 1.75%, employee 0.5% of insured wages — verify actual jadual amounts from https://www.perkeso.gov.my/en/rate-of-contribution.html",
-        "Second Category (60 and above): employer 1.25%, employee 0% — employment injury only, unchanged",
-        "Vialto Partners alert on the extension: https://vialtopartners.com/regional-alerts/malaysia-employment-tax-extension-of-invalidity-scheme-coverage-to-foreign-workers",
-        "Custom field: custom_socso_scheme_category on Employee DocType; trigger auto-assignment from nationality + date_of_birth + date_of_joining"
+        "Revised EP policy effective 1 June 2026 — Cabinet approval 17 October 2025; announced via IMI portal",
+        "EP Category II: RM10,000–RM19,999/month, max 10 years; Category III: RM5,000–RM9,999/month, max 5 years",
+        "Succession plan must include: local successor ID, role transfer breakdown, monthly training schedule (24–36 months), assessment milestones, contingency protocols, executive sign-off",
+        "Link to existing Compliance Alert or custom lhdn_payroll_integration compliance framework",
+        "IMI official announcement: https://esd.imi.gov.my/portal/latest-news/announcement/announcement-266-ep-salary-policy-2026/"
       ],
-      "dependencies": ["Generate SOCSO and EIS e-Caruman Upload File (PERKESO ASSIST Portal)"],
+      "dependencies": ["Employment Pass Minimum Salary Threshold Validator (June 2026 Revised EP Policy)"],
       "estimatedComplexity": "medium",
-      "source": "https://vialtopartners.com/regional-alerts/malaysia-employment-tax-extension-of-invalidity-scheme-coverage-to-foreign-workers"
+      "source": "https://kpmg.com/xx/en/our-insights/gms-flash-alert/2026/flash-alert-2026-017.html"
     },
     {
-      "title": "MTD Method 3 — PCB Computation for Weekly and Fortnightly Payroll Periods",
-      "priority": "medium",
-      "description": "The LHDN PCB specification defines three calculation methods: Method 1 (standard monthly), Method 2 (YTD recalculation), and Method 3 for employees paid on a non-monthly basis such as weekly or fortnightly cycles. Method 3 annualizes the periodic gross pay, computes annual MTD using the Schedule 1 formula, then converts back to the pay-period amount. Without this method, employers running weekly or fortnightly payroll have no compliant mechanism to determine the correct PCB per pay run, defaulting incorrectly to a monthly annualization that over- or under-deducts.",
+      "title": "Employment Pass Maximum Tenure Expiry Alert (Category III: 5 Years, Category II: 10 Years)",
+      "priority": "high",
+      "description": "The June 2026 revised EP policy introduces maximum employment duration caps for the first time in Malaysian immigration history: EP Category III holders are limited to 5 years of employment in Malaysia and Category II to 10 years. This is a hard legislative ceiling — renewal will be refused once the maximum is reached regardless of employer need or employee performance. Employers who fail to track EP commencement dates against the new caps risk being unable to renew work authorisation for key expatriate staff, creating sudden operational gaps.",
       "acceptanceCriteria": [
-        "Payroll Entry and Payroll Period support pay_period_type (Monthly / Weekly / Fortnightly / Other) and pay_period_days fields",
-        "When pay_period_type is not Monthly, PCB engine applies Method 3: annualized_gross = periodic_gross × (365 / pay_period_days); annual MTD computed from annualized amount less reliefs; period MTD = annual_MTD × (pay_period_days / 365)",
-        "CP39 submission correctly aggregates multiple weekly/fortnightly runs within the same calendar month into a single monthly CP39 row per employee",
-        "EA Form correctly sums all pay-period MTDs for the assessment year totals regardless of pay frequency",
-        "Unit test: employee earning RM1,000 per week produces the same annual MTD as an equivalent monthly employee at RM4,333/month within a RM10 rounding tolerance"
+        "Employee DocType stores ep_malaysia_employment_start_date (date when the employee first held an Employment Pass in Malaysia) and ep_category ('Category I' / 'Category II' / 'Category III')",
+        "System computes ep_max_tenure_expiry_date as ep_malaysia_employment_start_date + 5 years for Cat III or + 10 years for Cat II",
+        "Automated alerts fire at 12 months, 6 months, and 3 months before ep_max_tenure_expiry_date, routed to HR Manager and the assigned Employer Representative",
+        "EP Tenure Dashboard shows all EP Cat II/III employees with: employment start date, max expiry date, days remaining, and traffic-light status (green > 12 months, amber 3–12 months, red < 3 months)",
+        "Payroll validation fires a warning (not a block) if a Salary Slip is submitted for an EP employee whose ep_max_tenure_expiry_date has passed, prompting HR to confirm continued work authorisation exists"
       ],
       "technicalNotes": [
-        "LHDN PCB 2025 Specification PDF: https://www.hasil.gov.my/media/mdahzjwi/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2025.pdf",
-        "Method 3 is defined in the LHDN computerised MTD specification under 'Kaedah Pengiraan Untuk Tempoh Gaji Bukan Bulanan'",
-        "Monthly annualization: multiply weekly pay × 52 or fortnightly × 26; then divide annual MTD back by 52 or 26 for per-period deduction",
-        "CP39 month mapping: all weekly pay runs in e.g., March → single CP39 March row; aggregate MTD and wages",
-        "Custom field on Payroll Period doctype: pay_period_type (Select); default 'Monthly' for backward compatibility"
+        "Policy is not retrospective: only applies to new/renewal applications submitted on or after 1 June 2026",
+        "ep_malaysia_employment_start_date should represent the first Malaysian EP, not the current employer's engagement date — HR may need to source this from the physical EP card or IMI records",
+        "Cat I (RM20,000+) has no published maximum duration under the revised policy",
+        "For employees who may have held EP under a prior employer, the cumulative tenure counts — flag this ambiguity for HR input",
+        "Official IMI policy: https://esd.imi.gov.my/portal/latest-news/announcement/announcement-266-ep-salary-policy-2026/"
       ],
-      "dependencies": ["Implement PCB/MTD monthly calculation validation", "Implement MTD Method 2 (Year-to-Date Recalculation Formula)"],
-      "estimatedComplexity": "medium",
-      "source": "https://www.hasil.gov.my/media/mdahzjwi/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2025.pdf"
-    },
-    {
-      "title": "EPF i-Akaun Contribution File Whole Ringgit Rounding Rule Enforcement",
-      "priority": "medium",
-      "description": "KWSP mandates that all EPF contribution amounts must be paid and submitted in whole Ringgit Malaysia — no sen (cents) are accepted in the i-Akaun TXT/CSV upload file or during payment. The i-Akaun file generator must apply the correct rounding to both employer and employee contribution values before writing them to the file. Currently the system may generate decimal values causing file validation rejection by the KWSP portal, requiring HR to manually correct and re-upload the file each month.",
-      "acceptanceCriteria": [
-        "EPF i-Akaun CSV/TXT file generator rounds each employee's employer-share and employee-share EPF amounts independently to the nearest whole Ringgit (standard arithmetic: ≥ 0.50 rounds up, < 0.50 truncates)",
-        "Voluntary excess contributions (i-Topup) are also rounded to whole Ringgit before file output",
-        "A per-payroll-run EPF Rounding Summary report shows sen absorbed or lost per employee line, with a batch total, for auditing",
-        "File upload to KWSP i-Akaun succeeds without format validation rejection due to decimal values in any contribution column",
-        "Unit test: employee salary RM3,333.33 → employee EPF at 11% = RM366.667 → file output RM367; employer at 13% = RM433.333 → file output RM433"
-      ],
-      "technicalNotes": [
-        "KWSP official rule: 'Contributions must be paid in Ringgit Malaysia (RM) only, without cents, before the 15th of the following month'",
-        "Source: https://www.kwsp.gov.my/en/employer/responsibilities/mandatory-contribution",
-        "Apply rounding at file-generation time only — payroll internal amounts must retain full precision (sens) for payslip accuracy and EPF balance reconciliation",
-        "The rounding sen difference is a legitimate cost/credit variance — it is NOT deducted additionally from the employee",
-        "Both the TXT (legacy) and CSV (current) i-Akaun formats require whole ringgit contribution columns"
-      ],
-      "dependencies": ["Generate EPF i-Akaun Electronic Upload File"],
+      "dependencies": ["Employment Pass Minimum Salary Threshold Validator (June 2026 Revised EP Policy)", "Employment Pass Succession Plan Compliance Tracker for EP Categories II and III"],
       "estimatedComplexity": "small",
-      "source": "https://www.kwsp.gov.my/en/employer/responsibilities/mandatory-contribution"
+      "source": "https://kpmg.com/xx/en/our-insights/gms-flash-alert/2026/flash-alert-2026-017.html"
     },
     {
-      "title": "Progressive Wage Policy Government Incentive Subsidy Claim Tracking Workflow",
+      "title": "SPIKPA Foreign Worker Health Insurance Annual Policy Renewal Tracker",
+      "priority": "medium",
+      "description": "All foreign workers legally employed in Malaysia are required by the Ministry of Health to maintain an active SPIKPA (Skim Perlindungan Insurans Kesihatan Pekerja Asing) policy annually. The premium is approximately RM120 plus 6% SST and RM10 stamp duty per worker per year, providing RM20,000 in hospitalisation and surgical coverage at MOH hospitals. Failure to maintain a current SPIKPA policy constitutes a breach of work permit conditions and can lead to cancellation of the worker's visa. Employers who deduct the premium from the worker's salary must first obtain written permission from the Director General of Labour (Peninsular Malaysia) under the Employment Act. Currently no story in the PRD tracks SPIKPA policy status, renewal dates, or DG Labour deduction consent per foreign employee.",
+      "acceptanceCriteria": [
+        "Employee DocType gains SPIKPA-related custom fields: custom_spikpa_policy_number (Data), custom_spikpa_policy_start_date (Date), custom_spikpa_policy_expiry_date (Date), custom_spikpa_premium_bearer ('Employer' / 'Employee Deduction'), custom_spikpa_dg_labour_permission_obtained (Check — visible only when bearer is 'Employee Deduction'), custom_spikpa_dg_labour_permission_date (Date)",
+        "Fields are visible only when nationality is not 'Malaysian'",
+        "Automated alert fires 30 days before custom_spikpa_policy_expiry_date, routed to HR Manager, with guidance to renew via the SPIKPA portal",
+        "On new foreign employee record Save, system prompts HR to enter SPIKPA policy details within 30 days if fields are blank",
+        "A Foreign Worker Insurance Compliance Report lists all foreign employees with: SPIKPA policy status (Active / Expiring Within 30 Days / Expired / Missing), policy expiry date, premium bearer, and DG Labour permission status",
+        "If custom_spikpa_premium_bearer is 'Employee Deduction' and custom_spikpa_dg_labour_permission_obtained is unchecked, a warning fires on payroll run to prevent unauthorized wage deduction"
+      ],
+      "technicalNotes": [
+        "SPIKPA premium: RM120 base + 6% SST (RM7.20) + RM10 stamp duty = approximately RM137.20 per worker per year (verify current rates at spikpa.moh.gov.my)",
+        "DG Labour permission for wage deduction is required under Employment Act S.24 — failure to obtain this makes the deduction unlawful",
+        "SPIKPA renewal is typically aligned with work permit renewal (annual) — custom_spikpa_policy_expiry_date should mirror work permit expiry",
+        "SPIKPA portal: https://spikpa.moh.gov.my/",
+        "Allianz Malaysia SPIKPA product details: https://www.allianz.com.my/corporate/group-protection-and-personal-accident/worker-and-employee-benefits/foreign-workers-insurance.html"
+      ],
+      "dependencies": ["Implement Foreign Worker Levy Tracking (FWCMS / Multi-Tier Levy Model)", "Add nationality field for foreign worker ISO country code"],
+      "estimatedComplexity": "small",
+      "source": "https://spikpa.moh.gov.my/"
+    },
+    {
+      "title": "Form E e-Filing Conditional Deadline Engine: 30-Day Extension to 30 April for Electronic Filers",
+      "priority": "medium",
+      "description": "Under LHDN's filing programme, employers who submit Form E (Borang E) via the MyTax e-Filing portal automatically receive a 30-day extension, shifting the submission deadline from 31 March to 30 April of the following year. Employers who submit by post or physically retain the 31 March hard deadline. The current compliance calendar story ('Track Statutory Compliance Submission Calendar') exists but does not model this conditional rule. If the system shows 31 March as a universal deadline for all employers, electronic filers will receive premature overdue alerts and incorrect penalty warnings for the 1–30 April window during which they are fully compliant.",
+      "acceptanceCriteria": [
+        "Company DocType gains a custom_form_e_submission_method Select field ('e-Filing via MyTax' / 'Postal / Manual') defaulting to 'e-Filing via MyTax'",
+        "The Compliance Submission Calendar computes Form E due date as: 31 March if custom_form_e_submission_method = 'Postal / Manual'; 30 April if 'e-Filing via MyTax'",
+        "Overdue alerts for Form E do not fire between 1 April and 30 April for companies flagged as e-Filing submitters",
+        "The Compliance Calendar dashboard displays the applicable deadline alongside the submission method for transparency",
+        "A Submission Method Confirmation task is auto-created each January, prompting the HR Manager to confirm or update the Form E submission method before the annual cycle begins",
+        "LHDN filing programme reference year (e.g., 2026) is stored on the compliance calendar entry to avoid applying prior-year extension rules incorrectly"
+      ],
+      "technicalNotes": [
+        "LHDN 2026 Return Form Filing Programme: https://www.hasil.gov.my/media/fqog1423/rf-filing-programme-for-2026.pdf",
+        "The e-Filing extension applies to Form E (employer return), not CP8D separately — both are submitted together via MyTax",
+        "Extension is automatic upon e-submission; no separate application is needed from the employer",
+        "The Compliance Submission Calendar should model this as a conditional date rule, not a hardcoded 31 March entry",
+        "PandaHR deadline guide: https://pandahrms.com/malaysia-income-tax-submission-deadlines-2026-ya-2025-a-complete-employer-hr-guide/"
+      ],
+      "dependencies": ["Track Statutory Compliance Submission Calendar and Auto-Escalate Overdue Filings", "Borang E Nil Return Submission Workflow for Dormant and Zero-Employee Companies"],
+      "estimatedComplexity": "small",
+      "source": "https://pandahrms.com/malaysia-income-tax-submission-deadlines-2026-ya-2025-a-complete-employer-hr-guide/"
+    },
+    {
+      "title": "CP8D Annual Pre-Submission Employee Data Completeness Validator",
+      "priority": "high",
+      "description": "LHDN requires employers to upload CP8D (Annual Remuneration Return) via MyTax by 25 February to enable automatic pre-population of employees' individual tax forms, with final Form E submission due by 31 March (or 30 April for e-filers). An incomplete CP8D — missing employee TIN, income type breakdown, PCB deducted, EPF/SOCSO/EIS amounts, or BIK values — causes LHDN's auto-population to fail and creates reconciliation failures that trigger systematic cross-checks and audit flags. The existing 'Pre-Submission e-PCB Plus Employee TIN and Tax Category Completeness Validation' story covers monthly e-PCB Plus but does not address the annual CP8D/Form E scope, which requires a broader field set including BIK, allowances, and income classification.",
+      "acceptanceCriteria": [
+        "A CP8D Completeness Check tool (accessible from the Payroll module) scans all employees who received salary in the relevant calendar year and flags those missing any of: TIN (custom_employee_tin), employment_type, total_gross_salary (aggregated from Salary Slips), pcb_deducted_ytd, epf_deducted_ytd, socso_deducted_ytd, eis_deducted_ytd, hrdf_levy_ytd, bik_total_ytd, tax_exempt_allowances_ytd",
+        "The completeness report shows a traffic-light status per employee: Green (all fields present), Amber (non-critical fields missing), Red (blocking fields missing — TIN, income, PCB)",
+        "Clicking 'Fix' on any flagged employee navigates to the relevant record for correction",
+        "The tool enforces a 25 February soft deadline alert: fires 14 days before (11 February) reminding HR to run the check before the AIS upload window closes",
+        "After corrections, a 'Re-validate' button re-runs the check and updates statuses in the same session",
+        "Red-status employees are excluded from the CP8D export file with a warning; Amber-status employees are included with a caveat flag"
+      ],
+      "technicalNotes": [
+        "CP8D fields required by LHDN: refer to the official CP8D format specification on MyTax portal",
+        "BIK values must include motor vehicle, housing, utilities, telephone, driver, and other prescribed benefits at their prescribed values from the LHDN BIK public ruling",
+        "Tax-exempt allowances include: childcare (RM3,000), parking (RM3,600), meal (RM2,400), petrol/toll (RM6,000 combined), and others under the Income Tax (Exemption) Orders",
+        "This validator is distinct from the e-PCB Plus monthly validation which only checks TIN and tax category — CP8D requires a full-year income profile",
+        "LHDN deadline guide: https://pandahrms.com/malaysia-income-tax-submission-deadlines-2026-ya-2025-a-complete-employer-hr-guide/"
+      ],
+      "dependencies": ["Pre-Submission e-PCB Plus Employee TIN and Tax Category Completeness Validation", "Generate CP8D annual employee remuneration return", "LHDN AIS Employer Upload — Auto-Submit Employee Remuneration Data to MyTax by 25 February Deadline"],
+      "estimatedComplexity": "medium",
+      "source": "https://pandahrms.com/malaysia-income-tax-submission-deadlines-2026-ya-2025-a-complete-employer-hr-guide/"
+    },
+    {
+      "title": "EA Form and Form E Cross-Reconciliation Pre-Submission Audit Validator",
+      "priority": "high",
+      "description": "LHDN's 2026 compliance enforcement explicitly uses automated system-based cross-checking: payroll records must reconcile with individual EA Forms, and EA Form aggregate totals must reconcile with Form E (CP8D). Any divergence — omitted BIK values, incorrectly classified allowances, part-timer EA Forms not generated, or PCB amounts differing from payroll — is automatically flagged by LHDN and can trigger an audit without prior warning. Employers currently have no built-in pre-submission reconciliation check in ERPNext. Before finalizing and distributing EA Forms (28 February deadline) and submitting Form E (31 March/30 April), a cross-reconciliation report should flag data consistency failures.",
+      "acceptanceCriteria": [
+        "An EA Form / Form E Reconciliation Check tool runs after all EA Forms are generated for the year and before Form E submission",
+        "Check 1 — Payroll-to-EA reconciliation: sum of all Salary Slip gross_pay for the year per employee matches EA Form B1 (gross salary); variance > RM1 is flagged as a Red error",
+        "Check 2 — PCB reconciliation: sum of all Salary Slip pcb_deducted for the year matches EA Form D1 (PCB deducted); variance > RM1 is flagged",
+        "Check 3 — BIK completeness: if any active employee has a custom_bik_vehicle or custom_bik_housing field populated, their EA Form must include a non-zero BIK value; missing BIK on EA is flagged",
+        "Check 4 — EA Form coverage: all employees (including resigned, part-time, and deceased) who received any salary during the year have an EA Form generated; missing EA Forms are listed",
+        "Check 5 — Form E aggregate: sum of all EA Form gross_salary values matches the Form E total remuneration field; sum of EA Form PCB values matches Form E total PCB field",
+        "A reconciliation summary report with pass/fail per check, total divergence amounts, and drill-down to the offending employee records is generated",
+        "The EA Form bulk-email action is blocked if any Red-status reconciliation failures exist, with a confirmation override for Payroll Manager role"
+      ],
+      "technicalNotes": [
+        "LHDN cross-check methodology: Payroll records → EA Form → Form E must reconcile; automated system detection — no manual review required on LHDN's side",
+        "Common audit triggers: omitted BIK (company car, phone), incorrect exempt allowance classification, part-timer/resigned employee EA Forms not issued",
+        "PandaHR audit trigger guide: https://pandahrms.com/tax-update-2026-form-e-form-ea-malaysia-employer-compliance-guide-and-common-mistakes-that-trigger-lhdn-audits/",
+        "KTP.com.my Form E submission 2026 guide: https://www.ktp.com.my/blog/form-e-submission-2026/29jan2026",
+        "Tolerance threshold for rounding differences should be RM1 (not zero) to account for Salary Slip rounding across multiple runs"
+      ],
+      "dependencies": ["Generate EA Form (Borang EA) for employees", "Generate Borang E (Form E) employer annual return", "Rebuild EA Form to Include All Mandatory LHDN Section A/B/C/D Fields", "Implement Benefits-in-Kind (BIK) Prescribed Value Calculation Module"],
+      "estimatedComplexity": "medium",
+      "source": "https://pandahrms.com/tax-update-2026-form-e-form-ea-malaysia-employer-compliance-guide-and-common-mistakes-that-trigger-lhdn-audits/"
+    },
+    {
+      "title": "HRD Corp Training Claim Focus Area Category Tagging for Industry 4.0, Green Technology, and Smart Economy (2026)",
       "priority": "low",
-      "description": "The Progressive Wage Policy (PWP), expanded in 2025 with RM200 million budget, provides participating employers a government incentive of RM300 per eligible employee per month for up to 12 months. Eligible employees must earn between RM1,500 and RM4,999/month and have at least 12 months' service. Participating companies must provide skill-development training as a condition. The payroll system currently tracks only the PWP eligibility flag but has no workflow for subsidy claim application submission, per-employee entitlement tracking, or alert when the 12-month subsidy claim window nears expiry.",
+      "description": "From 2026, HRD Corp officially expanded its approved training focus areas to explicitly include Industry 4.0, Green Technology and Renewable Energy, and Smart Economy disciplines. Training claims under the SBL-KHAS grant (and related schemes) submitted under these focus areas may qualify for enhanced or prioritised claim processing. Employers who do not tag their training claims with the correct HRD Corp focus area cannot demonstrate alignment with national training objectives, which affects their eligibility for targeted government matching grants and may impact Latihan MADANI levy utilization credit. The existing 'HRD Corp eTRIS Training Claim Recording and Levy Utilization Dashboard' story does not capture the focus area dimension.",
       "acceptanceCriteria": [
-        "Employee DocType includes custom_pwp_enrolled (boolean), custom_pwp_enrollment_date, custom_pwp_approval_reference (from MOHR portal), and custom_pwp_subsidy_months_claimed (0–12)",
-        "PWP Eligibility Report auto-identifies employees earning RM1,500–RM4,999 with ≥12 months service and flags those not yet enrolled for HR action",
-        "Monthly PWP Claim Schedule report generates a summary: enrolled employee count, RM300 × months per employee, cumulative total subsidy entitlement vs claimed to date",
-        "An alert fires when a PWP-enrolled employee's salary revision takes them above RM4,999 (exits the subsidy band) or when their 12-month claim window is within 2 months of expiry",
-        "Training Evidence checkbox on Employee allows HR to mark that the required skill training evidence has been recorded as a condition of PWP participation"
+        "The HRD Corp Training Claim DocType gains a custom_hrdcorp_focus_area Select field with options: 'Industry 4.0', 'Green Technology & Renewable Energy', 'Smart Economy', 'Digital Skills', 'Soft Skills / Leadership', 'Technical / Vocational', 'Other' (matching HRD Corp official category taxonomy)",
+        "Training claims with a defined focus area display the category tag on the Levy Utilization Dashboard",
+        "The Levy Utilization Dashboard allows filtering by focus area to show: total training hours, total levy claimed, and total employees trained per focus area",
+        "A Focus Area Coverage Report shows which HRD Corp categories the employer has utilized in the current and prior two years — useful for demonstrating breadth of training investment",
+        "When creating a training claim, the focus area field is mandatory if the Grant Type is 'SBL-KHAS' or 'SBL'"
       ],
       "technicalNotes": [
-        "PWP is administered by MOHR / TalentCorp — employers apply via the MOHR portal and receive an approval reference",
-        "Latest expansion: RM200 million budget targeting 50,000 workers, salary increase from RM1,900 to RM2,200 at entry level confirmed as of Dec 2025",
-        "Source: Malay Mail report (23 Feb 2026): https://www.malaymail.com/news/malaysia/2026/02/23/pay-rises-on-the-way-progressive-wage-policy-to-boost-salaries-for-over-50000-workers-by-2027/210097",
-        "This story extends 'Progressive Wage Policy (PWP) Eligibility Flag and Wage Escalation Compliance Report' with the claim-tracking operational workflow"
+        "HRD Corp 2026 digital learning focus areas officially claimable: Industry 4.0, Green Technology, Smart Economy — confirmed in HRD Corp eTRIS portal guidance",
+        "SBL-KHAS e-learning daily rate: RM875; in-person soft skills: RM10,500 per day — these rates do not change by focus area but focus area tags are needed for grant pre-approval forms",
+        "HRD Corp eTRIS portal: https://hrdcorp.gov.my/",
+        "BrioHR HRD Corp overview: https://briohr.com/blog/foreign-worker-levy/",
+        "disprz.ai digital learning HRD Corp 2026: https://disprz.ai/blog/hrdf-digital-learning-lms-malaysia"
       ],
-      "dependencies": ["Progressive Wage Policy (PWP) Eligibility Flag and Wage Escalation Compliance Report"],
-      "estimatedComplexity": "medium",
-      "source": "https://www.humanresourcesonline.net/malaysia-s-deputy-hr-minister-reports-uptake-rate-of-progressive-wage-policy-since-implementation"
-    },
-    {
-      "title": "MyInvois SDK v2.1 Compliance Validation for Payroll Self-Billed Invoice Submissions",
-      "priority": "medium",
-      "description": "On 6 April 2025, IRBM published updated MyInvois 2.1 guidelines with additional mandatory field requirements and clarifications on B2B transaction types including self-billed invoices — the mechanism used for payroll-related expense reimbursements. The payroll integration's XML builder and API client must be validated against the v2.1 specification to ensure continued acceptance by MyInvois without rejection. Any new mandatory fields, changed InvoiceTypeCode values, or updated schemeID vocabulary must be reflected in the builder.",
-      "acceptanceCriteria": [
-        "All self-billed XML documents generated by the lhdn_payroll_integration pass LHDN MyInvois v2.1 schema validation with zero errors",
-        "Any new mandatory fields introduced in v2.1 (e.g., additional party identification, classification codes for payroll self-billing) are populated in the XML builder",
-        "API client uses the correct SDK v2.1 version-specific endpoint URLs and request headers as per the updated SDK documentation",
-        "Existing integration tests (test_intg_scenarios.py T-01 through T-05) continue to pass against v2.1 mock and sandbox responses without modification",
-        "The LHDN configuration DocType stores an sdk_version field set to '2.1' to make the active specification version auditable"
-      ],
-      "technicalNotes": [
-        "IRBM issued updated guidelines on 6 April 2025 — EY Malaysia tax alert: https://www.ey.com/en_my/technical/tax-alerts/the-inland-revenue-board-s-updated-guidelines-on-e-invoices-and-the-software-development-kit-july",
-        "Official MyInvois SDK documentation: https://sdk.myinvois.hasil.gov.my",
-        "Key areas to verify against v2.1: InvoiceTypeCode options for self-billing, PartyIdentification schemeID vocabulary, mandatory vs optional field changes, pagination/error response format changes",
-        "Self-billed invoices in payroll context: salary slips (self-billed by employer for employee remuneration) and expense claim reimbursements"
-      ],
-      "dependencies": ["Wire build_consolidated_xml() into consolidation_service", "Fix token expiry check and status poller base_url bug", "Assess and Implement XAdES XML Digital Signature for MyInvois Self-Billed Phase 2"],
-      "estimatedComplexity": "medium",
-      "source": "https://sdk.myinvois.hasil.gov.my"
-    },
-    {
-      "title": "Retroactive Salary Arrears PCB Back-Period Spread Calculation",
-      "priority": "medium",
-      "description": "When employers award retroactive salary increases (back pay covering prior months within the same tax year), LHDN guidance allows the additional income to be spread across the months it was earned for MTD recalculation, avoiding a PCB spike in the month of payment. Currently the system treats all retroactive pay as additional income in the month paid (using the bonus/irregular pay pathway), which can cause significant over-deduction in a single month and employee hardship. A retroactive pay workflow that re-computes MTD for each affected prior month and generates corrected CP39 amendment rows is needed.",
-      "acceptanceCriteria": [
-        "Salary Slip includes custom_retroactive_amount, custom_retroactive_period_from, and custom_retroactive_period_to fields",
-        "When retroactive_amount > 0, system offers two modes: (a) lump-sum in current month (existing behaviour), or (b) back-period spread — the user selects",
-        "In back-period spread mode, system recomputes MTD for each affected prior month by adding proportional retroactive pay to that month's gross, recalculates tax, and collects the incremental MTD as retroactive_pcb_recovery in the current month's Salary Slip",
-        "CP39 file includes corrected prior-month rows (one per retroactive month) via the LHDN e-PCB Plus amendment submission format",
-        "EA Form classifies retroactive pay under the assessment year it was earned (not year paid) when both fall within the same calendar year"
-      ],
-      "technicalNotes": [
-        "LHDN guidance: retroactive pay covering prior months in same year may be spread across those months for MTD recalculation — reduces current-month PCB spike",
-        "Reference: Talenox LHDN PCB guide: https://blog.talenox.com/malaysia-tax-guide-how-do-i-calculate-pcb-mtd-part-2-of-3/",
-        "Cross-year retroactive pay (e.g., 2025 arrears paid in 2026) is taxed in year received — this edge case must be documented and handled separately",
-        "LHDN e-PCB Plus allows prior month amendment submissions — use this pathway for retroactive month CP39 corrections",
-        "This story complements 'e-PCB Plus Prior Month PCB Amendment' by providing the payroll-side calculation that drives what needs to be amended"
-      ],
-      "dependencies": ["Generate CP39 monthly PCB remittance file", "e-PCB Plus Prior Month PCB Amendment — Trigger Corrected CP39 Row on Salary Slip Resubmission"],
-      "estimatedComplexity": "large",
-      "source": "https://www.hasil.gov.my/en/employers/employer-payroll-data-specification/"
-    },
-    {
-      "title": "Foreign Worker EPF 2% Three-Account Allocation Split for i-Akaun CSV Export",
-      "priority": "high",
-      "description": "From October 1, 2025, non-Malaysian employees with eligible employment passes must contribute 2% EPF (employer 2%, employee 2%). KWSP applies the same three-account structure (Akaun Persaraan / Akaun Sejahtera / Akaun Fleksibel) to these foreign worker contributions, but the allocation proportions for the 2% rate may differ from the Malaysian citizen standard (75%/15%/10%). The existing EPF i-Akaun CSV story handles the Malaysian three-account split — this story ensures the file correctly encodes foreign worker 2% contributions in the right account columns without contaminating the Malaysian employee rows.",
-      "acceptanceCriteria": [
-        "For employees with nationality != Malaysian and eligible pass type (EP, VP(TE), etc.) with hire/contribution date >= 2025-10-01, EPF contribution rate is 2% each for employer and employee",
-        "The i-Akaun CSV rows for foreign workers use the KWSP-specified account allocation columns for the 2% rate — verified from the latest KWSP circular on foreign worker three-account allocation",
-        "Payslip shows three-account EPF breakdown for foreign workers: Akaun Persaraan, Akaun Sejahtera, Akaun Fleksibel at the correct proportions of the 2% deduction",
-        "A Salary Slip validation warning fires if a non-domestic-servant foreign worker with a valid employment pass shows EPF contribution = 0 for any payroll period from October 2025 onward",
-        "Unit test: foreign worker at RM4,000/month → employee EPF RM80 (2%), employer EPF RM80 (2%); CSV row account allocation sums to RM80 employee / RM80 employer exactly"
-      ],
-      "technicalNotes": [
-        "KWSP mandatory EPF for foreign employees announcement: https://www.kwsp.gov.my/en/employer/responsibilities/mandatory-contribution",
-        "Domestic servants (maids, cooks, cleaners, gardeners) are EXCLUDED — verify custom_is_domestic_servant flag on Employee",
-        "KWSP circular or FAQ needed to confirm three-account split proportions for 2% rate — may match 75/15/10 or differ; check against latest KWSP communications",
-        "This story extends 'Update EPF i-Akaun Employer Contribution CSV Upload Format for Three-Account (75/15/10) Allocation' specifically for foreign worker 2% rate rows in the same file",
-        "The EPF Akaun Fleksibel enables early withdrawal — foreign workers may not be eligible for the same withdrawal rules; noted as informational only"
-      ],
-      "dependencies": ["Implement Foreign Worker EPF Mandatory Contribution (Effective October 2025)", "Update EPF i-Akaun Employer Contribution CSV Upload Format for Three-Account (75/15/10) Allocation", "Foreign Worker EPF Oct 2025 Mandate: Domestic Servant Category Exclusion Flag"],
-      "estimatedComplexity": "medium",
-      "source": "https://www.kwsp.gov.my/en/employer/responsibilities/mandatory-contribution"
-    },
-    {
-      "title": "e-Invoice Mandatory Phase Readiness Check for Employer Company Records",
-      "priority": "medium",
-      "description": "LHDN's e-invoice mandate rolls out in phases based on annual turnover: Phase 1 (>RM100M, Aug 2024), Phase 2 (>RM25M, Jan 2025), Phase 3 (>RM150K–RM500K, July 2025), and Phase 4+ (all remaining businesses). Many employers using the payroll app are SMEs who crossed Phase 3 threshold in July 2025 and must now have MyInvois credentials configured. The payroll system should detect whether the employer's revenue tier requires active e-invoice compliance and warn HR if MyInvois API credentials are missing or the configuration is incomplete.",
-      "acceptanceCriteria": [
-        "Company DocType includes custom_annual_revenue (Currency) and a read-only custom_einvoice_mandate_phase (Data) field auto-derived from revenue: '>RM100M (Phase 1)', '>RM25M (Phase 2)', '>RM150K (Phase 3)', 'All Businesses (Phase 4+)', or 'Below RM150K (Voluntary)'",
-        "On Company save, if einvoice_mandate_phase is not 'Below RM150K' and custom_client_id or custom_client_secret is blank, a prominent warning banner is shown: 'e-Invoice mandatory for this company — MyInvois API credentials are missing'",
-        "An e-Invoice Readiness Report lists all Companies in the system, their mandate phase, and compliance status (Compliant / Credentials Missing / Voluntary / Not Applicable)",
-        "Alert email is sent to HR Admin when a Company's custom_annual_revenue change moves it into a new mandatory phase",
-        "The readiness check is a pre-flight guard only — it does not prevent payroll runs but flags the MyInvois gap for action"
-      ],
-      "technicalNotes": [
-        "LHDN e-Invoice phase schedule: https://www.hasil.gov.my/en/e-invoice/",
-        "Phase 3 (from July 2025): taxpayers with annual revenue RM150K–RM500K are now mandatory",
-        "Phase 4/5 (all remaining taxpayers with any turnover): LHDN has not finalized the date for the final phase — configure as 'TBD' or rely on LHDN announcement",
-        "This check complements the existing myinvois_erpgulf app setup — it validates the payroll employer configuration, not the e-invoice submission flow itself"
-      ],
-      "dependencies": [],
+      "dependencies": ["HRD Corp eTRIS Training Claim Recording and Levy Utilization Dashboard", "Track HRD Corp Levy Utilization Rate and Alert on 15% Under-Utilisation Penalty"],
       "estimatedComplexity": "small",
-      "source": "https://www.hasil.gov.my/en/e-invoice/"
-    },
-    {
-      "title": "Mid-Year TP1 Relief Amendment PCB Recalculation and Adjustment Schedule",
-      "priority": "medium",
-      "description": "When an employee submits an amended TP1 form mid-year (e.g., adding a new dependent, claiming a new relief category, or correcting a relief amount), the MTD calculation for all remaining months of the year must be recalculated to reflect the updated annual tax liability. Without a structured recalculation workflow, HR must manually adjust PCB in subsequent Salary Slips — a process prone to errors and omissions. This story implements a TP1 amendment detection, recalculation, and schedule-approval workflow that automates the MTD adjustment across remaining payroll months.",
-      "acceptanceCriteria": [
-        "When a TP1 form's status changes to 'Amended' or a new TP1 is submitted mid-year, a 'PCB Recalculation Pending' flag is set on the employee's active payroll record",
-        "HR can trigger a 'Recalculate Remaining MTD' action that computes: revised annual MTD using updated TP1 relief totals, less MTD already deducted YTD, and spreads the remainder equally across remaining months",
-        "The system generates a PCB Adjustment Schedule (tabular: month, old MTD, new MTD, difference) that HR must review and approve before it applies to future Salary Slips",
-        "Upon approval, subsequent Salary Slips for that employee automatically use the revised monthly MTD without manual intervention",
-        "An audit log entry records: TP1 submission date, previous total reliefs, new total reliefs, MTD YTD at change date, revised monthly MTD, and approving HR user"
-      ],
-      "technicalNotes": [
-        "MTD recalculation formula: Revised_monthly_MTD = (Revised_annual_MTD - MTD_already_deducted_YTD) / remaining_payroll_months_in_year",
-        "Edge case: revised annual MTD < MTD already deducted (overpayment) → employee gets reduced or zero MTD for remaining months; refund via payroll is NOT standard — employee must claim via annual tax filing",
-        "TP1(1/2026) updates reference: https://support.briohr.com/knowledge/payroll-malaysia-key-tax-relief-updates-for-the-year-2026",
-        "LHDN employer payroll data specification: https://www.hasil.gov.my/en/employers/employer-payroll-data-specification/",
-        "This story is operationally distinct from 'Alert on Stale TP1 Relief Declarations' — that story alerts at year start; this story handles in-year amendments and drives MTD recalculation"
-      ],
-      "dependencies": ["Implement TP1 Employee Relief Declaration DocType and PCB Integration", "Alert on Stale TP1 Relief Declarations When New Assessment Year Begins Without Employee Re-Submission"],
-      "estimatedComplexity": "medium",
-      "source": "https://www.hasil.gov.my/en/employers/employer-payroll-data-specification/"
-    },
-    {
-      "title": "Value of Living Accommodation (VOLA) Prescribed Value Calculation Module for EA Form Part C",
-      "priority": "medium",
-      "description": "LHDN Public Ruling PR 3/2005 (on Value of Living Accommodation) requires employer-provided housing to be declared as taxable employment income on EA Form Part C. The taxable VOLA is calculated using either: (a) Formula Method: Defined Rate × Annual Value of Accommodation, capped at 30% of the employee's gross annual employment income; or (b) actual rent paid by employer. Without this module, employers providing company housing or housing subsidies are unable to correctly populate Part C of the EA Form and underreport taxable BIK to LHDN. This is distinct from the general BIK module (which covers motor vehicles) and the VOLA election via TP2.",
-      "acceptanceCriteria": [
-        "A VOLA configuration section on Employee or its annual payroll record captures: accommodation_type (Employer-Owned / Employer-Rented / Employee-Rented-with-Subsidy), annual_property_value, actual_annual_rent_paid_by_employer, employee_rent_contribution_annual, and days_occupied",
-        "For Employer-Owned: VOLA = min(Defined Rate × annual_value × days/365, 30% of annual gross income from employment)",
-        "For Employer-Rented: VOLA = actual annual rent paid by employer (no formula cap applies)",
-        "For Subsidized: VOLA = employer-paid portion only (actual rent minus employee contribution)",
-        "EA Form Part C (accommodation sub-section) is auto-populated with the computed VOLA amount from the above calculation",
-        "Unit test: employee gross RM60,000/year; employer-owned property annual value RM24,000; defined rate 30%: formula = 30% × RM24,000 = RM7,200; 30% cap = RM18,000; VOLA = RM7,200 (formula lower)"
-      ],
-      "technicalNotes": [
-        "LHDN Public Ruling PR 3/2005 'Value of Living Accommodation' — primary authority for VOLA calculation",
-        "LHDN BIK Public Ruling 3/2013 (covers VOLA and perquisites): https://phl.hasil.gov.my/pdf/pdfam/PR3_2013.pdf",
-        "Defined Rate per LHDN for accommodation: varies by accommodation type and annual value — verify from latest LHDN Public Ruling",
-        "VOLA is declared in EA Form Part C (separate from BIK motor vehicle which is Part C motor vehicle sub-section)",
-        "This module extends 'Implement Benefits-in-Kind (BIK) Prescribed Value Calculation Module' specifically for the living accommodation category",
-        "Talenox VOLA guide: https://help.talenox.com/en/articles/8290345-what-is-the-value-of-living-accommodation-vola-malaysia"
-      ],
-      "dependencies": ["Rebuild EA Form to Include All Mandatory LHDN Section A/B/C/D Fields", "Implement Benefits-in-Kind (BIK) Prescribed Value Calculation Module"],
-      "estimatedComplexity": "medium",
-      "source": "https://phl.hasil.gov.my/pdf/pdfam/PR3_2013.pdf"
+      "source": "https://disprz.ai/blog/hrdf-digital-learning-lms-malaysia"
     }
   ]
 }

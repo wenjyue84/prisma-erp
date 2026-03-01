@@ -1,0 +1,24 @@
+Prisma ERP Test Report — 2026-03-01_13-24-20
+URL: http://localhost:8080
+============================================================
+Total: 161  Pass: 159  Fail: 1  Error: 0  Skip: 1
+Pass rate: 98.8%
+
+FAILURES & ERRORS:
+
+  [FAIL] tests.integration.test_workflows.TestAIChatIntegration.test_int10_chat_preserves_conversation
+  INT-10: Second message with history receives context-aware reply.
+  AssertionError: 'ultraviolet' not found in "{'error': 'ai request failed: http error 429: too many requests'}" : AI did not use conversation history. Reply: {'error': 'ai request failed: http error 429: too many requests'}
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 58, in testPartExecutor
+    yield
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 651, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 606, in _callTestMethod
+    if method() is not None:
+       ~~~~~~^^
+      File "C:\Users\Jyue\Documents\1-projects\Projects\prisma-erp\tests\integration\test_workflows.py", line 148, in test_int10_chat_preserves_conversation
+    self.assertIn("ultraviolet", reply,
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+                  f"AI did not use conversation history. Reply: {reply[:200]}")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

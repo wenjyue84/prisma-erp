@@ -210,6 +210,8 @@ class TestBrowserUIRegressions(ERPNextTestCase):
 
         Regression: Page was blank because triple-nested directory structure
         prevented Frappe from finding lhdn_dev_tools.js.
+        Fix: page files moved to correct double-nested module path.
+        Note: getpage returns data in frappe.response.docs[], not message.
         """
         resp = self.session.api(
             "frappe.desk.desk_page.getpage",
@@ -217,7 +219,10 @@ class TestBrowserUIRegressions(ERPNextTestCase):
         )
         if resp.status_code == 200:
             body = self.parse_json(resp)
-            msg = body.get("message") or {}
+            # getpage uses frappe.response.docs.append(), not a return value,
+            # so page data lives in body["docs"][0], not body["message"]
+            docs = body.get("docs") or []
+            msg = docs[0] if docs else {}
             script = msg.get("script") or ""
             self.assertGreater(len(script), 50,
                                f"Dev Tools page has no/empty script — "
