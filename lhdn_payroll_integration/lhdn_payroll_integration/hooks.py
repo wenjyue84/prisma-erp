@@ -36,7 +36,8 @@ doc_events = {
 			"lhdn_payroll_integration.services.age_checker_service.validate_statutory_rates_before_submit",
 			"lhdn_payroll_integration.services.salary_advance_service.compute_advance_repayment_for_salary_slip",
 			"lhdn_payroll_integration.services.spc_cessation_service.block_salary_slip_if_spc_pending",
-			"lhdn_payroll_integration.lhdn_payroll_integration.services.ep_validator_service.validate_ep_salary_before_submit",
+			"lhdn_payroll_integration.lhdn_payroll_integration.services.ep_salary_validator.validate_ep_salary_before_submit",
+			"lhdn_payroll_integration.services.domestic_servant_epf_service.warn_domestic_servant_epf",
 		],
 	},
 	"Expense Claim": {
@@ -77,6 +78,7 @@ scheduler_events = {
 		"lhdn_payroll_integration.services.spc_cessation_service.check_pending_spc_alerts",
 		"lhdn_payroll_integration.lhdn_payroll_integration.services.compliance_tracker.update_overdue_compliance_records",
 		"lhdn_payroll_integration.lhdn_payroll_integration.services.compliance_tracker.send_overdue_compliance_notifications",
+		"lhdn_payroll_integration.services.statutory_registration_service.check_statutory_registration_deadlines",
 	],
 	"monthly": [
 		"lhdn_payroll_integration.services.consolidation_service.run_monthly_consolidation",
@@ -94,4 +96,5 @@ fixtures = [
 	{"dt": "LHDN MSIC Code"},
 	{"dt": "Salary Component", "filters": [["name", "in", ["Basic Salary", "Monthly Tax Deduction", "EPF Employee", "SOCSO Employee", "EPF - Employer", "SOCSO - Employer"]]]},
 	{"dt": "Workspace", "filters": [["name", "=", "LHDN Payroll"]]},
+	{"dt": "EP Salary Threshold"},
 ]

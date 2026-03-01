@@ -34,9 +34,11 @@ EPF_STANDARD_EMPLOYEE_RATE = 0.11   # 11% standard rate for age < 60
 from datetime import date as _date_cls
 FOREIGN_WORKER_EPF_START = _date_cls(2025, 10, 1)  # Mandatory from 1 October 2025
 FOREIGN_WORKER_EPF_RATE = 0.02                       # 2% employee + 2% employer
+# US-130: Domestic servants are excluded from foreign worker EPF mandate (KWSP circular)
+DOMESTIC_SERVANT_EPF_EXEMPT = True  # Always exempt — see KWSP Oct 2025 circular
 
 
-def calculate_epf_employer_rate(monthly_gross, is_foreign=False, payroll_date=None):
+def calculate_epf_employer_rate(monthly_gross, is_foreign=False, payroll_date=None, is_domestic_servant=False):
     """Return the statutory EPF employer contribution rate for a given monthly gross.
 
     Per EPF Contribution Rate Revision 2022 (citizen/PR):
@@ -47,15 +49,22 @@ def calculate_epf_employer_rate(monthly_gross, is_foreign=False, payroll_date=No
     - 2% employer rate from 1 October 2025
     - 0% before October 2025 (foreign workers were previously exempt)
 
+    Per KWSP Oct 2025 circular (US-130):
+    - Domestic servants are excluded even if is_foreign=True
+
     Args:
         monthly_gross: Employee's monthly gross salary in MYR.
         is_foreign: bool, True if employee is a foreign worker (default False).
         payroll_date: datetime.date for foreign worker start date check (default today).
+        is_domestic_servant: bool, True if employee is a domestic servant (EPF excluded).
 
     Returns:
         float: Employer EPF rate (e.g. 0.13 for 13%, 0.02 for 2%, 0.0 if exempt).
     """
     if is_foreign:
+        # Domestic servants are excluded from the Oct 2025 foreign worker EPF mandate
+        if is_domestic_servant:
+            return 0.0
         ref_date = payroll_date or _date_cls.today()
         if ref_date >= FOREIGN_WORKER_EPF_START:
             return FOREIGN_WORKER_EPF_RATE   # 2% from October 2025
@@ -68,22 +77,27 @@ def calculate_epf_employer_rate(monthly_gross, is_foreign=False, payroll_date=No
     return EPF_EMPLOYER_RATE_LOW
 
 
-def calculate_epf_employee_rate(monthly_gross=None, is_foreign=False, payroll_date=None):
+def calculate_epf_employee_rate(monthly_gross=None, is_foreign=False, payroll_date=None, is_domestic_servant=False):
     """Return the statutory EPF employee contribution rate.
 
     Citizen/PR: 11% standard rate (age < 60).
     Foreign worker from October 2025: 2%.
     Foreign worker before October 2025: 0%.
+    Domestic servant foreign worker: 0% (excluded from EPF mandate per KWSP circular).
 
     Args:
         monthly_gross: Not used for citizens (rate is flat 11%); kept for API symmetry.
         is_foreign: bool, True if foreign worker.
         payroll_date: datetime.date, used for foreign worker effective date check.
+        is_domestic_servant: bool, True if employee is a domestic servant (EPF excluded).
 
     Returns:
         float: Employee EPF rate.
     """
     if is_foreign:
+        # Domestic servants excluded from foreign worker EPF mandate (KWSP Oct 2025)
+        if is_domestic_servant:
+            return 0.0
         ref_date = payroll_date or _date_cls.today()
         if ref_date >= FOREIGN_WORKER_EPF_START:
             return FOREIGN_WORKER_EPF_RATE   # 2%

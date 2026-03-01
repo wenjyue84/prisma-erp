@@ -6377,3 +6377,29 @@ Completed: Employment Pass Minimum Salary Threshold Validator (June 2026 Revised
 - Migrate deletes the LHDN Payroll workspace as an "orphan" — must run sync_fixtures after migrate to restore it
 - bench execute frappe.utils.fixtures.sync_fixtures seeds fixture data from all registered fixture files
 - report/ subdirectories need `docker exec -u root` to mkdir (permission denied otherwise)
+## Iteration 5 - Sun Mar  1 10:23:07 MPST 2026
+Completed: Employment Pass Minimum Salary Threshold Validator (June 2026 Revised EP Policy) (ID: US-142) in 18m
+
+
+## Iteration — US-130: Foreign Worker EPF Oct 2025 — Domestic Servant Category Exclusion Flag
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 22 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_domestic_servant_epf`
+**Result:** PASS — 22/22 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/statutory_rates.py` — Added `DOMESTIC_SERVANT_EPF_EXEMPT` constant; added `is_domestic_servant=False` param to `calculate_epf_employer_rate()` and `calculate_epf_employee_rate()`; returns 0.0 for domestic servants regardless of payroll date
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/epf_borang_a/epf_borang_a.py` — Added `is_domestic_servant` to SQL SELECT; `generate_iakaun_file()` filters out domestic servant rows before building the i-Akaun file
+- `lhdn_payroll_integration/services/domestic_servant_epf_service.py` (both paths) — `is_domestic_servant_epf_excluded()` helper; `warn_domestic_servant_epf()` before_submit hook
+- `lhdn_payroll_integration/hooks.py` — Added `domestic_servant_epf_service.warn_domestic_servant_epf` to `before_submit` list
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added `Employee-custom_is_domestic_servant` Check field (default=0, depends_on=custom_is_foreign_worker)
+- `lhdn_payroll_integration/tests/test_domestic_servant_epf.py` (both paths) — 22 tests across 5 classes
+
+### Patterns discovered
+- `frappe.get_app_path("lhdn_payroll_integration")` resolves to `/home/frappe/frappe-bench/apps/lhdn_payroll_integration/lhdn_payroll_integration` (the OUTER path). Fixture tests load from outer path; service/util imports from nested path. Must update BOTH.
+- For `generate_iakaun_file()`, the domestic servant filter is a list comprehension on `get_data()` rows using the `is_domestic_servant` flag added to the SQL SELECT.
+
+### Gotchas
+- The patched `statutory_rates.py` and `epf_borang_a.py` patches must be deployed to BOTH outer and nested paths — tests import from nested (`lhdn_payroll_integration.lhdn_payroll_integration.utils.*`) but `frappe.get_app_path` resolves to outer path for fixture loading.
+- Warning hook is advisory (non-blocking) — uses `frappe.msgprint` with `indicator="orange"`, not `frappe.throw`.
