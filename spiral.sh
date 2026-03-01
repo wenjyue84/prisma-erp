@@ -10,6 +10,7 @@
 #   M) MERGE       — merge_stories.py deduplicates + patches prd.json
 #   G) GATE        — human checkpoint: proceed | skip | quit
 #   I) IMPLEMENT   — ralph.sh (up to 120 inner iterations)
+#   V) VALIDATE    — .venv-tests HTTP suite; fresh report for check_done
 #   C) CHECK DONE  — exit 0 if complete, else loop
 #
 # Non-interactive (Claude Code / CI):
@@ -254,6 +255,35 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
       echo "  [G] Unrecognized input '$GATE_INPUT' — treating as skip"
       ;;
   esac
+
+  # ── Phase V: VALIDATE (HTTP test suite) ──────────────────────────────────
+  echo ""
+  echo "  [Phase V] VALIDATE — running .venv-tests HTTP suite..."
+
+  if [[ -f "$PYTHON" ]]; then
+    (cd "$REPO_ROOT" && "$PYTHON" tests/run_tests.py \
+      --report-dir "test-reports" 2>&1) || true
+
+    # Print summary from the freshest report
+    "$PYTHON" - <<'PYEOF'
+import os, json, sys
+d = 'test-reports'
+if not os.path.isdir(d):
+    print("  [V] No test-reports directory found")
+    sys.exit(0)
+subdirs = sorted([x for x in os.listdir(d) if os.path.isdir(os.path.join(d,x))], reverse=True)
+for s in subdirs:
+    p = os.path.join(d, s, 'report.json')
+    if os.path.isfile(p):
+        r = json.load(open(p, encoding='utf-8'))
+        sm = r.get('summary', {})
+        print(f"  [V] {s}: {sm.get('passed',0)}/{sm.get('total',0)} pass, {sm.get('failed',0)} failed, {sm.get('errored',0)} errored")
+        sys.exit(0)
+print("  [V] No report found")
+PYEOF
+  else
+    echo "  [V] WARNING: Python venv not found — skipping HTTP test suite"
+  fi
 
   # ── Phase C: CHECK DONE ───────────────────────────────────────────────────
   echo ""
