@@ -89,7 +89,7 @@ def _warn_if_balance_zero(doc):
         as_dict=False,
     )
     used = abs(used or 0)
-    remaining = (allocation.total_leaves_allocated or EA_HOSPITALIZATION_DAYS) - used
+    remaining = (allocation.get("total_leaves_allocated") or EA_HOSPITALIZATION_DAYS) - used
     if remaining <= 0:
         frappe.msgprint(
             _(

@@ -6704,3 +6704,50 @@ Completed: PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach No
 ## Iteration 16 - Sun, Mar  1, 2026 12:34:55 PM
 Incomplete: Employment Act S.60F(2): Track 60-Day Hospitalization Leave Quota Separately from Ordinary Sick Leave (ID: US-201) — attempt 1/3
 
+## Iteration 14 - Sun Mar  1 12:35:12 MPST 2026
+Completed: PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach Notification Workflow (ID: US-200) in 14m
+
+
+## Iteration — US-163: Update TP1(1/2026) Relief Categories and PCB Computation Engine for YA2026 Budget Changes
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 44 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_ya2026_tp1_relief`
+**Result:** PASS — 44/44 tests pass, 0 failures, 0 errors
+
+### Status
+Implementation was already complete. `passes` flag corrected to `true`.
+
+### Key implementation in
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_tp1_relief/employee_tp1_relief.py`
+  - `_CAPS_YA2026` with new fields: `children_life_medical_insurance`, `childcare_fees_extended`, `domestic_tourism`, `child_relief_autism_oku`
+  - `_DOMESTIC_TOURISM_EXPIRY_YEAR = 2027` constant
+  - `_YA2026_EFFECTIVE_YEAR = 2026` constant
+  - `_apply_life_voluntary_epf_combined_cap()` — trims voluntary EPF first, then children's life insurance
+  - `_validate_domestic_tourism_expiry()` — rejects YA >= 2028
+  - `_zero_ya2026_fields_for_pre_2026()` — clears YA2026-specific fields for pre-2026 records
+
+## Iteration N — US-201: Employment Act S.60F(2): Track 60-Day Hospitalization Leave Quota
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 19 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_ea_hospitalization_leave`
+**Result:** PASS — 19/19 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/tests/test_ea_hospitalization_leave.py` — Fixed: max_days_allowed → max_leaves_allowed (field doesn't exist in this ERPNext)
+- `lhdn_payroll_integration/services/hospitalization_leave_service.py` — Fixed: allocation.total_leaves_allocated → allocation.get("total_leaves_allocated") (dict not object)
+- `lhdn_payroll_integration/fixtures/leave_type.json` — Fixed: max_days_allowed → max_leaves_allowed
+
+### Data created in DB (via setup script)
+- Leave Type "Sick Leave (EA)" — max_leaves_allowed=22, is_lwp=0
+- Leave Type "Hospitalization Leave (EA)" — max_leaves_allowed=60, is_lwp=0
+- Custom Field: Leave Application.custom_lhdn_ea_leave_section (Section Break)
+- Custom Field: Leave Application.custom_hospitalization_discharge_date (Date)
+- Custom Field: Leave Application.custom_medical_certificate_type (Select)
+
+### Gotchas
+- ERPNext Leave Type uses `max_leaves_allowed`, NOT `max_days_allowed` (fixture JSON was wrong)
+- frappe.db.get_value() with as_dict=True returns Python dict — use .get() not attribute access
+- sync_fixtures() fails on tabCompany (row size too large) — use direct frappe.get_doc().insert() instead
+- bench execute runs the module path twice (once via get_attr, once via eval); first call succeeds, second hits else-branch

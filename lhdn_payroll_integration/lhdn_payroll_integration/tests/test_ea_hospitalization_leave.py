@@ -46,10 +46,10 @@ class TestLeaveTypeFixtures(FrappeTestCase):
         )
 
     def test_hospitalization_leave_ea_max_days_is_60(self):
-        max_days = frappe.db.get_value("Leave Type", HOSPITALIZATION_LEAVE_TYPE, "max_days_allowed")
+        max_days = frappe.db.get_value("Leave Type", HOSPITALIZATION_LEAVE_TYPE, "max_leaves_allowed")
         self.assertEqual(
             int(max_days or 0), 60,
-            "Hospitalization Leave (EA) max_days_allowed must be 60"
+            "Hospitalization Leave (EA) max_leaves_allowed must be 60"
         )
 
     def test_sick_leave_ea_is_not_lwp(self):
