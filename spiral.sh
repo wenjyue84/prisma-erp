@@ -32,6 +32,7 @@ GATE_DEFAULT=""        # empty = interactive; "proceed"|"skip"|"quit" = auto
 RALPH_MAX_ITERS=120
 SKIP_RESEARCH=0        # 1 = skip Phase R (Claude web research); T and M still run
 RALPH_WORKERS=1        # >1 = parallel mode (git worktrees + docker lock)
+CAPACITY_LIMIT=50      # Phase R is skipped when PENDING exceeds this threshold
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -43,6 +44,8 @@ while [[ $# -gt 0 ]]; do
       SKIP_RESEARCH=1; shift ;;
     --ralph-workers)
       RALPH_WORKERS="$2"; shift 2 ;;
+    --capacity-limit)
+      CAPACITY_LIMIT="$2"; shift 2 ;;
     --*)
       echo "[spiral] Unknown flag: $1"; exit 1 ;;
     *)
@@ -160,6 +163,7 @@ echo "  ║  Max iters:   $MAX_SPIRAL_ITERS"
 echo "  ║  Ralph iters: $RALPH_MAX_ITERS per phase"
 [[ "$RALPH_WORKERS" -gt 1 ]] && echo "  ║  Workers:     $RALPH_WORKERS parallel (git worktrees)"
 [[ "$SKIP_RESEARCH" -eq 1 ]] && echo "  ║  Mode:        --skip-research (Phase R skipped)"
+echo "  ║  Capacity:    Phase R skipped when pending > $CAPACITY_LIMIT"
 echo "  ╚══════════════════════════════════════════════╝"
 echo ""
 
@@ -189,6 +193,15 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
   echo "  │  Stories: $DONE/$TOTAL complete ($PENDING pending)"
   echo "  └─────────────────────────────────────────────────────┘"
 
+  # ── Capacity guard → skip Phase R only when over capacity ────────────────
+  OVER_CAPACITY=0
+  if [[ "$PENDING" -gt "$CAPACITY_LIMIT" ]]; then
+    OVER_CAPACITY=1
+    echo ""
+    echo "  [CAPACITY] $PENDING pending stories exceed limit of $CAPACITY_LIMIT."
+    echo "  [CAPACITY] Skipping Phase R only (no web research for new stories) — T/M still run to catch regressions."
+  fi
+
   # ── Phase R: RESEARCH ────────────────────────────────────────────────────
   echo ""
   echo "  [Phase R] RESEARCH — searching LHDN sources..."
@@ -198,6 +211,10 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
     echo "  [R] Skipping (checkpoint: already done this iter)"
   elif [[ "$SKIP_RESEARCH" -eq 1 ]]; then
     echo "  [R] Skipping (--skip-research flag set)"
+    echo '{"stories":[]}' > "$RESEARCH_OUTPUT"
+    write_checkpoint "$SPIRAL_ITER" "R"
+  elif [[ "$OVER_CAPACITY" -eq 1 ]]; then
+    echo "  [R] Skipping (over-capacity: $PENDING pending > $CAPACITY_LIMIT)"
     echo '{"stories":[]}' > "$RESEARCH_OUTPUT"
     write_checkpoint "$SPIRAL_ITER" "R"
   else
@@ -245,7 +262,8 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
     "$PYTHON" "$SPIRAL_DIR/synthesize_tests.py" \
       --prd "$PRD_FILE" \
       --reports-dir "$REPO_ROOT/test-reports" \
-      --output "$TEST_OUTPUT" || true
+      --output "$TEST_OUTPUT" \
+      --repo-root "$REPO_ROOT" || true
 
     TEST_COUNT=$("$JQ" '.stories | length' "$TEST_OUTPUT" 2>/dev/null || echo "0")
     echo "  [T] Test synthesis complete — $TEST_COUNT story candidates from failures"
@@ -260,11 +278,14 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
   if checkpoint_phase_done "M"; then
     echo "  [M] Skipping (checkpoint: already done this iter)"
   else
+    OVERFLOW_FILE="$SPIRAL_DIR/_research_overflow.json"
     BEFORE_TOTAL=$("$JQ" '[.userStories | length] | .[0]' "$PRD_FILE")
     "$PYTHON" "$SPIRAL_DIR/merge_stories.py" \
       --prd "$PRD_FILE" \
       --research "$RESEARCH_OUTPUT" \
       --test-stories "$TEST_OUTPUT" \
+      --overflow-in  "$OVERFLOW_FILE" \
+      --overflow-out "$OVERFLOW_FILE" \
       --max-new 50 || true
     AFTER_TOTAL=$("$JQ" '[.userStories | length] | .[0]' "$PRD_FILE")
     ADDED=$((AFTER_TOTAL - BEFORE_TOTAL))
@@ -328,8 +349,8 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
         echo "  [Phase I] IMPLEMENT — running ralph ($RALPH_MAX_ITERS inner iterations)..."
         echo "  [I] Pending stories ($PENDING):"
         "$JQ" -r '.userStories[] | select(.passes != true) | "    [\(.id)] \(.title)"' "$PRD_FILE" \
-          | head -20
-        PENDING_SHOWN=$("$JQ" '[.userStories[] | select(.passes != true)] | length' "$PRD_FILE")
+          2>/dev/null | head -20 || true
+        PENDING_SHOWN=$("$JQ" '[.userStories[] | select(.passes != true)] | length' "$PRD_FILE" 2>/dev/null || echo "$PENDING")
         [[ "$PENDING_SHOWN" -gt 20 ]] && echo "    ... and $((PENDING_SHOWN - 20)) more"
         echo ""
 
@@ -438,11 +459,21 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
             echo "  ╚══════════════════════════════════════════════════════╝"
             prd_stats
             echo ""
-            "$JQ" -r '.userStories[] | select(.passes != true) | "  [PENDING] [\(.id)] \(.title)"' "$PRD_FILE"
+            "$JQ" -r '.userStories[] | select(.passes != true) | "  [PENDING] [\(.id)] \(.title)"' "$PRD_FILE" 2>/dev/null || true
             rm -f "$CHECKPOINT_FILE"
             exit 2
           fi
           echo "  [I] Continuing to check-done phase..."
+        fi
+        # ── Adaptive ralph budget based on velocity ─────────────────────────────
+        if [[ "$RALPH_PROGRESS" -ge 5 ]]; then
+          RALPH_MAX_ITERS=$(( RALPH_MAX_ITERS + 20 ))
+          echo "  [velocity] High ($RALPH_PROGRESS stories/iter) — ralph budget → $RALPH_MAX_ITERS"
+        elif [[ "$RALPH_PROGRESS" -eq 0 ]]; then
+          NEW_BUDGET=$(( RALPH_MAX_ITERS / 2 ))
+          [[ "$NEW_BUDGET" -lt 30 ]] && NEW_BUDGET=30
+          RALPH_MAX_ITERS="$NEW_BUDGET"
+          echo "  [velocity] Zero — ralph budget → $RALPH_MAX_ITERS"
         fi
         fi  # end PENDING > 0 block
         ;;

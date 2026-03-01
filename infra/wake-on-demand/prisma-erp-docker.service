@@ -1,0 +1,16 @@
+[Unit]
+Description=Prisma ERP Docker Compose
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/ubuntu/prisma-erp
+ExecStart=/usr/bin/docker compose -f pwd-myinvois.yml up -d
+ExecStop=/usr/bin/docker compose -f pwd-myinvois.yml down --timeout 30
+TimeoutStartSec=300
+User=ubuntu
+
+[Install]
+WantedBy=multi-user.target

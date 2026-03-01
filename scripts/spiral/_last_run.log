@@ -1,95 +1,53 @@
+[spiral] Backup: /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/prd.json.bak
 
   ╔══════════════════════════════════════════════╗
   ║   SPIRAL — Self-iterating Payroll Loop       ║
   ╠══════════════════════════════════════════════╣
   ║  PRD:         /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/prd.json
-  ║  Stories:     107/127 complete (20 pending)
-  ║  Max iters:   3
+  ║  Stories:     145/309 complete (164 pending)
+  ║  Max iters:   20
   ║  Ralph iters: 120 per phase
+  ║  Workers:     3 parallel (git worktrees)
   ╚══════════════════════════════════════════════╝
+
+  [checkpoint] Resuming from iter=1 phase=T
 
 
   ┌─────────────────────────────────────────────────────┐
-  │  SPIRAL Iteration 1 / 3
-  │  Stories: 107/127 complete (20 pending)
+  │  SPIRAL Iteration 1 / 20
+  │  Stories: 145/309 complete (164 pending)
   └─────────────────────────────────────────────────────┘
 
   [Phase R] RESEARCH — searching LHDN sources...
-  [R] Spawning Claude research agent (max 30 turns)...
-  ─────── Research Agent Start ─────────────────────────
-[2m[0:51][0m 🔨 [36mTodoWrite[0m [2m[0m
-[2m[0:54][0m [37mRunning parallel searches across all priority focus areas:[0m
-[2m[0:55][0m 🔨 [36mWebSearch[0m [2mPCB calculation 2025 2026 Malaysia LHDN Schedule 1 tax brack...[0m
-[2m[0:55][0m 🔨 [36mWebSearch[0m [2mEA Form mandatory fields 2025 LHDN CP8A spec[0m
-[2m[0:56][0m 🔨 [36mWebSearch[0m [2mEPF rate changes 2025 Malaysia employer employee i-Akaun upl...[0m
-[2m[1:12][0m 🔨 [36mWebSearch[0m [2mSOCSO EIS amendment 2025 Malaysia contribution ceiling PERKE...[0m
-[2m[1:13][0m 🔨 [36mWebSearch[0m [2mMyTax e-PCB Plus API employer submission CP39 2025 LHDN[0m
-[2m[1:14][0m 🔨 [36mWebSearch[0m [2mHRD Corp HRDF levy Malaysia 2025 employer training levy cont...[0m
-[2m[1:28][0m 🔨 [36mWebSearch[0m [2mEmployment Act amendment 2022 Malaysia ORP ordinary rate of ...[0m
-[2m[1:29][0m 🔨 [36mWebSearch[0m [2mBorang E LHDN employer annual return 2025 CP8D e-Filing form...[0m
-[2m[1:30][0m 🔨 [36mWebSearch[0m [2mTP3 previous employer income LHDN PCB carry forward new hire[0m
-[2m[1:40][0m 🔨 [36mWebSearch[0m [2mPCB tax relief 2025 YA2025 Malaysia spouse child disability ...[0m
-[2m[1:41][0m 🔨 [36mWebSearch[0m [2mBenefits-in-Kind BIK prescribed value 2025 LHDN gazette Mala...[0m
-[2m[1:42][0m 🔨 [36mWebSearch[0m [2mforeign worker levy FWCMS 2025 Malaysia multi-tier levy mont...[0m
-[2m[1:53][0m 🔨 [36mWebSearch[0m [2mdirector fee PCB Malaysia tax treatment bonus non-employment...[0m
-[2m[1:54][0m 🔨 [36mWebSearch[0m [2mCP22 new employee notification LHDN e-CP22 30 days MyTax sub...[0m
-[2m[1:54][0m 🔨 [36mWebSearch[0m [2mMalaysia payslip mandatory fields Employment Act section 61 ...[0m
-[2m[2:05][0m 🔨 [36mWebSearch[0m [2mLHDN PCB computation specification 2025 PDF amendment tax br...[0m
-[2m[2:06][0m 🔨 [36mWebSearch[0m [2mEPF i-Akaun CSV upload file format specification columns 202...[0m
-[2m[2:07][0m 🔨 [36mWebSearch[0m [2mMalaysia salary deduction limit Employment Act section 24 lo...[0m
-[2m[2:21][0m 🔨 [36mWebSearch[0m [2mLHDN e-SPC CP21 CP22A online MyTax cessation departure Malay...[0m
-[2m[2:21][0m 🔨 [36mWebSearch[0m [2mPrivate Retirement Scheme PRS PCB relief Malaysia 2025 RM300...[0m
-[2m[2:22][0m 🔨 [36mWebSearch[0m [2mMalaysia public holiday pay Employment Act section 60D repla...[0m
-[2m[6:25][0m [37mNow I have sufficient research data. Let me do a few more targeted searches on the newest/most speci...[0m
-[2m[6:26][0m 🔨 [36mWebSearch[0m [2mHRD Corp 15% deduction unused levy under-utilisation 2025 Ma...[0m
-[2m[6:26][0m 🔨 [36mWebSearch[0m [2mLHDN PCB 2025 specification medical treatment expense relief...[0m
-[2m[6:38][0m 🔨 [36mWebFetch[0m [2mWhat are the current requirements for CP22 (new employee not...[0m
-[2m[6:41][0m 🔨 [36mWebFetch[0m [2mSummarize the HRD Corp 15% levy deduction policy starting Ma...[0m
-[2m[7:10][0m 🔨 [36mTodoWrite[0m [2m[0m
-[2m[10:09][0m ✏️ [36mWrite[0m [2m_research_output.json[0m
-[2m[10:13][0m 💻 [36mBash[0m [2mls /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/sc...[0m
-[2m[10:28][0m 📖 [36mRead[0m [2m_research_output.json[0m
-[2m[13:33][0m ✏️ [36mWrite[0m [2m_research_output.json[0m
-[2m[13:38][0m 🔨 [36mTodoWrite[0m [2m[0m
-[2m[14:00][0m [37mResearch complete. Here's a summary of what was found and written to `scripts/spiral/_research_outpu...[0m
-
-[32m[1m✓ Claude finished[0m [2m(32 tool calls in 14:00)[0m
-
-[2mStream ended (32 tool calls, 14:01 elapsed)[0m
-  ─────── Research Agent End ───────────────────────────
-  [R] Research complete — 13 story candidates found
+  [R] Skipping (checkpoint: already done this iter)
 
   [Phase T] TEST SYNTHESIS — scanning test failures...
-[synthesize] Report: 2026-02-28_18-28-18 � 0 failures/errors out of 14
-[synthesize] Generated 0 new story candidates from test failures
-[synthesize] Wrote 0 stories -> C:/Users/Jyue/Documents/1-projects/Projects/prisma-erp/scripts/spiral/_test_stories_output.json
-  [T] Test synthesis complete — 0 story candidates from failures
+  [T] Skipping (checkpoint: already done this iter)
 
   [Phase M] MERGE — deduplicating and patching prd.json...
-[merge] prd.json: 127 existing stories
-[merge] Test candidates: 0, Research candidates: 13
-[merge] Adding [US-128] (high) Track HRD Corp Levy Utilization Rate and Alert on 15% Under-Utilisatio
-[merge] Adding [US-129] (high) Pre-Submission e-PCB Plus Employee TIN and Tax Category Completeness V
-[merge] Adding [US-130] (high) Foreign Worker EPF Oct 2025 Mandate: Domestic Servant Category Exclusi
-[merge] Adding [US-131] (high) EPF i-Akaun CSV: Employee Citizenship Type Code for Malaysian vs Forei
-[merge] Adding [US-132] (high) Employee TIN Bulk Export and Import Utility for e-PCB Plus Readiness
-[merge] Adding [US-133] (medium) SOCSO/EIS Coverage Extension to Contract and Temporary Public Sector E
-[merge] Adding [US-134] (medium) PCB 2025 Spec: Update TP1 Medical Relief Categories � Co-Payment Insur
-[merge] Adding [US-135] (medium) PRS Tax Relief Extension to YA2030 � Update PCB Calculator Eligibility
-[merge] Adding [US-136] (medium) FWCMS Foreign Worker Levy: 10th-of-Month Payment Deadline Alert Separa
-[merge] Adding [US-137] (medium) EA Form for Deceased Employee � Prorated Period and Estate Administrat
-[merge] Adding [US-138] (medium) e-PCB Plus Prior Month PCB Amendment � Trigger Corrected CP39 Row on S
-[merge] Adding [US-139] (medium) MyTax Employer Representative (Wakil Majikan) Configuration on Company
-[merge] Adding [US-140] (medium) HRD Corp eTRIS Training Claim Recording and Levy Utilization Dashboard
-[merge] Done: added 13 stories. prd.json now has 140 total (33 pending).
-  [M] Merge complete — 13 new stories added (total: 140)
+[merge] prd.json: 309 existing stories
+[merge] Test candidates: 0, Research candidates: 12
+[merge] Skip duplicate (research): PERKESO LINDUNG Scheme Rebranding � Update All System Labels from SKSPS/SKSSR to
+[merge] Skip duplicate (research): EPF Foreign Worker Permanent Departure Withdrawal Advisory Checklist on Employme
+[merge] Skip duplicate (research): e-Duti Setem Per-Employee Contract Stamp Duty Compliance Task with 30-Day Countd
+[merge] Skip duplicate (research): HRD Corp RM50,000 Levy Balance Threshold Tracker and 15% Auto-Deduction Ledger R
+[merge] Skip duplicate (research): Gig Workers Bill 2025 � Platform Provider Registration as PERKESO Contributing E
+[merge] Skip duplicate (research): Budget 2026 � Double Tax Deduction for Hiring Prisoners Released on Licence and 
+[merge] Skip duplicate (research): MySIP 1:3 Internship Ratio Compliance Dashboard for Employers with Employment Pa
+[merge] Skip duplicate (research): Workplace Harassment Penal Code Amendment � Criminal Offense Escalation Flag on 
+[merge] Skip duplicate (research): Progressive Wage Policy � 21-Hour Annual Training Completion Tracking per Eligib
+[merge] Skip duplicate (research): VSS/MSS Employer EIS Loss-of-Employment Certification for Retrenched Employee EI
+[merge] Skip duplicate (research): PDPA 2024 Payroll Data Retention Schedule � 7-Year LHDN Override vs. PDPA Data M
+[merge] Skip duplicate (research): EIS Amendment 2025 S.45F � Moratorium Phase Suppression and Voluntary Job Vacanc
+[merge] No new stories to add � prd.json unchanged
+  [M] Merge complete — 0 new stories added (total: 309)
 
   ╔══════════════════════════════════════════════════════╗
   ║  [Phase G] HUMAN GATE — Iteration 1
   ╠══════════════════════════════════════════════════════╣
-  ║  New stories added:  13
-  ║  Total pending:      33
-  ║  Total stories:      140 (107 complete)
+  ║  New stories added:  0
+  ║  Total pending:      164
+  ║  Total stories:      309 (145 complete)
   ╠══════════════════════════════════════════════════════╣
   ║  Options:
   ║    proceed — run ralph to implement pending stories
@@ -100,503 +58,56 @@
   [G] Auto-gate: proceed
 
   [Phase I] IMPLEMENT — running ralph (120 inner iterations)...
-[config] Loading project quality gates from ./ralph-config.sh
-  [config] Frappe/Docker quality gates loaded (15-min reporter started, PID=2050)
+  [I] Pending stories (164):
+    [US-105] Implement HRDF Levy Contribution Base Classifier (Fixed Allowances vs. Variable Pay)
+    [US-108] Auto-Generate EIS Form IA New Employee Registration File for PERKESO ASSIST
+    [US-109] Integrate Private Retirement Scheme (PRS) Voluntary Deduction with TP1 RM3,000 Relief
+    [US-110] Implement DTA 183-Day Residency Tracker and Short-Term Assignee PCB Exemption Workflow
+    [US-112] Build Monthly e-PCB Plus Submission Reconciliation View
+    [US-113] Implement Zakat State Rate Table for Multi-State Employer Offices
+    [US-120] Implement Commission-as-Normal-Remuneration MTD Formula for Commission-Heavy Pay Structures
+    [US-122] Generate CP159 Annual PCB Reconciliation Schedule Supporting Borang E Submission
+    [US-123] Implement Aggregate Multi-Run Payroll PCB for Mid-Month Salary Advances and Supplementary Runs
+    [US-124] HRD Corp Levy Monthly Payment File and HRDF Employer Portal Integration
+    [US-126] Implement Flexi-Benefit (Cafeteria Plan) Allocation with BIK Classification and PCB Inclusion
+    [US-127] Implement Malaysia Gazetted Public Holiday Calendar Sync and State-Specific Holiday Handling
+    [US-128] Track HRD Corp Levy Utilization Rate and Alert on 15% Under-Utilisation Penalty
+    [US-132] Employee TIN Bulk Export and Import Utility for e-PCB Plus Readiness
+    [US-133] SOCSO/EIS Coverage Extension to Contract and Temporary Public Sector Employees (Oct 2024)
+    [US-134] PCB 2025 Spec: Update TP1 Medical Relief Categories — Co-Payment Insurance, Mental Health, and COVID Tests
+    [US-135] PRS Tax Relief Extension to YA2030 — Update PCB Calculator Eligibility Date Guard
+    [US-136] FWCMS Foreign Worker Levy: 10th-of-Month Payment Deadline Alert Separate from EPF/SOCSO
+    [US-137] EA Form for Deceased Employee — Prorated Period and Estate Administrator Delivery
+    [US-138] e-PCB Plus Prior Month PCB Amendment — Trigger Corrected CP39 Row on Salary Slip Resubmission
+    ... and 144 more
 
-  ╔══════════════════════════════════════╗
-  ║     Ralph Autonomous Agent Loop      ║
-  ╠══════════════════════════════════════╣
-  ║  Tool:       claude
-  ║  PRD:        lhdn_payroll_integration
-  ║  Branch:     feature/lhdn-gap-closure
-  ║  Stories:    107/140 complete
-  ║  Remaining:  33 stories
-  ║  Max iters:  120
-  ╚══════════════════════════════════════╝
+  [I] Parallel mode: 3 workers (40 iters each)
+  [parallel] ═══════════════════════════════════════════════════
+  [parallel]  PARALLEL RALPH — 3 workers
+  [parallel]  Iters/worker:  40 (total budget: 120)
+  [parallel]  Docker lock:   /tmp/spiral-docker-lock-16182
+  [parallel] ═══════════════════════════════════════════════════
+[partition] 145 completed, 164 pending → 3 workers
+[partition] Worker 1: 55 stories [US-105, US-110, US-120, US-124, US-128...] → C:/Users/Jyue/Documents/1-projects/Projects/prisma-erp/scripts/spiral/workers\worker_1.json
+[partition] Worker 2: 55 stories [US-108, US-112, US-122, US-126, US-132...] → C:/Users/Jyue/Documents/1-projects/Projects/prisma-erp/scripts/spiral/workers\worker_2.json
+[partition] Worker 3: 54 stories [US-109, US-113, US-123, US-127, US-133...] → C:/Users/Jyue/Documents/1-projects/Projects/prisma-erp/scripts/spiral/workers\worker_3.json
+Preparing worktree (new branch 'spiral-worker-1-1772347037')
+Updating files:  49% (588/1193)Updating files:  50% (597/1193)Updating files:  51% (609/1193)Updating files:  52% (621/1193)Updating files:  53% (633/1193)Updating files:  54% (645/1193)Updating files:  55% (657/1193)Updating files:  56% (669/1193)Updating files:  57% (681/1193)Updating files:  58% (692/1193)Updating files:  59% (704/1193)Updating files:  60% (716/1193)Updating files:  61% (728/1193)Updating files:  62% (740/1193)Updating files:  63% (752/1193)Updating files:  64% (764/1193)Updating files:  65% (776/1193)Updating files:  66% (788/1193)Updating files:  67% (800/1193)Updating files:  68% (812/1193)Updating files:  69% (824/1193)Updating files:  70% (836/1193)Updating files:  71% (848/1193)Updating files:  72% (859/1193)Updating files:  73% (871/1193)Updating files:  74% (883/1193)Updating files:  75% (895/1193)Updating files:  76% (907/1193)Updating files:  77% (919/1193)Updating files:  78% (931/1193)Updating files:  79% (943/1193)Updating files:  80% (955/1193)Updating files:  81% (967/1193)Updating files:  82% (979/1193)Updating files:  82% (988/1193)Updating files:  83% (991/1193)Updating files:  84% (1003/1193)Updating files:  85% (1015/1193)Updating files:  86% (1026/1193)Updating files:  87% (1038/1193)Updating files:  88% (1050/1193)Updating files:  89% (1062/1193)Updating files:  90% (1074/1193)Updating files:  91% (1086/1193)Updating files:  92% (1098/1193)Updating files:  93% (1110/1193)Updating files:  94% (1122/1193)Updating files:  95% (1134/1193)Updating files:  96% (1146/1193)Updating files:  97% (1158/1193)Updating files:  98% (1170/1193)Updating files:  99% (1182/1193)Updating files: 100% (1193/1193)Updating files: 100% (1193/1193), done.
+HEAD is now at b2da566 feat: US-129 - Pre-Submission e-PCB Plus Employee TIN and Tax Category Completeness Validation
+  [parallel] Worker 1 ready — branch: spiral-worker-1-1772347037 | pending: 55 stories
+Preparing worktree (new branch 'spiral-worker-2-1772347037')
+Updating files:  20% (249/1193)Updating files:  21% (251/1193)Updating files:  22% (263/1193)Updating files:  23% (275/1193)Updating files:  24% (287/1193)Updating files:  25% (299/1193)Updating files:  26% (311/1193)Updating files:  27% (323/1193)Updating files:  28% (335/1193)Updating files:  29% (346/1193)Updating files:  30% (358/1193)Updating files:  31% (370/1193)Updating files:  32% (382/1193)Updating files:  33% (394/1193)Updating files:  34% (406/1193)Updating files:  35% (418/1193)Updating files:  36% (430/1193)Updating files:  37% (442/1193)Updating files:  38% (454/1193)Updating files:  39% (466/1193)Updating files:  40% (478/1193)Updating files:  41% (490/1193)Updating files:  42% (502/1193)Updating files:  43% (513/1193)Updating files:  44% (525/1193)Updating files:  45% (537/1193)Updating files:  46% (549/1193)Updating files:  47% (561/1193)Updating files:  48% (573/1193)Updating files:  49% (585/1193)Updating files:  50% (597/1193)Updating files:  51% (609/1193)Updating files:  52% (621/1193)Updating files:  53% (633/1193)Updating files:  54% (645/1193)Updating files:  55% (657/1193)Updating files:  56% (669/1193)Updating files:  57% (681/1193)Updating files:  58% (692/1193)Updating files:  58% (699/1193)Updating files:  59% (704/1193)Updating files:  60% (716/1193)Updating files:  61% (728/1193)Updating files:  62% (740/1193)Updating files:  63% (752/1193)Updating files:  64% (764/1193)Updating files:  65% (776/1193)Updating files:  66% (788/1193)Updating files:  67% (800/1193)Updating files:  68% (812/1193)Updating files:  69% (824/1193)Updating files:  70% (836/1193)Updating files:  71% (848/1193)Updating files:  72% (859/1193)Updating files:  73% (871/1193)Updating files:  74% (883/1193)Updating files:  75% (895/1193)Updating files:  76% (907/1193)Updating files:  77% (919/1193)Updating files:  78% (931/1193)Updating files:  79% (943/1193)Updating files:  80% (955/1193)Updating files:  81% (967/1193)Updating files:  82% (979/1193)Updating files:  83% (991/1193)Updating files:  84% (1003/1193)Updating files:  85% (1015/1193)Updating files:  86% (1026/1193)Updating files:  87% (1038/1193)Updating files:  88% (1050/1193)Updating files:  89% (1062/1193)Updating files:  90% (1074/1193)Updating files:  91% (1086/1193)Updating files:  92% (1098/1193)Updating files:  93% (1110/1193)Updating files:  94% (1122/1193)Updating files:  95% (1134/1193)Updating files:  96% (1146/1193)Updating files:  97% (1158/1193)Updating files:  98% (1170/1193)Updating files:  99% (1182/1193)Updating files: 100% (1193/1193)Updating files: 100% (1193/1193), done.
+HEAD is now at b2da566 feat: US-129 - Pre-Submission e-PCB Plus Employee TIN and Tax Category Completeness Validation
+  [parallel] Worker 2 ready — branch: spiral-worker-2-1772347037 | pending: 55 stories
+Preparing worktree (new branch 'spiral-worker-3-1772347037')
+Updating files:  10% (129/1193)Updating files:  11% (132/1193)Updating files:  12% (144/1193)Updating files:  13% (156/1193)Updating files:  14% (168/1193)Updating files:  15% (179/1193)Updating files:  16% (191/1193)Updating files:  17% (203/1193)Updating files:  18% (215/1193)Updating files:  19% (227/1193)Updating files:  20% (239/1193)Updating files:  21% (251/1193)Updating files:  22% (263/1193)Updating files:  23% (275/1193)Updating files:  24% (287/1193)Updating files:  25% (299/1193)Updating files:  26% (311/1193)Updating files:  27% (323/1193)Updating files:  28% (335/1193)Updating files:  29% (346/1193)Updating files:  30% (358/1193)Updating files:  31% (370/1193)Updating files:  32% (382/1193)Updating files:  33% (394/1193)Updating files:  34% (406/1193)Updating files:  35% (418/1193)Updating files:  36% (430/1193)Updating files:  37% (442/1193)Updating files:  38% (454/1193)Updating files:  39% (466/1193)Updating files:  40% (478/1193)Updating files:  41% (490/1193)Updating files:  42% (502/1193)Updating files:  43% (513/1193)Updating files:  44% (525/1193)Updating files:  45% (537/1193)Updating files:  46% (549/1193)Updating files:  47% (561/1193)Updating files:  48% (573/1193)Updating files:  49% (585/1193)Updating files:  50% (597/1193)Updating files:  51% (609/1193)Updating files:  52% (621/1193)Updating files:  53% (633/1193)Updating files:  54% (645/1193)Updating files:  55% (657/1193)Updating files:  56% (669/1193)Updating files:  57% (681/1193)Updating files:  57% (691/1193)Updating files:  58% (692/1193)Updating files:  59% (704/1193)Updating files:  60% (716/1193)Updating files:  61% (728/1193)Updating files:  62% (740/1193)Updating files:  63% (752/1193)Updating files:  64% (764/1193)Updating files:  65% (776/1193)Updating files:  66% (788/1193)Updating files:  67% (800/1193)Updating files:  68% (812/1193)Updating files:  69% (824/1193)Updating files:  70% (836/1193)Updating files:  71% (848/1193)Updating files:  72% (859/1193)Updating files:  73% (871/1193)Updating files:  74% (883/1193)Updating files:  75% (895/1193)Updating files:  76% (907/1193)Updating files:  77% (919/1193)Updating files:  78% (931/1193)Updating files:  79% (943/1193)Updating files:  80% (955/1193)Updating files:  81% (967/1193)Updating files:  82% (979/1193)Updating files:  83% (991/1193)Updating files:  84% (1003/1193)Updating files:  85% (1015/1193)Updating files:  86% (1026/1193)Updating files:  87% (1038/1193)Updating files:  88% (1050/1193)Updating files:  89% (1062/1193)Updating files:  90% (1074/1193)Updating files:  91% (1086/1193)Updating files:  92% (1098/1193)Updating files:  93% (1110/1193)Updating files:  94% (1122/1193)Updating files:  95% (1134/1193)Updating files:  96% (1146/1193)Updating files:  97% (1158/1193)Updating files:  98% (1170/1193)Updating files:  99% (1182/1193)Updating files: 100% (1193/1193)Updating files: 100% (1193/1193), done.
+HEAD is now at b2da566 feat: US-129 - Pre-Submission e-PCB Plus Employee TIN and Tax Category Completeness Validation
+  [parallel] Worker 3 ready — branch: spiral-worker-3-1772347037 | pending: 54 stories
+  [parallel] Launching worker 1 → log: /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/scripts/spiral/workers/worker_1.log
+  [parallel] Launching worker 2 → log: /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/scripts/spiral/workers/worker_2.log
+  [parallel] Launching worker 3 → log: /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/scripts/spiral/workers/worker_3.log
 
-
-  ╔══════════════════════════════════════╗
-  ║  Iteration 1/120
-  Progress: [██████████████████████░░░░░░░░] 107/140 (76%)
-  ╚══════════════════════════════════════╝
-
-  ┌─ Story ─────────────────────────────┐
-  │ ID:       US-114
-  │ Title:    Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  │ Priority: critical
-  │ Deps:     none
-  │ Attempt:  1/3
-  └─────────────────────────────────────┘
-
-  [baseline] Counting pre-story TS errors... 0 errors
-
-  [spawn] Fresh claude instance for US-114...
-  ─────── Claude Output Start ──────────
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 02:51  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 03:06  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 03:21  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 03:36  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 03:51  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 04:06  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 04:21  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 04:36  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 04:51  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 05:06  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 05:21  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 05:36  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 05:51  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 06:06  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 06:21  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 06:36  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 06:51  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 07:06  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 07:21  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 07:36  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 07:51  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 08:06  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 08:21  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 08:36  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  107 / 140 stories
-  ║  Remaining:  33 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║
-  ║  Up next:
-  ║    → [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 08:51  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  108 / 140 stories
-  ║  Remaining:  32 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║    ✓ [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║
-  ║  Up next:
-  ║    → [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ║    → [US-117] Implement EPF i-Topup (Voluntary Excess Contribution) Payroll Deduction and RM7,000 PCB Relief Tracking
-  ╚══════════════════════════════════════════╝
-
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 09:06  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  109 / 140 stories
-  ║  Remaining:  31 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
-  ║    ✓ [US-114] Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
-  ║    ✓ [US-115] Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure
-  ║
-  ║  Up next:
-  ║    → [US-116] Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company
-  ║    → [US-117] Implement EPF i-Topup (Voluntary Excess Contribution) Payroll Deduction and RM7,000 PCB Relief Tracking
-  ║    → [US-118] Apply YA2025 PCB Schedule 1 Tax Brackets Including New 30% Tier for Income Exceeding RM2 Million
-  ╚══════════════════════════════════════════╝
+  [parallel] All 3 workers running.
+  [parallel] Monitor: tail -f /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/scripts/spiral/workers/worker_1.log
+  [parallel] Waiting for completion...
 

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
 SPIRAL Phase M — Merge Stories
-Loads _research_output.json + _test_stories_output.json, deduplicates against prd.json,
-assigns sequential IDs starting from max+1, and atomically patches prd.json.
+Loads _research_output.json + _test_stories_output.json + optional overflow cache,
+deduplicates against prd.json, assigns sequential IDs, and atomically patches prd.json.
 
-Order: test-failure candidates first (known bugs > new features), then research stories.
-Each group sorted by priority rank.
+Order: test-failure candidates first (known bugs > new features), then research/overflow.
+Overflow: unused research candidates (cap-blocked, not duplicates) are persisted to
+          --overflow-out and consumed next iteration via --overflow-in.
 Cap: --max-new 50 total additions per SPIRAL iteration.
 """
 import argparse
@@ -76,9 +77,11 @@ def story_to_prd_entry(story: dict[str, Any], story_id: str) -> dict[str, Any]:
         "estimatedComplexity": story.get("estimatedComplexity", "medium"),
         "passes": False,
     }
-    # Preserve audit trail field (non-standard; ignored by ralph.sh)
     if "_source" in story:
         entry["_source"] = story["_source"]
+    # Enhancement 7: flag test-synthesis stories for audit trail + future ralph prioritisation
+    if story.get("_isTestFix"):
+        entry["isTestFix"] = True
     return entry
 
 
@@ -95,6 +98,18 @@ def main() -> int:
         default="scripts/spiral/_test_stories_output.json",
         help="Test synthesis output JSON",
     )
+    parser.add_argument(
+        "--overflow-in",
+        default="",
+        metavar="PATH",
+        help="Overflow cache from previous iteration (unused research candidates)",
+    )
+    parser.add_argument(
+        "--overflow-out",
+        default="",
+        metavar="PATH",
+        help="Write leftover research candidates here for next iteration",
+    )
     parser.add_argument("--max-new", type=int, default=50, help="Max new stories to add per iteration")
     args = parser.parse_args()
 
@@ -110,41 +125,75 @@ def main() -> int:
 
     print(f"[merge] prd.json: {len(existing_stories)} existing stories")
 
-    # Load candidates — test failures first, then research
+    # Load all candidate sources
     test_candidates = load_candidates(args.test_stories)
     research_candidates = load_candidates(args.research)
+    overflow_candidates = load_candidates(args.overflow_in) if args.overflow_in else []
 
+    if overflow_candidates:
+        print(f"[merge] Overflow (carried from previous iteration): {len(overflow_candidates)} candidates")
     print(f"[merge] Test candidates: {len(test_candidates)}, Research candidates: {len(research_candidates)}")
 
     # Sort each group by priority
     test_candidates.sort(key=sort_key)
     research_candidates.sort(key=sort_key)
 
-    # Deduplicate and collect additions
     new_stories: list[dict[str, Any]] = []
     seen_titles: list[str] = list(existing_titles)
 
-    for group_name, candidates in [("test", test_candidates), ("research", research_candidates)]:
-        for story in candidates:
-            if len(new_stories) >= args.max_new:
-                print(f"[merge] Cap of {args.max_new} reached — stopping")
-                break
-            title = story.get("title", "")
-            if not title:
-                continue
-            if is_duplicate(title, seen_titles):
-                print(f"[merge] Skip duplicate ({group_name}): {title[:80]}")
-                continue
+    # ── Group 1: Test-synthesis candidates (never overflow — regenerated each iteration) ──
+    for story in test_candidates:
+        if len(new_stories) >= args.max_new:
+            print(f"[merge] Cap of {args.max_new} reached during test candidates")
+            break
+        title = story.get("title", "")
+        if not title:
+            continue
+        if is_duplicate(title, seen_titles):
+            print(f"[merge] Skip duplicate (test): {title[:80]}")
+            continue
+        story["_isTestFix"] = True
+        new_stories.append(story)
+        seen_titles.append(title)
+
+    # ── Group 2: Research pool = overflow (older, prioritised) + fresh research ──
+    # Non-duplicate cap-blocked candidates are saved to the overflow file
+    research_pool = list(overflow_candidates) + list(research_candidates)
+    leftover_research: list[dict[str, Any]] = []
+
+    for story in research_pool:
+        title = story.get("title", "")
+        if not title:
+            continue
+        if is_duplicate(title, seen_titles):
+            print(f"[merge] Skip duplicate (research): {title[:80]}")
+            continue
+        if len(new_stories) >= args.max_new:
+            # Cap hit — save non-duplicate for next iteration
+            leftover_research.append({k: v for k, v in story.items() if not k.startswith("_")})
+        else:
             new_stories.append(story)
             seen_titles.append(title)
-        if len(new_stories) >= args.max_new:
-            break
+
+    # ── Write overflow file ────────────────────────────────────────────────────
+    if args.overflow_out:
+        tmp_overflow = args.overflow_out + ".tmp"
+        with open(tmp_overflow, "w", encoding="utf-8") as f:
+            json.dump({"stories": leftover_research}, f, indent=2, ensure_ascii=False)
+        shutil.move(tmp_overflow, args.overflow_out)
+        if leftover_research:
+            print(
+                f"[merge] Overflow: {len(leftover_research)} unused research candidates "
+                f"→ {args.overflow_out}"
+            )
+        else:
+            print(f"[merge] Overflow: cleared (all candidates consumed or cap not reached)")
 
     if not new_stories:
         print("[merge] No new stories to add — prd.json unchanged")
         return 0
 
-    # Assign IDs
+    # ── Assign IDs and patch prd.json atomically ──────────────────────────────
     next_num = find_next_id(existing_stories)
     added_entries = []
     for story in new_stories:
@@ -152,9 +201,9 @@ def main() -> int:
         next_num += 1
         entry = story_to_prd_entry(story, story_id)
         added_entries.append(entry)
-        print(f"[merge] Adding [{story_id}] ({entry['priority']}) {entry['title'][:70]}")
+        flag = " [testFix]" if entry.get("isTestFix") else ""
+        print(f"[merge] Adding [{story_id}] ({entry['priority']}){flag} {entry['title'][:70]}")
 
-    # Patch prd.json atomically
     prd["userStories"] = existing_stories + added_entries
     tmp_path = args.prd + ".tmp"
     with open(tmp_path, "w", encoding="utf-8") as f:

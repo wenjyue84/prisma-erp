@@ -59,8 +59,11 @@ for i in $(seq 1 "$RALPH_WORKERS"); do
   git -C "$REPO_ROOT" worktree remove "$WTREE" --force 2>/dev/null || rm -rf "$WTREE" 2>/dev/null || true
   git -C "$REPO_ROOT" worktree add "$WTREE" -b "$BRANCH" HEAD
 
-  # Overlay worker prd.json
+  # Overlay worker prd.json + override branchName to match the worker's own branch
+  # (prevents ralph from trying to git checkout a different branch inside the worktree,
+  # which would fail because prd.json/progress.txt/retry-counts.json are already modified)
   cp "$WORKER_DIR/worker_${i}.json" "$WTREE/prd.json"
+  "$JQ" --arg b "$BRANCH" '.branchName = $b' "$WTREE/prd.json" > "$WTREE/prd.json.tmp" && mv "$WTREE/prd.json.tmp" "$WTREE/prd.json"
 
   # Fresh per-worker state files (avoid cross-worker contamination)
   echo "{}" > "$WTREE/retry-counts.json"
@@ -78,7 +81,10 @@ REAL="$REAL_DOCKER"
 LOCK="$LOCK_DIR"
 NEEDS_LOCK=0
 [[ "\$1" == "cp" ]] && NEEDS_LOCK=1
-[[ "\$*" == *"bench"* ]] && NEEDS_LOCK=1
+# Lock only write-mutating bench operations; read-only calls (run-tests, clear-cache) pass through
+[[ "\$*" == *"bench migrate"* ]] && NEEDS_LOCK=1
+[[ "\$*" == *"bench sync_fixtures"* ]] && NEEDS_LOCK=1
+[[ "\$*" == *"bench install-app"* ]] && NEEDS_LOCK=1
 if [[ "\$NEEDS_LOCK" -eq 1 ]]; then
   # Spin-wait using mkdir atomicity (works on all POSIX + MSYS2 / Git Bash)
   while ! mkdir "\$LOCK" 2>/dev/null; do sleep 1; done
@@ -124,8 +130,10 @@ for i in $(seq 1 "$RALPH_WORKERS"); do
 done
 
 echo ""
+TAIL_LOGS=$(seq 1 "$RALPH_WORKERS" | while read -r n; do printf "%s " "$WORKER_DIR/worker_${n}.log"; done)
 echo "  [parallel] All $RALPH_WORKERS workers running."
-echo "  [parallel] Monitor: tail -f $WORKER_DIR/worker_1.log"
+echo "  [parallel] Monitor single:  tail -f $WORKER_DIR/worker_1.log"
+echo "  [parallel] Monitor all:     tail -f $TAIL_LOGS"
 echo "  [parallel] Waiting for completion..."
 echo ""
 

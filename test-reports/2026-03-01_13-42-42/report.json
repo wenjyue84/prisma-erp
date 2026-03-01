@@ -1,0 +1,383 @@
+{
+  "suite": "Prisma ERP Test Suite",
+  "generated_at": "2026-03-01T05:42:42.980443+00:00",
+  "summary": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0,
+    "errored": 0,
+    "skipped": 0,
+    "pass_rate": "100.0%"
+  },
+  "categories": {
+    "unit:lhdn_payroll": {
+      "total": 20,
+      "passed": 20,
+      "failed": 0,
+      "tests": [
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestCustomDoctypes.test_lp01_lhdn_cp21_accessible",
+          "name": "test_lp01_lhdn_cp21_accessible",
+          "description": "LP-01: LHDN CP21 doctype is accessible via REST.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 24.8,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestCustomDoctypes.test_lp02_lhdn_cp22_accessible",
+          "name": "test_lp02_lhdn_cp22_accessible",
+          "description": "LP-02: LHDN CP22 doctype is accessible via REST.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 24.34,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestCustomDoctypes.test_lp03_lhdn_cp22a_accessible",
+          "name": "test_lp03_lhdn_cp22a_accessible",
+          "description": "LP-03: LHDN CP22A doctype is accessible via REST.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 24.03,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestCustomDoctypes.test_lp04_lhdn_msic_code_has_data",
+          "name": "test_lp04_lhdn_msic_code_has_data",
+          "description": "LP-04: LHDN MSIC Code master has at least 1 record (fixtures loaded).",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 24.35,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestCustomDoctypes.test_lp05_lhdn_resubmission_log_accessible",
+          "name": "test_lp05_lhdn_resubmission_log_accessible",
+          "description": "LP-05: LHDN Resubmission Log doctype is accessible.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 26.04,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestLHDNReports.test_lp16_lhdn_payroll_compliance_report",
+          "name": "test_lp16_lhdn_payroll_compliance_report",
+          "description": "LP-16: 'LHDN Payroll Compliance' report doctype exists.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 11.05,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestLHDNReports.test_lp17_ea_form_report_exists",
+          "name": "test_lp17_ea_form_report_exists",
+          "description": "LP-17: 'EA Form' report is defined in the system.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 9.29,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestLHDNReports.test_lp18_lhdn_monthly_summary_accessible",
+          "name": "test_lp18_lhdn_monthly_summary_accessible",
+          "description": "LP-18: LHDN Monthly Summary report can be called.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 104.88,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestLHDNReports.test_lp19_lhdn_workspace_exists",
+          "name": "test_lp19_lhdn_workspace_exists",
+          "description": "LP-19: 'LHDN Payroll' workspace is in the system.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 9.37,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestLHDNReports.test_lp20_dev_tools_page_accessible",
+          "name": "test_lp20_dev_tools_page_accessible",
+          "description": "LP-20: LHDN Dev Tools desk page is accessible.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 61.31,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalaryComponents.test_lp12_salary_components_loaded",
+          "name": "test_lp12_salary_components_loaded",
+          "description": "LP-12: Salary Component list is accessible and non-empty.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 26.93,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalaryComponents.test_lp13_epf_component_exists",
+          "name": "test_lp13_epf_component_exists",
+          "description": "LP-13: 'EPF' salary component exists (from fixtures).",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 9.5,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalaryComponents.test_lp14_socso_component_exists",
+          "name": "test_lp14_socso_component_exists",
+          "description": "LP-14: 'SOCSO' salary component exists.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 8.45,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalaryComponents.test_lp15_pcb_component_exists",
+          "name": "test_lp15_pcb_component_exists",
+          "description": "LP-15: 'PCB' or 'Tax' salary component exists.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 9.0,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp06_salary_slip_meta_accessible",
+          "name": "test_lp06_salary_slip_meta_accessible",
+          "description": "LP-06: Salary Slip custom fields are queryable via REST.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 27.99,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp07_custom_lhdn_status_field_exists",
+          "name": "test_lp07_custom_lhdn_status_field_exists",
+          "description": "LP-07: custom_lhdn_status field exists on Salary Slip.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 9.35,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp08_custom_pcb_field_exists",
+          "name": "test_lp08_custom_pcb_field_exists",
+          "description": "LP-08: custom_pcb_amount or similar PCB field exists on Salary Slip.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 10.32,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp09_epf_fields_exist",
+          "name": "test_lp09_epf_fields_exist",
+          "description": "LP-09: EPF employee/employer fields exist on Salary Slip.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 10.61,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp10_socso_fields_exist",
+          "name": "test_lp10_socso_fields_exist",
+          "description": "LP-10: SOCSO employee/employer fields exist on Salary Slip.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 10.08,
+          "error": null
+        },
+        {
+          "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp11_eis_fields_exist",
+          "name": "test_lp11_eis_fields_exist",
+          "description": "LP-11: EIS employee/employer fields exist on Salary Slip.",
+          "category": "unit:lhdn_payroll",
+          "status": "PASS",
+          "duration_ms": 9.45,
+          "error": null
+        }
+      ]
+    }
+  },
+  "all_results": [
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestCustomDoctypes.test_lp01_lhdn_cp21_accessible",
+      "name": "test_lp01_lhdn_cp21_accessible",
+      "description": "LP-01: LHDN CP21 doctype is accessible via REST.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 24.8,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestCustomDoctypes.test_lp02_lhdn_cp22_accessible",
+      "name": "test_lp02_lhdn_cp22_accessible",
+      "description": "LP-02: LHDN CP22 doctype is accessible via REST.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 24.34,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestCustomDoctypes.test_lp03_lhdn_cp22a_accessible",
+      "name": "test_lp03_lhdn_cp22a_accessible",
+      "description": "LP-03: LHDN CP22A doctype is accessible via REST.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 24.03,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestCustomDoctypes.test_lp04_lhdn_msic_code_has_data",
+      "name": "test_lp04_lhdn_msic_code_has_data",
+      "description": "LP-04: LHDN MSIC Code master has at least 1 record (fixtures loaded).",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 24.35,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestCustomDoctypes.test_lp05_lhdn_resubmission_log_accessible",
+      "name": "test_lp05_lhdn_resubmission_log_accessible",
+      "description": "LP-05: LHDN Resubmission Log doctype is accessible.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 26.04,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestLHDNReports.test_lp16_lhdn_payroll_compliance_report",
+      "name": "test_lp16_lhdn_payroll_compliance_report",
+      "description": "LP-16: 'LHDN Payroll Compliance' report doctype exists.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 11.05,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestLHDNReports.test_lp17_ea_form_report_exists",
+      "name": "test_lp17_ea_form_report_exists",
+      "description": "LP-17: 'EA Form' report is defined in the system.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 9.29,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestLHDNReports.test_lp18_lhdn_monthly_summary_accessible",
+      "name": "test_lp18_lhdn_monthly_summary_accessible",
+      "description": "LP-18: LHDN Monthly Summary report can be called.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 104.88,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestLHDNReports.test_lp19_lhdn_workspace_exists",
+      "name": "test_lp19_lhdn_workspace_exists",
+      "description": "LP-19: 'LHDN Payroll' workspace is in the system.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 9.37,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestLHDNReports.test_lp20_dev_tools_page_accessible",
+      "name": "test_lp20_dev_tools_page_accessible",
+      "description": "LP-20: LHDN Dev Tools desk page is accessible.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 61.31,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalaryComponents.test_lp12_salary_components_loaded",
+      "name": "test_lp12_salary_components_loaded",
+      "description": "LP-12: Salary Component list is accessible and non-empty.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 26.93,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalaryComponents.test_lp13_epf_component_exists",
+      "name": "test_lp13_epf_component_exists",
+      "description": "LP-13: 'EPF' salary component exists (from fixtures).",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 9.5,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalaryComponents.test_lp14_socso_component_exists",
+      "name": "test_lp14_socso_component_exists",
+      "description": "LP-14: 'SOCSO' salary component exists.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 8.45,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalaryComponents.test_lp15_pcb_component_exists",
+      "name": "test_lp15_pcb_component_exists",
+      "description": "LP-15: 'PCB' or 'Tax' salary component exists.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 9.0,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp06_salary_slip_meta_accessible",
+      "name": "test_lp06_salary_slip_meta_accessible",
+      "description": "LP-06: Salary Slip custom fields are queryable via REST.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 27.99,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp07_custom_lhdn_status_field_exists",
+      "name": "test_lp07_custom_lhdn_status_field_exists",
+      "description": "LP-07: custom_lhdn_status field exists on Salary Slip.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 9.35,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp08_custom_pcb_field_exists",
+      "name": "test_lp08_custom_pcb_field_exists",
+      "description": "LP-08: custom_pcb_amount or similar PCB field exists on Salary Slip.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 10.32,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp09_epf_fields_exist",
+      "name": "test_lp09_epf_fields_exist",
+      "description": "LP-09: EPF employee/employer fields exist on Salary Slip.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 10.61,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp10_socso_fields_exist",
+      "name": "test_lp10_socso_fields_exist",
+      "description": "LP-10: SOCSO employee/employer fields exist on Salary Slip.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 10.08,
+      "error": null
+    },
+    {
+      "id": "tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp11_eis_fields_exist",
+      "name": "test_lp11_eis_fields_exist",
+      "description": "LP-11: EIS employee/employer fields exist on Salary Slip.",
+      "category": "unit:lhdn_payroll",
+      "status": "PASS",
+      "duration_ms": 9.45,
+      "error": null
+    }
+  ]
+}

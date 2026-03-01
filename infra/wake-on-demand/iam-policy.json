@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "StartInstance",
+      "Effect": "Allow",
+      "Action": ["ec2:StartInstances"],
+      "Resource": "arn:aws:ec2:ap-southeast-1:704444257237:instance/i-0689ed2e9d9089d0d"
+    },
+    {
+      "Sid": "DescribeInstances",
+      "Effect": "Allow",
+      "Action": ["ec2:DescribeInstances"],
+      "Resource": "*"
+    }
+  ]
+}
