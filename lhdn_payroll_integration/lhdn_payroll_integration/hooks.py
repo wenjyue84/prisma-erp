@@ -66,6 +66,7 @@ scheduler_events = {
 		"lhdn_payroll_integration.services.fw_levy_service.check_overdue_fw_levy",
 		"lhdn_payroll_integration.services.age_checker_service.check_approaching_age_60",
 		"lhdn_payroll_integration.lhdn_payroll_integration.utils.wage_payment_compliance.send_wage_payment_alerts",
+		"lhdn_payroll_integration.services.cp22_tracking_service.check_pending_cp22_submissions",
 	],
 	"monthly": [
 		"lhdn_payroll_integration.services.consolidation_service.run_monthly_consolidation",

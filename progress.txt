@@ -6019,3 +6019,32 @@ Completed: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee (ID: US-093) i
 ## Iteration 50 - Sat, Feb 28, 2026 10:35:40 PM
 Completed: Implement Multi-Tier Levy Model (MTLM) Rate Calculation for Foreign Workers (ID: US-095) in 5m
 
+
+## Iteration — US-114: Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire
+
+**Type:** IMPL
+**TDD Phase:** GREEN (18/18 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cp22_us114`
+**Result:** PASS — 18/18 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `services/cp22_tracking_service.py` — New service with check_pending_cp22_submissions() daily job and get_pending_cp22_employees() report helper
+- `report/pending_cp22_submissions/` — New Script Report: Pending CP22 Submissions
+- `fixtures/custom_field.json` — 6 new fields: Employee (Section Break, Status Select, Date, Reference, Reason) + Company (MyTax Rep Name)
+- `hooks.py` — Added cp22_tracking_service.check_pending_cp22_submissions to daily scheduler
+- `tests/test_cp22_us114.py` — 18 tests covering custom fields, daily check, dedup, escalation, report, scheduler
+
+### Patterns discovered
+- get_all mock call order in check_pending_cp22_submissions:
+  - 0: alert window query (Employee)
+  - 1: dedup ToDo check for each alert employee (before escalation query!)
+  - N: escalation window query (Employee)
+  - N+1: dedup ToDo check for each escalate employee
+- Use explicit string markers in ToDo description (e.g., [CP22-PENDING]) for reliable dedup LIKE queries
+- Script Reports must be imported via `frappe.modules.import_file.import_file_by_path` after bench migrate if not auto-picked up (or bench migrate again picks them up)
+- bench --site frontend execute frappe.modules.import_file.import_file_by_path with the JSON path installs the Report
+
+### Gotchas
+- bench migrate may delete the LHDN Payroll workspace if fixture sync has issues; check workspace after migrate
+- fixture JSON added via root python3 in container (frappe user lacks write permission to apps dir)
+- Report not auto-installed by migrate for new report directories — use import_file_by_path as workaround
