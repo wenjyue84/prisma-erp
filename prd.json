@@ -4723,7 +4723,7 @@
       ],
       "dependencies": [],
       "estimatedComplexity": "medium",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-201",
@@ -5343,6 +5343,247 @@
         "Implement Benefits-in-Kind (BIK) Prescribed Value Calculation Module"
       ],
       "estimatedComplexity": "large",
+      "passes": false
+    },
+    {
+      "id": "US-227",
+      "title": "Store Employee TIN on Employee DocType and Validate for e-PCB Plus Upload",
+      "priority": "critical",
+      "description": "LHDN's e-PCB Plus system (mandatory from 2025) requires each employee's Tax Identification Number (TIN) to be included in the e-Data PCB upload file. LHDN explicitly instructs employers to update employee TIN details in their payroll system prior to submission — incomplete or missing TIN data causes the upload to be rejected. Currently the app stores the employee's NRIC/Passport but may not capture TIN as a separate mandatory field validated before CP39 export.",
+      "acceptanceCriteria": [
+        "A `custom_employee_tin` field exists on the Employee DocType and is included in the custom_field.json fixture",
+        "The CP39 / e-Data PCB export includes the employee TIN column in the correct position per LHDN e-PCB Plus file specification",
+        "Payroll processing raises a validation warning (not hard block) if any employee in the pay period has a blank TIN",
+        "A pre-submission validation report lists all employees with missing TIN, so HR can bulk-update before CP39 export",
+        "TIN format is validated: Malaysian TIN is either IG/SG/OG/D/C prefix followed by 11 digits"
+      ],
+      "technicalNotes": [
+        "e-PCB Plus upload file (e-Data PCB .txt format) requires employee TIN in field position per LHDN e-PCB Plus specification",
+        "LHDN notice: 'Employers using e-Data PCB are requested to update the TIN details of their employees in their payroll system'",
+        "Reference: LHDN e-PCB Plus Transition (https://pandahrms.com/lhdns-early-announcement-transition-to-e-pcb-plus-system/)",
+        "Malaysian TIN formats: IG (individual), SG (salary earner), OG (business), D (company), C (company) — payroll employees will be IG or SG prefix"
+      ],
+      "dependencies": [
+        "Fix CP39 CSV Format — Add All Mandatory LHDN e-PCB Plus Columns"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-228",
+      "title": "Enforce RM1,700 Minimum Wage for ALL Employers Effective 1 August 2025",
+      "priority": "critical",
+      "description": "The existing minimum wage story covers the RM1,700 requirement effective February 2025 for MASCO employers and those with 5+ employees. However, from 1 August 2025, the RM1,700 minimum wage universally extends to ALL employers regardless of headcount — including employers with fewer than 5 employees who were previously on the RM1,500 rate. Non-compliance carries fines up to RM10,000 per affected employee per offence. The payroll system must update its minimum wage validation logic to apply RM1,700 universally from August 2025 payroll, removing any employee-count conditional.",
+      "acceptanceCriteria": [
+        "Minimum wage validation in payroll uses RM1,700 as the floor for ALL employees regardless of employer headcount, effective for payroll periods from August 2025 onward",
+        "The existing employee-count threshold conditional (5+ employees for RM1,700 vs <5 for RM1,500) is removed from the validation engine for payroll periods >= 2025-08-01",
+        "A one-time migration alert notifies HR of any employees currently paid between RM1,500 and RM1,699.99 who will be in violation from August 2025",
+        "Payslip submission for August 2025 or later with basic salary below RM1,700 raises a hard validation error citing 'Minimum Wages Order 2024 — universal enforcement from 1 August 2025'",
+        "The penalty warning text is updated to reflect RM10,000 per employee fine for non-compliance"
+      ],
+      "technicalNotes": [
+        "Minimum Wages Order 2024: RM1,700 universal effective 1 August 2025 per MOHR gazette",
+        "Previously: RM1,700 applied to MASCO employers from Feb 2025 and employers with 5+ from Feb 2025; <5 non-MASCO employers had until Aug 2025 grace",
+        "Foreign workers are covered; domestic workers remain exempt",
+        "Reference: MOHR announcement (https://pandahrms.com/rm1700-minimum-wage-applies-to-all-employers-starting-1-august-2025/)"
+      ],
+      "dependencies": [
+        "Update Minimum Wage Validation to RM1,700 (Feb 2025 Amendment)"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-229",
+      "title": "Implement TP2 Form — Employee Irrevocable BIK/VOLA Election for PCB Inclusion",
+      "priority": "high",
+      "description": "LHDN allows employees to make an irrevocable election within a tax year to include Benefits-in-Kind (BIK) and the Value of Living Accommodation (VOLA) as part of their monthly remuneration for MTD/PCB purposes by submitting Form TP2 to the employer. Without TP2 handling, BIK and VOLA are excluded from PCB by default, meaning employees who prefer MTD spreading over lump-sum year-end payment have no mechanism to elect this. The employer must honour the election, adjust PCB computation for the remainder of the year, and retain the TP2 for 7 years.",
+      "acceptanceCriteria": [
+        "A TP2 Election child table or linked DocType on the Employee record captures: election date, BIK monthly value, VOLA monthly value, employer approval status, and effective month",
+        "Once approved by employer, the BIK + VOLA amounts are added to the employee's gross remuneration base used in PCB calculation for all subsequent payroll runs within the same assessment year",
+        "The election is flagged irrevocable — system prevents reversal within the same assessment year under the same employer",
+        "BIK/VOLA amounts added via TP2 do NOT appear in gross salary on the payslip or EA Form gross salary field; they only affect the PCB engine input",
+        "System generates a TP2 record PDF with employee name, IC number, employer name, election amounts, and approval signature block",
+        "TP2 records are flagged with a 7-year retention requirement in the payroll audit log"
+      ],
+      "technicalNotes": [
+        "LHDN PCB Specification 2025: BIK/VOLA elected via TP2 is added to gross remuneration for MTD calculation only (not for payslip/EA gross salary)",
+        "TP2 is not submitted to LHDN — it is an internal employer record required to be retained 7 years under Section 82 ITA",
+        "Reference: LHDN Specification for Computerised PCB Calculation 2025 (https://www.hasil.gov.my/media/mdahzjwi/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2025.pdf)",
+        "The irrevocability clause means the PCB engine must lock the BIK/VOLA addend for assessment year once set"
+      ],
+      "dependencies": [
+        "Implement Benefits-in-Kind (BIK) Prescribed Value Calculation Module"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-230",
+      "title": "Enforce ITA Section 82 7-Year Payroll Tax Record Retention (Separate from MOHR 6-Year)",
+      "priority": "high",
+      "description": "Section 82 of the Income Tax Act 1967 requires employers to keep all payroll-related tax records (EA forms, CP39 files, Borang E acknowledgements, TP1/TP2/TP3 forms, MTD payment receipts) for 7 years from the end of the assessment year. This is a separate and longer obligation than the Employment Act's 6-year payroll register requirement (already covered). Non-compliance means LHDN can assess tax on a best-judgment basis and impose penalties. The system must enforce a 7-year retention lock on LHDN-related payroll records distinct from the MOHR 6-year lock.",
+      "acceptanceCriteria": [
+        "A `lhdn_retention_expiry_date` field is set on LHDN-related records (EA Form, CP39 run, Borang E, TP1/TP2/TP3) as assessment_year + 7 years",
+        "Attempting to delete or archive LHDN records before their `lhdn_retention_expiry_date` raises a blocking validation error citing 'ITA Section 82 — 7-year retention'",
+        "A scheduled report runs annually listing LHDN records eligible for deletion (past their 7-year expiry) for HR Manager review",
+        "The retention lock applies independently of the Employment Act 6-year lock on payslips — an EA Form for YA2019 (issued Feb 2020) cannot be deleted before Feb 2027",
+        "System clearly labels the retention reason as 'ITA Section 82' vs 'Employment Act S.60A' so audit trails distinguish the two obligations"
+      ],
+      "technicalNotes": [
+        "ITA Section 82: records must be kept 7 years from the end of the year to which any income relates",
+        "LHDN Public Ruling No. 5/2000 (revised) defines what constitutes 'sufficient records' including payroll records, EA forms, and MTD receipts",
+        "Reference: ANC Group explanation of Section 82 (https://ancgroup.biz/keep-sufficient-records-for-7-years/)",
+        "Existing story 'Implement Payroll Wage Register with 6-Year Retention' covers MOHR Employment Act obligation — this story is additive for LHDN-specific records"
+      ],
+      "dependencies": [
+        "Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-231",
+      "title": "Generate LHDN PCB 2026 Specification Annual Update Checklist and Version Flag",
+      "priority": "high",
+      "description": "LHDN publishes an updated 'Specification for Computerised PCB Calculation' (Spesifikasi Kaedah Pengiraan Berkomputer PCB) each year. For 2025 and 2026, separate specification PDFs exist with different TP1 deduction items, relief ceilings, and MTD formula amendments. The app currently has no mechanism to track which PCB specification version is active, making it difficult for HR administrators to verify that the calculation engine is aligned with the current year's LHDN-published specification. A version flag and annual update checklist is needed.",
+      "acceptanceCriteria": [
+        "A 'PCB Specification Version' setting in LHDN Payroll Settings stores the active specification year (e.g., '2025' or '2026') with a link to the LHDN PDF URL",
+        "Switching the specification version triggers a checklist of changed parameters between versions that an HR administrator must review and confirm",
+        "The PCB calculation engine reads the active specification year to select the correct TP1 relief ceilings, Schedule 1 tax brackets, and rounding rules for that year",
+        "On each payroll run, the system logs which PCB specification version was used — visible in the payroll audit trail",
+        "A warning is shown in January each year prompting HR to verify whether LHDN has published an updated specification for the new assessment year"
+      ],
+      "technicalNotes": [
+        "LHDN 2025 PCB Specification: https://www.hasil.gov.my/media/mdahzjwi/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2025.pdf",
+        "LHDN 2026 PCB Specification: https://www.hasil.gov.my/media/arvlrzh5/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2026.pdf",
+        "The 2026 specification confirmed no change to the MTD formula but amended TP1 deduction items",
+        "Version management prevents silent errors when LHDN changes reliefs between assessment years"
+      ],
+      "dependencies": [
+        "Apply YA2025 PCB Schedule 1 Tax Brackets Including New 30% Tier for Income Exceeding RM2 Million"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-232",
+      "title": "Implement Employment Act S.25A Digital Payslip Mandatory Fields Compliance Validator",
+      "priority": "high",
+      "description": "Employment Act Section 25A (as amended by Employment (Amendment) Act 2022) requires employers to provide a payslip to every employee at the time of each wage payment. The payslip must contain mandatory fields including: employee full name, IC/passport number, gender, citizenship status, wage period, wage amount, payment date, overtime earnings, deductions itemised, and employer name. The existing payslip generation may not validate all mandatory fields before generation, exposing employers to MOHR inspection penalties. This story adds a mandatory-field compliance validator to payslip generation.",
+      "acceptanceCriteria": [
+        "Before a Salary Slip is submitted, a validator checks that the generated payslip PDF/print includes: employee full name, IC/passport number, wage period (start and end date), gross salary, itemised deductions (EPF, SOCSO, EIS, PCB, each as separate lines), net pay, and payment date",
+        "Missing any mandatory field raises a hard validation error citing 'Employment Act S.25A — Payslip mandatory fields'",
+        "The payslip print template is updated to include gender and citizenship status fields if currently absent",
+        "A payslip compliance audit report lists any historical salary slips missing mandatory fields",
+        "The system confirms LHDN statutory deductions (PCB, EPF, SOCSO, EIS) are itemised individually on the payslip — not combined into a single 'deductions' total"
+      ],
+      "technicalNotes": [
+        "Employment Act S.25A (post-2022 amendment): employer must give payslip at every wage payment",
+        "MOHR inspection can impose fines for non-compliant payslips",
+        "Mandatory fields per EA S.25A: name, employee ID, gender, citizenship, wage period, amount, date, all payments/deductions with particulars",
+        "Reference: Employment Act 1955 (Akta 265) Section 25A (https://jtksm.mohr.gov.my/sites/default/files/2023-11/Akta%20Kerja%201955%20(Akta%20265)_0.pdf)"
+      ],
+      "dependencies": [
+        "Generate Employment Act S.61 Compliant Payslip with All Mandatory Fields"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-233",
+      "title": "CP500 Bi-Monthly Advance Tax Installment Awareness Panel for Directors with Non-Salary Income",
+      "priority": "medium",
+      "description": "Directors and sole proprietors who have non-employment income (dividends, rental, business profits) receive LHDN CP500 notices requiring 6 bi-monthly advance tax installments in March, May, July, September, November, and January. ERPNext payroll operates the PCB deduction for salary, but does not track whether the same director also has CP500 obligations outside payroll. HR/payroll admins need visibility into which directors are CP500 payers so they can advise against over-deducting PCB on salary and help directors avoid double-paying or underpaying. LHDN intensified CP500 issuance in 2025-2026.",
+      "acceptanceCriteria": [
+        "A `cp500_payer` boolean flag and `cp500_annual_installment_amount` field can be set on the Director/Employee record",
+        "If `cp500_payer = True`, the payroll summary for that director includes an advisory note: 'Employee has CP500 obligations — confirm PCB deduction does not exceed actual tax liability'",
+        "A CP500 Installment Tracker child table on the Employee allows recording installment due dates (Mar/May/Jul/Sep/Nov/Jan) and payment reference numbers",
+        "Dashboard widget on LHDN Payroll Workspace shows directors with upcoming CP500 installment due dates within next 30 days",
+        "System does not auto-deduct CP500 (it is paid directly by the director to LHDN) — it is advisory and tracking only"
+      ],
+      "technicalNotes": [
+        "CP500 is issued by LHDN to individuals with non-salary income; 6 bi-monthly installments across the calendar year",
+        "The payment schedule: installment months are March, May, July, September, November, January",
+        "Revision of CP500 amount: first revision by 30 June, second by 31 October of the assessment year",
+        "Reference: LHDN CP500 guide (https://www.ajobthing.com/resources/blog/cp500-installment-pay-tax-malaysia)"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-234",
+      "title": "e-Lejar Employer Tax Account Ledger Reconciliation Link and PCB Payment Verification",
+      "priority": "medium",
+      "description": "LHDN's e-Lejar application (accessible via MyTax portal) allows employers to check their employer tax account ledger transactions — including PCB remittances received, assessments raised, and refunds — at any time. Currently the lhdn_payroll_integration app tracks submission references but has no way to cross-check whether LHDN's ledger matches the amounts the employer remitted. Employers frequently discover discrepancies (e.g., payments credited to wrong month, rejected submissions not re-submitted) only during year-end Borang E reconciliation. A link to e-Lejar and a monthly reconciliation workflow would close this gap.",
+      "acceptanceCriteria": [
+        "LHDN Developer Tools page includes a direct link to e-Lejar (https://mytax.hasil.gov.my) with instructions for employer ledger access",
+        "A 'PCB Ledger Reconciliation' panel allows HR to input LHDN's e-Lejar monthly credited amounts and compare against the sum of CP39 submissions for the same period",
+        "Discrepancies (difference > RM0) are flagged with a yellow warning showing the month, expected amount, and LHDN-credited amount",
+        "Reconciliation records are stored per assessment year and can be exported as a reconciliation report for audit purposes",
+        "System generates a monthly reminder alert on the 20th of each month prompting HR to verify e-Lejar balance against the previous month's CP39 payment"
+      ],
+      "technicalNotes": [
+        "e-Lejar is accessible at https://mytax.hasil.gov.my — employers log in with their employer TIN",
+        "e-Lejar shows up to 10 years of tax ledger history per LHDN information",
+        "No public API for e-Lejar programmatic access — integration is manual entry + comparison, not API pull",
+        "Reference: e-Lejar LHDN overview (https://ecentral.my/e-lejar-lhdn/)"
+      ],
+      "dependencies": [
+        "Build Monthly e-PCB Plus Submission Reconciliation View"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-235",
+      "title": "Track Employment Act Section 60D Public Holiday Triple Pay and LHDN PCB Impact",
+      "priority": "medium",
+      "description": "Employment Act Section 60D mandates that employees working on a public holiday receive triple pay (3x ORP for work on a gazetted public holiday). This is already covered partially by the 'Implement Public Holiday Work Pay Calculator' story, but the PCB/MTD treatment of the public holiday premium is not covered: the triple pay falls under Section 13(1)(a) employment income and is PCB-liable, must appear in EA Form, and impacts monthly MTD. Additionally, Section 60D covers the alternative of a replacement leave day — if replacement leave is taken instead of the extra pay, no additional PCB applies.",
+      "acceptanceCriteria": [
+        "Public holiday premium pay (2x ORP top-up for working on a gazetted public holiday) is classified as regular employment income under Section 13(1)(a) ITA and included in the PCB base for that month",
+        "If the employer and employee agree to replacement leave instead of double premium, the system records the replacement leave grant and does not add taxable income",
+        "The public holiday work pay component is separately labelled in the EA Form under the applicable remuneration category",
+        "PCB calculation for months with public holiday work premium correctly inflates the gross remuneration for MTD purposes",
+        "System validates against a configurable list of Malaysian gazetted public holidays (federal + state) to correctly identify which days qualify"
+      ],
+      "technicalNotes": [
+        "EA Section 60D: employee working on paid public holiday entitled to: (a) ordinary rate + (b) day's wages at ORP = total 2x ORP extra pay (on top of basic), or replacement leave",
+        "The premium pay component is regular employment income (Section 13(1)(a) ITA) — subject to PCB",
+        "Replacement leave option avoids additional taxable income — must be documented",
+        "Reference: Employment Act 1955 Section 60D and employment law analysis (https://www.zulrafique.com.my)"
+      ],
+      "dependencies": [
+        "Implement Public Holiday Work Pay Calculator (Section 60D Employment Act) with Replacement Leave Tracking",
+        "Implement Ordinary Rate of Pay (ORP) Calculator and Overtime Validation"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-236",
+      "title": "PDPA 2024 Data Portability and Payroll Employee Data Export on Request",
+      "priority": "medium",
+      "description": "The Personal Data Protection (Amendment) Act 2024 (gazetted and phased in January–June 2025) introduced a new data portability right: employees (data subjects) can request their personal data be transferred from the employer (data controller) to another party in a machine-readable format within a prescribed period. For payroll, this means employees can request an export of all their payroll data (payslips, EA forms, PCB deductions, leave records, statutory contribution history) in a portable format. The existing PDPA story covers DPO appointment and breach notification — this story covers the portability right specifically for payroll records.",
+      "acceptanceCriteria": [
+        "An employee self-service action 'Request My Payroll Data Export' generates a structured export (JSON or CSV) of all the requesting employee's payroll records within the system",
+        "The export includes: all payslips, EA forms, TP1/TP2/TP3 records, EPF/SOCSO/EIS contributions per month, PCB deductions, and leave records for the current and prior 7 years",
+        "The export is generated within 7 days of request (system setting for response SLA) and is made available for download via a secure, time-limited link",
+        "A 'Data Subject Request Log' records who requested data, when, and when/how it was fulfilled — retained for audit",
+        "The export format is machine-readable (JSON preferred) and human-readable (PDF summary) — both generated simultaneously"
+      ],
+      "technicalNotes": [
+        "PDPA Amendment Act 2024 passed 31 July 2024; portability right phased in by June 2025",
+        "Portability right applies where processing is by automated means and based on consent or contract",
+        "Employment relationship creates a contract basis — payroll data qualifies for portability",
+        "Reference: Mayer Brown PDPA analysis (https://www.mayerbrown.com/en/insights/publications/2025/07/from-legislative-reform-to-practical-guidance-key-amendments-to-malaysias-pdpa-and-the-launch-of-cross-border-transfer-guidelines)"
+      ],
+      "dependencies": [
+        "PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach Notification Workflow",
+        "Build Employee Self-Service Portal for Payslips, EA Forms, and TP1 Submission"
+      ],
+      "estimatedComplexity": "medium",
       "passes": false
     }
   ]

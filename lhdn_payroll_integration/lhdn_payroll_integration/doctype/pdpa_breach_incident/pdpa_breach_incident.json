@@ -1,0 +1,181 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "naming_series:",
+  "creation": "2026-03-01 00:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "naming_series",
+    "company",
+    "status",
+    "section_discovery",
+    "discovery_datetime",
+    "breach_type",
+    "affected_records_count",
+    "data_categories_affected",
+    "risk_assessment",
+    "section_timeline",
+    "hours_since_discovery",
+    "commissioner_deadline_status",
+    "commissioner_notified_datetime",
+    "employee_notification_deadline",
+    "employee_notification_datetime",
+    "section_notes",
+    "incident_notes"
+  ],
+  "fields": [
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Series",
+      "options": "PDPA-BREACH-.YYYY.-",
+      "default": "PDPA-BREACH-.YYYY.-"
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "label": "Company",
+      "options": "Company",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "label": "Status",
+      "options": "\nDraft\nCommissioner Notified\nEmployees Notified\nResolved",
+      "default": "Draft",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "section_discovery",
+      "fieldtype": "Section Break",
+      "label": "Breach Discovery"
+    },
+    {
+      "fieldname": "discovery_datetime",
+      "fieldtype": "Datetime",
+      "label": "Discovery Date & Time",
+      "reqd": 1,
+      "in_list_view": 1,
+      "description": "Date and time when the payroll data breach was first discovered (awareness). The 72-hour Commissioner notification countdown starts from this time."
+    },
+    {
+      "fieldname": "breach_type",
+      "fieldtype": "Select",
+      "label": "Breach Type",
+      "options": "\nUnauthorised Access\nData Loss\nData Theft\nSystem Compromise\nInsider Threat\nRansomware\nOther",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "affected_records_count",
+      "fieldtype": "Int",
+      "label": "Affected Employee Records Count",
+      "reqd": 1,
+      "description": "Number of employee payroll records affected by this breach."
+    },
+    {
+      "fieldname": "data_categories_affected",
+      "fieldtype": "Small Text",
+      "label": "Data Categories Affected",
+      "reqd": 1,
+      "description": "e.g. IC Numbers, Bank Account Numbers, Salary Information, Tax Records, EPF/SOCSO Details"
+    },
+    {
+      "fieldname": "risk_assessment",
+      "fieldtype": "Small Text",
+      "label": "Risk Assessment",
+      "reqd": 1,
+      "description": "Assessment of the risk posed to affected data subjects. Required for Commissioner Notification Letter."
+    },
+    {
+      "fieldname": "section_timeline",
+      "fieldtype": "Section Break",
+      "label": "Notification Timeline"
+    },
+    {
+      "fieldname": "hours_since_discovery",
+      "fieldtype": "Float",
+      "label": "Hours Since Discovery",
+      "read_only": 1,
+      "description": "Auto-computed. Commissioner must be notified within 72 hours of discovery."
+    },
+    {
+      "fieldname": "commissioner_deadline_status",
+      "fieldtype": "Data",
+      "label": "72-Hour Deadline Status",
+      "read_only": 1,
+      "description": "Shows countdown or overdue status for Commissioner notification."
+    },
+    {
+      "fieldname": "commissioner_notified_datetime",
+      "fieldtype": "Datetime",
+      "label": "Commissioner Notified On",
+      "description": "Date and time when the PDPA Commissioner was officially notified."
+    },
+    {
+      "fieldname": "employee_notification_deadline",
+      "fieldtype": "Datetime",
+      "label": "Employee Notification Deadline",
+      "read_only": 1,
+      "description": "Auto-computed: 7 days after Commissioner notification. Employees must be notified by this date if breach poses significant harm."
+    },
+    {
+      "fieldname": "employee_notification_datetime",
+      "fieldtype": "Datetime",
+      "label": "Employees Notified On",
+      "description": "Date and time when affected employees were notified."
+    },
+    {
+      "fieldname": "section_notes",
+      "fieldtype": "Section Break",
+      "label": "Incident Notes"
+    },
+    {
+      "fieldname": "incident_notes",
+      "fieldtype": "Long Text",
+      "label": "Incident Notes",
+      "description": "Internal notes and remediation actions taken."
+    }
+  ],
+  "is_submittable": 0,
+  "links": [],
+  "module": "LHDN Payroll Integration",
+  "name": "PDPA Breach Incident",
+  "track_changes": 1,
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "HR Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "read": 1,
+      "write": 1,
+      "role": "HR User"
+    }
+  ]
+}

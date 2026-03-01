@@ -6624,3 +6624,31 @@ Incomplete: LHDN STAMPS Employment Contract Digital Stamp Status Tracker (ID: US
 - 24 tests including all spec examples (123.023→123.05, 123.061→123.10)
 - Edge cases: 0.00, negative, boundaries at 0.05, 0.10
 - Integration tests: calculate_pcb (Method 1, non-resident), calculate_pcb_method2, calculate_director_fee_pcb all verified 5-cent aligned
+## Iteration 13 - Sun Mar  1 12:20:46 MPST 2026
+Incomplete: PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach Notification Workflow (ID: US-200) — attempt 2/3
+
+
+## Iteration N — US-200: PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach Notification Workflow
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 29 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pdpa_breach_incident`
+**Result:** PASS — 29/29 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `/home/frappe/.../doctype/pdpa_breach_incident/__init__.py`
+- `/home/frappe/.../doctype/pdpa_breach_incident/pdpa_breach_incident.json` — naming_series: PDPA-BREACH-.YYYY.-, track_changes: 1
+- `/home/frappe/.../doctype/pdpa_breach_incident/pdpa_breach_incident.py` — computes hours_since_discovery, commissioner_deadline_status, employee_notification_deadline; get_commissioner_notification_letter(); get_employee_breach_notification_email()
+- `/home/frappe/.../doctype/pdpa_dpo_registry/__init__.py`
+- `/home/frappe/.../doctype/pdpa_dpo_registry/pdpa_dpo_registry.json` — autoname: hash, track_changes: 1
+- `/home/frappe/.../doctype/pdpa_dpo_registry/pdpa_dpo_registry.py` — computes days_until_21day_deadline, registration_deadline_status; alerts on overdue
+- `/home/frappe/.../tests/test_pdpa_breach_incident.py` — 29 tests, 4 test classes
+
+### Patterns discovered
+- Both PDPA doctypes were already in DB (from earlier partial work session) — bench migrate not needed for already-registered doctypes
+- Row size error in bench migrate is pre-existing (unrelated doctype), not caused by PDPA doctypes
+- `bench execute frappe.client.get_list` can verify DocType existence without full Python env setup
+
+### Gotchas
+- bench migrate fails with (1118, 'Row size too large') — pre-existing issue; PDPA doctypes still function correctly
+- docker mkdir as non-root fails; use `-u root` then chown
