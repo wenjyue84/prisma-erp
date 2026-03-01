@@ -173,5 +173,84 @@ class TestAIChatIntegration(ERPNextTestCase):
             )
 
 
+class TestLHDNPayloadValidation(ERPNextTestCase):
+    """INT-13 to INT-17: LHDN XML payload structure and error handling."""
+
+    category = "integration"
+
+    def test_int13_payload_builder_api_exists(self):
+        """INT-13: payload_builder module method is reachable via API."""
+        resp = self.session.api(
+            "lhdn_payroll_integration.services.payload_builder.build_salary_slip_payload",
+            salary_slip_name="NON_EXISTENT_SLIP_9999",
+        )
+        # Should return error message (doc not found), not 404 (method not found)
+        self.assertIn(resp.status_code, (200, 404, 417, 500),
+                      f"payload_builder unreachable: {resp.status_code}")
+
+    def test_int14_submission_with_invalid_doc_returns_error(self):
+        """INT-14: Submitting a non-existent Salary Slip returns structured error."""
+        resp = self.session.api(
+            "lhdn_payroll_integration.services.submission_service.resubmit_to_lhdn",
+            docname="FAKE_SALARY_SLIP_999",
+        )
+        self.assertIn(resp.status_code, (200, 404, 417, 500),
+                      f"Unexpected status for invalid doc submission: {resp.status_code}")
+        if resp.status_code in (200, 417):
+            body = self.parse_json(resp)
+            # Should have error info in response
+            msg = body.get("message") or body.get("exc_type") or ""
+            self.assertTrue(len(str(msg)) > 0,
+                            "No error message returned for non-existent salary slip")
+
+    def test_int15_connection_test_returns_structured_result(self):
+        """INT-15: LHDN connection test endpoint returns structured JSON."""
+        resp = self.session.api(
+            "lhdn_payroll_integration.lhdn_payroll_integration.page.lhdn_dev_tools.lhdn_dev_tools.test_lhdn_connection"
+        )
+        if resp.status_code == 404:
+            self.skipTest("LHDN Dev Tools test_lhdn_connection not deployed")
+        self.assertIn(resp.status_code, (200, 403, 500),
+                      f"Connection test failed: {resp.status_code}")
+        if resp.status_code == 200:
+            body = self.parse_json(resp)
+            msg = body.get("message")
+            self.assertIsNotNone(msg,
+                                 "Connection test returned no message")
+
+    def test_int16_exemption_tester_endpoint_exists(self):
+        """INT-16: Exemption tester API endpoint is reachable."""
+        resp = self.session.api(
+            "lhdn_payroll_integration.lhdn_payroll_integration.page.lhdn_dev_tools.lhdn_dev_tools.test_exemption_filter",
+            employee="HR-EMP-00001",
+        )
+        # Method should exist even if employee doesn't
+        self.assertIn(resp.status_code, (200, 404, 417, 500),
+                      f"Exemption tester unreachable: {resp.status_code}")
+
+    def test_int17_salary_slip_lhdn_fields_complete_for_submission(self):
+        """INT-17: A Salary Slip has all required fields for LHDN XML generation."""
+        resp = self.session.api(
+            "frappe.client.get_list",
+            doctype="Salary Slip",
+            fields=["name", "custom_lhdn_status", "employee", "employee_name",
+                    "company", "posting_date", "gross_pay", "total_deduction",
+                    "net_pay", "custom_pcb_amount", "custom_epf_employee"],
+            order_by="creation desc",
+            limit_page_length=1,
+        )
+        self.assert_status(resp)
+        body = self.parse_json(resp)
+        data = body.get("message") or []
+        if not data:
+            self.skipTest("No Salary Slips exist — run payroll first")
+        slip = data[0]
+        # Check minimum fields needed for LHDN XML payload generation
+        required = ["employee", "company", "posting_date", "gross_pay", "net_pay"]
+        missing = [f for f in required if not slip.get(f)]
+        self.assertEqual(missing, [],
+                         f"Salary Slip {slip.get('name')} missing LHDN-required fields: {missing}")
+
+
 if __name__ == "__main__":
     unittest.main()

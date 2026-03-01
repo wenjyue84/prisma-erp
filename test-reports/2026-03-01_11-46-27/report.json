@@ -1,0 +1,167 @@
+{
+  "suite": "Prisma ERP Test Suite",
+  "generated_at": "2026-03-01T03:46:27.171154+00:00",
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "errored": 0,
+    "skipped": 0,
+    "pass_rate": "100.0%"
+  },
+  "categories": {
+    "integration:e2e": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "tests": [
+        {
+          "id": "tests.integration.test_payroll_e2e.TestLHDNSubmissionReadiness.test_e2e07_company_has_lhdn_credentials",
+          "name": "test_e2e07_company_has_lhdn_credentials",
+          "description": "E2E-07: Test company has LHDN client_id configured (submission prerequisite).",
+          "category": "integration:e2e",
+          "status": "PASS",
+          "duration_ms": 8.81,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_payroll_e2e.TestLHDNSubmissionReadiness.test_e2e08_submission_api_reachable_for_salary_slip",
+          "name": "test_e2e08_submission_api_reachable_for_salary_slip",
+          "description": "E2E-08: LHDN submission API accepts Salary Slip doctype context.",
+          "category": "integration:e2e",
+          "status": "PASS",
+          "duration_ms": 58.45,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_payroll_e2e.TestPayrollDataAccess.test_e2e01_employees_exist",
+          "name": "test_e2e01_employees_exist",
+          "description": "E2E-01: At least one Employee record exists for payroll.",
+          "category": "integration:e2e",
+          "status": "PASS",
+          "duration_ms": 52.56,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_payroll_e2e.TestPayrollDataAccess.test_e2e02_salary_structure_exists",
+          "name": "test_e2e02_salary_structure_exists",
+          "description": "E2E-02: At least one Salary Structure is configured.",
+          "category": "integration:e2e",
+          "status": "PASS",
+          "duration_ms": 67.43,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_payroll_e2e.TestPayrollDataAccess.test_e2e03_salary_components_have_amounts",
+          "name": "test_e2e03_salary_components_have_amounts",
+          "description": "E2E-03: Key salary components exist and are properly configured.",
+          "category": "integration:e2e",
+          "status": "PASS",
+          "duration_ms": 68.16,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_payroll_e2e.TestSalarySlipE2E.test_e2e04_salary_slip_has_statutory_fields",
+          "name": "test_e2e04_salary_slip_has_statutory_fields",
+          "description": "E2E-04: Salary Slip has all statutory deduction custom fields.",
+          "category": "integration:e2e",
+          "status": "PASS",
+          "duration_ms": 85.83,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_payroll_e2e.TestSalarySlipE2E.test_e2e05_salary_slip_has_earnings_and_deductions",
+          "name": "test_e2e05_salary_slip_has_earnings_and_deductions",
+          "description": "E2E-05: Salary Slip has earnings and deductions child tables.",
+          "category": "integration:e2e",
+          "status": "PASS",
+          "duration_ms": 65.89,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_payroll_e2e.TestSalarySlipE2E.test_e2e06_salary_slip_employee_link_valid",
+          "name": "test_e2e06_salary_slip_employee_link_valid",
+          "description": "E2E-06: Salary Slip's employee link resolves to a real Employee.",
+          "category": "integration:e2e",
+          "status": "PASS",
+          "duration_ms": 78.33,
+          "error": null
+        }
+      ]
+    }
+  },
+  "all_results": [
+    {
+      "id": "tests.integration.test_payroll_e2e.TestLHDNSubmissionReadiness.test_e2e07_company_has_lhdn_credentials",
+      "name": "test_e2e07_company_has_lhdn_credentials",
+      "description": "E2E-07: Test company has LHDN client_id configured (submission prerequisite).",
+      "category": "integration:e2e",
+      "status": "PASS",
+      "duration_ms": 8.81,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_payroll_e2e.TestLHDNSubmissionReadiness.test_e2e08_submission_api_reachable_for_salary_slip",
+      "name": "test_e2e08_submission_api_reachable_for_salary_slip",
+      "description": "E2E-08: LHDN submission API accepts Salary Slip doctype context.",
+      "category": "integration:e2e",
+      "status": "PASS",
+      "duration_ms": 58.45,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_payroll_e2e.TestPayrollDataAccess.test_e2e01_employees_exist",
+      "name": "test_e2e01_employees_exist",
+      "description": "E2E-01: At least one Employee record exists for payroll.",
+      "category": "integration:e2e",
+      "status": "PASS",
+      "duration_ms": 52.56,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_payroll_e2e.TestPayrollDataAccess.test_e2e02_salary_structure_exists",
+      "name": "test_e2e02_salary_structure_exists",
+      "description": "E2E-02: At least one Salary Structure is configured.",
+      "category": "integration:e2e",
+      "status": "PASS",
+      "duration_ms": 67.43,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_payroll_e2e.TestPayrollDataAccess.test_e2e03_salary_components_have_amounts",
+      "name": "test_e2e03_salary_components_have_amounts",
+      "description": "E2E-03: Key salary components exist and are properly configured.",
+      "category": "integration:e2e",
+      "status": "PASS",
+      "duration_ms": 68.16,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_payroll_e2e.TestSalarySlipE2E.test_e2e04_salary_slip_has_statutory_fields",
+      "name": "test_e2e04_salary_slip_has_statutory_fields",
+      "description": "E2E-04: Salary Slip has all statutory deduction custom fields.",
+      "category": "integration:e2e",
+      "status": "PASS",
+      "duration_ms": 85.83,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_payroll_e2e.TestSalarySlipE2E.test_e2e05_salary_slip_has_earnings_and_deductions",
+      "name": "test_e2e05_salary_slip_has_earnings_and_deductions",
+      "description": "E2E-05: Salary Slip has earnings and deductions child tables.",
+      "category": "integration:e2e",
+      "status": "PASS",
+      "duration_ms": 65.89,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_payroll_e2e.TestSalarySlipE2E.test_e2e06_salary_slip_employee_link_valid",
+      "name": "test_e2e06_salary_slip_employee_link_valid",
+      "description": "E2E-06: Salary Slip's employee link resolves to a real Employee.",
+      "category": "integration:e2e",
+      "status": "PASS",
+      "duration_ms": 78.33,
+      "error": null
+    }
+  ]
+}

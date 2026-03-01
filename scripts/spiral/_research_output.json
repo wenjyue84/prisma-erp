@@ -1,478 +1,279 @@
 {
   "stories": [
     {
-      "title": "Extend Minimum Wage Enforcement to Apprenticeship Contract Workers (NWCC Amendment 2025)",
-      "priority": "high",
-      "description": "The National Wages Consultative Council (Amendment) Act 2025, effective 1 August 2025, extended the RM1,700 minimum wage to workers on apprenticeship contracts (6–24 month systematic trade training programmes). Previously, apprentices could legally be paid below minimum wage. All payroll validation must now apply the RM1,700 floor to apprenticeship contract employee types, with penalties up to RM10,000 per affected worker for non-compliance.",
-      "acceptanceCriteria": [
-        "Employee type 'Apprentice' or 'Contract Trainee' triggers minimum wage validation at RM1,700/month on Salary Slip save",
-        "A pre-payroll warning is raised when any apprenticeship salary is below RM1,700 before the payroll run is confirmed",
-        "Domestic workers remain the sole exempt category — apprentices are NOT exempt from minimum wage",
-        "Enforcement effective date is gated to 1 August 2025 — no false positives for historical payroll runs before this date"
-      ],
-      "technicalNotes": [
-        "Add 'Apprentice' as a recognised contract type in Employee master with a minimum_wage_applies = 1 flag",
-        "Reuse existing minimum wage validation service; extend employee_type scope to include Apprentice",
-        "NWCC Amendment Act 2025 passed concurrently with the micro-employer universal extension (same gazette date: 1 August 2025)"
-      ],
-      "dependencies": [
-        "Extend Minimum Wage Validation to Cover Micro-Employers from August 1, 2025"
-      ],
-      "estimatedComplexity": "small",
-      "source": "https://www.humanresourcesonline.net/all-employers-in-malaysia-must-comply-with-rm1-700-minimum-wage-from-1-august-2025"
-    },
-    {
-      "title": "Build Platform SOCSO Deduction Engine Skeleton for Gig Workers Act 2025 (Act 872)",
+      "title": "Track EP Category Internship Obligation per 1:3 Internship Policy (TalentCorp/MOHR)",
       "priority": "medium",
-      "description": "The Gig Workers Act 2025 (Act 872) was gazetted December 2025 with commencement date to be set by the Minister. It will require platform providers (ride-hailing, delivery, freelance platforms) to deduct Self-Employment Social Security Scheme contributions from gig worker earnings and remit to PERKESO monthly. Unlike standard employment SOCSO, this is a worker-funded scheme only with no employer share. The system must build the deduction engine now so it can be activated by effective date when commencement is gazetted.",
+      "description": "Malaysia's Ministry of Human Resources (MOHR) and TalentCorp mandated that companies employing foreign nationals via Employment Pass (EP) must offer structured paid internships to Malaysian students: 3 placements per EP Cat I, 2 per Cat II, 1 per Cat III. Full enforcement begins 1 January 2026 (pilot extended to March 2026). Payroll must track EP category per expatriate, calculate the total internship quota, and record fulfilled placements (minimum 10 weeks, RM500–RM600/month stipend) to produce the annual evidence package supporting future EP renewal applications.",
       "acceptanceCriteria": [
-        "A new worker category 'Gig / Platform Worker' is available in Employee master with a SEIA (Self-Employment) contribution flag",
-        "SOCSO Self-Employment Scheme contribution (worker-funded only, zero employer share) is correctly computed per the SEIA rate schedule",
-        "A monthly PERKESO remittance file for gig worker contributions is generated separately from standard employer SOCSO bulk upload",
-        "A commencement date guard in LHDN Settings prevents SEIA deductions from activating until the official gazette date is entered",
-        "Domestic gig workers (home cleaning, babysitting platforms) can be flagged as excluded per the SEIA exemption schedule"
+        "Employee record stores Employment Pass category (Cat I / Cat II / Cat III) with EP approval reference number and approval date",
+        "Company dashboard calculates total internship slots required = sum(EP Cat I × 3 + EP Cat II × 2 + EP Cat III × 1), capped at 2% of total employee headcount",
+        "Intern Placement doctype records: intern name, qualification level, TalentCorp programme reference, start/end date, stipend amount, fulfilment status",
+        "System validates intern stipend meets minimum: RM600/month for degree/master/DLKM level, RM500/month for diploma/SKM/certificate level",
+        "Compliance summary report shows total quota vs. fulfilled placements, with gap count highlighted in red when unfulfilled quota > 0",
+        "Alert triggered 60 days before EP renewal date if internship quota not fully met for the current 12-month period"
       ],
       "technicalNotes": [
-        "Self-Employment Social Security Act 789 (SEIA) governs the contribution rate schedule; SOCSO Self-Employment Scheme rates apply",
-        "Platform providers remit on behalf of gig workers — different deduction logic from standard employer-employee payroll",
-        "Implement with a feature flag (effective_date field) in LHDN/PERKESO Settings so it activates on gazette",
-        "PERKESO ASSIST upload format for SEIA may differ from standard employer SOCSO bulk upload — verify before implementation",
-        "Gig Workers Act 2025 key features: https://www.rahmatlim.com/perspectives/articles/31531/mykh-key-features-of-s-gig-workers-bill-2025"
+        "Add `employment_pass_category` (Select: Cat I / Cat II / Cat III) and `ep_approval_reference` fields to Employee fixture",
+        "New DocType `Internship Placement` linked to Company with fields: intern_name, qualification_level, talentcorp_reference, start_date, end_date, monthly_stipend, status",
+        "Dashboard card on LHDN Payroll workspace showing quota compliance ratio",
+        "Pilot phase extended to 31 March 2026; mandatory from 1 January 2026",
+        "Non-compliance does not cancel existing EPs but adversely impacts future EP renewal assessment"
       ],
       "dependencies": [],
-      "estimatedComplexity": "large",
-      "source": "https://www.humanresourcesonline.net/malaysia-gazettes-gig-workers-act-2025-signalling-new-page-in-labour-reform"
-    },
-    {
-      "title": "Update TP1(1/2026) Relief Categories and PCB Computation Engine for YA2026 Budget Changes",
-      "priority": "critical",
-      "description": "LHDN published the TP1(1/2026) form and MTD Computation Specification 2026, effective January 2026. Key changes that affect PCB calculation: children's life/medical insurance now included under existing insurance relief limits; childcare relief extended to ages 6–12 for registered after-school programmes (previously only age ≤6); autism/learning disability child relief ceiling increased from RM6,000 to RM10,000; domestic tourism and cultural attraction RM1,000 relief added (YA2026–2027 only, time-bounded); vaccine relief expanded to all NPRA-approved vaccines. Tax brackets are unchanged for YA2026. All payroll from January 2026 must use the updated form.",
-      "acceptanceCriteria": [
-        "TP1 data entry form includes a 'Children Life/Medical Insurance' sub-field under existing insurance relief (respecting combined RM3,000/RM4,000 ceilings)",
-        "Childcare relief field accepts children aged 6–12 enrolled in Ministry of Education-registered after-school care programmes",
-        "Autism/learning disability child relief ceiling updated from RM6,000 to RM10,000 in the PCB deduction engine",
-        "Domestic tourism and cultural attraction RM1,000 relief field is present, with an expiry guard preventing application after 31 December 2027",
-        "Vaccine relief field is no longer restricted to a hardcoded list — accepts any NPRA-approved vaccine",
-        "PCB calculation uses updated relief totals from new TP1(1/2026) fields for all payroll from January 2026 onwards",
-        "Old YA2025 TP1 records are preserved for historical audit without affecting 2026 PCB computation"
-      ],
-      "technicalNotes": [
-        "Official TP1(1/2026) form PDF: https://www.hasil.gov.my/media/gjuhcbc2/bi-tp1-form-2026.pdf",
-        "Official MTD Computation Specification 2026: https://www.hasil.gov.my/media/arvlrzh5/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2026.pdf",
-        "YA2026 individual income tax brackets are UNCHANGED from YA2025 — only relief items and the TP1 form structure change",
-        "Tourism relief is time-bounded (YA2026–2027 only): store effective_from = 2026-01-01 and expires_on = 2027-12-31 as system constants"
-      ],
-      "dependencies": [
-        "Update PCB TP1 Relief Tables for YA2025 (New Housing Loan Interest Relief and Increased Disability Amounts)"
-      ],
       "estimatedComplexity": "medium",
-      "source": "https://www.hasil.gov.my/media/gjuhcbc2/bi-tp1-form-2026.pdf"
+      "source": "https://www.ey.com/en_gl/technical/tax-alerts/malaysia-introduces-new-13-internship-policy-to-contribute-to-local-talent-development"
     },
     {
-      "title": "Implement TalentCorp Career Comeback Tax Exemption PCB Reduction Workflow",
-      "priority": "medium",
-      "description": "The Career Comeback Tax Exemption programme (TalentCorp / Ministry of Finance, valid for employment contracts 2023–2028) grants full income tax exemption to women returning to full-time employment after a career break of at least 2 consecutive years between October 2017 and December 2026. Once the employer receives a Ministry of Finance approval letter for a qualifying employee, they must reduce that employee's PCB to RM0 for the approved period. Qualifying conditions: full-time contract of 24+ months, minimum gross salary RM5,000/month, employer must not be a related company to the employee.",
-      "acceptanceCriteria": [
-        "Employee master has a 'Career Comeback Exemption' section with: approval letter reference, valid_from date, valid_until date, and MoF approval status",
-        "When the exemption is active, PCB calculation produces RM0 for that employee throughout the approval period",
-        "An alert is generated 30 days before the exemption approval expires so HR can manage renewal or PCB resumption",
-        "Exemption flag deactivates automatically after the valid_until date; PCB resumes at normal computed rates in the next payroll run",
-        "A validation guard prevents the exemption from being applied to employees with gross salary below RM5,000/month",
-        "PCB audit trail records the exemption reference for each month the zero-PCB is applied"
-      ],
-      "technicalNotes": [
-        "TalentCorp Career Comeback application portal: https://www.talentcorp.com.my/careercomebacktax/",
-        "MoF approval letter contains: employee name, NRIC, approval period, and conditions — store these on the Employee DocType",
-        "Exemption is prospective from the approval date — no retroactive application is permitted",
-        "Programme covers employment contracts signed between 1 January 2023 and 31 December 2028",
-        "Store MoF reference number in the PCB Change Audit Trail DocType for LHDN inspection readiness"
-      ],
-      "dependencies": [
-        "Implement PCB Change Audit Trail DocType"
-      ],
-      "estimatedComplexity": "small",
-      "source": "https://www.talentcorp.com.my/careercomebacktax/"
-    },
-    {
-      "title": "Update EPF i-Akaun Employer Contribution CSV Upload Format for Three-Account (75/15/10) Allocation",
+      "title": "PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach Notification Workflow",
       "priority": "high",
-      "description": "EPF restructured from two accounts to three accounts effective 11 May 2024: Akaun Persaraan (75%), Akaun Sejahtera (15%), Akaun Fleksibel (10%). The i-Akaun employer contribution upload file must now include three account allocation amount fields per employee row. Systems still submitting on the old two-account (70/30) basis produce incorrect allocation records in EPF member accounts. This affects all contribution months from May 2024 onwards and includes the October 2025 foreign worker mandatory contributions.",
+      "description": "The Personal Data Protection (Amendment) Act 2024, effective 1 June 2025, requires employers processing large-scale employee payroll data to (a) appoint a Data Protection Officer (DPO), (b) notify the Commissioner of the DPO appointment within 21 days, (c) upon detecting a payroll data breach, notify the Commissioner within 72 hours and affected employees within 7 days. These are materially different obligations from general PDPA compliance — the existing module covers data portability and access rights, but not the DPO appointment record-keeping or breach incident management workflows mandated by the February 2025 Commissioner Guidelines.",
       "acceptanceCriteria": [
-        "EPF CSV/TXT upload file generated by the system includes three separate account contribution amount columns per employee row",
-        "For standard Malaysian employees, allocation is: Akaun Persaraan = 75%, Akaun Sejahtera = 15%, Akaun Fleksibel = 10% of total contribution",
-        "For foreign workers (from October 2025 onwards), same 75/15/10 split is applied to their flat 2%+2% contributions",
-        "EPF remittance report in ERPNext shows per-employee breakdown across all three accounts per month",
-        "Validation rejects or warns when generated account allocation amounts do not sum to the total contribution amount"
+        "Company record stores DPO name, contact email, phone number, appointment date, and Commissioner registration date",
+        "System alerts HR Admin if 21-day DPO Commissioner notification deadline not recorded after DPO appointment date",
+        "New 'Payroll Data Breach Incident' DocType with fields: discovery_datetime, breach_type, affected_records_count, data_categories_affected, risk_assessment, commissioner_notified_datetime, employee_notification_datetime",
+        "72-hour countdown alert activates upon incident creation; red critical alert displayed if commissioner_notified_datetime is blank and 72 hours have elapsed since discovery_datetime",
+        "System generates a pre-filled Commissioner Notification Letter (PDF) with breach details, number of affected employees, and risk assessment summary",
+        "System generates pre-filled Employee Breach Notification email template once Commissioner has been notified (7-day deadline from Commissioner notification)",
+        "Audit log records all breach incident updates with user and timestamp"
       ],
       "technicalNotes": [
-        "EPF Account Restructuring announcement: https://www.kwsp.gov.my/en/member/account-centre/account-restructuring",
-        "The old two-account format (70/30 split) is no longer valid for submissions after 11 May 2024",
-        "For employees aged 55+ the split ratio may differ — confirm against the current EPF i-Akaun Employer upload specification document",
-        "Existing payslip display story covers the UI (three-account split on payslip); this story covers the CSV upload file format sent to EPF"
+        "New DocType `PDPA Breach Incident` linked to Company; status flow: Draft → Commissioner Notified → Employees Notified → Resolved",
+        "DPO fields on Company doctype in `PDPA Compliance` tab via custom field fixture",
+        "Commissioner notification required within 72 hours of breach awareness (not breach occurrence) per Guideline on Data Breach Notification (Feb 2025)",
+        "Employee notification required within 7 days of Commissioner notification — only required if breach poses significant harm to data subjects",
+        "Guideline published: https://www.pdp.gov.my/ppdpv1/en/ — Guideline on Data Breach Notification and DPO Appointment"
       ],
-      "dependencies": [
-        "Generate EPF i-Akaun Electronic Upload File",
-        "Display EPF Akaun Fleksibel Three-Account Contribution Split on Payslip"
-      ],
+      "dependencies": [],
       "estimatedComplexity": "medium",
-      "source": "https://www.kwsp.gov.my/en/member/account-centre/account-restructuring"
+      "source": "https://oneasia.legal/en/6322"
     },
     {
-      "title": "Implement BIK Motor Vehicle 50% Prescribed Value Discount for Company Cars Over 5 Years Old",
-      "priority": "medium",
-      "description": "LHDN Public Ruling 11/2019 specifies that under the Prescribed Value Method, the annual taxable BIK value of a company motor car — including the associated fuel benefit — is reduced by 50% when the vehicle is more than 5 years old from its original purchase date. Employers frequently misapply the full prescribed value to aged vehicles, over-reporting employee taxable income on EA Forms and PCB calculations. The fuel benefit (RM1,800/year) is halved for qualifying vehicles; the driver benefit (RM7,200/year) is assessed separately and is not discounted.",
-      "acceptanceCriteria": [
-        "Company car record in the BIK module includes a 'Date of Original Registration/Purchase' field for vehicle age computation",
-        "BIK prescribed value calculation automatically applies a 50% discount when vehicle age exceeds 5 years at the payroll period date",
-        "The fuel benefit prescribed value (RM1,800/year) is also halved for vehicles meeting the >5 year threshold",
-        "The driver benefit (RM7,200/year) does NOT receive the 50% discount — it is computed separately at full prescribed rate",
-        "EA Form BIK section reflects the age-discounted taxable value for all qualifying aged vehicles"
-      ],
-      "technicalNotes": [
-        "LHDN Public Ruling 11/2019, paragraph 10: for a motor car older than 5 years, the employer shall use 50% of the prescribed value",
-        "This rule applies to the Prescribed Value Method only; the Formula Method (cost/lifespan × 80%) does not use this discount",
-        "Vehicle age is measured from the ORIGINAL registration date, not from when the current employer acquired or leased it",
-        "Public Ruling 11/2019 PDF: http://lampiran1.hasil.gov.my/pdf/pdfam/PR_11_2019.pdf"
-      ],
-      "dependencies": [
-        "Implement Benefits-in-Kind (BIK) Prescribed Value Calculation Module",
-        "BIK Motor Vehicle Engine Capacity Prescribed Value Table Lookup for EA Form"
-      ],
-      "estimatedComplexity": "small",
-      "source": "http://lampiran1.hasil.gov.my/pdf/pdfam/PR_11_2019.pdf"
-    },
-    {
-      "title": "Implement e-PCBN PCB Non-Deduction Certificate Processing for Self-Assessing Employees",
-      "priority": "medium",
-      "description": "LHDN may issue an e-PCBN (Perakuan Tidak Potongan PCB — PCB Non-Deduction Certificate) to an employee who elects to settle income tax via self-assessment (Form B/BE) rather than through monthly employer PCB deduction. Upon receiving an e-PCBN, the employer must immediately cease PCB deduction for that employee for the specified validity period. At certificate expiry, PCB deduction must automatically resume. Continuing to deduct PCB after receiving an e-PCBN constitutes over-withholding and creates a liability to refund the employee.",
-      "acceptanceCriteria": [
-        "Employee master has an 'e-PCBN Certificate' section with: LHDN reference number, issue date, valid_from, and valid_until",
-        "PCB calculation produces RM0 for employees with an active e-PCBN during the validity window",
-        "An alert is generated 30 days before e-PCBN expiry to prompt HR to confirm whether to resume PCB or note a renewal",
-        "After e-PCBN valid_until date passes, PCB automatically resumes at normal computed rates in the next payroll run",
-        "Payslip displays 'PCB Exempted — e-PCBN Ref: [reference]' in place of the PCB deduction line to make the reason explicit"
-      ],
-      "technicalNotes": [
-        "e-PCBN is issued by LHDN to the employee upon the employee's application — the employer must act on the certificate promptly",
-        "Certificate specifies the exemption period (typically one calendar year or the remaining portion of the year)",
-        "Store e-PCBN reference number in PCB Change Audit Trail DocType for LHDN inspection readiness",
-        "PCB Computation Specification 2025 references the e-PCBN mechanism: https://www.hasil.gov.my/media/mdahzjwi/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2025.pdf",
-        "LHDN employer responsibilities: https://www.hasil.gov.my/en/employers/responsibility-of-employer/"
-      ],
-      "dependencies": [
-        "Implement PCB Change Audit Trail DocType"
-      ],
-      "estimatedComplexity": "small",
-      "source": "https://www.hasil.gov.my/en/employers/responsibility-of-employer/"
-    },
-    {
-      "title": "Alert on Stale TP1 Relief Declarations When New Assessment Year Begins Without Employee Re-Submission",
+      "title": "MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging",
       "priority": "low",
-      "description": "LHDN requires employees to submit a TP1 form for each assessment year. Relief declarations from a prior year are not automatically carried forward. If an employee has not submitted a new TP1 by 31 January of the new year, the employer should default to computing PCB using only the statutory basic personal relief (RM9,000) and no additional claims. Many employers inadvertently continue applying the prior year's reliefs, creating technically non-compliant PCB calculations that may under-withhold tax.",
+      "description": "Employers participating in TalentCorp's National Structured Internship Programme (MySIP) are entitled to a double corporate tax deduction on internship-related expenses (stipends, training costs) from YA 2017 to YA 2025, with potential extension. Payroll must identify intern employees, validate their monthly stipend meets the MySIP minimum threshold, track the TalentCorp Endorsement Letter reference, and produce a year-end summary of MySIP-qualifying expenses per intern for the corporate tax claim. This is a corporate tax benefit tracking feature, not a statutory payroll deduction.",
       "acceptanceCriteria": [
-        "TP1 declaration record has an Assessment Year field and is year-scoped — a 2025 TP1 cannot be used for 2026 computation",
-        "On 1 January each year, the system flags all employees whose active TP1 is from the prior year in a 'Stale TP1 Declarations' report",
-        "Payroll run shows a per-employee warning for each stale TP1 before the payroll batch is confirmed",
-        "HR can choose: (a) acknowledge and apply prior-year TP1 with an audit warning logged, or (b) default to basic RM9,000 relief only for the employee",
-        "Employees can be sent a system-generated reminder to re-submit their TP1 before January payroll confirmation"
+        "Employee record has flag `is_mysip_intern` (Check) and fields: `mysip_qualification_level` (Select: Master/Degree/DLKM | Diploma/SKM/Certificate), `talentcorp_endorsement_reference` (Data)",
+        "On payroll run, if `is_mysip_intern` = true, system validates stipend >= RM600 for degree-level and >= RM500 for diploma-level interns; warning displayed if below threshold",
+        "Year-end MySIP Summary Report shows: intern name, qualification level, endorsement reference, total stipend paid, total qualifying expenses for double deduction claim",
+        "Report includes total claimable double deduction amount = 2x (total stipend + training costs)",
+        "Each qualifying Salary Slip is tagged with `mysip_eligible: true` for audit trail"
       ],
       "technicalNotes": [
-        "Assessment year field on TP1 DocType must be indexed to enable this cross-year check",
-        "LHDN technically requires new-year TP1 from January, but tolerates brief carry-forward in practice until the CP39 for January is filed",
-        "LHDN employer responsibilities: https://www.hasil.gov.my/en/employers/responsibility-of-employer/"
+        "Minimum stipends: RM600/month for Master, Degree, DLKM, Professional Certificate; RM500/month for Diploma, DKM, SKM Level 1-3",
+        "Double deduction applies to: intern allowances, training materials, accommodation/transport",
+        "TalentCorp issues Endorsement Letter based on annual internship placements submitted",
+        "MySIP double deduction covered YA2017-YA2025; check Budget 2026 for extension status",
+        "Reference: https://www.talentcorp.com.my/mysip-incentives/"
       ],
-      "dependencies": [
-        "Implement TP1 Employee Relief Declaration DocType and PCB Integration"
-      ],
+      "dependencies": [],
       "estimatedComplexity": "small",
-      "source": "https://www.hasil.gov.my/en/employers/responsibility-of-employer/"
+      "source": "https://www.talentcorp.com.my/mysip-incentives/"
     },
     {
-      "title": "Store e-CP22 and e-SPC LHDN Acknowledgement Reference Numbers on Employee Record",
+      "title": "HRD Corp SBL-KHAS Grant Pre-Approval Compliance and 6-Month Post-Training Claim Deadline Alert",
       "priority": "medium",
-      "description": "When CP22 is submitted via MyTax e-CP22 or CP21/CP22A via e-SPC, LHDN returns an acknowledgement containing a submission reference number and processing status. Employers must retain these reference numbers as proof of timely statutory filing. The existing stories for CP22 and CP21/CP22A submission cover triggering the submission, but do not capture and persist the LHDN acknowledgement response — leaving no audit evidence if LHDN later questions whether the notification was sent on time.",
+      "description": "HRD Corp requires employers to submit a training grant application via eTRiS at least 1 working day before training begins — applications submitted after training starts are automatically rejected. After training completes, claims must be submitted within 30 days (preferred) and no later than 6 months (hard deadline). The existing 'HRD Corp eTRIS Training Claim Recording and Levy Utilization Dashboard' story records claims already submitted; this story covers the pre-approval compliance workflow and deadline alert system to prevent rejected or expired claims.",
       "acceptanceCriteria": [
-        "After e-CP22 submission for a new hire, system stores: LHDN reference number, submission timestamp, and status (Received/Processing/Accepted/Rejected) on the Employee record",
-        "After e-SPC submission for cessation (CP21/CP22A), the same acknowledgement fields are stored on the Employee termination record",
-        "Submission status and reference number are visible in a 'LHDN Statutory Filings' tab on the Employee DocType",
-        "Rejected submissions trigger a high-priority task assigned to the HR Manager role with LHDN rejection reason and the deadline for resubmission",
-        "All e-CP22 and e-SPC submissions appear in the Statutory Compliance Calendar audit view"
+        "Training Event doctype has fields: training_start_date, training_end_date, etris_application_date, etris_approval_number, etris_claim_submission_date, grant_amount_approved, grant_amount_claimed",
+        "System alerts HR Manager if training_start_date is reached and etris_application_date is blank (pre-approval not submitted)",
+        "System flags training as non-HRD-claimable if etris_application_date >= training_start_date (post-training application — auto-rejected by HRD Corp)",
+        "Alert at 20 days and 28 days after training_end_date if etris_claim_submission_date is blank (30-day deadline approaching)",
+        "Critical alert escalated to HR Director at 5 months and 5.5 months after training_end_date if claim still not submitted (6-month absolute deadline)",
+        "Dashboard shows: trainings needing pre-approval, expiring claim windows (within 30 days), expired claim windows (failed to claim), and rejected grants with reason codes"
       ],
       "technicalNotes": [
-        "If API-integrated: store raw LHDN JSON response body and HTTP status code per submission attempt",
-        "If manual portal submission: add an 'Upload Acknowledgement PDF' attachment field as fallback evidence",
-        "LHDN e-CP22 portal: https://mytax.hasil.gov.my",
-        "LHDN e-SPC cessation portal: https://mytax.hasil.gov.my",
-        "LHDN typically takes up to 14 working days to change status from 'Received' to 'Accepted'"
+        "HRD Corp eTRiS portal: hrdcorp.gov.my",
+        "Grant approval takes 10-14 working days — apply well before training start",
+        "SBL-KHAS is the main grant scheme requiring application at least 1 day before training",
+        "6-month claim deadline is absolute — late submissions cannot be appealed or recovered",
+        "This extends the existing levy utilization dashboard by adding pre-training compliance tracking"
       ],
-      "dependencies": [
-        "Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire",
-        "Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departure"
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "source": "https://hrdcorp.gov.my/employer-guidelines"
+    },
+    {
+      "title": "Employment Act S.60F(2): Track 60-Day Hospitalization Leave Quota Separately from Ordinary Sick Leave",
+      "priority": "high",
+      "description": "The Employment Act 1955 S.60F provides two distinct sick leave entitlements: (1) ordinary paid sick leave of 14-22 days based on service years, and (2) additional hospital/in-patient leave of up to 60 days per year when an employee is hospitalized or requires leave following hospitalization as certified by a registered medical practitioner. These must be tracked separately — hospitalization leave does not reduce ordinary sick leave entitlement. The existing 'Track Employment Act S.60F Sick Leave Entitlement per Service Band' story covers ordinary sick leave; this story addresses the distinct 60-day hospitalization leave quota.",
+      "acceptanceCriteria": [
+        "Two distinct Leave Types: 'Sick Leave (EA)' for ordinary sick leave (14-22 days by service band) and 'Hospitalization Leave (EA)' for in-patient/post-hospitalization (60 days annual)",
+        "Hospitalization Leave allocation of 60 days auto-created for all EA-covered employees at each leave year start",
+        "Hospitalization Leave application requires: `hospitalization_discharge_date` (Date) and `medical_certificate_type` (Select: Hospitalization Certificate | Post-Hospitalization Medical Advice)",
+        "Leave balance summary on payslip shows both balances separately: 'Sick Leave (EA): X days' and 'Hospitalization Leave (EA): Y days'",
+        "System validates Hospitalization Leave applications are processed against the 60-day quota, not the ordinary sick leave quota",
+        "Alert to HR if employee Hospitalization Leave balance reaches zero — no further hospitalization leave available for the year"
       ],
+      "technicalNotes": [
+        "EA S.60F(2): Up to 60 days paid hospitalization leave when certified by registered medical practitioner that in-patient care is necessary",
+        "EA S.60F(1): Ordinary sick leave: 14 days (<2 years service), 18 days (2-5 years), 22 days (>5 years)",
+        "Both entitlements paid at ordinary rate of pay",
+        "Employee may use both entitlements in same year — they are separate pools",
+        "Reference: Employment Act 1955 S.60F — https://jtksm.mohr.gov.my/sites/default/files/2023-11/Akta%20Kerja%201955%20(Akta%20265).pdf"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "source": "https://jtksm.mohr.gov.my/sites/default/files/2023-11/Akta%20Kerja%201955%20(Akta%20265).pdf"
+    },
+    {
+      "title": "Employment Act S.60A: Annual Leave Carry-Forward Cap and Cash-Out Enforcement at Year-End",
+      "priority": "medium",
+      "description": "Under Employment Act 1955 S.60A, unused annual leave that is not taken within the leave year must either be carried forward (by agreement) or paid out at the basic rate. The EA 2022 Amendment strengthened employee protections — employers cannot unilaterally forfeit unused leave without the employee's agreement. ERPNext's standard leave module does not enforce Malaysian EA-specific carry-forward rules or the mandatory cash-out offer before forfeiture. Payroll must enforce that expiring leave is either carried forward or paid out, with documented employee consent for any forfeiture.",
+      "acceptanceCriteria": [
+        "Annual Leave (EA) carry-forward is configurable with maximum carry-forward days (default: 1x annual entitlement, e.g., max 22 days)",
+        "At leave year-end, system generates 'Leave Expiry Notice' per employee showing: days expiring, cash-out amount at basic daily rate, carry-forward option",
+        "HR Manager must record employee's decision (Carry Forward | Cash Out | Mutual Forfeiture Agreement) before closing leave year for that employee",
+        "Cash-out of unused annual leave = (Monthly Basic Salary / 26) × leave days, recorded as non-statutory pay component on Salary Slip",
+        "System blocks leave year close-off for any employee without a recorded leave expiry decision",
+        "Audit log records all leave carry-forward and cash-out decisions with HR manager approval and employee acknowledgement timestamp"
+      ],
+      "technicalNotes": [
+        "EA S.60A(3): Employer must pay employee for unused annual leave on termination at basic rate",
+        "EA S.60A(4): Leave should be utilized within 12 months of entitlement year",
+        "Cash-out rate: Basic Rate of Pay per day = Monthly Basic Salary / 26 (or number of working days per month per contract)",
+        "EA 2022 Amendment added protections against unilateral forfeiture",
+        "Reference: Employment Act 1955 S.60A"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "source": "https://jtksm.mohr.gov.my/sites/default/files/2023-11/Akta%20Kerja%201955%20(Akta%20265).pdf"
+    },
+    {
+      "title": "FWCMS Foreign Worker Annual Levy Renewal Expiry Date Tracking and Advance Alert per Employee",
+      "priority": "medium",
+      "description": "Foreign worker levies in Malaysia are paid annually via the FWCMS portal, with the expiry date tied to each individual worker's PLKS/permit period (not a fixed calendar date). The existing 'FWCMS Foreign Worker Levy: 10th-of-Month Payment Deadline Alert' story covers monthly payment monitoring; this story covers the annual renewal cycle per individual worker. Employers with many foreign workers at different renewal dates face compliance risk if individual levy expiry dates are not tracked — an expired levy can result in immediate non-compliance and worker removal orders.",
+      "acceptanceCriteria": [
+        "Employee record (foreign worker) stores: `fwcms_levy_payment_date`, `fwcms_levy_expiry_date`, `fwcms_receipt_reference`, `fwcms_levy_sector` (Select: Manufacturing | Construction | Plantation | Agriculture | Services)",
+        "Levy sector rate table: Manufacturing/Construction/Services = RM1,850/year; Plantation/Agriculture = RM640/year (configurable for future rate changes)",
+        "Alerts sent to HR Admin at 90, 60, and 30 days before each worker's individual levy expiry date",
+        "Critical alert escalated at 14 days before expiry if renewal receipt not yet recorded",
+        "Non-compliant workers dashboard widget: shows workers with levy expiring in <30 days, <60 days, and already expired",
+        "Upon recording renewal, system validates receipt reference is provided and auto-calculates next expiry = payment date + 365 days (or per PLKS duration if different)"
+      ],
+      "technicalNotes": [
+        "FWCMS levy is annual, not monthly — renewal date is per worker based on PLKS expiry",
+        "Manufacturing, Construction, Services: RM1,850/year per worker",
+        "Plantation, Agriculture: RM640/year per worker",
+        "Multi-tier levy increase of RM300-500 under deliberation — rate table must be configurable",
+        "FWCMS portal: https://www.fwcms.gov.my — levy paid online, employer receives electronic receipt",
+        "Levy paid by employer — cannot deduct from employee salary"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "source": "https://briohr.com/blog/foreign-worker-levy/"
+    },
+    {
+      "title": "PCB 2026 Specification: Enforce Truncation-then-5-Cent-Ceiling Rounding Rule in MTD Calculation Engine",
+      "priority": "high",
+      "description": "The official LHDN PCB 2026 Computerised Calculation Specification mandates a specific two-step rounding rule that is different from standard mathematical rounding: Step 1 — truncate the raw PCB amount to exactly 2 decimal places (dropping subsequent digits without rounding); Step 2 — apply ceiling rounding up to the nearest 5 cents. For example: 123.023 → truncated to 123.02 → rounded to 123.05; and 123.061 → truncated to 123.06 → rounded to 123.10. If the current MTD engine uses standard banker's rounding or simple 2dp rounding, it will produce incorrect PCB values that diverge from LHDN's expected amounts, potentially causing CP39 submission mismatches.",
+      "acceptanceCriteria": [
+        "MTD calculation engine applies two-step rounding as final step: truncated = floor(raw_pcb * 100) / 100; final_pcb = ceil(truncated / 0.05) * 0.05",
+        "Unit tests verify: 123.023 → 123.05, 123.061 → 123.10, 123.000 → 123.00, 123.049 → 123.05, 100.001 → 100.05, 0.00 → 0.00",
+        "All PCB calculation paths (Method 1 regular salary and Method 2 YTD recalculation) pass through the same rounding function",
+        "CP39 CSV output values are in 2dp format matching the 5-cent rounded amounts",
+        "Dedicated unit test class `TestPCB2026Rounding` covers at least 15 representative scenarios including edge cases at 0.00, 0.01, 0.05, 0.06 fractional values",
+        "Rounding function is extracted into a shared utility `pcb_utils.round_pcb(amount)` callable from all calculation paths"
+      ],
+      "technicalNotes": [
+        "From LHDN PCB 2026 Spec: 'Pengiraan berkomputer PCB hendaklah dalam dua titik perpuluhan dan mesti mengabaikan sebarang angka berikutnya (cth: 123.023 ≈ 123.02). Dari situ, amaun perlu dibundarkan kepada 5 sen yang paling hampir ke atas; cth: 123.02 ≈ 123.05 manakala 123.06 ≈ 123.10'",
+        "Use Python Decimal module to avoid floating-point precision errors: from decimal import Decimal, ROUND_DOWN",
+        "Step 1: truncated = Decimal(str(raw)).quantize(Decimal('0.01'), rounding=ROUND_DOWN)",
+        "Step 2: import math; final = math.ceil(float(truncated) / 0.05) * 0.05; final = Decimal(str(final)).quantize(Decimal('0.01'))",
+        "Reference: https://www.hasil.gov.my/media/arvlrzh5/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2026.pdf"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "source": "https://www.hasil.gov.my/media/arvlrzh5/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2026.pdf"
+    },
+    {
+      "title": "PDPA 2024: Data Processor Agreement Compliance Checklist for External Payroll Service Vendors",
+      "priority": "medium",
+      "description": "The Personal Data Protection (Amendment) Act 2024, effective June 2025, introduces direct legal obligations on data processors — including third-party payroll bureaus, statutory submission agents, and HRMS vendors who process employee salary, PCB, EPF, and statutory data. Employers using external payroll services must ensure a valid Data Processing Agreement (DPA) is in place with each processor. This is distinct from the existing DPO appointment and breach notification stories — it specifically addresses the contractual compliance layer between the employer (data controller) and any external party handling payroll data.",
+      "acceptanceCriteria": [
+        "New 'Data Processor Registry' section on Company record listing all third-party data processors with: processor_name, services_provided, dpa_signed_date, dpa_expiry_date, dpa_document_attachment, last_security_audit_date",
+        "Alert to HR/Legal when any DPA expires within 30 days or has expired",
+        "Export of employee personal data (salary, IC number, TIN, bank account) triggers an audit log entry showing: user, data category, downstream processor, timestamp",
+        "Compliance checklist report confirms: DPA on file (Yes/No), DPA current (Yes/No), DPO notified of processor (Yes/No) per each registered processor",
+        "System warns if bulk payroll data export is attempted without any active DPA on file for the receiving processor"
+      ],
+      "technicalNotes": [
+        "PDPA 2024 S.XX: Data processors now have direct liability for security principle breaches — fine up to RM1,000,000 or 3 years imprisonment",
+        "DPA must specify: purpose of processing, data categories, retention period, security measures, data subject rights handling",
+        "Effective date of data processor direct obligations: 1 June 2025",
+        "Processors typically include: HRD Corp submission agents, LHDN e-PCB Plus submission bureaus, bank payroll disbursement services, EPF/SOCSO e-filing vendors",
+        "Reference: https://www.pdp.gov.my/ppdpv1/wp-content/uploads/2024/11/Act-A1727.pdf"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "source": "https://oneasia.legal/en/6322"
+    },
+    {
+      "title": "Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package",
+      "priority": "low",
+      "description": "Malaysia Budget 2026 expanded the existing double tax deduction for sponsoring OKU training to also cover employers who sponsor training costs for care workers who support OKU (Orang Kurang Upaya) individuals, effective YA2026 and YA2027 only. This is a new category distinct from the existing OKU employee double deduction and the general HRD Corp levy claims. Payroll must distinguish care worker training from regular training, apply the YA2026-2027 date gate, and generate the annual evidence schedule for corporate tax submission.",
+      "acceptanceCriteria": [
+        "Training Event doctype has `deduction_category` field (Select: Standard | HRD Corp | OKU Employee Training | OKU Care Worker Training [Budget 2026])",
+        "When `deduction_category` = 'OKU Care Worker Training', system flags the record as qualifying for Budget 2026 double deduction",
+        "Date gate: OKU Care Worker Training double deduction only valid for training completed between 1 January 2026 and 31 December 2027; system blocks this category for training outside this range",
+        "Year-end Summary Report shows separate line: 'Budget 2026 OKU Care Worker Training Double Deduction — Qualifying Expenses: RM X, Claimable Deduction: RM 2X'",
+        "Alert if 'OKU Care Worker Training' is selected for training outside YA2026-2027 range"
+      ],
+      "technicalNotes": [
+        "From Budget 2026: 'The double deduction for sponsoring training for persons with disabilities is expanded to include sponsoring training for care workers for YA2026-YA2027'",
+        "Care worker = workers providing direct care/support services to OKU individuals (not the OKU employee themselves)",
+        "Qualifying expenses: course fees, training materials, trainer fees — same rules as standard OKU training deduction",
+        "This is a corporate income tax deduction claimed in the company's annual return — not a payroll withholding deduction",
+        "Source: Crowe Malaysia Budget 2026 Highlights — https://www.crowe.com/my/-/media/crowe/firms/asia-pacific/my/crowemy/news/key-highlights-of-malaysias-budget-2026--for-individuals-and-businesses-newsletter.pdf"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "source": "https://www.crowe.com/my/-/media/crowe/firms/asia-pacific/my/crowemy/news/key-highlights-of-malaysias-budget-2026--for-individuals-and-businesses-newsletter.pdf"
+    },
+    {
+      "title": "Enforce e-CP22 Online-Only Mandatory Submission and MyTax Employer Representative Authorization Check",
+      "priority": "high",
+      "description": "From 1 September 2024, LHDN mandated that all CP22 new employee notifications must be submitted exclusively through the e-CP22 system on MyTax Portal — manual paper submissions to LHDN offices are no longer accepted. Critically, the submission can only be made by the company director (with MyTax Employer role) or a registered Employer Representative (Wakil Majikan). The existing 'Auto-Submit CP22 via e-CP22 MyTax Within 30 Days' story focuses on the 30-day deadline tracking; this story enforces the online-only mandate, validates Employer Representative setup, and blocks paper CP22 generation.",
+      "acceptanceCriteria": [
+        "CP22 data generation produces only a digital summary for manual MyTax upload — no PDF formatted for paper/postal submission to LHDN office",
+        "Company record stores MyTax Employer Representative (Wakil Majikan): name, MyTax login ID, authorization date — required field before e-CP22 workflow is accessible",
+        "Alert displayed: 'e-CP22 must be submitted by company director or registered Wakil Majikan via mytax.hasil.gov.my — system cannot auto-submit'",
+        "After manual submission, HR records LHDN acknowledgement reference number on the Employee record (this reference is visible in MyTax after submission)",
+        "System blocks new employee onboarding finalization if CP22 status = 'Pending' and 30 days have elapsed since hire date",
+        "System shows penalty notice when 30-day deadline at risk: 'Offence under ITA 1967 S.83(2) — Fine RM200 to RM20,000 or 6 months imprisonment or both'"
+      ],
+      "technicalNotes": [
+        "Mandatory online-only e-CP22 submission effective: 1 September 2024",
+        "Authorized submitters: Company Director (MyTax Employer role) OR registered Wakil Majikan — not HR staff without MyTax authorization",
+        "LHDN issues acknowledgement reference upon successful e-CP22 submission — must be stored on Employee record for audit",
+        "Manual CP22 paper form no longer valid after September 2024 — LHDN offices will not accept them",
+        "Reference: https://landco.my/social/cp22-online/ and https://www.hasil.gov.my/en/employers/notifications-of-new-employee/"
+      ],
+      "dependencies": [],
       "estimatedComplexity": "small",
       "source": "https://www.hasil.gov.my/en/employers/notifications-of-new-employee/"
     },
     {
-      "title": "Enforce 30-Day EPF i-Akaun Registration Deadline Alert for Newly Eligible Foreign Workers (Oct 2025)",
-      "priority": "high",
-      "description": "Effective October 2025, all foreign workers on valid work passes must contribute to EPF. EPF regulations require employers to register newly eligible foreign employees in i-Akaun Employer within 30 days of the mandatory commencement date (or within 30 days of hire for new foreign workers engaged from October 2025 onwards). Failure to register within the deadline exposes the employer to late registration penalties. The existing foreign worker EPF story covers contribution calculation; this story covers the registration deadline enforcement specifically.",
-      "acceptanceCriteria": [
-        "Existing active foreign workers with hire dates before October 2025 trigger a one-time alert: 'EPF Registration Required by 14 November 2025'",
-        "New foreign worker hires from October 2025 onwards trigger a 30-day countdown alert from their Date of Joining for EPF i-Akaun registration",
-        "Employee master includes an 'EPF i-Akaun Registration Confirmed' flag with confirmation date for foreign worker records",
-        "When 30 days pass without the confirmation flag being set, a high-priority compliance alert is sent to the HR Manager role",
-        "Domestic servants (maids, cooks, cleaners, babysitters, drivers) are excluded from EPF registration alerts — no false positives"
-      ],
-      "technicalNotes": [
-        "EPF mandatory for non-Malaysian citizens: https://www.kwsp.gov.my/en/employer/responsibilities/non-malaysian-citizen-employees",
-        "EPF announced automatic registration via the work-pass system but employers must still verify registration status in i-Akaun Employer portal",
-        "Valid work passes triggering mandatory EPF: Employment Pass, Work Permit, Professional Visit Pass, Residence Pass-Talent",
-        "Domestic worker exclusion is in the Third Schedule of the Employees Provident Fund Act 1991"
-      ],
-      "dependencies": [
-        "Implement Foreign Worker EPF Mandatory Contribution (Effective October 2025)"
-      ],
-      "estimatedComplexity": "small",
-      "source": "https://www.kwsp.gov.my/en/employer/responsibilities/non-malaysian-citizen-employees"
-    },
-    {
-      "title": "Implement Year-End Payslip BIK-to-EA Form Reconciliation Check Before EA Form Generation",
+      "title": "TP1(1/2026): Capture New Domestic Tourism Attraction Expenses Relief (RM1,000) in Employee PCB Declaration",
       "priority": "medium",
-      "description": "The annual EA Form must declare the total monetary value of Benefits-in-Kind received by each employee, which should equal the sum of monthly BIK amounts computed on payslips throughout the year. Discrepancies arise when mid-year vehicle changes occur, the valuation method switches between prescribed and formula, or manual overrides are applied on individual months. A pre-EA Form generation reconciliation check is needed to catch and resolve mismatches before EA Forms are distributed or filed.",
+      "description": "Malaysia Budget 2026 introduced a brand-new individual income tax relief category in the TP1(1/2026) form: expenses for entrance fees to local tourist attractions and art/cultural programmes conducted within Malaysia, capped at RM1,000 per year of assessment. This category has never appeared in any prior TP1 form. The PCB engine must add this as a new deductible item when employees declare it on their TP1(1/2026) relief form. While the generic 'Update TP1(1/2026) Relief Categories' story addresses the budget's general TP1 changes, domestic tourism is an entirely new relief code with no prior-year equivalent requiring discrete field mapping, validation, and PCB computation integration.",
       "acceptanceCriteria": [
-        "Year-end BIK reconciliation report shows per employee: sum of monthly payslip BIK amounts vs EA Form BIK computation, with a variance column",
-        "Discrepancies above RM0.01 are flagged with the specific month of divergence and the likely cause (e.g., method switch, vehicle change, manual override)",
-        "Report can be run at any point during the year — not only at year-end — for ongoing BIK accuracy monitoring",
-        "EA Form generation is blocked (or displays a prominent warning) for any employee with an unresolved BIK reconciliation discrepancy",
-        "HR can mark a discrepancy as 'Reviewed and Accepted' with a mandatory reason note, which removes the EA Form generation block for that employee"
+        "TP1 Declaration form adds field: `domestic_tourism_expenses` (Currency, label: 'Entrance fees to local tourist attractions / art & cultural programmes in Malaysia')",
+        "PCB calculation deducts declared `domestic_tourism_expenses` (capped at RM1,000) from chargeable income when computing monthly MTD",
+        "Field only available in TP1(1/2026) form — not retroactively applied to prior-year TP1 records",
+        "Validation: amount cannot exceed RM1,000; system shows 'Maximum RM1,000 for YA2026 domestic tourism relief' if exceeded",
+        "Year-end PCB reconciliation report shows domestic tourism relief declared per employee",
+        "This field is absent from TP3(1/2026) — domestic tourism is a current-employer TP1 item, not a prior-employer YTD income item"
       ],
       "technicalNotes": [
-        "BIK monthly amounts are stored as a custom salary component on Salary Slip",
-        "Sources of discrepancy: prescribed vs formula method switch mid-year, vehicle replacement, retrospective Salary Slip corrections, or manual amount overrides",
-        "LHDN Public Ruling 11/2019 governs BIK valuation methodology: http://lampiran1.hasil.gov.my/pdf/pdfam/PR_11_2019.pdf",
-        "This check is an extension of the existing BIK calculation module and EA Form generation feature"
-      ],
-      "dependencies": [
-        "Implement Benefits-in-Kind (BIK) Prescribed Value Calculation Module",
-        "Rebuild EA Form to Include All Mandatory LHDN Section A/B/C/D Fields"
-      ],
-      "estimatedComplexity": "medium",
-      "source": "http://lampiran1.hasil.gov.my/pdf/pdfam/PR_11_2019.pdf"
-    },
-    {
-      "title": "Classify Employer-Sponsored Elderly Care Benefit for BIK and Budget 2026 Tax Deduction Recording",
-      "priority": "low",
-      "description": "Budget 2026 introduced a new employer tax deduction for companies providing elderly care services for employees' aged parents (e.g., day care centres, home care, rehabilitation). From the employee's perspective, this benefit may be a taxable perquisite (cash) under S.13(1)(a) or a BIK (in-kind payment to care provider) under S.13(1)(b). The payroll system must correctly classify the payment type and apply the appropriate income treatment to determine PCB inclusion and EA Form reporting.",
-      "acceptanceCriteria": [
-        "Salary component type 'Employer Elderly Care Provision' is available with a classification radio: 'Cash to Employee (S.13(1)(a))' vs 'In-Kind Direct to Provider (S.13(1)(b) BIK)'",
-        "When classified as Cash to Employee, the amount is included in the PCB computation base as employment income",
-        "When classified as In-Kind, the benefit is assessed as BIK at actual cost or LHDN prescribed value and disclosed on EA Form under the BIK section",
-        "EA Form correctly reports elderly care BIK value under the appropriate section (B or C) without double-counting as cash income",
-        "System displays a note on the component configuration: 'Confirm treatment with LHDN private ruling if benefit structure is novel — Finance Act 2026 exact provisions to be verified'"
-      ],
-      "technicalNotes": [
-        "Budget 2026 employer deduction for elderly care provision — confirm exact gazette/Finance Act 2026 wording before implementing as a hard exemption",
-        "KPMG Budget 2026 summary: https://kpmg.com/xx/en/our-insights/gms-flash-alert/flash-alert-2025-207.html",
-        "Cash vs in-kind distinction follows the general S.13(1)(a)/S.13(1)(b) income classification principle under the Income Tax Act 1967",
-        "Store component amount and classification in PCB audit trail for annual EA Form cross-check"
-      ],
-      "dependencies": [
-        "Implement Benefits-in-Kind (BIK) Prescribed Value Calculation Module"
-      ],
-      "estimatedComplexity": "small",
-      "source": "https://kpmg.com/xx/en/our-insights/gms-flash-alert/flash-alert-2025-207.html"
-    },
-    {
-      "title": "Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyTax (Mandatory from 2026)",
-      "priority": "high",
-      "description": "From 1 January 2026, the Stamp Duty Self-Assessment System (SAS) mandates that all employment contracts be stamped within 30 days of signing via the new e-Duti Setem portal on MyTax. The old STAMPS portal closed on 31 December 2025. Employment contracts are subject to a fixed RM10 stamp duty under Item 4, First Schedule of the Stamp Act 1949. The Finance Bill 2025 increased the exemption threshold to RM3,000/month (contracts for employees earning RM3,000/month or less are stamp duty exempt from 1 January 2026). LHDN will conduct widespread audits covering instruments from 2022–2024. Payroll systems must flag newly-signed contracts requiring stamping and track stamping status to ensure audit readiness.",
-      "acceptanceCriteria": [
-        "Employee master has an 'Employment Contract' section with: contract signing date, gross monthly salary at time of signing, stamp duty exemption flag (auto-set to true if salary ≤ RM3,000), e-Duti Setem stamp reference number, and stamping date",
-        "When a new employment contract is recorded with gross salary > RM3,000/month and no stamping reference is set within 30 days of contract date, a compliance alert is sent to HR Manager",
-        "A 'Contracts Pending Stamping' report lists all employees with unsigned/unstamped contracts within the 30-day window",
-        "Contracts dated 1 January 2025–31 December 2025 that were stamped by 31 December 2025 are correctly flagged as compliant with no penalty",
-        "Contracts for employees earning ≤ RM3,000/month are auto-marked as exempt and excluded from stamp duty tracking"
-      ],
-      "technicalNotes": [
-        "Stamp Duty SAS effective date: 1 January 2026 — e-Duti Setem via MyTax portal (mytax.hasil.gov.my)",
-        "Fixed stamp duty: RM10 per contract under Item 4, First Schedule of the Stamp Act 1949",
-        "Late stamping penalties: 31–90 days = RM50 or 10% (whichever is higher); >90 days = RM100 or 20% (whichever is higher)",
-        "2026 grace year: LHDN will not impose penalties for late stamping on applications submitted 1 January–31 December 2026",
-        "Exemption threshold raised from RM300 to RM3,000/month effective 1 January 2026 by Finance Bill 2025",
-        "Crowe Malaysia guide: https://www.crowe.com/my/insights/redefining-compliance---stamp-duty-under-malaysias-self-assessment-regime"
+        "From LHDN TP1(1/2026) explanatory notes: new relief for 'Entrance fees to local tourist attractions and art/cultural programmes within Malaysia'",
+        "Maximum: RM1,000 per year of assessment (YA2026 only — no retroactive application)",
+        "Source form: https://www.hasil.gov.my/media/gjuhcbc2/bi-tp1-form-2026.pdf",
+        "Explanatory notes: https://www.hasil.gov.my/media/i1lcd0wn/bi-explanatory-notes-for-from-tp1-2026.pdf",
+        "Confirmed also by briohr.com YA2026 update: 'New Reliefs: Domestic Tourism Expenses — Entrance fees to local tourist attractions — Relief cap: RM1,000'"
       ],
       "dependencies": [],
-      "estimatedComplexity": "medium",
-      "source": "https://www.centralhr.my/employment-contract-stamping-in-malaysia-what-employers-need-to-know/"
-    },
-    {
-      "title": "Implement EPF i-Topup Voluntary Excess Contribution Payroll Deduction and Remittance Module",
-      "priority": "medium",
-      "description": "EPF's i-Topup scheme (rebranded and formalised under the 2026 EPF enhancements) allows employees and/or employers to voluntarily contribute amounts above the statutory EPF rate. Employees submit KWSP Form 17A/18A(AHL) to their employer who then deducts the additional amount from payroll and remits it to EPF via i-Akaun Employer. This is separate from mandatory EPF and distinct from i-Saraan (self-employed voluntary contributions). The i-Topup amounts must be captured on payslips and included in the EPF submission file as a separate line from mandatory contributions.",
-      "acceptanceCriteria": [
-        "Employee master has an 'EPF i-Topup' section where the additional voluntary amount per month (either a fixed amount or percentage) can be entered along with the application form reference (KWSP 17A/18A)",
-        "Monthly payslip shows mandatory EPF and i-Topup EPF as two separate deduction lines",
-        "EPF i-Akaun upload file distinguishes mandatory contribution from i-Topup excess contribution in the relevant file fields",
-        "Total voluntary EPF contributions (i-Topup) across all employees are capped at RM100,000 per employee per year — a warning is raised when the YTD i-Topup approaches this ceiling",
-        "When an employee withdraws their i-Topup election, the additional deduction ceases from the following payroll run"
-      ],
-      "technicalNotes": [
-        "EPF i-Topup official page: https://www.kwsp.gov.my/en/member/savings/voluntary-excess",
-        "Either the employee share, employer share, or both may be contributed above the statutory rate",
-        "The employer's own i-Topup share (if applicable) is a company expense — not deducted from employee salary",
-        "i-Topup is distinct from the mandatory 11%/12%/13% statutory contribution and must appear as a separate record in the EPF submission",
-        "EPF 2026 updates page: https://www.ajobthing.com/resources/blog/epf-kwsp-new-updates-in-january-2026-for-employers-hr-in-malaysia"
-      ],
-      "dependencies": [
-        "Generate EPF i-Akaun Electronic Upload File",
-        "Update EPF i-Akaun Employer Contribution CSV Upload Format for Three-Account (75/15/10) Allocation"
-      ],
-      "estimatedComplexity": "medium",
-      "source": "https://www.kwsp.gov.my/en/member/savings/voluntary-excess"
-    },
-    {
-      "title": "Implement Gig Worker i-Saraan Plus EPF Contribution Deduction for Platform Providers",
-      "priority": "medium",
-      "description": "EPF launched i-Saraan Plus effective 1 January 2026 specifically for e-hailing and p-hailing drivers. Platform providers (e.g., Grab, foodpanda, Lalamove) must facilitate EPF membership registration and voluntary contribution deductions for their gig workers at rates chosen by the workers. The government provides a 20% matching incentive up to RM600/year (lifetime cap RM6,000). Platform providers acting as payroll intermediaries must deduct and remit contributions monthly and ensure EPF registration is completed for each driver. ERPNext implementations for ride-hailing or delivery platform operators require a dedicated i-Saraan Plus deduction engine separate from standard employer EPF contributions.",
-      "acceptanceCriteria": [
-        "Worker category 'Platform Gig Worker (i-Saraan Plus)' is available in the system with EPF membership registration fields",
-        "Workers can specify their monthly i-Saraan Plus contribution amount (flexible, driver-chosen rate)",
-        "Monthly contribution deduction is computed, reflected on the earnings statement, and included in EPF remittance",
-        "EPF upload file includes i-Saraan Plus contributions coded under the correct EPF scheme identifier (separate from mandatory employer contribution)",
-        "A YTD tracker shows each worker's total i-Saraan Plus contribution for the calendar year against the RM3,000 threshold for maximum RM600 government incentive"
-      ],
-      "technicalNotes": [
-        "i-Saraan Plus is for e-hailing and p-hailing drivers only — separate from the regular i-Saraan (general self-employed) scheme",
-        "Government matching: 20% of total annual voluntary contribution, max RM600/year, lifetime cap RM6,000 — EPF handles the government top-up, not the employer",
-        "EPF i-Saraan Plus official page: https://www.kwsp.gov.my/en/member/savings/i-saraan-plus",
-        "Intersects with Gig Workers Act 2025 (Act 872) platform provider obligations — coordinate with the SOCSO deduction engine story",
-        "Malay Mail Budget 2026 announcement: https://www.malaymail.com/news/malaysia/2025/10/10/budget-2026-gig-workers-to-get-up-to-rm600-a-year-in-epf-matching-under-new-i-saraan-plus-scheme/194145"
-      ],
-      "dependencies": [
-        "Build Platform SOCSO Deduction Engine Skeleton for Gig Workers Act 2025 (Act 872)"
-      ],
-      "estimatedComplexity": "medium",
-      "source": "https://www.kwsp.gov.my/en/member/savings/i-saraan-plus"
-    },
-    {
-      "title": "Enforce PDPA 2024 Amendment Payroll Data Breach Notification and DPO Registration Compliance",
-      "priority": "high",
-      "description": "The Personal Data Protection (Amendment) Act 2024 (effective 1 June 2025) mandates that organisations handling employee personal data (payroll processors included) must: (1) appoint a registered Data Protection Officer (DPO); (2) report any personal data breach to the Commissioner within 72 hours of discovery; (3) notify affected data subjects as soon as practicable; and (4) ensure third-party payroll processors implement adequate technical/organisational security controls. Penalties for non-compliance are up to RM1 million per offence. Payroll systems storing payslip data, NRIC, bank account numbers, salary history, and statutory IDs are high-risk personal data stores.",
-      "acceptanceCriteria": [
-        "LHDN/HR Settings has a 'Data Protection' section storing the registered DPO name, DPO PDPA registration number, and DPO appointment date",
-        "A 'Data Breach Incident Log' DocType is available allowing HR to record a breach event with: discovery timestamp, affected employee count, data categories exposed, and 72-hour notification deadline (auto-calculated)",
-        "System displays a prominent warning when a breach is logged but the Commissioner notification deadline has not been met",
-        "Payroll data export and report views require an audit log entry capturing who accessed the report, at what time, and the employee records included",
-        "A PDPA compliance checklist is available under the Statutory Onboarding module showing DPO status, breach log completeness, and last security review date"
-      ],
-      "technicalNotes": [
-        "PDPA 2024 Amendment Act A1727: https://www.pdp.gov.my/ppdpv1/wp-content/uploads/2024/11/Act-A1727.pdf",
-        "DPO registration is with the Personal Data Protection Commissioner — not an internal HR designation only",
-        "72-hour notification clock starts from when the organisation 'becomes aware' of a breach, not from discovery by IT",
-        "Payroll data classification: salary amount, NRIC, bank account = sensitive personal data requiring highest protection tier",
-        "ASEAN Briefing PDPA June 2025 enforcement update: https://www.aseanbriefing.com/news/malaysia-tightens-data-protection-from-june-2025/"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "medium",
-      "source": "https://www.pdp.gov.my/ppdpv1/en/akta/personal-data-protection-amendment-act-2024/"
-    },
-    {
-      "title": "Mid-Year Tax Residency Status Change Workflow — Switch Between Resident and Non-Resident PCB Rates",
-      "priority": "high",
-      "description": "An employee who becomes non-resident mid-year (leaves Malaysia, drops below 182 days) or conversely achieves residency mid-year triggers a PCB rate switch. Non-residents pay a flat 30% on all employment income with no personal reliefs. Residents use the progressive rate scale with reliefs. When an employee's residency status changes, all prior-month PCB amounts for the current year must be reviewed and the remaining months must use the new rate. LHDN requires the employer to adjust withholding prospectively from the month of status change. If the employee becomes non-resident, the employer must also withdraw all TP1 relief applications for that year.",
-      "acceptanceCriteria": [
-        "Employee master has a 'Tax Residency Status' field (Resident / Non-Resident / Pending Determination) with effective date",
-        "When status is changed to Non-Resident with an effective date, PCB for all subsequent months uses the 30% flat rate; all TP1 reliefs are suspended for that year",
-        "A residency change event is logged in the PCB audit trail with the effective date, previous status, new status, and the HR user who made the change",
-        "When Non-Resident status is set, the system generates a warning: 'Prior-month PCB for this year should be reviewed — non-resident rate is not retroactively applied by the employer; advise employee to seek LHDN guidance for year-end reconciliation'",
-        "Re-setting status back to Resident re-enables TP1 reliefs from the effective date with a warning noting that LHDN approval may be required for the mid-year switch back"
-      ],
-      "technicalNotes": [
-        "LHDN Tax Treatment for Residents & Non-Residents: https://www.hasil.gov.my/media/if4noy3t/tax-treatment-residents-non-residents.pdf",
-        "Residency determination is based on physical presence in Malaysia: 182 days rule under S.7 of the Income Tax Act 1967",
-        "Special rules exist for day-counting across calendar year boundaries (S.7(1)(b) and S.7(1)(c))",
-        "Flat 30% non-resident rate applies to ALL employment income including bonus and BIK — no exemptions for personal relief",
-        "PCB Computation Specification 2025: https://www.hasil.gov.my/media/mdahzjwi/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2025.pdf"
-      ],
-      "dependencies": [
-        "Implement PCB Change Audit Trail DocType",
-        "Implement TP1 Employee Relief Declaration DocType and PCB Integration"
-      ],
-      "estimatedComplexity": "medium",
-      "source": "https://www.hasil.gov.my/en/individual/individual-life-cycle/income-declaration/non-resident/"
-    },
-    {
-      "title": "Add Life/Medical Insurance Relief Extension to Children on TP1 Form for YA2026",
-      "priority": "high",
-      "description": "Budget 2026 expanded two existing income tax reliefs to cover children in addition to self and spouse: (1) Life insurance and takaful premium relief (previously RM3,000 for self and spouse) now includes premiums on policies contracted for the lives of children; and (2) Education and medical insurance premium relief (previously RM4,000 for self and spouse) now also covers children. Both reliefs retain their existing aggregate ceilings. Since these are TP1-declarable reliefs that reduce monthly PCB, the TP1(1/2026) form and the PCB computation engine must be updated to capture the child insurance premium sub-category before January 2026 payroll.",
-      "acceptanceCriteria": [
-        "TP1 entry form has a sub-field under Life Insurance/Takaful Relief for 'Child Life/Takaful Premium' with an aggregate ceiling check against the combined RM3,000 limit for self + spouse + children",
-        "TP1 entry form has a sub-field under Education & Medical Insurance Relief for 'Child Education/Medical Insurance Premium' with an aggregate ceiling check against the combined RM4,000 limit",
-        "PCB computation correctly reduces chargeable income by the declared child insurance premiums up to the respective ceilings",
-        "Validation prevents the combined (self + spouse + child) insurance relief from exceeding the statutory cap even if individual sub-entries are below the cap",
-        "Historical YA2025 and earlier TP1 records do not show child insurance fields — the sub-fields are gated by assessment year"
-      ],
-      "technicalNotes": [
-        "Budget 2026 tax measures appendix (official): https://belanjawan.mof.gov.my/pdf/belanjawan2026/ucapan/tax-measures.pdf",
-        "Life insurance/takaful relief: RM3,000 aggregate for self + spouse + children (effective YA2026)",
-        "Education and medical insurance relief: RM4,000 aggregate for self + spouse + children (effective YA2026)",
-        "This story is a sub-task of 'Update TP1(1/2026) Relief Categories and PCB Computation Engine for YA2026 Budget Changes' but warranted as a separate story due to the relief mechanics requiring aggregate ceiling logic across multiple sub-categories",
-        "LHDN official PCB computation spec 2026: https://www.hasil.gov.my/media/arvlrzh5/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2026.pdf"
-      ],
-      "dependencies": [
-        "Update TP1(1/2026) Relief Categories and PCB Computation Engine for YA2026 Budget Changes",
-        "Implement TP1 Employee Relief Declaration DocType and PCB Integration"
-      ],
       "estimatedComplexity": "small",
-      "source": "https://belanjawan.mof.gov.my/pdf/belanjawan2026/ucapan/tax-measures.pdf"
-    },
-    {
-      "title": "Record HRD Corp eTRIS Training Claim Events and Levy Balance Against Payroll Records",
-      "priority": "low",
-      "description": "HRD Corp (formerly HRDF) requires mandatory levy payment of 1% of monthly wages (0.5% for voluntary 5–9 employee SMEs) via the eTRIS portal by the 15th of each month. Employers can claim back training costs via the SBL or SBL-Khas scheme. The existing HRD Corp levy validation story covers the contribution rate. This story adds the training claims management layer: recording approved training events, claim amounts, and levy account balance in the payroll system so employers can monitor available claim balances versus remaining levy to avoid levy waste or over-spending.",
-      "acceptanceCriteria": [
-        "A 'HRD Corp Training Claim' DocType is available with fields: training provider name, course title, training dates, employee(s) attended, claim scheme (SBL / SBL-Khas), claim amount submitted, HRD Corp approval status, and approved reimbursement amount",
-        "The HRD Corp levy account balance is tracked monthly: opening balance + levy paid − claims approved = closing balance",
-        "A 'HRD Corp Levy Utilisation Report' shows YTD levy paid vs YTD claims approved vs remaining claimable balance per company",
-        "When a training claim is approved, the approved amount reduces the running levy balance on the report",
-        "A warning is raised if the annual claim utilisation rate is below 60% of total levy paid (prompting HR to use levy before expiry)"
-      ],
-      "technicalNotes": [
-        "eTRIS portal: https://hrdcorp.gov.my — levy and claims are managed through this portal; system stores a mirror of claim events",
-        "Levy calculation base: basic wages + fixed allowances + commissions (excluding OT, bonus, gratuity, retirement benefits)",
-        "SBL-Khas: HRD Corp pays the training provider directly — no employer upfront payment; SBL: employer pays first then claims reimbursement",
-        "Claim submission deadline: within 30 days after training ends (per current HRD Corp guidelines)",
-        "HRD Corp employer FAQ: https://hrdcorp.gov.my/faq"
-      ],
-      "dependencies": [
-        "Validate HRDF Levy Rate 1% Mandatory for Eligible Employers and Generate Monthly Contribution Schedule"
-      ],
-      "estimatedComplexity": "medium",
-      "source": "https://hrdcorp.gov.my/faq"
-    },
-    {
-      "title": "Generate SOCSO ASSIST Portal Monthly Contribution File in e-Caruman Upload Format",
-      "priority": "high",
-      "description": "PERKESO requires employers to submit SOCSO and EIS contributions monthly via the ASSIST portal by the 15th of the following month. The ASSIST portal accepts an e-Caruman upload file (a specific CSV/text format containing employer registration number, employee NRIC/passport, wages, and contribution amounts for both SOCSO and EIS in a single file). This story covers generating the exact ASSIST-compatible upload file from the payroll run, replacing manual keying. The October 2024 contribution table changes (wage ceiling RM6,000) must be reflected in the generated amounts.",
-      "acceptanceCriteria": [
-        "A 'Generate SOCSO/EIS ASSIST Upload' button is available on the monthly payroll period close action",
-        "The generated file follows the PERKESO e-Caruman file specification: employer code, month/year, employee NRIC/passport, wage bracket, employer SOCSO amount, employee SOCSO amount, employer EIS amount, employee EIS amount per row",
-        "Employee wages above RM6,000 are capped at RM6,000 for contribution calculation purposes (post-October 2024 ceiling)",
-        "Foreign workers are included in the file with SOCSO Invalidity Scheme (0.5% employee share) and Employment Injury Scheme (1.25% employer share only) correctly coded",
-        "File can be downloaded as a validated text file ready for direct upload to the PERKESO ASSIST portal with no manual reformatting"
-      ],
-      "technicalNotes": [
-        "PERKESO ASSIST portal: https://assist.perkeso.gov.my",
-        "SOCSO/EIS wage ceiling increased from RM5,000 to RM6,000 effective 1 October 2024 (6-month grace period to 31 March 2025)",
-        "Foreign workers: SOCSO covered for Employment Injury Scheme since July 2024 and Invalidity Scheme for both employer and employee shares",
-        "e-Caruman file format specification available from PERKESO employer portal — verify field positions and delimiters before implementation",
-        "Crowe Malaysia SOCSO/EIS changes guide: https://www.crowe.com/my/insights/new-socso-and-eis-changes-effective-october-2024---key-updates-for-employers"
-      ],
-      "dependencies": [
-        "Implement SOCSO and EIS e-Caruman Upload File Generation"
-      ],
-      "estimatedComplexity": "medium",
-      "source": "https://assist.perkeso.gov.my"
+      "source": "https://www.hasil.gov.my/media/i1lcd0wn/bi-explanatory-notes-for-from-tp1-2026.pdf"
     }
   ]
 }

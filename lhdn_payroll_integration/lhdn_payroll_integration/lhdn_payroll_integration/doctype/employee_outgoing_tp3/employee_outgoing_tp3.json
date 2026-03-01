@@ -1,0 +1,237 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "employee",
+  "employee_name",
+  "company",
+  "tax_year",
+  "column_break_1",
+  "last_working_date",
+  "employee_nric",
+  "employee_tax_file_number",
+  "status",
+  "section_employer",
+  "employer_name",
+  "employer_tin",
+  "section_ytd_income",
+  "ytd_basic_salary",
+  "ytd_gross_allowances",
+  "ytd_bik_value",
+  "column_break_ytd",
+  "ytd_epf_employee",
+  "ytd_socso",
+  "ytd_eis",
+  "ytd_zakat",
+  "ytd_cp38",
+  "ytd_pcb",
+  "section_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "LHDN-TP3-OUT-.YYYY.-"
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tax_year",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Tax Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_working_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Last Working Date",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.custom_nric_passport_no",
+   "fieldname": "employee_nric",
+   "fieldtype": "Data",
+   "label": "Employee NRIC / Passport"
+  },
+  {
+   "fetch_from": "employee.custom_employee_tax_file_number",
+   "fieldname": "employee_tax_file_number",
+   "fieldtype": "Data",
+   "label": "Employee Tax File Number"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nGenerated\nEmailed"
+  },
+  {
+   "fieldname": "section_employer",
+   "fieldtype": "Section Break",
+   "label": "Employer Details"
+  },
+  {
+   "fieldname": "employer_name",
+   "fieldtype": "Data",
+   "label": "Employer Name"
+  },
+  {
+   "fieldname": "employer_tin",
+   "fieldtype": "Data",
+   "label": "Employer TIN (Tax Reference)"
+  },
+  {
+   "fieldname": "section_ytd_income",
+   "fieldtype": "Section Break",
+   "label": "YTD Income & Deductions (RM)"
+  },
+  {
+   "default": "0",
+   "fieldname": "ytd_basic_salary",
+   "fieldtype": "Currency",
+   "label": "YTD Basic Salary (RM)"
+  },
+  {
+   "default": "0",
+   "fieldname": "ytd_gross_allowances",
+   "fieldtype": "Currency",
+   "label": "YTD Gross Allowances (RM)"
+  },
+  {
+   "default": "0",
+   "fieldname": "ytd_bik_value",
+   "fieldtype": "Currency",
+   "label": "YTD BIK Value (RM)"
+  },
+  {
+   "fieldname": "column_break_ytd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "ytd_epf_employee",
+   "fieldtype": "Currency",
+   "label": "YTD EPF Employee Contribution (RM)"
+  },
+  {
+   "default": "0",
+   "fieldname": "ytd_socso",
+   "fieldtype": "Currency",
+   "label": "YTD SOCSO (RM)"
+  },
+  {
+   "default": "0",
+   "fieldname": "ytd_eis",
+   "fieldtype": "Currency",
+   "label": "YTD EIS (RM)"
+  },
+  {
+   "default": "0",
+   "fieldname": "ytd_zakat",
+   "fieldtype": "Currency",
+   "label": "YTD Zakat Deducted (RM)"
+  },
+  {
+   "default": "0",
+   "fieldname": "ytd_cp38",
+   "fieldtype": "Currency",
+   "label": "YTD CP38 Deducted (RM)"
+  },
+  {
+   "default": "0",
+   "fieldname": "ytd_pcb",
+   "fieldtype": "Currency",
+   "label": "YTD PCB Deducted (RM)"
+  },
+  {
+   "fieldname": "section_notes",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LHDN Payroll Integration",
+ "name": "Employee Outgoing TP3",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "HR User"
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "employee_name",
+ "track_changes": 1
+}

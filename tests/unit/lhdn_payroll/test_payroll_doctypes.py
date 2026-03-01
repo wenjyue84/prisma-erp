@@ -66,8 +66,8 @@ class TestSalarySlipCustomFields(ERPNextTestCase):
 
     def _get_custom_field_names(self) -> list[str]:
         """Get all custom field names on Salary Slip via Custom Field doctype."""
-        resp = self.session.resource(
-            "Custom Field",
+        resp = self.session.get(
+            "/api/resource/Custom Field",
             params={
                 "filters": '[["dt","=","Salary Slip"]]',
                 "fields": '["fieldname"]',
@@ -81,8 +81,8 @@ class TestSalarySlipCustomFields(ERPNextTestCase):
 
     def test_lp06_salary_slip_meta_accessible(self):
         """LP-06: Salary Slip custom fields are queryable via REST."""
-        resp = self.session.resource(
-            "Custom Field",
+        resp = self.session.get(
+            "/api/resource/Custom Field",
             params={
                 "filters": '[["dt","=","Salary Slip"]]',
                 "fields": '["fieldname"]',

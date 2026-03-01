@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Prisma ERP Test Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; font-weight: 700; }
+  .card { background: #1e293b; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  details summary::-webkit-details-marker { display: none; }
+</style>
+</head>
+<body>
+
+<div class="card" style="display:flex;justify-content:space-between;align-items:center">
+  <div>
+    <h1>🧪 Prisma ERP Test Report</h1>
+    <p style="color:#64748b;font-size:13px;margin-top:4px">Generated 2026-03-01T03:46:30.675271+00:00</p>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:32px;font-weight:800;color:#22c55e">100.0%</div>
+    <div style="color:#64748b;font-size:12px">pass rate</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#e2e8f0">8</div>
+    <div style="color:#64748b;font-size:12px">Total</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#22c55e">8</div>
+    <div style="color:#64748b;font-size:12px">Passed</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#ef4444">0</div>
+    <div style="color:#64748b;font-size:12px">Failed</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#f97316">0</div>
+    <div style="color:#64748b;font-size:12px">Errors</div>
+  </div>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr style="border-bottom:2px solid #334155">
+        <th style="padding:8px 12px;text-align:left;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:200px">Test ID</th>
+        <th style="padding:8px 12px;text-align:left;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase">Description</th>
+        <th style="padding:8px 12px;text-align:right;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:100px">Duration</th>
+        <th style="padding:8px 12px;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:80px">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr style="background:#1e293b;">
+          <td colspan="4" style="padding:8px 12px;font-weight:700;color:#94a3b8;font-size:12px;letter-spacing:.5px;text-transform:uppercase">
+            SECURITY:RBAC &nbsp; (8/8 passed)
+          </td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_rbac01_guest_cannot_access_system_settings</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_rbac01_guest_cannot_access_system_settings</div>
+            <div style="color:#64748b;font-size:11px">RBAC-01: Guest/anonymous user cannot read System Settings.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">56.81 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_rbac02_guest_cannot_list_users</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_rbac02_guest_cannot_list_users</div>
+            <div style="color:#64748b;font-size:11px">RBAC-02: Guest cannot list User doctype.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">21.99 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_rbac03_guest_cannot_access_error_log</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_rbac03_guest_cannot_access_error_log</div>
+            <div style="color:#64748b;font-size:11px">RBAC-03: Guest cannot read Error Log (sensitive system data).</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">38.31 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_rbac04_anon_cannot_read_salary_structure</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_rbac04_anon_cannot_read_salary_structure</div>
+            <div style="color:#64748b;font-size:11px">RBAC-04: Anonymous user cannot access Salary Structure.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">18.99 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_rbac05_anon_cannot_read_payroll_entry</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_rbac05_anon_cannot_read_payroll_entry</div>
+            <div style="color:#64748b;font-size:11px">RBAC-05: Anonymous user cannot access Payroll Entry.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">43.87 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_rbac06_anon_cannot_read_lhdn_resubmission_log</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_rbac06_anon_cannot_read_lhdn_resubmission_log</div>
+            <div style="color:#64748b;font-size:11px">RBAC-06: Anonymous user cannot access LHDN Resubmission Log.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">21.43 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_rbac07_anon_cannot_call_resubmit_api</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_rbac07_anon_cannot_call_resubmit_api</div>
+            <div style="color:#64748b;font-size:11px">RBAC-07: Anonymous user cannot call resubmit_to_lhdn.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">18.89 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_rbac08_anon_cannot_call_bulk_submission</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_rbac08_anon_cannot_call_bulk_submission</div>
+            <div style="color:#64748b;font-size:11px">RBAC-08: Anonymous user cannot call bulk_enqueue_lhdn_submission.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">16.75 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="margin-top:12px;color:#475569;font-size:12px;text-align:center">
+  Prisma ERP Test Suite &mdash; Prisma ERP Test Suite
+</div>
+
+<script>
+  // Embed raw JSON for machine reading
+  window.testReport = {"suite": "Prisma ERP Test Suite", "generated_at": "2026-03-01T03:46:30.675271+00:00", "summary": {"total": 8, "passed": 8, "failed": 0, "errored": 0, "skipped": 0, "pass_rate": "100.0%"}, "categories": {"security:rbac": {"total": 8, "passed": 8, "failed": 0, "tests": [{"id": "tests.security.test_rbac.TestAdminOnlyEndpoints.test_rbac01_guest_cannot_access_system_settings", "name": "test_rbac01_guest_cannot_access_system_settings", "description": "RBAC-01: Guest/anonymous user cannot read System Settings.", "category": "security:rbac", "status": "PASS", "duration_ms": 56.81, "error": null}, {"id": "tests.security.test_rbac.TestAdminOnlyEndpoints.test_rbac02_guest_cannot_list_users", "name": "test_rbac02_guest_cannot_list_users", "description": "RBAC-02: Guest cannot list User doctype.", "category": "security:rbac", "status": "PASS", "duration_ms": 21.99, "error": null}, {"id": "tests.security.test_rbac.TestAdminOnlyEndpoints.test_rbac03_guest_cannot_access_error_log", "name": "test_rbac03_guest_cannot_access_error_log", "description": "RBAC-03: Guest cannot read Error Log (sensitive system data).", "category": "security:rbac", "status": "PASS", "duration_ms": 38.31, "error": null}, {"id": "tests.security.test_rbac.TestHRDataIsolation.test_rbac04_anon_cannot_read_salary_structure", "name": "test_rbac04_anon_cannot_read_salary_structure", "description": "RBAC-04: Anonymous user cannot access Salary Structure.", "category": "security:rbac", "status": "PASS", "duration_ms": 18.99, "error": null}, {"id": "tests.security.test_rbac.TestHRDataIsolation.test_rbac05_anon_cannot_read_payroll_entry", "name": "test_rbac05_anon_cannot_read_payroll_entry", "description": "RBAC-05: Anonymous user cannot access Payroll Entry.", "category": "security:rbac", "status": "PASS", "duration_ms": 43.87, "error": null}, {"id": "tests.security.test_rbac.TestHRDataIsolation.test_rbac06_anon_cannot_read_lhdn_resubmission_log", "name": "test_rbac06_anon_cannot_read_lhdn_resubmission_log", "description": "RBAC-06: Anonymous user cannot access LHDN Resubmission Log.", "category": "security:rbac", "status": "PASS", "duration_ms": 21.43, "error": null}, {"id": "tests.security.test_rbac.TestLHDNEndpointAccess.test_rbac07_anon_cannot_call_resubmit_api", "name": "test_rbac07_anon_cannot_call_resubmit_api", "description": "RBAC-07: Anonymous user cannot call resubmit_to_lhdn.", "category": "security:rbac", "status": "PASS", "duration_ms": 18.89, "error": null}, {"id": "tests.security.test_rbac.TestLHDNEndpointAccess.test_rbac08_anon_cannot_call_bulk_submission", "name": "test_rbac08_anon_cannot_call_bulk_submission", "description": "RBAC-08: Anonymous user cannot call bulk_enqueue_lhdn_submission.", "category": "security:rbac", "status": "PASS", "duration_ms": 16.75, "error": null}]}}, "all_results": [{"id": "tests.security.test_rbac.TestAdminOnlyEndpoints.test_rbac01_guest_cannot_access_system_settings", "name": "test_rbac01_guest_cannot_access_system_settings", "description": "RBAC-01: Guest/anonymous user cannot read System Settings.", "category": "security:rbac", "status": "PASS", "duration_ms": 56.81, "error": null}, {"id": "tests.security.test_rbac.TestAdminOnlyEndpoints.test_rbac02_guest_cannot_list_users", "name": "test_rbac02_guest_cannot_list_users", "description": "RBAC-02: Guest cannot list User doctype.", "category": "security:rbac", "status": "PASS", "duration_ms": 21.99, "error": null}, {"id": "tests.security.test_rbac.TestAdminOnlyEndpoints.test_rbac03_guest_cannot_access_error_log", "name": "test_rbac03_guest_cannot_access_error_log", "description": "RBAC-03: Guest cannot read Error Log (sensitive system data).", "category": "security:rbac", "status": "PASS", "duration_ms": 38.31, "error": null}, {"id": "tests.security.test_rbac.TestHRDataIsolation.test_rbac04_anon_cannot_read_salary_structure", "name": "test_rbac04_anon_cannot_read_salary_structure", "description": "RBAC-04: Anonymous user cannot access Salary Structure.", "category": "security:rbac", "status": "PASS", "duration_ms": 18.99, "error": null}, {"id": "tests.security.test_rbac.TestHRDataIsolation.test_rbac05_anon_cannot_read_payroll_entry", "name": "test_rbac05_anon_cannot_read_payroll_entry", "description": "RBAC-05: Anonymous user cannot access Payroll Entry.", "category": "security:rbac", "status": "PASS", "duration_ms": 43.87, "error": null}, {"id": "tests.security.test_rbac.TestHRDataIsolation.test_rbac06_anon_cannot_read_lhdn_resubmission_log", "name": "test_rbac06_anon_cannot_read_lhdn_resubmission_log", "description": "RBAC-06: Anonymous user cannot access LHDN Resubmission Log.", "category": "security:rbac", "status": "PASS", "duration_ms": 21.43, "error": null}, {"id": "tests.security.test_rbac.TestLHDNEndpointAccess.test_rbac07_anon_cannot_call_resubmit_api", "name": "test_rbac07_anon_cannot_call_resubmit_api", "description": "RBAC-07: Anonymous user cannot call resubmit_to_lhdn.", "category": "security:rbac", "status": "PASS", "duration_ms": 18.89, "error": null}, {"id": "tests.security.test_rbac.TestLHDNEndpointAccess.test_rbac08_anon_cannot_call_bulk_submission", "name": "test_rbac08_anon_cannot_call_bulk_submission", "description": "RBAC-08: Anonymous user cannot call bulk_enqueue_lhdn_submission.", "category": "security:rbac", "status": "PASS", "duration_ms": 16.75, "error": null}]};
+</script>
+</body>
+</html>

@@ -50,6 +50,7 @@ doc_events = {
 			"lhdn_payroll_integration.services.cp107_service.handle_foreign_employee_left",
 			"lhdn_payroll_integration.services.socso_service.handle_employee_termination_socso",
 			"lhdn_payroll_integration.services.spc_cessation_service.handle_employee_cessation_update",
+			"lhdn_payroll_integration.services.tp3_outgoing_service.handle_employee_left_tp3",
 		],
 		"after_insert": "lhdn_payroll_integration.services.socso_service.handle_new_employee_socso",
 	},

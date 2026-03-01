@@ -54,8 +54,10 @@ SUITES = {
     "unit:prisma_ai": "tests.unit.prisma_ai.test_chat_api",
     "unit:lhdn_payroll": "tests.unit.lhdn_payroll.test_payroll_doctypes",
     "integration": "tests.integration.test_workflows",
+    "integration:e2e": "tests.integration.test_payroll_e2e",
     "edge_cases": "tests.edge_cases.test_edge_cases",
     "security": "tests.security.test_security",
+    "security:rbac": "tests.security.test_rbac",
     "performance": "tests.performance.test_performance",
     "api_contract": "tests.api_contract.test_api_contract",
     "regression": "tests.regression.test_regression",
@@ -68,8 +70,10 @@ SUITE_ORDER = [
     "api_contract",
     "regression",
     "integration",
+    "integration:e2e",
     "edge_cases",
     "security",
+    "security:rbac",
     "performance",
 ]
 
@@ -80,8 +84,10 @@ SUITE_DESCRIPTIONS = {
     "api_contract": "API response schema validation for all endpoints",
     "regression": "Guards against previously-fixed bugs",
     "integration": "End-to-end payroll & AI chat workflows",
+    "integration:e2e": "E2E payroll lifecycle: employee → salary slip → LHDN submission",
     "edge_cases": "Boundary values, unusual inputs, corner cases",
     "security": "Auth enforcement, CSRF, injection attack prevention",
+    "security:rbac": "Role-based access control & data isolation",
     "performance": "Response time SLAs & concurrent load testing",
 }
 

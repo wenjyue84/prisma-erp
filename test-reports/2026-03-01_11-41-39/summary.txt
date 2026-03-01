@@ -1,0 +1,94 @@
+Prisma ERP Test Report — 2026-03-01_11-41-39
+URL: http://localhost:8080
+============================================================
+Total: 20  Pass: 15  Fail: 5  Error: 0  Skip: 0
+Pass rate: 75.0%
+
+FAILURES & ERRORS:
+
+  [FAIL] tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp07_custom_lhdn_status_field_exists
+  LP-07: custom_lhdn_status field exists on Salary Slip.
+  AssertionError: 'custom_lhdn_status' not found in ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''] : custom_lhdn_status missing. Found fields: []
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 58, in testPartExecutor
+    yield
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 651, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 606, in _callTestMethod
+    if method() is not None:
+       ~~~~~~^^
+      File "C:\Users\Jyue\Documents\1-projects\Projects\prisma-erp\tests\unit\lhdn_payroll\test_payroll_doctypes.py", line 99, in test_lp07_custom_lhdn_status_field_exists
+    self.assertIn("custom_lhdn_status", fields,
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  f"custom_lhdn_status missing. Found fields: "
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  f"{[f for f in fields if 'lhdn' in f.lower()]}")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  [FAIL] tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp08_custom_pcb_field_exists
+  LP-08: custom_pcb_amount or similar PCB field exists on Salary Slip.
+  AssertionError: False is not true : No PCB field on Salary Slip. Custom fields: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 58, in testPartExecutor
+    yield
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 651, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 606, in _callTestMethod
+    if method() is not None:
+       ~~~~~~^^
+      File "C:\Users\Jyue\Documents\1-projects\Projects\prisma-erp\tests\unit\lhdn_payroll\test_payroll_doctypes.py", line 109, in test_lp08_custom_pcb_field_exists
+    self.assertTrue(len(pcb_fields) > 0,
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+                    f"No PCB field on Salary Slip. Custom fields: {fields}")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  [FAIL] tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp09_epf_fields_exist
+  LP-09: EPF employee/employer fields exist on Salary Slip.
+  AssertionError: False is not true : Expected at least 2 EPF fields, got: []
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 58, in testPartExecutor
+    yield
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 651, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 606, in _callTestMethod
+    if method() is not None:
+       ~~~~~~^^
+      File "C:\Users\Jyue\Documents\1-projects\Projects\prisma-erp\tests\unit\lhdn_payroll\test_payroll_doctypes.py", line 118, in test_lp09_epf_fields_exist
+    self.assertTrue(len(epf_fields) >= 2,
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+                    f"Expected at least 2 EPF fields, got: {epf_fields}")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  [FAIL] tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp10_socso_fields_exist
+  LP-10: SOCSO employee/employer fields exist on Salary Slip.
+  AssertionError: False is not true : Expected at least 2 SOCSO fields, got: []
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 58, in testPartExecutor
+    yield
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 651, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 606, in _callTestMethod
+    if method() is not None:
+       ~~~~~~^^
+      File "C:\Users\Jyue\Documents\1-projects\Projects\prisma-erp\tests\unit\lhdn_payroll\test_payroll_doctypes.py", line 127, in test_lp10_socso_fields_exist
+    self.assertTrue(len(socso_fields) >= 2,
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+                    f"Expected at least 2 SOCSO fields, got: {socso_fields}")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  [FAIL] tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp11_eis_fields_exist
+  LP-11: EIS employee/employer fields exist on Salary Slip.
+  AssertionError: False is not true : Expected at least 1 EIS field, got: []
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 58, in testPartExecutor
+    yield
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 651, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+      File "C:\Users\Jyue\AppData\Roaming\uv\python\cpython-3.13.6-windows-x86_64-none\Lib\unittest\case.py", line 606, in _callTestMethod
+    if method() is not None:
+       ~~~~~~^^
+      File "C:\Users\Jyue\Documents\1-projects\Projects\prisma-erp\tests\unit\lhdn_payroll\test_payroll_doctypes.py", line 136, in test_lp11_eis_fields_exist
+    self.assertTrue(len(eis_fields) >= 1,
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+                    f"Expected at least 1 EIS field, got: {eis_fields}")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
