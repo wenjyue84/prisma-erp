@@ -182,5 +182,17 @@
     "custom_lhdn_classification_code": "022 : Others",
     "custom_is_gratuity_or_leave_encashment": 1,
     "custom_ea_section": "B5 Gratuity"
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "Private Retirement Scheme (PRS)",
+    "salary_component": "Private Retirement Scheme (PRS)",
+    "salary_component_abbr": "PRS",
+    "type": "Deduction",
+    "description": "Voluntary PRS contribution under Private Retirement Scheme Act 2012 (Act 739). Qualifies for RM3,000 annual tax relief. Separate bucket from EPF + life insurance (RM7,000 combined).",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": "",
+    "custom_is_prs_voluntary": 1
   }
 ]

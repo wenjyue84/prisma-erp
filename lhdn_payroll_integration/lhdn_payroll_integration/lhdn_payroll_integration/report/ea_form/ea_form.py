@@ -4,7 +4,8 @@ Full LHDN-prescribed Borang EA format (gazetted under P.U.(A) 107/2021) covering
 - Section A: Employer information (name, address, E-number, branch code)
 - Section B: Income breakdown — B1-B12 line items from Salary Component ea_section tagging
 - Section C: Statutory deductions — C1 EPF, C2 SOCSO, C3 EIS, C4 PCB, C5 Zakat
-- Section D: Tax position (PCB category)
+- Section D: Voluntary deductions — D1 PRS (Private Retirement Scheme)
+- Section E: Tax position (PCB category)
 
 Issuing an incomplete EA Form is a criminal offence under ITA Section 120(1)(b).
 """
@@ -145,10 +146,21 @@ def get_columns():
         }
     )
 
-    # Section D — Tax Position
+    # Section D — Voluntary Deductions (US-109: PRS)
     cols.append(
         {
-            "label": "D – PCB Category",
+            "label": "D1 – Private Retirement Scheme (PRS)",
+            "fieldname": "d1_prs",
+            "fieldtype": "Currency",
+            "options": "MYR",
+            "width": 220,
+        }
+    )
+
+    # Section E — Tax Position
+    cols.append(
+        {
+            "label": "E – PCB Category",
             "fieldname": "pcb_category",
             "fieldtype": "Data",
             "width": 120,
@@ -396,6 +408,7 @@ def get_data(filters=None):
             "c2_socso": _get_deduction_by_name(slip_names, "SOCSO"),
             "c3_eis":   _get_deduction_by_name(slip_names, "EIS"),
             "c4_pcb":  _get_deduction_by_flag(slip_names, "custom_is_pcb_component"),
+            "d1_prs":  _get_deduction_by_name(slip_names, "Private Retirement Scheme (PRS)"),
         }
 
     # ── Assemble final rows ──
@@ -475,7 +488,9 @@ def get_data(filters=None):
                     "c3_eis":   c3,
                     "c4_pcb":   c4,
                     "c5_zakat": c5,
-                    # Section D
+                    # Section D — Voluntary Deductions
+                    "d1_prs":   emp_deductions.get("d1_prs", 0.0),
+                    # Section E
                     "pcb_category": row.get("pcb_category") or "1",
                     # Backward-compat aliases (keep old field names working)
                     "total_gross":    b12,

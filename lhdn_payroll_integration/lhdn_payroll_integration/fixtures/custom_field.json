@@ -1827,5 +1827,49 @@
   "description": "Expiry date of the Kad OKU. An alert is raised 60 days before expiry to prompt renewal.",
   "module": "LHDN Payroll Integration",
   "insert_after": "custom_kad_oku_number"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-custom_prs_section",
+  "dt": "Employee",
+  "fieldname": "custom_prs_section",
+  "fieldtype": "Section Break",
+  "label": "Private Retirement Scheme (PRS)",
+  "module": "LHDN Payroll Integration",
+  "insert_after": "custom_kad_oku_expiry_date"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-custom_prs_provider_name",
+  "dt": "Employee",
+  "fieldname": "custom_prs_provider_name",
+  "fieldtype": "Data",
+  "label": "PRS Provider Name",
+  "description": "SC-approved Private Retirement Scheme provider (e.g. AmInvest, CIMB-Principal, Public Mutual).",
+  "module": "LHDN Payroll Integration",
+  "insert_after": "custom_prs_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-custom_prs_account_number",
+  "dt": "Employee",
+  "fieldname": "custom_prs_account_number",
+  "fieldtype": "Data",
+  "label": "PRS Account Number",
+  "description": "Employee's PRS member account number for contribution remittance.",
+  "module": "LHDN Payroll Integration",
+  "insert_after": "custom_prs_provider_name"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Salary Component-custom_is_prs_voluntary",
+  "dt": "Salary Component",
+  "fieldname": "custom_is_prs_voluntary",
+  "fieldtype": "Check",
+  "label": "Is PRS Voluntary Deduction",
+  "default": "0",
+  "description": "Check this for Private Retirement Scheme (PRS) voluntary deduction components.",
+  "module": "LHDN Payroll Integration",
+  "insert_after": "custom_is_epf_voluntary"
  }
 ]

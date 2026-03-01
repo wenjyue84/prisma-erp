@@ -1,3 +1,28 @@
+## Iteration N — US-207: FWCMS Foreign Worker Annual Levy Renewal Expiry Date Tracking and Advance Alert per Employee
+
+**Type:** IMPL
+**TDD Phase:** GREEN (71/71 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_fwcms_levy_renewal
+**Result:** PASS — 71 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/fwcms_levy_renewal_service.py` — Core service: get_sector_rate(), get_all_sector_rates(), get_days_until_expiry(), is_levy_expired(), classify_alert_tier() (90/60/30/14/expired), needs_critical_escalation() (receipt-aware), validate_renewal_record(), calculate_next_expiry() (PLKS-aware), record_levy_renewal() (DB update), get_noncompliant_workers_summary() (dashboard widget), get_workers_needing_alerts() (scheduler)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_fwcms_levy_renewal.py` — 71 tests across 11 classes: TestSectorRateConstants, TestGetSectorRate, TestGetDaysUntilExpiry, TestIsLevyExpired, TestClassifyAlertTier, TestNeedsCriticalEscalation, TestValidateRenewalRecord, TestCalculateNextExpiry, TestRecordLevyRenewal, TestGetNoncompliantWorkersSummary, TestGetWorkersNeedingAlerts
+
+### Patterns discovered
+- FWCMS sector rates: Manufacturing/Construction/Services = RM1,850/year; Plantation/Agriculture = RM640/year
+- Multi-tier levy increase of RM300-500 under deliberation — sector rate table is a simple dict for easy future updates
+- PLKS renewal duration varies per worker (not always 365 days) — calculate_next_expiry() accepts optional plks_duration_days
+- 4-tier alert system: 90 days (early warning), 60 days (action needed), 30 days (urgent), 14 days (critical escalation if no receipt)
+- Dashboard widget groups workers into expired / expiring_30 / expiring_60 buckets with counts
+- Existing fw_levy_service.py covers MTLM tier calculation (US-070/US-095); this new service is complementary for annual renewal tracking
+
+### Gotchas
+- Leap year calculation: 2026-03-01 + 730 days = 2028-02-29 (2028 is a leap year), not 2028-02-28
+- Custom fields use `custom_fwcms_*` prefix (distinct from existing `custom_fw_*` fields in fw_levy_service.py)
+
+---
+
 ## Iteration N — US-182: Gig Workers Act 2025 — SKSPS Per-Transaction Contribution Calculation and PERKESO Monthly Aggregate Remittance
 
 **Type:** IMPL
@@ -7801,4 +7826,5 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 
 ## Iteration 36 - Sun Mar  1 17:17:52 MPST 2026
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package (ID: US-211) — attempt 2/3
+
 
