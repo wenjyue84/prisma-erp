@@ -6841,3 +6841,25 @@ Incomplete: Enforce e-CP22 Online-Only Mandatory Submission and MyTax Employer R
 
 ### Gotchas
 - Both copies of utils/ must be updated: outer path and nested Frappe module path (standard for this project)
+
+
+## Iteration N — US-146: PCB Late Payment Surcharge Computation and Advance Warning (Section 107C ITA 1967)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 19 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_pcb_surcharge_service`
+**Result:** PASS — 19/19 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/doctype/lhdn_cp39_submission_log/lhdn_cp39_submission_log.json` — Added fields: `pcb_payment_due_date`, `pcb_payment_date`, `total_pcb_amount`, `is_late`, `estimated_surcharge`, `actual_surcharge_assessed`; added `Paid` and `Overdue` to status options
+- `lhdn_payroll_integration/services/pcb_surcharge_service.py` — New service: `compute_pcb_due_date`, `compute_surcharge`, `check_and_flag_overdue_submissions`, `send_pcb_deadline_alerts`, `record_late_payment`
+- `lhdn_payroll_integration/tests/test_pcb_surcharge_service.py` — 19 tests across 5 test classes
+
+### Patterns discovered
+- Migration failure on `tabCompany` (row too large — pre-existing issue from many custom Company fields) does NOT block CP39 DocType schema updates
+- New CP39 fields were applied successfully despite Company migration error
+- `check` bench tests confirm fields exist before running DocType-based tests
+
+### Gotchas
+- `bench migrate` shows `OperationalError: (1118, 'Row size too large')` on `tabCompany` — pre-existing, not caused by this story
+- Currency fields on CP39 table work fine (table has far fewer columns than Company)

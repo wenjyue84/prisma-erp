@@ -15,6 +15,14 @@
   "submission_datetime",
   "status",
   "employees_count",
+  "section_pcb_payment",
+  "pcb_payment_due_date",
+  "pcb_payment_date",
+  "total_pcb_amount",
+  "is_late",
+  "section_surcharge",
+  "estimated_surcharge",
+  "actual_surcharge_assessed",
   "section_response",
   "response_message"
  ],
@@ -63,13 +71,62 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Submitted\nFailed\nPending",
+   "options": "Submitted\nFailed\nPending\nPaid\nOverdue",
    "reqd": 1
   },
   {
    "fieldname": "employees_count",
    "fieldtype": "Int",
    "label": "Number of Employees"
+  },
+  {
+   "fieldname": "section_pcb_payment",
+   "fieldtype": "Section Break",
+   "label": "PCB Payment Tracking"
+  },
+  {
+   "fieldname": "pcb_payment_due_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "PCB Payment Due Date",
+   "description": "15th of the following month (ITA Section 107C). Adjusted if 15th falls on weekend/public holiday."
+  },
+  {
+   "fieldname": "pcb_payment_date",
+   "fieldtype": "Date",
+   "label": "Actual PCB Payment Date",
+   "description": "Date employer actually remitted PCB to LHDN."
+  },
+  {
+   "fieldname": "total_pcb_amount",
+   "fieldtype": "Currency",
+   "label": "Total PCB Amount (RM)",
+   "description": "Total PCB deducted for this submission period."
+  },
+  {
+   "fieldname": "is_late",
+   "fieldtype": "Check",
+   "label": "Late Payment",
+   "description": "Checked if payment date is after the due date or due date has passed without payment."
+  },
+  {
+   "fieldname": "section_surcharge",
+   "fieldtype": "Section Break",
+   "label": "Surcharge (Section 107C(9) ITA 1967)",
+   "depends_on": "eval:doc.is_late"
+  },
+  {
+   "fieldname": "estimated_surcharge",
+   "fieldtype": "Currency",
+   "label": "Estimated Surcharge (10%)",
+   "description": "System-computed: total_pcb_amount x 10% per Section 107C(9).",
+   "read_only": 1
+  },
+  {
+   "fieldname": "actual_surcharge_assessed",
+   "fieldtype": "Currency",
+   "label": "Actual Surcharge Assessed by LHDN (RM)",
+   "description": "LHDN-assessed surcharge amount (may differ from estimate). Enter after receiving LHDN notice."
   },
   {
    "fieldname": "section_response",
@@ -85,7 +142,7 @@
  "index_web_pages_for_search": 0,
  "is_submittable": 0,
  "links": [],
- "modified": "2026-02-28 00:00:00.000000",
+ "modified": "2026-03-01 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "LHDN Payroll Integration",
  "name": "LHDN CP39 Submission Log",
