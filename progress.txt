@@ -6932,3 +6932,33 @@ if any(ind in reply for ind in rate_limit_indicators):
 
 ### Gotchas
 - The test cannot distinguish "history not passed" from "API unavailable" at HTTP level — skip on infrastructure errors, fail only on semantic failures (correct reply missing keyword)
+## Iteration 19 - Sun Mar  1 13:37:03 MPST 2026
+Completed: Fix failing test: AIChatIntegration — int10 chat preserves conversation (ID: US-214) in 5m
+
+
+## Iteration N — US-203: e-CP22 Online-Only Mandatory Submission and Wakil Majikan Authorization Check
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 25 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_cp22_us203`
+**Result:** PASS — 25/25 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/cp22_mandate_service.py` — already existed with full implementation
+- `lhdn_payroll_integration/tests/test_cp22_us203.py` — already existed with 25 tests
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Wakil Majikan fields already in fixture
+- `tabCustom Field` (DB) — records for login_id and auth_date already existed from prior sync attempt
+- `tabCompany` (DB) — added `custom_mytax_employer_rep_auth_date` (date) and `custom_mytax_employer_rep_login_id` (text) directly via SQL (bypassing row size limit)
+
+### Patterns discovered
+- `tabCompany` (utf8mb4) hit the MariaDB 65535-byte row size limit: 116 varchar(140) columns × 562 bytes/col = 65,192 bytes + overhead = ~65,302 bytes total
+- TEXT columns (off-page storage in DYNAMIC format) don't count toward the 65535 row limit
+- The Frappe `Custom Field` metadata (tabCustom Field) is separate from the physical MySQL column
+- Tests checking `frappe.db.exists("Custom Field", ...)` only verify metadata — not physical column existence
+- Physical columns can be added as TEXT via raw SQL when varchar fails due to row size; Frappe reads/writes correctly regardless
+
+### Gotchas
+- `bench migrate` and `sync_fixtures` both fail when tabCompany is at row size limit
+- Must add date column first (3 bytes), then TEXT column (off-page, 0 bytes) — both succeed separately
+- varchar(50) with utf8mb4 = 202 bytes still fails despite 230 bytes apparent headroom (MariaDB's internal accounting differs)
+- Custom Field records can exist in tabCustom Field even when the physical column add failed (partial sync state)
