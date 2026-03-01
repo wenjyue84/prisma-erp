@@ -7155,3 +7155,27 @@ Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and
 **Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_stamps_employment_contract
 **Result:** PASS — 32/32 tests pass, 0 failures, 0 errors
 
+## Iteration 23 - Sun Mar  1 14:26:07 MPST 2026
+Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging (ID: US-210) — attempt 2/3
+
+
+## Iteration N — US-129: Pre-Submission e-PCB Plus Employee TIN and Tax Category Completeness Validation
+
+**Type:** IMPL
+**TDD Phase:** GREEN (15/15 pass confirmed)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_epcb_preflight`
+**Result:** PASS — 15 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/api/epcb_preflight.py` — new whitelisted API (`run_epcb_preflight_check`, `get_employee_data_gaps`)
+- `lhdn_payroll_integration/tests/test_epcb_preflight.py` — 15 unit tests
+- `lhdn_payroll_integration/report/epf_borang_a/epf_borang_a.py` — added missing `validate_account_split()` (US-165 leftover)
+
+### Patterns discovered
+- Pre-existing ImportError in test_epf_borang_a.py blocked test module loading; fixed by adding `validate_account_split()` to epf_borang_a report
+- Whitelisted API pattern: `@frappe.whitelist()` + `frappe.only_for(("HR Manager", "System Manager"))` in api/ folder
+- `frappe.db.sql()` with `as_dict=True` used for batch queries joining Salary Slip + Employee
+
+### Gotchas
+- Both outer and nested container paths must be kept in sync (use -u root cp)
+- test_epf_borang_a.py imported `validate_account_split` which didn't exist yet (US-165 test was written before impl synced)

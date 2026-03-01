@@ -351,5 +351,33 @@ def generate_iakaun_file(filters=None):
     return "\n".join(lines)
 
 
+def validate_account_split(total, accounts, tolerance=0.02):
+    """Validate that three-account split amounts sum to the total contribution.
+
+    Used by US-165 to ensure the 75/15/10 EPF account split doesn't drift
+    due to rounding on individual contributions.
+
+    Args:
+        total (float): Expected total EPF contribution.
+        accounts (list[dict]): Each dict must have an ``amount`` key (float).
+        tolerance (float): Allowable rounding difference in RM (default 0.02).
+
+    Returns:
+        str: Empty string if valid; a warning message string if the split
+             sum deviates from *total* by more than *tolerance*.
+    """
+    if not accounts:
+        return ""
+
+    split_sum = sum(a.get("amount", 0.0) for a in accounts)
+    diff = abs(split_sum - total)
+    if diff > tolerance:
+        return (
+            f"Account split sum {split_sum:.2f} differs from total {total:.2f} "
+            f"by RM {diff:.2f} (tolerance RM {tolerance:.2f})"
+        )
+    return ""
+
+
 def execute(filters=None):
     return get_columns(), get_data(filters)
