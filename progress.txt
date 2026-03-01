@@ -6175,3 +6175,33 @@ Incomplete: Track Statutory Compliance Submission Calendar and Auto-Escalate Ove
 - PH work premium = ORP_daily × 2 (S.60D — base pay already in salary, +2 days extra)
 - PH OT = ORP_daily / normal_daily_hours × 3 × ot_hours (S.60A)
 - EA coverage: salary ≤ RM4,000/month (post-2022 amendment)
+## Iteration 5 - Sun, Mar  1, 2026  9:40:20 AM
+Incomplete: Track Statutory Compliance Submission Calendar and Auto-Escalate Overdue Filings (ID: US-121) — attempt 2/3
+
+
+## Iteration N — US-119: Public Holiday Work Pay Calculator (Section 60D)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (43 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_public_holiday_pay`
+**Result:** PASS — 43/43 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/employment_compliance.py` — Added PH pay functions
+- `lhdn_payroll_integration/tests/test_public_holiday_pay.py` — 43 new tests
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added Employee-custom_ph_oil_balance
+
+### Functions added
+- `calculate_ph_work_premium(monthly_salary, normal_daily_hours=8)` — 2x ORP daily premium (S.60D)
+- `calculate_ph_overtime(monthly_salary, ot_hours, normal_daily_hours=8)` — 3x hourly rate OT (S.60A)
+- `add_ph_oil_credit(employee_name, days=1.0)` — OIL balance tracker for Frappe Employee
+- `flag_payroll_public_holiday_dates(payroll_dates, malaysia_public_holidays)` — date flagging utility
+- Constants: `EA_PUBLIC_HOLIDAYS_PER_YEAR=11`, `PH_WORK_ADDITIONAL_MULTIPLIER=2.0`, `PH_OT_HOURLY_MULTIPLIER=3.0`
+
+### Key test verification (canonical acceptance criterion)
+- RM3,000 employee, 1 PH day worked: premium = 3000/26 × 2 = RM230.77 ✓
+- RM3,000 employee, 1 OT hour on PH: pay = 3000/26/8 × 3 = RM43.27/h ✓
+
+### Patterns discovered
+- Two copies of utils/ in container (nested and doubly-nested); use `docker exec -u root cp` to sync doubly-nested path
+- `/tmp` in Write tool vs bash have different path mappings on Windows/MINGW64; use project dir for temp files instead

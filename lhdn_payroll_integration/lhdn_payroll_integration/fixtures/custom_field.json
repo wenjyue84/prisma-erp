@@ -1314,5 +1314,41 @@
     "description": "Optional: NRIC of the Employer Representative if different from PCB Administrator. Role hierarchy: Employer > Employer Representative > PCB Administrator.",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_epcb_plus_pcb_admin_name"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_epf_itopup_monthly_amount",
+    "dt": "Employee",
+    "fieldname": "custom_epf_itopup_monthly_amount",
+    "fieldtype": "Currency",
+    "label": "EPF i-Topup Monthly Amount",
+    "description": "Monthly voluntary EPF contribution (KWSP i-Topup facility). Above mandatory rate. Deducted via EPF Voluntary (i-Topup) salary component.",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_epf_member_number"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Employee-custom_ph_oil_balance",
+    "dt": "Employee",
+    "fieldname": "custom_ph_oil_balance",
+    "fieldtype": "Float",
+    "label": "Public Holiday Off-In-Lieu Balance",
+    "description": "Number of Off-In-Lieu (OIL) days accrued from working on public holidays. HR credits this field instead of paying triple-pay under Employment Act S.60D.",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_epf_itopup_monthly_amount"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Salary Component-custom_is_epf_voluntary",
+    "dt": "Salary Component",
+    "fieldname": "custom_is_epf_voluntary",
+    "fieldtype": "Check",
+    "label": "Is Voluntary EPF (i-Topup)",
+    "description": "Mark this component as a voluntary EPF contribution (KWSP i-Topup). Contributes to RM3,000 sub-cap shared with Life Insurance for PCB relief.",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_is_epf_employer"
   }
 ]
