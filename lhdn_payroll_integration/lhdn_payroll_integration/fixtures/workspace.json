@@ -48,7 +48,46 @@
         "icon": "list"
       }
     ],
-    "links": [],
+    "links": [
+      {
+        "doctype": "Workspace Link",
+        "type": "Link",
+        "label": "Salary Slip",
+        "link_to": "Salary Slip",
+        "link_type": "DocType",
+        "idx": 1
+      },
+      {
+        "doctype": "Workspace Link",
+        "type": "Link",
+        "label": "Payroll Entry",
+        "link_to": "Payroll Entry",
+        "link_type": "DocType",
+        "idx": 2
+      },
+      {
+        "doctype": "Workspace Link",
+        "type": "Card Break",
+        "label": "LHDN Reports",
+        "idx": 3
+      },
+      {
+        "doctype": "Workspace Link",
+        "type": "Link",
+        "label": "LHDN Payroll Compliance",
+        "link_to": "LHDN Payroll Compliance",
+        "link_type": "Report",
+        "idx": 4
+      },
+      {
+        "doctype": "Workspace Link",
+        "type": "Link",
+        "label": "Payroll Wage Register",
+        "link_to": "Payroll Wage Register",
+        "link_type": "Report",
+        "idx": 5
+      }
+    ],
     "charts": [],
     "number_cards": []
   }
