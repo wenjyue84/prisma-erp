@@ -124,3 +124,11 @@
 [2m[16:28][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
 [2m[16:36][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
 [2m[16:44][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[16:53][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[16:59][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[17:18][0m [37mGood, the DocTypes were updated. Now run the bench clear-cache and then the tests:[0m
+[2m[17:20][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[17:31][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[17:56][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cp /home/frappe/fr...[0m
+[2m[18:05][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[18:30][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m

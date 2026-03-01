@@ -145,3 +145,13 @@
 [2m[5:34][0m 🔨 [36mTodoWrite[0m [2m[0m
 [2m[6:20][0m ✏️ [36mWrite[0m [2mresubmission_service.py[0m
 [2m[6:28][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[8:00][0m ✏️ [36mWrite[0m [2mtest_pcb_rejection_tracker.py[0m
+[2m[8:08][0m [37mNow let me deploy all files to the container:[0m
+[2m[8:13][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[8:20][0m 💻 [36mBash[0m [2mAPP=/home/frappe/frappe-bench/apps/lhdn_payroll_integration/...[0m
+[2m[8:40][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[8:47][0m 💻 [36mBash[0m [2m# Try as frappe user docker exec -u frappe prisma-erp-backen...[0m
+[2m[8:56][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls -la /home/frapp...[0m
+[2m[9:05][0m 💻 [36mBash[0m [2mDOCTYPE_DIR=/home/frappe/frappe-bench/apps/lhdn_payroll_inte...[0m
+[2m[9:14][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "id && ls -la /home...[0m
+[2m[9:23][0m 💻 [36mBash[0m [2m# Use docker cp to copy the whole directory tree # First, le...[0m

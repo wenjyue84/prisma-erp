@@ -122,3 +122,14 @@
 [2m[16:52][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
 [2m[16:53][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'sys.path'...[0m
 [2m[17:04][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -rn 'sys.path...[0m
+[2m[17:10][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[17:18][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'run.test\...[0m
+[2m[17:25][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m
+[2m[17:42][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'sys.path\...[0m
+[2m[17:49][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m
+[2m[18:00][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[18:01][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m
+[2m[18:19][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[18:37][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[18:45][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[18:56][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m

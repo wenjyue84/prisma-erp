@@ -1,258 +1,295 @@
 {
   "stories": [
     {
-      "title": "PERKESO LINDUNG 24/7 — Implement Employee Second-Category Contribution Deduction Engine and Gazette-Rate Activation Workflow",
-      "priority": "critical",
-      "description": "The Employees' Social Security (Amendment) Bill 2025 was passed by Parliament on 2 December 2025, introducing the LINDUNG 24/7 Non-Occupational Accident Scheme. A fundamental structural change is that BOTH employers AND employees must now contribute under Second Category — previously only employers contributed to Second Category (Invalidity Scheme). Contribution rates and effective date are pending PERKESO gazette announcement expected Q1/Q2 2026. All payroll systems must add the new employee-side Second Category deduction and update PERKESO ASSIST submission data once rates are officially gazetted.",
-      "acceptanceCriteria": [
-        "New 'LINDUNG 24/7 Employee Contribution Rate' configuration field on PERKESO/SOCSO Settings with a 'Pending Gazette' status flag and activation date",
-        "When rate is entered and activation date reached, payroll engine automatically computes and deducts employee LINDUNG 24/7 contribution from gross pay per the gazette rate",
-        "Payslip displays new line item 'LINDUNG 24/7 (Employee)' as a separate deduction, distinct from existing First Category employee contribution",
-        "Employer LINDUNG 24/7 contribution amount added to employer cost calculation",
-        "PERKESO ASSIST e-Caruman submission updated to include new LINDUNG 24/7 contribution amounts for both employer and employee per employee",
-        "System alert sent to HR Manager when gazette rate is entered, prompting payroll recalculation from the gazette effective date",
-        "Pre-gazette payroll runs display a compliance warning: 'LINDUNG 24/7 rates not yet gazetted — deduction not applied'"
-      ],
-      "technicalNotes": [
-        "Parliament passed amendment on 2 December 2025; contribution rates TBD via separate gazette announcement",
-        "Currently Second Category is employer-only (Invalidity Scheme); new LINDUNG 24/7 requires both employer+employee contribution — materially different from the label-only rebranding covered in existing LINDUNG story",
-        "PERKESO ASSIST e-Caruman CSV/API may need new contribution code/column for LINDUNG 24/7 scheme — monitor perkeso.gov.my/en/rate-of-contribution.html",
-        "Expected implementation Q1 or at latest Q2 2026 per PERKESO announcement",
-        "Related: existing 'PERKESO LINDUNG Scheme Rebranding' story covers UI labels only; this story covers actual contribution computation and payslip deduction"
-      ],
-      "dependencies": [],
-      "estimatedComplexity": "large",
-      "source": "https://www.humanresourcesonline.net/malaysia-parliament-passes-amendment-to-social-security-act-enabling-24-7-protection-for-9-6mn-workers"
-    },
-    {
-      "title": "PERKESO LINDUNG 24/7 — Update e-Caruman Submission File with New Third-Scheme Contribution Code",
+      "title": "EPF Akaun Emas Routing for Employees Aged 55+ in i-Akaun Employer CSV Upload",
       "priority": "high",
-      "description": "The PERKESO LINDUNG 24/7 amendment introduces a new protection scheme distinct from First Category (Employment Injury) and Second Category (Invalidity). When rates are gazetted, the PERKESO ASSIST e-Caruman electronic submission file will require a new contribution code for LINDUNG 24/7 amounts from both employer and employee. The existing e-Caruman generator handles only First and Second Category codes and must be extended for the new scheme without breaking existing submissions.",
+      "description": "When an employee reaches age 55, all existing EPF accounts are consolidated into Akaun 55, and any new contributions thereafter flow exclusively into Akaun Emas (locked until age 60) — NOT the standard 75/15/10 three-account split. The i-Akaun employer CSV upload file must correctly route post-55 contributions to Akaun Emas rather than applying the Akaun Persaraan/Sejahtera/Fleksibel split, otherwise contributions may be misallocated. The existing story 'Update EPF i-Akaun Employer Contribution CSV Upload Format for Three-Account (75/15/10) Allocation' only handles the under-55 case.",
       "acceptanceCriteria": [
-        "e-Caruman CSV/upload generator updated to include new LINDUNG 24/7 contribution code column for both employer and employee portions",
-        "Pre-gazette: LINDUNG 24/7 column exists but outputs zero / is flagged 'Pending Gazette' — file still passes PERKESO ASSIST validation",
-        "Post-gazette activation: LINDUNG 24/7 employer and employee contribution amounts correctly populated and accepted by PERKESO ASSIST upload",
-        "Historical e-Caruman files for periods before gazette effective date do not include LINDUNG 24/7 values, maintaining backward compatibility",
-        "Contribution receipt from PERKESO displays LINDUNG 24/7 amounts as a separate line in the system audit record",
-        "PERKESO ASSIST API upload response parsed to confirm new scheme fields accepted without rejection error"
+        "Employees aged 55 or above at payroll period end date must have EPF contributions flagged to route 100% to Akaun Emas in the generated i-Akaun CSV, not the 75/15/10 split",
+        "The i-Akaun CSV row for a 55+ employee uses the correct account type code or flag distinguishing Akaun Emas from the three-account structure",
+        "An employee who turns 55 during the payroll month must switch routing from that payroll period onwards",
+        "Payroll run preview displays 'Akaun Emas' as the EPF destination for all affected employees",
+        "Unit test covers: employee under 55 → three-account split; employee exactly 55 → Akaun Emas; employee 60+ → exempt-or-voluntary path"
       ],
       "technicalNotes": [
-        "Monitor PERKESO ASSIST developer portal for updated file format specification once LINDUNG 24/7 is gazetted",
-        "May require new column in e-Caruman CSV (e.g., Third_Category_Employer, Third_Category_Employee) or new XML element",
-        "Existing e-Caruman generation code lives in lhdn_payroll_integration/lhdn_payroll_integration/services/ — extend without breaking current First/Second Category columns",
-        "Rate announcement expected Q1/Q2 2026 at https://perkeso.gov.my/en/our-services/employer-employee/kadar-caruman.html"
+        "KWSP: 'Should you choose to continue working after the age of 55, all further contributions you make will be credited in your Akaun Emas, to be withdrawn only upon reaching age 60'",
+        "Confirm the exact EPF i-Akaun CSV column/flag for Akaun Emas from KWSP Easy Guides for Employers at kwsp.gov.my/en/others/resource-centre/easy-guides/employer",
+        "Age calculation must compare employee.date_of_birth + 55 years against payroll_period_end_date",
+        "The existing 'Age 60' story handles rate transitions (0% employee contribution after 60); this story handles CSV account routing for the 55-60 window"
       ],
       "dependencies": [
-        "PERKESO LINDUNG 24/7 — Implement Employee Second-Category Contribution Deduction Engine and Gazette-Rate Activation Workflow",
-        "Generate SOCSO and EIS e-Caruman Upload File (PERKESO ASSIST Portal)"
+        "Update EPF i-Akaun Employer Contribution CSV Upload Format for Three-Account (75/15/10) Allocation",
+        "Implement Age-Based EPF/SOCSO/EIS Statutory Rate Transitions at Age 60"
       ],
       "estimatedComplexity": "medium",
-      "source": "https://hrhub.my/perkeso-expands-coverage-with-lindung-24-7-scheme-to-benefit-10-million-workers/"
+      "source": "https://www.kwsp.gov.my/-/epf-no-change-to-age-55-withdrawal-and-introducing-akaun-emas-for-age-60-withdrawal"
     },
     {
-      "title": "MyInvois RM10,000 Non-Consolidatable Transaction Rule — Route Large Payroll Expense Reimbursements to Individual Self-Billed e-Invoice",
-      "priority": "high",
-      "description": "Effective 1 January 2026, LHDN MyInvois rules prohibit consolidating any single transaction exceeding RM10,000 into a consolidated e-invoice. Payroll self-billed e-invoices for large employee expense reimbursements, relocation allowances, one-off perquisites, or BIK items exceeding RM10,000 per transaction must be issued as individual (non-consolidated) self-billed e-invoices with real-time MyInvois validation. The existing self-billed expense claim story does not address this amount-based routing split between consolidated and individual e-invoice workflows.",
-      "acceptanceCriteria": [
-        "On Expense Claim or payroll perquisite generation, system checks if the individual transaction amount exceeds RM10,000",
-        "Transactions > RM10,000 are routed exclusively to individual self-billed e-invoice workflow, excluded from consolidated monthly batch",
-        "Transactions ≤ RM10,000 remain eligible for monthly consolidated self-billed e-invoice as before",
-        "HR/payroll user receives a clear warning when a claim exceeds the RM10,000 threshold before batch consolidation is executed",
-        "Audit log records the routing decision (individual vs consolidated) and reason (RM10,000 amount threshold) for each payroll expense transaction",
-        "Individual self-billed e-invoices for large amounts submitted to MyInvois API with all required invoice-level fields and receive an individual UUID from MyInvois"
-      ],
-      "technicalNotes": [
-        "RM10,000 threshold applies per single transaction, not per aggregate employee per month",
-        "Most affected payroll items: large travel reimbursements, relocation packages, one-off medical claims, ex-gratia payments classified as perquisites",
-        "The consolidated e-invoice limit for sub-RM10,000 items is unaffected — only the routing logic changes above the threshold",
-        "LHDN clarified effective date is 1 January 2026; Phase 4 companies have a grace period until 31 December 2026 for penalties",
-        "Reference: MyInvois SDK v2.1 for individual invoice vs consolidated invoice schema differences"
-      ],
-      "dependencies": [
-        "Self-Billed e-Invoice for Employee Expense Claims and Perquisite Reimbursements (MyInvois Phase 4)"
-      ],
-      "estimatedComplexity": "medium",
-      "source": "https://accountingfirmjohor.com/rm10000-e-invoice-rule-consolidated-invoice-limit-malaysia/"
-    },
-    {
-      "title": "Gig Workers Act 872 — Enforce PERKESO Deduction on Separate Ministerial Gazette Enforcement Date, Not Royal Assent",
-      "priority": "high",
-      "description": "The Gig Workers Act 2025 (Act 872) received Royal Assent on 16 December 2025 and was gazetted on 31 December 2025. However, the Act explicitly states enforcement commences on a date separately determined by the Minister via gazette notification. As of March 2026, stakeholder engagement is still intensifying and enforcement has not started. The existing PRD story activates PERKESO deductions 'on Royal Assent', which is technically premature. A configurable enforcement-date gate must control when the 1.25% PERKESO deduction begins, preventing incorrect premature deductions from gig worker earnings.",
-      "acceptanceCriteria": [
-        "Company-level configuration field 'Gig Workers Act 872 Enforcement Date' — initially empty/disabled",
-        "PERKESO LINDUNG KENDIRI deductions (1.25% per transaction) are NOT triggered until the enforcement date field is populated and the date is reached",
-        "System status panel shows: 'Act 872: Gazetted 31 Dec 2025 | Enforcement Date: PENDING MINISTERIAL GAZETTE'",
-        "When HR Admin enters the official ministerial enforcement date, system schedules deduction activation from that date",
-        "Alert sent to HR Admin 30 days and 7 days before enforcement date once entered",
-        "All platform-provider gig worker payment processing displays 'Pre-Enforcement — No PERKESO Deduction' until activation",
-        "If enforcement date is entered retroactively, system flags affected prior payroll periods for retroactive review"
-      ],
-      "technicalNotes": [
-        "Act 872 Section 1(2): 'This Act comes into operation on a date to be appointed by the Minister by notification in the Gazette'",
-        "Existing story 'Gig Workers Act 2025 — Platform Provider Registration as PERKESO Contributing Entity with Mandatory 1.25% LINDUNG KENDIRI Deduction on Royal Assent' has incorrect activation trigger — this gate must be applied",
-        "SOCSO target contribution rate: 1.25% of earnings per ride/delivery transaction",
-        "Monitor kesuma.gov.my and perkeso.gov.my for ministerial enforcement gazette notification",
-        "As of March 2026 gig worker talks are intensifying — enforcement date still unannounced per theedgemalaysia.com"
-      ],
-      "dependencies": [
-        "Gig Workers Act 2025 — Platform Provider Registration as PERKESO Contributing Entity with Mandatory 1.25% LINDUNG KENDIRI Deduction on Royal Assent"
-      ],
-      "estimatedComplexity": "small",
-      "source": "https://www.humanresourcesonline.net/malaysia-gazettes-gig-workers-act-2025-signalling-new-page-in-labour-reform"
-    },
-    {
-      "title": "TP1(1/2026) Domestic Tourism and Cultural Attraction Relief — YA2026-Only Expiry Guard and Auto-Deactivation",
+      "title": "EPF Payslip Display — Show Akaun Emas Contribution Destination for Employees Aged 55-60 Instead of Three-Account Split",
       "priority": "medium",
-      "description": "Budget 2026 introduces a RM1,000 tax relief for entrance fees to domestic tourist attractions and cultural programs — explicitly for Year of Assessment 2026 only. Without a hard expiry guard, this temporary relief may be incorrectly applied in YA2027 payroll runs, causing over-deduction of PCB and potential LHDN audit exposure. A time-bounded eligibility flag with automatic deactivation from January 2027 prevents carry-forward errors and ensures PCB is compliant for both YA2026 and YA2027 simultaneously.",
+      "description": "Employees aged 55 and above have their EPF contributions channelled solely to Akaun Emas, not distributed across the three-account structure (Akaun Persaraan 75%, Akaun Sejahtera 15%, Akaun Fleksibel 10%). The existing story 'Display EPF Akaun Fleksibel Three-Account Contribution Split on Payslip' only handles under-55 employees. Payslips for employees aged 55-60 must display a single 'Akaun Emas' line instead of the three-way split to comply with EA Section 25A mandatory payslip disclosure requirements and prevent employee confusion.",
       "acceptanceCriteria": [
-        "Domestic tourism/cultural attraction relief line item on TP1 form is active only for payroll PCB periods January 2026 – December 2026",
-        "System automatically disables the relief input field from 1 January 2027 with expiry notice: 'Domestic Tourism Relief (YA2026 only) — Expired'",
-        "Existing employee TP1 declarations with this relief generate a HR alert when YA transitions to 2027: 'YA2026 temporary relief has expired — PCB will increase from January 2027'",
-        "EA Form template for YA2026 correctly includes the relief; YA2027 EA Form template excludes it",
-        "PCB recalculation for retroactive YA2026 adjustments correctly applies the time-bound eligibility; YA2027 recalculations ignore this relief item",
-        "Audit log shows 'Domestic Tourism Relief: Applied (YA2026 only)' or 'Not Applied (outside YA boundary)' per PCB computation"
+        "Payslip for employees aged 55 to 59 (inclusive) displays a single EPF row labeled 'EPF — Akaun Emas' with the full EPF contribution amount",
+        "The 75%/15%/10% three-account split breakdown must NOT appear on payslips for employees aged 55 and above",
+        "Payslip for employees under 55 continues to show the three-account split per the existing story",
+        "The transition payslip for an employee who turns 55 in the payroll month shows Akaun Emas for that month's contribution",
+        "PDF payslip generation uses the correct section label determined by employee age at payroll period end date"
       ],
       "technicalNotes": [
-        "Budget 2026 announcement specifies 'YA 2026' only — this is a time-limited relief, not permanent",
-        "Similar time-bound pattern to EV Charging relief (once per 2-YA biennial restriction) and PRS relief extension to YA2030",
-        "LHDN official TP1(1/2026) explanatory notes: https://www.hasil.gov.my/media/i1lcd0wn/bi-explanatory-notes-for-from-tp1-2026.pdf",
-        "The existing story 'TP1(1/2026): Capture New Domestic Tourism Attraction Expenses Relief (RM1,000)' adds the field — this story adds the YA-expiry enforcement layer"
+        "Display logic: if (age_at_period_end >= 55 AND age_at_period_end < 60) → show 'Akaun Emas' label",
+        "Employees 60+: employer contribution is voluntary; display should reflect their specific contribution arrangement",
+        "This is a UI/display companion to the Akaun Emas CSV routing story — both must use the same age-at-period-end calculation"
       ],
       "dependencies": [
-        "TP1(1/2026): Capture New Domestic Tourism Attraction Expenses Relief (RM1,000) in Employee PCB Declaration"
+        "Display EPF Akaun Fleksibel Three-Account Contribution Split on Payslip",
+        "EPF Akaun Emas Routing for Employees Aged 55+ in i-Akaun Employer CSV Upload"
       ],
       "estimatedComplexity": "small",
-      "source": "https://www.hasil.gov.my/media/i1lcd0wn/bi-explanatory-notes-for-from-tp1-2026.pdf"
+      "source": "https://www.kwsp.gov.my/en/w/article/account-restructuring-guide"
     },
     {
-      "title": "Malaysia Minimum Wage NWCC Biannual Review — Configurable Rate Registry with Gazette History and Bulk Below-Minimum Alert",
+      "title": "Sabah/Sarawak Labour Ordinance 2025 (Acts A1753/A1754) — Extend Payroll Statutory Protections to All East Malaysia Employees Regardless of Salary",
       "priority": "high",
-      "description": "The National Wages Consultative Council (NWCC) reviews minimum wage every two years. The current RM1,700 rate (universal from August 2025) will be reviewed again in 2026/2027. The system currently treats RM1,700 as a hardcoded constant. A configurable minimum wage rate parameter with gazette history, effective-date versioning, and a bulk below-minimum alert ensures the system adapts to future NWCC gazette announcements without code changes — preventing any pay period where employees are underpaid against the new minimum.",
+      "description": "The Labour Ordinance of Sabah (Amendment) Act 2025 (Act A1753) and Labour Ordinance of Sarawak (Amendment) Act 2025 (Act A1754) came into force on 1 May 2025, removing the prior salary cap of RM2,500/month for Labour Ordinance coverage. All East Malaysia employees are now entitled to statutory protections (overtime, public holiday pay, termination benefits, late-payment remedies) regardless of salary. The existing story 'Add Sabah/Sarawak Labour Jurisdiction Flag on Employee' only creates the flag; this story wires the flag into actual payroll compliance enforcement so higher-paid East Malaysia employees (previously exempt) are now correctly covered.",
       "acceptanceCriteria": [
-        "Minimum Wage configuration DocType with fields: Rate (RM/month), Effective Date, Gazette Number, Gazette Date, Status (Active / Superseded)",
-        "Rate change history log: all previous minimum wage rates and their effective dates preserved and non-deletable for audit",
-        "On minimum wage rate creation/update, system scans all active employee salary records and flags any basic salary below the new rate",
-        "Bulk action: 'Apply Minimum Wage Update' to set all flagged employees to the new minimum with confirmation and audit log",
-        "HR dashboard shows: current active rate, gazette date, and an 'NWCC Review Advisory' when within 6 months of the 2-year anniversary of the current rate",
-        "Payroll pre-validation check blocks salary slip submission if any employee's computed gross is below current minimum wage rate",
-        "Penalty calculator auto-updates fine quantum calculations when the rate is changed in the registry"
+        "All payroll compliance checks (overtime eligibility, public holiday pay, termination benefits) must apply to Sabah/Sarawak jurisdiction-flagged employees regardless of their monthly salary, effective 1 May 2025",
+        "The RM2,500 salary cap filter that previously excluded higher-paid East Malaysia employees from Labour Ordinance provisions must be removed from all calculation branches",
+        "Overtime, public holiday premium, and termination benefit calculators must activate for East Malaysia employees earning above RM2,500 who were previously exempted",
+        "Payroll compliance reports for East Malaysia employees must reference the applicable ordinance (Sabah Labour Ordinance or Sarawak Labour Ordinance) rather than Employment Act 1955",
+        "Transition logic: compliance calculations before 1 May 2025 for previously-exempt higher-salary East Malaysia employees retain old (exempt) behaviour; on or after 1 May 2025 the new rules apply"
       ],
       "technicalNotes": [
-        "Current active rate: RM1,700/month, effective universally from 1 August 2025 (small employers), 1 February 2025 (5+ employees)",
-        "Previous rate: RM1,500 effective 1 May 2022",
-        "NWCC statutory review cycle: at minimum every 2 years under Minimum Wages Order framework — next review expected 2026/2027",
-        "Monitor mohr.gov.my gazette page for NWCC announcement",
-        "Existing stories 'Enforce RM1,700 Minimum Wage for ALL Employers' cover enforcement rules; this story adds the configurable rate infrastructure layer"
+        "Act A1753 (Sabah): Royal Assent 7 March 2025, gazetted 20 March 2025, effective 1 May 2025",
+        "Act A1754 (Sarawak): same effective date 1 May 2025",
+        "The amendments standardise East Malaysia rules with EA 1955 as amended in January 2023",
+        "Penalty for violations increased from RM10,000 to RM50,000 — the RM50,000 penalty alert story below covers this"
       ],
       "dependencies": [
-        "Enforce RM1,700 Minimum Wage for ALL Employers Effective 1 August 2025",
+        "Add Sabah/Sarawak Labour Jurisdiction Flag on Employee"
+      ],
+      "estimatedComplexity": "large",
+      "source": "https://www.humanresourcesonline.net/sabah-sarawak-s-labour-ordinance-amendment-acts-2025-now-in-force-effective-1-may"
+    },
+    {
+      "title": "Sabah/Sarawak Labour Ordinance 2025 — Validate 98-Day Maternity and 7-Day Paternity Leave for East Malaysia Jurisdiction-Flagged Employees",
+      "priority": "high",
+      "description": "Prior to 1 May 2025, Sabah and Sarawak employees had only 60 days of maternity leave and no statutory paternity leave under their Labour Ordinances. The 2025 amendments aligned East Malaysia with Peninsular Malaysia: maternity leave is now 98 days and 7 days of paternity leave are newly introduced. The existing story 'Track Maternity/Paternity Leave and Validate Maternity Pay Rate' is designed for the Employment Act 1955 (Peninsular). East Malaysia employees with the jurisdiction flag must now receive the updated entitlements under the new ordinances, with the 60-day cap replaced and paid at Ordinary Rate of Pay.",
+      "acceptanceCriteria": [
+        "Employees with Sabah or Sarawak jurisdiction flag have maternity leave entitlement of 98 days for confinements on or after 1 May 2025",
+        "Historical records for East Malaysia employees with confinements before 1 May 2025 retain the pre-amendment 60-day entitlement (no retroactive increase)",
+        "7 days of paid paternity leave is available for East Malaysia male employees for childbirths on or after 1 May 2025",
+        "Maternity and paternity leave pay is calculated at the employee's Ordinary Rate of Pay under the applicable East Malaysia ordinance",
+        "Leave entitlement configuration branches on the jurisdiction flag: Peninsular → EA 1955 rules, Sabah → Sabah Labour Ordinance 2025 rules, Sarawak → Sarawak Labour Ordinance 2025 rules"
+      ],
+      "technicalNotes": [
+        "Sarawak Labour Ordinance Amendment 2025 gazette: jtkswk.gov.my",
+        "Sabah Labour Ordinance Amendment 2025 gazette: jtksabah.gov.my",
+        "Paternity leave in East Malaysia is brand new — it was not in the old ordinances",
+        "Route through the jurisdiction flag to the correct leave entitlement set; share ORP calculation logic with the existing story"
+      ],
+      "dependencies": [
+        "Add Sabah/Sarawak Labour Jurisdiction Flag on Employee",
+        "Track Maternity/Paternity Leave and Validate Maternity Pay Rate",
+        "Enforce Paternity Leave 7-Day Consecutive Pay at ORP with EA Section 37A Eligibility Rules"
+      ],
+      "estimatedComplexity": "medium",
+      "source": "https://www.jtkswk.gov.my/v2/wp-content/uploads/2025/04/Act-A1754-LABOUR-ORDINANCE-OF-SARAWAK-AMENDMENT-ACT-2025-1.pdf"
+    },
+    {
+      "title": "Sabah/Sarawak Labour Ordinance 2025 — Apply 45-Hour Weekly Working Hours Cap to East Malaysia Jurisdiction-Flagged Employees",
+      "priority": "medium",
+      "description": "Prior to 1 May 2025, the Sabah and Sarawak Labour Ordinances permitted up to 48 working hours per week. The 2025 amendments reduced this to 45 hours per week, aligned with Peninsular Malaysia's Employment Act. The existing story 'Implement Working Hours Compliance Check (45-Hour Weekly Limit)' likely targets EA 1955 employees only. For East Malaysia employees with the jurisdiction flag, the limit changed from 48 to 45 hours effective 1 May 2025, and overtime must now be triggered from 45 hours (not 48), impacting payroll for East Malaysia workers on 46-48 hour rosters.",
+      "acceptanceCriteria": [
+        "Working hours compliance check applies a 45-hour weekly maximum to all employees flagged as Sabah or Sarawak jurisdiction, effective 1 May 2025",
+        "Hours between 45 and 48 per week for East Malaysia employees on or after 1 May 2025 must be classified as overtime and attract overtime premium pay",
+        "East Malaysia employee timesheets or rosters showing more than 45 hours/week from 1 May 2025 trigger a compliance warning",
+        "Pre-1 May 2025 records for East Malaysia employees honour the old 48-hour limit — no retroactive reclassification",
+        "The working hours compliance rule set branching on jurisdiction flag: Peninsular → EA 1955 (45 hrs effective Jan 2023), Sabah/Sarawak → 45 hrs effective 1 May 2025"
+      ],
+      "technicalNotes": [
+        "Baker McKenzie summary confirms working hours reduction to 45 hrs/week as part of the 2025 ordinance standardisation",
+        "The existing '45-Hour Weekly Limit' story may already use a global limit without jurisdiction distinction — this story adds the jurisdiction-specific effective date for East Malaysia",
+        "This story will increase East Malaysia payroll cost for employers who previously rostered 46-48 hours without overtime"
+      ],
+      "dependencies": [
+        "Add Sabah/Sarawak Labour Jurisdiction Flag on Employee",
+        "Implement Working Hours Compliance Check (45-Hour Weekly Limit)",
+        "Sabah/Sarawak Labour Ordinance 2025 (Acts A1753/A1754) — Extend Payroll Statutory Protections to All East Malaysia Employees Regardless of Salary"
+      ],
+      "estimatedComplexity": "small",
+      "source": "https://insightplus.bakermckenzie.com/bm/employment-compensation/malaysia-key-labour-law-reforms-in-sabah-and-sarawak"
+    },
+    {
+      "title": "Sabah/Sarawak Labour Ordinance 2025 — RM50,000 Penalty Exposure Alert for East Malaysia Wage and Overtime Violations",
+      "priority": "medium",
+      "description": "Acts A1753 and A1754 increased the maximum penalty for labour violations (underpayment, late wages, overtime denial, unlawful deduction) in Sabah and Sarawak from RM10,000 to RM50,000 — a five-fold increase. Existing compliance alerts display a generic penalty or the Peninsular Malaysia RM10,000/RM20,000 scale. HR managers overseeing East Malaysia employees need violation alerts that explicitly show the RM50,000 maximum exposure specific to the applicable ordinance, so they can prioritise remediation proportionately.",
+      "acceptanceCriteria": [
+        "Compliance violation alerts for Sabah/Sarawak jurisdiction-flagged employees display RM50,000 as the maximum penalty amount (not RM10,000 or RM20,000)",
+        "The penalty quantum shown references the correct ordinance: 'Sabah Labour Ordinance (Amendment) Act 2025' or 'Sarawak Labour Ordinance (Amendment) Act 2025'",
+        "Monthly compliance risk summary report for East Malaysia employees includes aggregate maximum penalty exposure based on violation count × RM50,000",
+        "Alert severity for East Malaysia violations is set to Critical for any flagged underpayment or overtime denial given the higher penalty quantum",
+        "Penalty quantum is configurable in an Ordinance Penalty Settings table to allow future gazette updates without code changes"
+      ],
+      "technicalNotes": [
+        "RM50,000 penalty effective 1 May 2025 under both Act A1753 (Sabah) and Act A1754 (Sarawak)",
+        "Existing 'Minimum Wage Enforcement — Penalty Quantum Awareness Panel' covers Peninsular rules — extend with East Malaysia ordinance penalty tier",
+        "This is a compliance UI/alerting enhancement; the violation detection logic is in the extended-coverage story above"
+      ],
+      "dependencies": [
+        "Add Sabah/Sarawak Labour Jurisdiction Flag on Employee",
+        "Sabah/Sarawak Labour Ordinance 2025 (Acts A1753/A1754) — Extend Payroll Statutory Protections to All East Malaysia Employees Regardless of Salary",
         "Minimum Wage Enforcement — Penalty Quantum Awareness Panel and Ongoing Violation Daily Fine Tracker"
       ],
-      "estimatedComplexity": "medium",
-      "source": "https://pandahrms.com/rm1700-minimum-wage-applies-to-all-employers-starting-1-august-2025/"
+      "estimatedComplexity": "small",
+      "source": "https://malaysiahrforum.com/sabah-sarawak-labour-ordinance-2025-hr-guide-to-compliance-and-key-amendments/"
     },
     {
-      "title": "FWCMS Multi-Tier Levy — Employer Tier Reclassification Trigger on Foreign Worker Headcount Change",
-      "priority": "medium",
-      "description": "The FWCMS Multi-Tier Levy Model (MTLM) charges different levy rates based on the ratio of foreign workers to total workforce. When an employer hires or terminates foreign workers, their MTLM tier classification may change — altering the levy rate for ALL currently employed foreign workers from the event date. The existing MTLM implementation calculates levy per worker at a static rate but does not trigger a tier-reclassification review when foreign worker headcount changes, risking under- or over-payment of levy at the wrong tier rate.",
-      "acceptanceCriteria": [
-        "On creation or termination of any Foreign Worker employee record, system evaluates whether the new foreign-to-total-worker ratio crosses a configured MTLM tier boundary",
-        "If tier changes, HR Manager receives alert: 'Foreign worker ratio changed — FWCMS levy tier updated from Tier X to Tier Y effective [date]'",
-        "Retroactive recalculation option: recalculate all outstanding FWCMS levy amounts from tier-change date if new tier rate differs from previously applied rate",
-        "FWCMS Tier Status panel on Company record: current ratio, current tier, active levy rate, and headcount distance to next tier threshold",
-        "Audit log of all tier reclassification events with: trigger event (hire/termination), before/after tier, before/after levy rate, effective date",
-        "Monthly FWCMS levy report recalculates using the tier active for each sub-period within the month if a tier change occurred mid-month (pro-rated)"
-      ],
-      "technicalNotes": [
-        "MTLM tiers based on ratio of foreign workers to total local (Malaysian) workers — sector-specific thresholds apply (manufacturing differs from services and hospitality)",
-        "Existing story 'Implement Multi-Tier Levy Model (MTLM) Rate Calculation for Foreign Workers' covers per-worker rate application at a static tier; this story covers the dynamic tier-change trigger on headcount events",
-        "Tier boundary thresholds: consult sector-specific FWCMS levy tables at fwcms.gov.my or mohr.gov.my",
-        "A mid-month tier change requires pro-rated levy: old tier rate for days before change date, new tier rate for days from change date onward"
-      ],
-      "dependencies": [
-        "Implement Multi-Tier Levy Model (MTLM) Rate Calculation for Foreign Workers",
-        "Record FWCMS Monthly Levy Payment Receipt Reference on Foreign Employee Record"
-      ],
-      "estimatedComplexity": "medium",
-      "source": "https://www.mohr.gov.my"
-    },
-    {
-      "title": "e-PCB Plus Monthly Employer Submission Batch Status Dashboard — Track Per-Employee Submission State per Payroll Period",
+      "title": "AIS e-CP8D vs EA Form 2026 Cross-Validation — Reconcile Income Totals, BIK, VOLA, and ESOS Before Either Document Is Submitted",
       "priority": "high",
-      "description": "The e-PCB Plus system (live from January 2025) replaced e-Data PCB, e-PCB, and e-CP39 in a single MyTax portal. Employers submit monthly PCB for all employees, but the current integration only handles individual salary-slip-level acknowledgement storage. There is no consolidated employer-level view showing which employees have been submitted for a given payroll period, which are pending, and whether the batch payment to LHDN has been made. This gap risks individual employees being missed in monthly PCB remittance — an ITA Section 107A penalty exposure.",
+      "description": "LHDN requires employers to submit the e-CP8D (Annual Income Statement / AIS upload) to MyTax by 25 February 2026 and distribute EA Forms to employees by 28 February 2026. Both documents must report identical income components: gross remuneration, Benefits-in-Kind (BIK), Value of Living Accommodation (VOLA), ESOS gains, tax-exempt allowances, and PCB deducted. If the two documents diverge, LHDN can flag the employer for audit. No existing story cross-checks these two outputs against each other before either is submitted — they are generated independently with no reconciliation gate.",
       "acceptanceCriteria": [
-        "Monthly e-PCB Plus Batch Status view listing all employees in a payroll period with per-employee status: Draft | Submitted | Payment Pending | Payment Confirmed | Rejected",
-        "One-click 'Submit All Draft' batch action to submit all pending employees to e-PCB Plus in a single operation",
-        "FPX/JomPay payment reference number field recorded against the employer batch after LHDN payment is made",
-        "Alert if any active employee in a completed payroll run has not been submitted to e-PCB Plus by the 15th of the following month",
-        "Batch total PCB amount displayed alongside sum of individual salary slip PCB deductions — any discrepancy highlighted",
-        "Drill-down from batch view to individual salary slip e-PCB Plus acknowledgement reference number"
+        "Before the e-CP8D upload is triggered, the system compares each employee's e-CP8D income totals against the corresponding EA Form sections (A, B, C, D) for the same assessment year",
+        "Discrepancies exceeding RM1 in any income category (gross pay, BIK, VOLA, ESOS, EPF, PCB, zakat) block submission and display a line-by-line reconciliation report identifying the source of divergence",
+        "The reconciliation report identifies which salary slips, expense claims, or manual entries caused the discrepancy",
+        "HR can approve a documented variance below an employer-configurable tolerance threshold, with the approval logged for audit",
+        "A reconciliation status (Matched / Variance-Approved / Blocked) is stored on both the EA Form and e-CP8D records for each employee-year"
       ],
       "technicalNotes": [
-        "e-PCB Plus live from January 2025 — employers must have registered PCB Administrator on MyTax portal first",
-        "Submission deadline: 15th of the following month (e.g., January payroll due by 15 February)",
-        "Existing story 'Build Monthly e-PCB Plus Submission Reconciliation View' focuses on PCB amount reconciliation; this story focuses on per-employee submission tracking and batch payment confirmation status",
-        "Existing story 'e-PCB Plus Successful Submission — Store Acknowledgement Reference Number on Salary Slip' covers per-slip ack; this covers the month-level employer batch view",
-        "Both individual CP39 and bulk data upload flows must be reflected in the batch status"
+        "e-CP8D data scope: gross remuneration, BIK, VOLA, ESOS/remuneration arrears, tax-exempt allowances, MTD/PCB, EPF, zakat — these mirror EA Form sections A/B/C/D",
+        "e-CP8D pre-fills employee e-Filing from 1 March 2026; incorrect data causes employee e-Filing rejections — employer liability is significant",
+        "This story is an orchestration/comparison layer on top of the existing EA Form and AIS generation modules",
+        "Leverage Python difflib or a field-by-field dict comparison on the generated data objects before API submission"
       ],
       "dependencies": [
-        "Implement e-CP39 API Submission to LHDN MyTax / e-PCB Plus",
-        "Build Monthly e-PCB Plus Submission Reconciliation View",
-        "e-PCB Plus Successful Submission — Store Acknowledgement Reference Number on Salary Slip for LHDN Audit Trail"
+        "Rebuild EA Form to Include All Mandatory LHDN Section A/B/C/D Fields",
+        "LHDN AIS Employer Upload — Auto-Submit Employee Remuneration Data to MyTax by 25 February Deadline",
+        "Generate CP8D Annual Employee Remuneration Return"
       ],
       "estimatedComplexity": "medium",
-      "source": "https://pandahrms.com/lhdns-early-announcement-transition-to-e-pcb-plus-system/"
+      "source": "https://quickhr.my/resources/blog/ea-form-malaysia-guide"
     },
     {
-      "title": "EIS S.45F MYFutureJobs Job Vacancy Notification — Pre-Build Portal API Integration for Post-Moratorium Readiness",
+      "title": "Gig Workers Act 2025 (Act 872) — Validate Platform Service Agreement Mandatory Field Completeness Before Contract Execution",
       "priority": "medium",
-      "description": "The EIS (Amendment) Bill 2025 Section 45F requires employers to notify PERKESO via the MYFutureJobs portal when a vacancy is filled, within 7 days — penalty up to RM10,000 per violation. A 2-year moratorium is in effect from December 2025. The existing PRD story covers moratorium suppression only. This story builds the actual MYFutureJobs API submission workflow, notification reference number storage, and 7-day deadline tracker so the system is immediately compliant the moment the moratorium expires — with zero deployment lag.",
+      "description": "Act 872 (gazetted 31 December 2025, enforcement expected March 2026) requires platform providers to have written service agreements with gig workers that explicitly document: (1) compensation rates, (2) working arrangements, (3) available benefits, and (4) termination procedures. Executing a contract without these clauses creates legal exposure under Act 872. The existing Gig Workers Act stories focus on PERKESO contribution mechanics; no story validates that the service agreement document itself contains all legally required fields before it is marked Executed.",
       "acceptanceCriteria": [
-        "Job Opening DocType gains new fields: 'S.45F MYFutureJobs Notification Status' (Draft/Suppressed-Moratorium/Submitted/Overdue) and 'PERKESO Notification Reference Number'",
-        "When a Job Opening is marked Filled (Employee record linked), system creates a pending S.45F notification task",
-        "During active moratorium: task status is set to 'Suppressed — Moratorium Active' and not submitted to MYFutureJobs",
-        "Moratorium end-date configuration field; once moratorium expires, newly filled jobs auto-trigger with 7-day submission deadline",
-        "Overdue alert fires if a filled vacancy exceeds 7 days without a PERKESO reference number after moratorium ends",
-        "HR compliance report shows all filled jobs in the past 30 days with moratorium/submission status, reference numbers, and overdue count"
+        "A 'Platform Service Agreement' DocType (or equivalent Frappe document) has mandatory sections: Compensation Rate(s), Payment Schedule, Working Arrangement Description, Benefits List, and Termination Procedure",
+        "Marking a Service Agreement as 'Executed' is blocked unless all five mandatory sections contain non-empty content",
+        "A pre-execution validation report lists any missing mandatory clauses and cites the relevant Act 872 section",
+        "Executed service agreements are linked to the gig worker's contractor profile for PERKESO registration purposes",
+        "System records execution date and generates a unique agreement reference number, displayed on the PERKESO contribution statement"
       ],
       "technicalNotes": [
-        "MYFutureJobs portal: myfuturejobs.gov.my — verify if employer API or digital form submission is available for S.45F notifications",
-        "S.45F notification must be 'in writing' to SOCSO — may be satisfied by MYFutureJobs portal digital submission",
-        "Moratorium duration: up to 2 years from Bill passage (December 2025) — estimated moratorium end: December 2027",
-        "Fine: not exceeding RM10,000 per violation on conviction",
-        "SMEs were given extra time per PERKESO December 2025 announcement — moratorium phase is indefinitely in effect until gazette"
+        "Act 872 passed Dewan Rakyat 28 August 2025, Dewan Negara 9 September 2025; Royal Assent 16 December 2025",
+        "Ministerial enforcement gazette is separate — enforcement expected end of March 2026",
+        "Platform providers are 'contracting entities' under Act 872",
+        "Connects to existing Gig Workers Act stories for PERKESO LINDUNG registration and contribution deduction workflows"
       ],
       "dependencies": [
-        "EIS Amendment 2025 S.45F — Moratorium Phase Suppression and Voluntary Job Vacancy Reporting Module"
+        "Gig Workers Act 2025 — Auto-Register Gig Workers Under PERKESO SKSPS via ASSIST Portal API",
+        "Gig Workers Act 2025 — 7-Day Payment Deadline Alert for Informal Gig Engagements Without Payment Schedule"
       ],
       "estimatedComplexity": "medium",
-      "source": "https://www.lexology.com/library/detail.aspx?g=307fc1fa-bdbb-47aa-8a39-89fe02c562ce"
+      "source": "https://www.dfdl.com/insights/legal-and-tax-updates/malaysia-gig-workers-bill-2025-tabled-for-first-reading/"
     },
     {
-      "title": "Malaysia Gig Workers Act 872 — i-Saraan Plus Government Matching Contribution Report for Platform Providers",
+      "title": "Gig Workers Act 872 — Generate PERKESO SESSS Contribution Deduction Statement for Each Platform Worker Payment",
       "priority": "medium",
-      "description": "Budget 2026 introduced i-Saraan Plus, offering gig workers government EPF matching of up to RM600 per year (RM6,000 lifetime), an improvement over i-Saraan's RM500/year. Platform providers who register gig workers as EPF members and facilitate voluntary i-Saraan Plus deductions from earnings must report contribution amounts to KWSP monthly. This is distinct from mandatory EPF contributions for regular employees. The existing 'Implement Gig Worker i-Saraan Plus EPF Contribution Deduction for Platform Providers' story covers the deduction engine; this story covers the KWSP monthly contribution report, annual matching-cap tracking (RM600/year per worker), and TP1 relief amount surfacing.",
+      "description": "Act 872 requires platform providers to deduct PERKESO SESSS contributions from gig worker earnings and provide the worker with a statement showing the deduction at each payment event. This is a new document type — distinct from an employment payslip (gig workers are not employees). The existing story 'Gig Workers Act 2025 — SKSPS Per-Transaction Contribution Calculation and PERKESO Monthly Aggregate Remittance' covers the calculation and monthly remittance but not the per-payment statement that must be issued to the individual gig worker.",
       "acceptanceCriteria": [
-        "Gig Worker record includes 'i-Saraan Plus Voluntary Rate' field (worker-specified percentage or fixed amount per transaction, set by the worker)",
-        "Monthly i-Saraan Plus contribution report generated for KWSP i-Akaun upload: EPF number, NRIC, worker name, voluntary contribution amount per period",
-        "Platform provider dashboard shows: total i-Saraan Plus contributions facilitated per month and cumulative government matching eligibility per worker (capped at RM600/year)",
-        "Alert when a worker's annual RM600 matching cap is reached — voluntary contributions above cap still proceed but system notes no further matching available",
-        "i-Saraan Plus amounts reported in a separate section from any mandatory EPF contributions in the EPF i-Akaun CSV upload, using the correct EPF contribution type code",
-        "TP1 relief tracking: worker's total i-Saraan Plus voluntary contributions for the year displayed on their TP1 summary, supporting their RM4,000 voluntary EPF relief claim"
+        "A 'Platform Worker Payment Statement' is generated for each payment to a gig worker, showing: gross payment amount, PERKESO SESSS deduction amount and scheme code, net payment to worker, PERKESO registration number, and contribution period",
+        "Statements are linkable to the monthly PERKESO aggregate remittance file for reconciliation",
+        "Statements are available for the gig worker to download (email or portal link)",
+        "System warns if a statement is generated for a worker not yet registered with PERKESO SESSS, blocking issuance until registration is confirmed",
+        "All generated statements are stored and searchable by worker, payment date, and contribution period"
       ],
       "technicalNotes": [
-        "i-Saraan Plus: government matches up to RM600/year (RM6,000 lifetime) vs existing i-Saraan at RM500/year (RM5,000 lifetime)",
-        "Only gig workers registered under Act 872 via platform providers and who are EPF members qualify for i-Saraan Plus matching",
-        "Platform providers facilitate voluntary deductions from gig worker earnings at a rate chosen by the worker",
-        "KWSP policy enhancements 2026: https://www.kwsp.gov.my/en/w/news/epf-policy-product-enhancements-2026",
-        "Existing story 'Implement Gig Worker i-Saraan Plus EPF Contribution Deduction for Platform Providers' covers the deduction calculation; this story covers the KWSP submission report and cap tracking"
+        "Enforcement date pending ministerial gazette — system should queue statements but hold delivery until enforcement date per the enforcement-gate story",
+        "PERKESO SESSS contribution rate and deduction basis (% of earnings per transaction) to be confirmed from PERKESO gazette when published",
+        "This is NOT a payslip under EA Section 25A; it is a contractual payment statement under Act 872",
+        "Contribution statements tie back to the monthly PERKESO LINDUNG aggregate upload"
       ],
       "dependencies": [
-        "Implement Gig Worker i-Saraan Plus EPF Contribution Deduction for Platform Providers",
-        "Generate EPF i-Akaun Electronic Upload File"
+        "Gig Workers Act 2025 — SKSPS Per-Transaction Contribution Calculation and PERKESO Monthly Aggregate Remittance",
+        "Gig Workers Act 872 — Enforce PERKESO Deduction on Separate Ministerial Gazette Enforcement Date, Not Royal Assent"
       ],
       "estimatedComplexity": "medium",
-      "source": "https://www.malaymail.com/news/malaysia/2025/10/10/budget-2026-gig-workers-to-get-up-to-rm600-a-year-in-epf-matching-under-new-i-saraan-plus-scheme/194145"
+      "source": "https://www.thestar.com.my/news/nation/2025/11/19/automatic-perkeso-deductions-a-must-under-gig-workers-law-says-steven-sim"
+    },
+    {
+      "title": "MyInvois Phase 4 Relaxation Period Expiry Engine — Alert and Auto-Transition to Individual Self-Billed e-Invoice from 1 January 2027",
+      "priority": "medium",
+      "description": "LHDN extended the Phase 4 e-invoice relaxation period for companies with annual revenue RM1M–RM5M through 31 December 2026 (full year). During this period, consolidated e-invoices are permitted for sub-RM10,000 payroll expense reimbursements. From 1 January 2027, the relaxation expires and all transactions require individual e-invoices. No existing story implements the expiry logic or the transition workflow. Without this, Phase 4 employers will inadvertently continue issuing invalid consolidated e-invoices in 2027, risking LHDN penalties.",
+      "acceptanceCriteria": [
+        "Phase 4 companies display their relaxation expiry date (31 December 2026) on the LHDN/MyInvois settings page",
+        "An alert fires 90 days before expiry (1 October 2026) prompting finance to prepare for full individual e-invoice issuance",
+        "From 1 January 2027, the system no longer allows consolidated self-billed e-invoice generation for Phase 4 companies — all transactions including sub-RM10,000 expense reimbursements must generate individual self-billed e-invoices",
+        "A compliance readiness checklist is generated at the 90-day mark listing any payroll expense reimbursement workflows still relying on consolidated e-invoice logic",
+        "Any attempt to generate a consolidated self-billed e-invoice for a Phase 4 company after 31 December 2026 is blocked with a clear error message citing the expired relaxation period"
+      ],
+      "technicalNotes": [
+        "LHDN extended relaxation to 31 December 2026 — the full year, not the original 6 months",
+        "During relaxation: consolidated e-invoices permitted, individual required only for single transactions > RM10,000",
+        "After relaxation: individual self-billed e-invoices required for all payroll expense reimbursements and perquisites",
+        "Add a relaxation_expiry_date field on the Company doctype alongside the existing Phase 4 e-invoice flag"
+      ],
+      "dependencies": [
+        "MyInvois Phase 4 (January 2026) — Set Mandatory e-Invoice Flag for Companies with RM1M–RM5M Annual Revenue",
+        "Self-Billed e-Invoice for Employee Expense Claims and Perquisite Reimbursements (MyInvois Phase 4)",
+        "MyInvois RM10,000 Non-Consolidatable Transaction Rule — Route Large Payroll Expense Reimbursements to Individual Self-Billed e-Invoice"
+      ],
+      "estimatedComplexity": "medium",
+      "source": "https://www.cleartax.com/my/en/different-phases-implementation-timelines-einvoicing-malaysia"
+    },
+    {
+      "title": "Progressive Wage Policy 2026 Training Hours Carry-Forward — Track 42-Hour Accumulated Minimum for Employers with 2025 Shortfall",
+      "priority": "medium",
+      "description": "Malaysia's Progressive Wage Policy (PWP) requires each eligible employee to complete 21 hours of approved training annually. For 2026, the Ministry confirmed that training hours not completed in 2025 carry forward, meaning affected employers must ensure a minimum of up to 42 cumulative training hours in 2026. The existing story 'Progressive Wage Policy — 21-Hour Annual Training Completion Tracking per Eligible Employee' tracks the annual 21-hour target but does not implement the carry-forward mechanism or the elevated 2026 minimum, risking loss of PWP incentive payments for employers with a 2025 shortfall.",
+      "acceptanceCriteria": [
+        "For each PWP-eligible employee, the system reads 2025 training hours completed and calculates the carry-forward shortfall (maximum 21 hours)",
+        "The 2026 training hours target for each employee is set to 21 + carry-forward shortfall, capped at 42 hours total",
+        "A per-employee dashboard shows: 2025 hours completed, shortfall carried forward, 2026 target, 2026 hours completed to date, and remaining hours",
+        "Alerts fire when a PWP-eligible employee is within 60 days of the December 2026 deadline with insufficient training hours remaining",
+        "Carry-forward amount is zero for employees who completed the full 21 hours in 2025 — their 2026 target remains 21 hours",
+        "PWP incentive claim export includes per-employee training hours with carry-forward breakdown for submission evidence"
+      ],
+      "technicalNotes": [
+        "Source: 'Training requirements of 21 hours that were not completed in 2025 can carry forward until December 2026, allowing employees to complete a minimum of 42 hours in 2026'",
+        "Integration with HRD Corp eTRIS for pulling completed training hours per employee per year",
+        "PWP incentive payment (RM300/employee/month for 12 months) requires evidence of salary increment AND training hour completion",
+        "Monitor mohr.gov.my and SOCSO/JTK for updated PWP guidelines if carry-forward rules change"
+      ],
+      "dependencies": [
+        "Progressive Wage Policy — 21-Hour Annual Training Completion Tracking per Eligible Employee",
+        "HRD Corp eTRIS Training Claim Recording and Levy Utilization Dashboard"
+      ],
+      "estimatedComplexity": "medium",
+      "source": "https://www.humanresourcesonline.net/the-employer-s-guide-navigating-malaysia-s-progressive-wage-policy"
+    },
+    {
+      "title": "e-Duti Setem STSDS — Employer Self-Assessment Stamp Duty Declaration Generator for Employment Contracts",
+      "priority": "medium",
+      "description": "From 1 January 2026, LHDN replaced the STAMPS portal with e-Duti Setem (accessible via MyTax), implementing the Self-Assessment System for Stamp Duty (STSDS). Under STSDS, employers must now self-calculate and self-declare stamp duty on employment contracts (RM10/contract) without prior LHDN officer assessment. The RM3,000/month wage exemption threshold (Finance Act 2025) also changed from the old RM300/month. The existing stories 'Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyTax' and 'e-Duti Setem Per-Employee Contract Stamp Duty Compliance Task with 30-Day Countdown' track deadlines but do not generate the self-assessment declaration form data required for STSDS submission.",
+      "acceptanceCriteria": [
+        "For each employment contract marked as executed, the system automatically calculates stamp duty payable: RM10 for contracts where employee salary exceeds RM3,000/month; nil for salary at or below RM3,000/month (Finance Act 2025 exemption effective 1 January 2026)",
+        "A self-assessment declaration record is generated per contract, containing: contract execution date, employee name, salary, stamp duty calculated, exemption basis (if nil), and the employer's self-assessment affirmation",
+        "The declaration data is exportable in a format compatible with e-Duti Setem STSDS submission on MyTax (format to be confirmed from hasil.gov.my/duti-setem/e-duti-setem/)",
+        "An audit trail of all STSDS declarations is maintained: submission date, e-Duti Setem acknowledgement reference (once received), and status (Draft / Submitted / Acknowledged)",
+        "Alert fires if a contract passes 30 days from execution without a completed and submitted STSDS declaration"
+      ],
+      "technicalNotes": [
+        "RM3,000/month exemption: Finance Act 2025, effective 1 January 2026 (previously RM300/month threshold)",
+        "No penalty during grace period 1 January 2026 – 31 December 2026 for STSDS; penalties resume 1 January 2027",
+        "Access e-Duti Setem via MyTax portal (same login as employer e-PCB Plus, e-CP22 accounts)",
+        "KPMG e-Duti Setem guide December 2025 is the most current implementation reference"
+      ],
+      "dependencies": [
+        "Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyTax (Mandatory from 2026)",
+        "e-Duti Setem Per-Employee Contract Stamp Duty Compliance Task with 30-Day Countdown (Effective January 2026)",
+        "Update Employment Contract Stamp Duty Exemption Threshold to RM3,000 Monthly Wage (Budget 2026)"
+      ],
+      "estimatedComplexity": "medium",
+      "source": "https://kpmg.com/my/en/insights/2025/12/e-duti-setem-replaces-stamps-from-1-january-2026.html"
     }
   ]
 }
