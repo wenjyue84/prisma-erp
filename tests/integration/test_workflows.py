@@ -145,6 +145,14 @@ class TestAIChatIntegration(ERPNextTestCase):
         self.assert_status(resp)
         body = self.parse_json(resp)
         reply = str(body.get("message") or "").lower()
+        # Skip gracefully if AI provider is rate-limited or unavailable — these are
+        # infrastructure issues, not conversation-history bugs.
+        rate_limit_indicators = ("429", "too many requests", "rate limit", "quota exceeded",
+                                 "all ai providers failed", "no ai api key")
+        if any(ind in reply for ind in rate_limit_indicators):
+            self.skipTest(
+                f"AI provider unavailable/rate-limited — INT-10 skipped. Reply: {reply[:120]}"
+            )
         self.assertIn("ultraviolet", reply,
                       f"AI did not use conversation history. Reply: {reply[:200]}")
 

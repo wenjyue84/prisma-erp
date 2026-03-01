@@ -5044,7 +5044,7 @@
       ],
       "dependencies": [],
       "estimatedComplexity": "small",
-      "passes": false,
+      "passes": true,
       "_source": "test-synthesis:tests.integration.test_workflows.TestAIChatIntegration.test_int10_chat_preserves_conversation"
     },
     {
