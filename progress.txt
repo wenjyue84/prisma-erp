@@ -7274,3 +7274,31 @@ Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and
 
 ### Gotchas
 - prd.json must be read/written with encoding='utf-8' on Windows (default cp1252 fails on em-dashes)
+## Iteration 25 - Sun Mar  1 14:54:59 MPST 2026
+Completed: PERKESO LINDUNG 24/7 — Implement Employee Second-Category Contribution Deduction Engine and Gazette-Rate Activation Workflow (ID: US-310) in 12m
+
+
+## Iteration N — US-310: PERKESO LINDUNG 24/7 Employee Second-Category Contribution Deduction Engine
+
+**Type:** IMPL
+**TDD Phase:** GREEN (55/55 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_lindung_24_7_us310`
+**Result:** PASS — 55 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/lindung_24_7_service.py` — LINDUNG 24/7 deduction engine
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_lindung_24_7_us310.py` — 55 tests across 8 test classes
+
+### Key implementation details
+- Dormant by default (pre-gazette) — activation requires 3 conditions: pending_gazette=0, rate>0, activation_date reached
+- `compute_lindung_employee_contribution()` — returns pre-gazette warning when dormant
+- `compute_lindung_employer_contribution()` — mirrors employee function but uses er_rate field
+- `get_gazette_alert_message()` — HR Manager alert with rate, date, and recalculation prompt
+- `get_perkeso_assist_lindung_amounts()` — returns both EE and ER amounts for e-Caruman CSV
+- `send_gazette_activation_alert()` — publishes real-time notification to HR Manager role users
+
+### Patterns discovered
+- LINDUNG 24/7 follows same gazette-guard pattern as SEIA (gig_worker_socso_service.py)
+- LHDN Payroll Settings singleton used as config store (consistent with SEIA commencement date pattern)
+- Separate pending_gazette flag + activation_date gives 2-level activation guard (cleaner than SEIA single-date approach)
+- Mocked settings with `.get` method (not MagicMock auto-attribute) avoids falsy-check issues with Check fields
