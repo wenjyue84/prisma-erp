@@ -5,13 +5,18 @@ that all employment contracts be stamped within 30 days of signing via the
 e-Duti Setem portal on MyTax (mytax.hasil.gov.my).
 
 Fixed duty: RM10 per contract under Item 4, First Schedule, Stamp Act 1949.
-Exemption: contracts where gross monthly salary <= RM3,000/month (Finance Bill 2025).
+
+Exemption thresholds (date-sensitive per US-190):
+  - Contracts signed before 1 January 2026: RM300/month (old threshold)
+  - Contracts signed on/after 1 January 2026: RM3,000/month (Finance Bill 2025)
 
 Late penalties (post-2026 grace year):
   31-90 days: RM50 or 10% whichever higher
   >90 days: RM100 or 20% whichever higher
 
 US-175: Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyTax
+US-190: Update Employment Contract Stamp Duty Exemption Threshold to RM3,000
+        Monthly Wage (Budget 2026) - date-sensitive threshold logic
 """
 from datetime import date, timedelta
 
@@ -20,8 +25,13 @@ import frappe
 # Statutory constants
 STAMP_DUTY_AMOUNT = 10.0                           # RM10 fixed per contract
 EXEMPTION_THRESHOLD = 3000.0                       # RM3,000/month from Finance Bill 2025
+LEGACY_EXEMPTION_THRESHOLD = 300.0                 # RM300/month (pre-2026 threshold)
 STAMPING_WINDOW_DAYS = 30                          # Must stamp within 30 days of signing
 STAMP_DUTY_SAS_EFFECTIVE_DATE = date(2026, 1, 1)  # e-Duti Setem SAS mandatory from 1 Jan 2026
+
+# Backward-compat aliases for test_stamp_duty_us175.py
+SAS_EFFECTIVE_DATE = "2026-01-01"
+STAMPING_DEADLINE_DAYS = STAMPING_WINDOW_DAYS
 
 # Late penalty brackets (post-2026 grace year)
 _PENALTY_BRACKET_1 = (31, 90)       # 31-90 days late
@@ -30,6 +40,15 @@ _PENALTY_BRACKET_1_PCT = 0.10       # 10% of duty
 _PENALTY_BRACKET_2_START = 91       # >90 days late
 _PENALTY_BRACKET_2_FIXED = 100.0    # RM100 fixed
 _PENALTY_BRACKET_2_PCT = 0.20       # 20% of duty
+
+# US-190: Configurable threshold schedule — sorted by effective_from descending.
+# Each entry: (effective_from_date, exemption_threshold_myr).
+# The first entry whose effective_from_date <= contract_date is used.
+# Future changes: add a new row; no code change required.
+STAMP_DUTY_THRESHOLD_SCHEDULE = [
+    (date(2026, 1, 1), 3000.0),   # Finance Bill 2025 (Budget 2026)
+    (date(1900, 1, 1), 300.0),    # Legacy threshold — all pre-2026 contracts
+]
 
 
 def _parse_date(value):
@@ -56,19 +75,46 @@ def _parse_date(value):
         return None
 
 
-def is_stamp_duty_exempt(gross_monthly_salary):
+def get_exemption_threshold(contract_date=None):
+    """Return the applicable stamp duty exemption threshold for a contract date.
+
+    Looks up the STAMP_DUTY_THRESHOLD_SCHEDULE (sorted descending by effective date).
+    Returns the threshold for the most recent schedule row whose effective_from_date
+    is on or before the contract_date.
+
+    If no contract_date is provided, returns the current (most recent) threshold.
+
+    Args:
+        contract_date (date | str | None): Contract signing date.
+
+    Returns:
+        float: Exemption threshold in MYR.
+    """
+    d = _parse_date(contract_date) or date.today()
+    for effective_from, threshold in sorted(
+        STAMP_DUTY_THRESHOLD_SCHEDULE, key=lambda x: x[0], reverse=True
+    ):
+        if d >= effective_from:
+            return threshold
+    return EXEMPTION_THRESHOLD
+
+
+def is_stamp_duty_exempt(gross_monthly_salary, contract_date=None):
     """Return True if the contract is exempt from stamp duty.
 
-    Exemption: gross monthly salary at time of signing <= RM3,000/month.
-    Effective from 1 January 2026 per Finance Bill 2025 (raised from RM300).
+    Applies the date-sensitive threshold per US-190:
+      - Contracts signed before 1 January 2026: exempt if salary <= RM300/month
+      - Contracts signed on/after 1 January 2026: exempt if salary <= RM3,000/month
 
     Args:
         gross_monthly_salary (float): Gross monthly salary at time of signing.
+        contract_date (date | str | None): Contract signing date for threshold lookup.
 
     Returns:
         bool
     """
-    return float(gross_monthly_salary or 0) <= EXEMPTION_THRESHOLD
+    threshold = get_exemption_threshold(contract_date)
+    return float(gross_monthly_salary or 0) <= threshold
 
 
 def calculate_late_penalty(days_overdue):
@@ -231,3 +277,155 @@ def send_stamp_duty_alerts(company=None):
     frappe.logger().info(
         f"[stamp_duty_service] Sent stamping alerts for {len(overdue)} overdue contracts."
     )
+
+
+# ---------------------------------------------------------------------------
+# Backward-compat functions for test_stamp_duty_us175.py API
+# ---------------------------------------------------------------------------
+
+def get_days_since_signing(contract_date, as_of_date=None):
+    """Return days elapsed since the contract was signed.
+
+    Args:
+        contract_date (date | str | None): Contract signing date.
+        as_of_date (date | str | None): Reference date (defaults to today).
+
+    Returns:
+        int: Days elapsed (0 if contract_date is None or in the future).
+    """
+    ref_date = _parse_date(as_of_date) or date.today()
+    signing_date = _parse_date(contract_date)
+    if signing_date is None:
+        return 0
+    return max(0, (ref_date - signing_date).days)
+
+
+def is_stamping_overdue(
+    contract_date,
+    stamped_on=None,
+    as_of_date=None,
+    stamp_reference=None,
+    stamping_date=None,
+):
+    """Return True if the contract is past the 30-day stamping deadline.
+
+    Args:
+        contract_date (date | str | None): Contract signing date.
+        stamped_on (date | str | None): Date the contract was stamped (any truthy → not overdue).
+        as_of_date (date | str | None): Evaluate overdue as of this date (default: today).
+        stamp_reference (str | None): e-Duti Setem reference number (truthy → not overdue).
+        stamping_date (date | str | None): Contract stamping date (truthy → not overdue).
+
+    Returns:
+        bool
+    """
+    # Any evidence of stamping → not overdue
+    if stamped_on or stamp_reference or stamping_date:
+        return False
+    signing_date = _parse_date(contract_date)
+    if signing_date is None:
+        return False
+    ref_date = _parse_date(as_of_date) or date.today()
+    days = (ref_date - signing_date).days
+    return days > STAMPING_WINDOW_DAYS
+
+
+def set_stamp_duty_exempt_flag(employee_doc):
+    """Set custom_stamp_duty_exempt on employee_doc based on gross salary.
+
+    Args:
+        employee_doc: Frappe Document or mock with custom_gross_salary_at_signing attribute.
+    """
+    salary = 0.0
+    if hasattr(employee_doc, "get"):
+        salary = float(employee_doc.get("custom_gross_salary_at_signing") or 0)
+    elif hasattr(employee_doc, "custom_gross_salary_at_signing"):
+        salary = float(getattr(employee_doc, "custom_gross_salary_at_signing") or 0)
+    employee_doc.custom_stamp_duty_exempt = 1 if is_stamp_duty_exempt(salary) else 0
+
+
+def get_contracts_pending_stamping(company=None, as_of_date=None):
+    """Return contracts pending or overdue for stamping with is_overdue and penalty_est.
+
+    Backward-compat wrapper for test_stamp_duty_us175.py. Queries frappe.get_all
+    with flexible field name handling (supports both old and current field names).
+
+    Args:
+        company (str | None): Filter by company.
+        as_of_date (date | str | None): Evaluate compliance as of this date.
+
+    Returns:
+        list[dict]: Each dict has: name, employee, employee_name, company,
+            contract_signing_date, gross_salary_at_signing, days_overdue,
+            is_overdue, penalty_est.
+    """
+    as_of = _parse_date(as_of_date) or date.today()
+
+    filters = {}
+    if company:
+        filters["company"] = company
+
+    records = frappe.get_all(
+        "LHDN Contract Stamp Duty",
+        filters=filters,
+        fields=[
+            "name",
+            "employee",
+            "employee_name",
+            "company",
+            "contract_signing_date",
+            "gross_monthly_salary",
+            "stamp_duty_exempt",
+            "eduti_stamp_reference",
+            "contract_stamping_date",
+        ],
+    )
+
+    results = []
+    for rec in records:
+        contract_date = _parse_date(
+            rec.get("contract_signing_date")
+        )
+        if not contract_date:
+            continue
+
+        # Support both current and legacy field names
+        salary = (
+            rec.get("gross_monthly_salary")
+            or rec.get("gross_salary_at_signing")
+            or 0
+        )
+        stamped = bool(
+            rec.get("eduti_stamp_reference")
+            or rec.get("eduti_setem_reference")
+            or rec.get("contract_stamping_date")
+        )
+        stamp_exempt = bool(rec.get("stamp_duty_exempt"))
+
+        if stamp_exempt or stamped:
+            days_overdue = 0
+        else:
+            elapsed = (as_of - contract_date).days
+            days_overdue = max(0, elapsed - STAMPING_WINDOW_DAYS)
+
+        penalty_est = calculate_late_penalty(days_overdue)
+
+        results.append(
+            {
+                "name": rec["name"],
+                "employee": rec["employee"],
+                "employee_name": rec.get("employee_name") or rec["employee"],
+                "company": rec.get("company", ""),
+                "contract_signing_date": str(contract_date),
+                "gross_salary_at_signing": float(salary),
+                "gross_monthly_salary": float(salary),
+                "stamp_duty_exempt": int(stamp_exempt),
+                "days_overdue": days_overdue,
+                "is_overdue": days_overdue > 0,
+                "penalty_est": penalty_est,
+                "compliance_status": _compliance_status(days_overdue, stamp_exempt, stamped),
+            }
+        )
+
+    results.sort(key=lambda r: r["days_overdue"], reverse=True)
+    return results

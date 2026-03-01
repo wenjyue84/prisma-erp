@@ -6539,3 +6539,32 @@ Incomplete: Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyT
 - Stamping window: 30 days from contract signing date
 - Late penalties: 31-90 days = max(RM50, 10%); >90 days = max(RM100, 20%)
 - 2026 grace year: no penalties for applications submitted in 2026
+## Iteration 10 - Sun Mar  1 11:40:49 MPST 2026
+Completed: Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyTax (Mandatory from 2026) (ID: US-175) in 6m
+
+
+## Iteration N — US-190: Update Employment Contract Stamp Duty Exemption Threshold to RM3,000 Monthly Wage (Budget 2026)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_stamp_duty_us190`
+**Result:** PASS — 34/34 tests pass, 0 failures, 0 errors
+
+Also fixed US-175 backward-compat tests:
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_stamp_duty_us175`
+**Result:** PASS — 38/38 tests pass (was failing 5 before)
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/stamp_duty_service.py` — Added date-sensitive threshold (LEGACY_EXEMPTION_THRESHOLD=300, STAMP_DUTY_THRESHOLD_SCHEDULE, get_exemption_threshold(), updated is_stamp_duty_exempt() to take contract_date, fixed is_stamping_overdue() backward-compat kwargs, fixed get_contracts_pending_stamping() to return is_overdue/penalty_est)
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_contract_stamp_duty/lhdn_contract_stamp_duty.py` — Updated before_save to pass contract_date to is_stamp_duty_exempt
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_stamp_duty_us190.py` — New test file (34 tests)
+
+### Patterns discovered
+- Double-nested path is canonical: always deploy to `.../lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/...` (the nested path), not just the outer path
+- `STAMP_DUTY_THRESHOLD_SCHEDULE` as a mutable list allows test to add/remove entries to verify configurability without creating a full DocType
+- `is_stamp_duty_exempt(salary, contract_date=None)` with optional date arg maintains backward compatibility
+
+### Gotchas
+- MEMORY.md documents the double-nested path issue — always deploy to BOTH paths
+- US-175 tests were failing (5 errors) due to `is_stamping_overdue` not accepting `stamp_reference` and `stamping_date` kwargs — fixed in this iteration
+- `get_contracts_pending_stamping` needed to return `is_overdue` and `penalty_est` keys to match test expectations
