@@ -350,3 +350,57 @@ warning: in the working copy of 'tests/__init__.py', LF will be replaced by CRLF
 [2m[6:51][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
 [2m[6:56][0m 💻 [36mBash[0m [2mdocker exec -u root prisma-erp-backend-1 bash -c "mkdir -p /...[0m
 [2m[7:02][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[7:06][0m [37mNow update hooks.py to add the daily scheduler entry:[0m
+[2m[7:07][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[7:14][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c " sed -i 's/\"lhdn_...[0m
+[2m[7:19][0m 💻 [36mBash[0m [2mdocker exec -u root prisma-erp-backend-1 bash -c " cd /home/...[0m
+[2m[7:24][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -A 10 'daily'...[0m
+[2m[7:29][0m [37mNow copy the updated hooks.py back to the local repo:[0m
+[2m[7:30][0m 💻 [36mBash[0m [2mdocker cp prisma-erp-backend-1:/home/frappe/frappe-bench/app...[0m
+[2m[7:37][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[7:42][0m [37mNow write the tests:[0m
+[2m[8:32][0m ✏️ [36mWrite[0m [2mtest_cp22_us114.py[0m
+[2m[8:37][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[8:44][0m 🔨 [36mTodoWrite[0m [2m[0m
+[2m[8:47][0m [37mNow run migrate to apply the new fixtures, then run tests:[0m
+[2m[8:48][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[9:57][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:09][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:18][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:24][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:36][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
+[2m[10:40][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:48][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[10:54][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:00][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:06][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:12][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:18][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:24][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:31][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
+[2m[11:36][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:42][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:51][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[11:57][0m [37mThe report is now in the DB. Now run the tests:[0m
+[2m[11:59][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[12:56][0m [37mGood - 3 failures to fix: 1. Description markers not in the description text (need to align marker w...[0m
+[2m[13:22][0m ✏️ [36mWrite[0m [2mcp22_tracking_service.py[0m
+[2m[13:29][0m [37mNow update the tests to match the new markers and correct call ordering:[0m
+[2m[14:25][0m ✏️ [36mWrite[0m [2mtest_cp22_us114.py[0m
+[2m[14:30][0m 💻 [36mBash[0m [2mdocker cp "C:/Users/Jyue/Documents/1-projects/Projects/prism...[0m
+[2m[14:35][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+[2m[14:43][0m [37m18/18 tests pass. Now copy all files to the local repo and commit:[0m
+[2m[14:45][0m 💻 [36mBash[0m [2mdocker cp prisma-erp-backend-1:/home/frappe/frappe-bench/app...[0m
+[2m[14:52][0m 💻 [36mBash[0m [2mmkdir -p "C:/Users/Jyue/Documents/1-projects/Projects/prisma...[0m
+[2m[14:57][0m [37mNow update prd.json to mark US-114 as complete:[0m
+
+  ╔══════════════════════════════════════════╗
+  ║   📊 15-MIN PROGRESS REPORT — 08:50  ║
+  ╠══════════════════════════════════════════╣
+  ║  Completed:  107 / 140 stories
+  ║  Remaining:  33 stories
+  ║
+  ║  Recently done:
+  ║    ✓ [US-106] Add Wage Payment Deadline Compliance Alerts (Employment Act S.19 7-Day Rule)
+  ║    ✓ [US-107] Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export
+  ║    ✓ [US-111] Implement Multi-Currency Salary Conversion for Expatriate PCB Base Calculation
