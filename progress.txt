@@ -7131,3 +7131,27 @@ Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and
 - tabCompany row size error (1118) is a pre-existing constraint — unrelated to this story
 - LHDN STAMPS Employment Contract table created successfully despite migrate error
 
+## Iteration 25 - Sun, Mar  1, 2026  2:23:51 PM
+Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging (ID: US-210) — attempt 1/3
+
+
+## Iteration N+1 — US-150: LHDN STAMPS Employment Contract Digital Stamp Status Tracker (VERIFIED)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 32 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_stamps_employment_contract`
+**Result:** PASS — 32/32 tests pass, 0 failures, 0 errors
+
+### Verification
+- DocType "LHDN STAMPS Employment Contract" registered and table exists
+- Report "Unstamped Employment Contracts" registered as Script Report
+- Service layer constants, helper functions all pass
+- Days elapsed calculation, legacy contract detection, get_unstamped_contracts query helper all verified
+
+## Iteration N+1 — US-150: LHDN STAMPS Employment Contract Digital Stamp Status Tracker (VERIFIED)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 32 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_stamps_employment_contract
+**Result:** PASS — 32/32 tests pass, 0 failures, 0 errors
+
