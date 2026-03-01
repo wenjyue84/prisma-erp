@@ -6116,3 +6116,23 @@ Completed: Auto-Submit CP21/CP22A/CP22B via e-SPC MyTax at Cessation or Departur
 ### Gotchas
 - bench console interacts via stdin; frappe.db.upsert is not available — use frappe.db.exists + frappe.get_doc.insert or frappe.db.set_value
 - prd.json must be opened with encoding='utf-8' on Windows (special chars in story titles cause cp1252 decode error)
+## Iteration 3 - Sun, Mar  1, 2026  9:14:21 AM
+Completed: Register PCB Administrator Role on MyTax e-PCB Plus and Store Credential Reference on Company (ID: US-116) in 10m
+
+
+## Iteration N — US-117: Implement EPF i-Topup (Voluntary Excess Contribution) Payroll Deduction and RM7,000 PCB Relief Tracking
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 24 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_epf_itopup`
+**Result:** PASS — 24/24 tests, 0 failures, 0 errors
+
+### Files already present (pre-implemented)
+- `lhdn_payroll_integration/tests/test_epf_itopup.py` — 24 tests across 5 classes
+- `lhdn_payroll_integration/doctype/employee_tp1_relief/employee_tp1_relief.py` — voluntary_epf_itopup field, _apply_life_voluntary_epf_combined_cap(), _RELIEF_FIELDS, _CAPS_DEFAULT with voluntary_epf_itopup=3000, _LIFE_VOLUNTARY_EPF_COMBINED_CAP=3000
+- `fixtures/salary_component.json` — 'EPF Voluntary (i-Topup)' component with EPF-VLN abbr, custom_is_epf_voluntary=1
+- `fixtures/custom_field.json` — custom_epf_itopup_monthly_amount Currency field on Employee
+
+### Patterns discovered
+- US-117 was already fully implemented before this iteration; all acceptance criteria already met
+- All 24 tests pass: Fixture, Employee field, TP1 field, Combined cap enforcement, PCB relief, SOCSO/EIS exclusion
