@@ -1,0 +1,186 @@
+[
+  {
+    "doctype": "Salary Component",
+    "name": "Basic Salary",
+    "salary_component": "Basic Salary",
+    "salary_component_abbr": "BS",
+    "type": "Earning",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "Monthly Tax Deduction",
+    "salary_component": "Monthly Tax Deduction",
+    "salary_component_abbr": "PCB",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 1,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EPF Employee",
+    "salary_component": "EPF Employee",
+    "salary_component_abbr": "EPF-EE",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "SOCSO Employee",
+    "salary_component": "SOCSO Employee",
+    "salary_component_abbr": "SOCSO-EE",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EPF - Employer",
+    "salary_component": "EPF - Employer",
+    "salary_component_abbr": "EPF-ER",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 1,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "SOCSO - Employer",
+    "salary_component": "SOCSO - Employer",
+    "salary_component_abbr": "SOCSO-ER",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 1,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EIS Employee",
+    "salary_component": "EIS Employee",
+    "salary_component_abbr": "EIS-EE",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EIS - Employer",
+    "salary_component": "EIS - Employer",
+    "salary_component_abbr": "EIS-ER",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 1,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "HRDF Levy",
+    "salary_component": "HRDF Levy",
+    "salary_component_abbr": "HRDF",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 1,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "Transport Allowance",
+    "salary_component": "Transport Allowance",
+    "salary_component_abbr": "TA",
+    "type": "Earning",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": "022",
+    "custom_exemption_type": "Transport",
+    "custom_annual_exemption_ceiling": 6000
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "Housing Allowance",
+    "salary_component": "Housing Allowance",
+    "salary_component_abbr": "HA",
+    "type": "Earning",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": "022"
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EPF Employee (Foreign Worker)",
+    "salary_component": "EPF Employee (Foreign Worker)",
+    "salary_component_abbr": "EPF-FW-EE",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EPF Employer (Foreign Worker)",
+    "salary_component": "EPF Employer (Foreign Worker)",
+    "salary_component_abbr": "EPF-FW-ER",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 1,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": ""
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "EPF Voluntary (i-Topup)",
+    "salary_component": "EPF Voluntary (i-Topup)",
+    "salary_component_abbr": "EPF-VLN",
+    "type": "Deduction",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 0,
+    "custom_lhdn_classification_code": "",
+    "custom_is_epf_employee": 0,
+    "custom_is_epf_employer": 0,
+    "custom_is_epf_voluntary": 1
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "Gratuity - Approved Fund",
+    "salary_component": "Gratuity - Approved Fund",
+    "salary_component_abbr": "GRAT-AF",
+    "type": "Earning",
+    "description": "Gratuity from an LHDN-approved fund. ITA 1967 Sch 6 para 25: RM1,000 per year of service is exempt from income tax.",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 1,
+    "custom_lhdn_classification_code": "022 : Others",
+    "custom_is_gratuity_or_leave_encashment": 1,
+    "custom_ea_section": "B5 Gratuity"
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "Gratuity - Non-Approved",
+    "salary_component": "Gratuity - Non-Approved",
+    "salary_component_abbr": "GRAT-NA",
+    "type": "Earning",
+    "description": "Gratuity not from an approved fund. Fully taxable \u2014 no Schedule 6 para 25 exemption applies.",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 1,
+    "custom_lhdn_classification_code": "022 : Others",
+    "custom_is_gratuity_or_leave_encashment": 1,
+    "custom_ea_section": "B5 Gratuity"
+  },
+  {
+    "doctype": "Salary Component",
+    "name": "Gratuity - Ex-Gratia",
+    "salary_component": "Gratuity - Ex-Gratia",
+    "salary_component_abbr": "GRAT-EG",
+    "type": "Earning",
+    "description": "Ex-gratia payment (discretionary). No Schedule 6 para 25 exemption. May qualify for full exemption under para 30 if employee is retiring from an approved pension scheme at age 55+.",
+    "custom_lhdn_exclude_from_invoice": 0,
+    "custom_is_pcb_component": 1,
+    "custom_lhdn_classification_code": "022 : Others",
+    "custom_is_gratuity_or_leave_encashment": 1,
+    "custom_ea_section": "B5 Gratuity"
+  }
+]

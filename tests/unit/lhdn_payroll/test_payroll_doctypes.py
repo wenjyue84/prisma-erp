@@ -64,64 +64,74 @@ class TestSalarySlipCustomFields(ERPNextTestCase):
         "custom_pcb_amount",
     ]
 
-    def _get_salary_slip_meta(self) -> dict:
-        resp = self.session.api("frappe.client.get", doctype="DocType", name="Salary Slip")
+    def _get_custom_field_names(self) -> list[str]:
+        """Get all custom field names on Salary Slip via Custom Field doctype."""
+        resp = self.session.resource(
+            "Custom Field",
+            params={
+                "filters": '[["dt","=","Salary Slip"]]',
+                "fields": '["fieldname"]',
+                "limit_page_length": 100,
+            },
+        )
         if resp.status_code == 200:
-            return resp.json().get("message") or {}
-        return {}
+            data = resp.json().get("data") or []
+            return [d.get("fieldname", "") for d in data]
+        return []
 
     def test_lp06_salary_slip_meta_accessible(self):
-        """LP-06: Salary Slip DocType meta is readable."""
-        resp = self.session.api("frappe.client.get", doctype="DocType", name="Salary Slip")
+        """LP-06: Salary Slip custom fields are queryable via REST."""
+        resp = self.session.resource(
+            "Custom Field",
+            params={
+                "filters": '[["dt","=","Salary Slip"]]',
+                "fields": '["fieldname"]',
+                "limit_page_length": 100,
+            },
+        )
         self.assert_status(resp)
 
     def test_lp07_custom_lhdn_status_field_exists(self):
         """LP-07: custom_lhdn_status field exists on Salary Slip."""
-        meta = self._get_salary_slip_meta()
-        if not meta:
-            self.skipTest("Could not load Salary Slip meta")
-        fields = [f.get("fieldname") for f in meta.get("fields", [])]
+        fields = self._get_custom_field_names()
+        if not fields:
+            self.skipTest("Could not load Salary Slip custom fields")
         self.assertIn("custom_lhdn_status", fields,
-                      f"custom_lhdn_status missing. Found LHDN fields: "
-                      f"{[f for f in fields if 'lhdn' in f.lower() or 'custom' in f.lower()]}")
+                      f"custom_lhdn_status missing. Found fields: "
+                      f"{[f for f in fields if 'lhdn' in f.lower()]}")
 
     def test_lp08_custom_pcb_field_exists(self):
         """LP-08: custom_pcb_amount or similar PCB field exists on Salary Slip."""
-        meta = self._get_salary_slip_meta()
-        if not meta:
-            self.skipTest("Could not load Salary Slip meta")
-        fields = [f.get("fieldname") for f in meta.get("fields", [])]
+        fields = self._get_custom_field_names()
+        if not fields:
+            self.skipTest("Could not load Salary Slip custom fields")
         pcb_fields = [f for f in fields if "pcb" in f.lower()]
         self.assertTrue(len(pcb_fields) > 0,
-                        f"No PCB field on Salary Slip. Custom fields: "
-                        f"{[f for f in fields if f.startswith('custom_')]}")
+                        f"No PCB field on Salary Slip. Custom fields: {fields}")
 
     def test_lp09_epf_fields_exist(self):
         """LP-09: EPF employee/employer fields exist on Salary Slip."""
-        meta = self._get_salary_slip_meta()
-        if not meta:
-            self.skipTest("Could not load Salary Slip meta")
-        fields = [f.get("fieldname") for f in meta.get("fields", [])]
+        fields = self._get_custom_field_names()
+        if not fields:
+            self.skipTest("Could not load Salary Slip custom fields")
         epf_fields = [f for f in fields if "epf" in f.lower()]
         self.assertTrue(len(epf_fields) >= 2,
                         f"Expected at least 2 EPF fields, got: {epf_fields}")
 
     def test_lp10_socso_fields_exist(self):
         """LP-10: SOCSO employee/employer fields exist on Salary Slip."""
-        meta = self._get_salary_slip_meta()
-        if not meta:
-            self.skipTest("Could not load Salary Slip meta")
-        fields = [f.get("fieldname") for f in meta.get("fields", [])]
+        fields = self._get_custom_field_names()
+        if not fields:
+            self.skipTest("Could not load Salary Slip custom fields")
         socso_fields = [f for f in fields if "socso" in f.lower()]
         self.assertTrue(len(socso_fields) >= 2,
                         f"Expected at least 2 SOCSO fields, got: {socso_fields}")
 
     def test_lp11_eis_fields_exist(self):
         """LP-11: EIS employee/employer fields exist on Salary Slip."""
-        meta = self._get_salary_slip_meta()
-        if not meta:
-            self.skipTest("Could not load Salary Slip meta")
-        fields = [f.get("fieldname") for f in meta.get("fields", [])]
+        fields = self._get_custom_field_names()
+        if not fields:
+            self.skipTest("Could not load Salary Slip custom fields")
         eis_fields = [f for f in fields if "eis" in f.lower()]
         self.assertTrue(len(eis_fields) >= 1,
                         f"Expected at least 1 EIS field, got: {eis_fields}")

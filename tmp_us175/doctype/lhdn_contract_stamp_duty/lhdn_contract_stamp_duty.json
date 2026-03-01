@@ -1,0 +1,171 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "employee",
+  "employee_name",
+  "company",
+  "department",
+  "contract_signing_date",
+  "gross_monthly_salary",
+  "stamp_duty_exempt",
+  "section_break_stamp",
+  "eduti_stamp_reference",
+  "contract_stamping_date",
+  "stamping_deadline",
+  "days_overdue",
+  "compliance_status",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "STAMP-.YYYY.-",
+   "default": "STAMP-.YYYY.-"
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "fetch_from": "employee.employee_name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "fetch_from": "employee.company",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "fetch_from": "employee.department",
+   "read_only": 1
+  },
+  {
+   "fieldname": "contract_signing_date",
+   "fieldtype": "Date",
+   "label": "Contract Signing Date",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "Date the employment contract was signed. The 30-day stamp duty window starts from this date (SAS effective 1 January 2026)."
+  },
+  {
+   "fieldname": "gross_monthly_salary",
+   "fieldtype": "Currency",
+   "label": "Gross Monthly Salary at Signing (MYR)",
+   "reqd": 1,
+   "description": "Gross monthly salary at time of contract signing. Contracts for employees earning ≤ RM3,000/month are exempt from stamp duty (Finance Bill 2025, eff. 1 Jan 2026)."
+  },
+  {
+   "fieldname": "stamp_duty_exempt",
+   "fieldtype": "Check",
+   "label": "Stamp Duty Exempt",
+   "read_only": 1,
+   "in_list_view": 1,
+   "description": "Auto-set: 1 if gross monthly salary ≤ RM3,000. Exempt contracts are excluded from stamp duty tracking."
+  },
+  {
+   "fieldname": "section_break_stamp",
+   "fieldtype": "Section Break",
+   "label": "Stamping Details"
+  },
+  {
+   "fieldname": "eduti_stamp_reference",
+   "fieldtype": "Data",
+   "label": "e-Duti Setem Stamp Reference No.",
+   "in_list_view": 1,
+   "description": "Stamp reference number from e-Duti Setem portal on MyTax (mytax.hasil.gov.my). Enter after stamping the employment contract."
+  },
+  {
+   "fieldname": "contract_stamping_date",
+   "fieldtype": "Date",
+   "label": "Stamping Date",
+   "description": "Date the contract was stamped via e-Duti Setem. Must be within 30 days of contract signing date."
+  },
+  {
+   "fieldname": "stamping_deadline",
+   "fieldtype": "Date",
+   "label": "30-Day Stamping Deadline",
+   "read_only": 1,
+   "in_list_view": 1,
+   "description": "Auto-calculated: contract_signing_date + 30 days."
+  },
+  {
+   "fieldname": "days_overdue",
+   "fieldtype": "Int",
+   "label": "Days Overdue",
+   "read_only": 1,
+   "description": "Days past the 30-day stamping deadline. Negative = still within window."
+  },
+  {
+   "fieldname": "compliance_status",
+   "fieldtype": "Select",
+   "label": "Compliance Status",
+   "options": "\nPending (within 30 days)\nDue Today\nStamped\nOverdue — RM50 penalty risk\nOverdue — RM100 penalty risk\nExempt",
+   "default": "Pending (within 30 days)",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "idx": 0,
+ "in_create": 0,
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LHDN Payroll Integration",
+ "name": "LHDN Contract Stamp Duty",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "HR User"
+  }
+ ],
+ "sort_field": "contract_signing_date",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "employee_name"
+}
