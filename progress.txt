@@ -1,3 +1,26 @@
+## Iteration N — US-218: Process TP3(1/2026) Updated Form Format with Budget 2026 Relief Line Items
+
+**Type:** IMPL
+**TDD Phase:** GREEN (76/76 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_us218_tp3_form_version
+**Result:** PASS — 76 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/tp3_form_version_service.py` — Core service: get_tp3_form_version() (year-based version selection), get_tp3_form_version_for_employee() (date-based), get_tp3_fields_for_version() (version-aware field listing), validate_tp3_data() (required fields + relief limits), cap_relief_values() (statutory limit capping), compute_total_prior_reliefs() (summed capped reliefs), build_mtd_carry_forward() (PCB calculator-ready structure), process_tp3_declaration() (end-to-end pipeline), get_tp3_form_metadata() (UI rendering metadata)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_us218_tp3_form_version.py` — 76 tests across 11 classes: TestTP3FormVersionConstants, TestGetTP3FormVersion, TestGetTP3FormVersionForEmployee, TestIsVersionSupported, TestGetTP3FieldsForVersion, TestGetReliefFieldsForVersion, TestValidateTP3Data, TestCapReliefValues, TestComputeTotalPriorReliefs, TestBuildMTDCarryForward, TestProcessTP3Declaration, TestGetTP3FormMetadata
+
+### Patterns discovered
+- TP3(1/2026) form adds 13 Budget 2026 relief line items: childcare (RM3,000), learning disability (RM10,000), vaccination (RM1,000), eco-lifestyle (RM2,500), medical parents (RM8,000), education fees (RM7,000), lifestyle (RM2,500), PRS/annuity (RM3,000), SSPN (RM8,000), life insurance (RM7,000), medical insurance (RM3,000), disabled equipment (RM6,000), EV charging (RM2,500)
+- Form version selection is year-based: 2024→1/2024, 2025→1/2025, 2026+→1/2026
+- TP3(1/2025) has 7 relief fields (subset); TP3(1/2024) has base fields only (no reliefs)
+- Relief values are capped at statutory limits before flowing into MTD carry-forward computation
+- Pure Python service — no Frappe dependencies needed, all functions are stateless
+
+### Gotchas
+- None — clean implementation, well-isolated from existing TP3 service code
+
+---
+
 ## Iteration N — US-184: Enforce Part-Time Employee Minimum Hourly Rate Against RM1,700 Monthly Wage Floor Proration
 
 **Type:** IMPL
@@ -8023,4 +8046,5 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 
 ## Iteration 47 - Sun, Mar  1, 2026  6:20:43 PM
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 2/3
+
 
