@@ -3216,7 +3216,7 @@
       ],
       "dependencies": [],
       "estimatedComplexity": "medium",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-142",
@@ -3474,6 +3474,284 @@
         "Fix CP39 CSV Format — Add All Mandatory LHDN e-PCB Plus Columns"
       ],
       "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-152",
+      "title": "Fix failing test: SalarySlipCustomFields — lp07 custom lhdn status field exists",
+      "priority": "medium",
+      "description": "Automated test `test_lp07_custom_lhdn_status_field_exists` is failing with status FAIL. This indicates a regression or missing implementation in the unit:lhdn_payroll suite. LP-07: custom_lhdn_status field exists on Salary Slip.",
+      "acceptanceCriteria": [
+        "Test `tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp07_custom_lhdn_status_field_exists` passes without error.",
+        "Root cause resolved: 'custom_lhdn_status' not found in ['employee_and_payroll_tab', 'section_break_6', 'employee', 'employee_name', 'company', 'department', 'designation', 'branch', 'column_break_obdl', 'posting_date', 'l"
+      ],
+      "technicalNotes": [
+        "Test category: unit:lhdn_payroll",
+        "Test ID: tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp07_custom_lhdn_status_field_exists",
+        "Error type: AssertionError",
+        "Test description: LP-07: custom_lhdn_status field exists on Salary Slip."
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "_source": "test-synthesis:tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp07_custom_lhdn_status_field_exists"
+    },
+    {
+      "id": "US-153",
+      "title": "Fix failing test: SalarySlipCustomFields — lp09 epf fields exist",
+      "priority": "medium",
+      "description": "Automated test `test_lp09_epf_fields_exist` is failing with status FAIL. This indicates a regression or missing implementation in the unit:lhdn_payroll suite. LP-09: EPF employee/employer fields exist on Salary Slip.",
+      "acceptanceCriteria": [
+        "Test `tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp09_epf_fields_exist` passes without error.",
+        "Root cause resolved: False is not true : Expected at least 2 EPF fields, got: []"
+      ],
+      "technicalNotes": [
+        "Test category: unit:lhdn_payroll",
+        "Test ID: tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp09_epf_fields_exist",
+        "Error type: AssertionError",
+        "Test description: LP-09: EPF employee/employer fields exist on Salary Slip."
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "_source": "test-synthesis:tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp09_epf_fields_exist"
+    },
+    {
+      "id": "US-154",
+      "title": "Display EPF Akaun Fleksibel Three-Account Contribution Split on Payslip",
+      "priority": "high",
+      "description": "Effective 11 May 2024, EPF contributions are automatically split across three accounts: 75% Akaun Persaraan (retirement), 15% Akaun Sejahtera (well-being), and 10% Akaun Fleksibel (flexible). Employee payslips must show the breakdown per account for transparency and to allow employees to verify their allocations match EPF records. The existing EPF i-Akaun upload file story covers contribution submission but does not address the three-account display on payslips.",
+      "acceptanceCriteria": [
+        "Payslip shows three separate EPF line items: Akaun Persaraan (75%), Akaun Sejahtera (15%), and Akaun Fleksibel (10%) of the total EPF contribution amount",
+        "Calculation correctly splits employee contribution (11% or 9% depending on age/salary) and employer contribution (12% or 13%) into the three-account proportions",
+        "For employees above age 55 who have not joined the three-account restructuring, payslip shows the two-account legacy split",
+        "Three-account breakdown appears in both PDF payslip and Employment Act S.61 payslip export",
+        "Unit test verifies RM1,000 employee EPF contribution splits as RM750 / RM150 / RM100 across the three accounts"
+      ],
+      "technicalNotes": [
+        "KWSP confirmed the 75/15/10 three-account structure applies to all contributions after 11 May 2024",
+        "The split ratio is fixed by EPF policy — no employer or employee customisation is permitted",
+        "Foreign employees under the 2% mandatory EPF rule (effective October 2025) follow the same three-account split",
+        "Implement as computed display fields on Salary Slip — actual routing to sub-accounts is performed by EPF, not employer"
+      ],
+      "dependencies": [
+        "Generate EPF i-Akaun Electronic Upload File",
+        "Generate Employment Act S.61 Compliant Payslip with All Mandatory Fields"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-155",
+      "title": "Implement PDPA 2024 Amendment Payroll Data Protection Compliance Module",
+      "priority": "high",
+      "description": "The Personal Data Protection (Amendment) Act 2024 (Royal Assent October 2024, fully effective 1 June 2025) introduces mandatory Data Protection Officer (DPO) appointment, data breach notification to PDPC within 72 hours, increased fines up to RM1 million, and employee right to data portability. Payroll systems process sensitive personal data (NRIC, salary, bank account, tax file, EPF number) and must implement consent tracking, access audit logs, and breach response workflows. No existing PRD story covers PDPA compliance.",
+      "acceptanceCriteria": [
+        "System records employee consent for payroll data processing (NRIC, salary, bank, EPF, SOCSO numbers) with timestamp and consent version",
+        "All payroll data access events (Salary Slip read, export, third-party transmission to LHDN/EPF/SOCSO portals) are logged with user, timestamp, and data category",
+        "Company DocType has a DPO contact section (name, email, phone); DPO receives alert emails on high-risk data events such as bulk export or unusual access",
+        "Payroll data retention enforcer: system flags Salary Slips older than the configured retention period (default 7 years per MOHR and LHDN requirements) for archival review",
+        "A 'Data Subject Request' workflow allows HR Manager to export a single employee's complete payroll data history as a portable JSON/CSV (data portability right)",
+        "Unit test confirms an audit log entry is created on every Salary Slip read, print, and email action"
+      ],
+      "technicalNotes": [
+        "PDPA Amendment Act 2024 — mandatory DPO appointment effective 1 June 2025 for organisations processing large volumes of sensitive personal data",
+        "Section 12 of amended PDPA: data controllers AND data processors now have direct PDPA obligations",
+        "Breach notification obligation: notify PDPC 'as soon as practicable'; notify affected data subjects if breach likely to cause significant harm",
+        "Penalties increased to RM1 million (5x previous maximum); 3 years imprisonment for serious violations",
+        "Implement as: (1) Employee Payroll Consent DocType, (2) Frappe audit trail hooks on Salary Slip read/export, (3) Company-level DPO settings tab"
+      ],
+      "dependencies": [
+        "Implement Payroll Wage Register with 6-Year Retention and LHDN/MOHR Audit Export"
+      ],
+      "estimatedComplexity": "large",
+      "passes": false
+    },
+    {
+      "id": "US-156",
+      "title": "Employer Statutory Registration Onboarding Checklist with Deadline Alerts",
+      "priority": "high",
+      "description": "When a new company begins operations with employees, it faces strict statutory registration deadlines with significant penalties for non-compliance: EPF within 7 working days of first hire (penalty: RM10,000 / 3 years jail), SOCSO within 30 days (penalty: RM5,000 / 2 years jail), LHDN E-Number via e-Daftar within 7 days, EIS automatic with SOCSO, and HRDF from date of liability for 10+ employees. No existing PRD story guides new employers through the registration checklist or alerts on pending/overdue statutory registrations.",
+      "acceptanceCriteria": [
+        "Company DocType has a Statutory Registration tab with fields for EPF Employer Number, SOCSO Employer Number, LHDN E-Number, EIS Registration Number, and HRD Corp Registration Number",
+        "When a company has active employees but EPF Employer Number is blank for more than 7 working days from the first employee hire date, system flags as OVERDUE with daily email escalation to HR Manager",
+        "When a company has active employees but SOCSO Number is blank for more than 30 days from first hire date, system raises a compliance warning",
+        "When Malaysian employee count on a Company crosses 10, system prompts HR Manager to register with HRD Corp",
+        "Registration checklist shows status (Registered / Pending / Overdue) for each statutory body with clickable links to official registration portals",
+        "Scheduled daily job scans all companies and employees to detect registration gaps"
+      ],
+      "technicalNotes": [
+        "EPF: Employees Provident Fund Act 1991 — 7 working days from date first employee commences employment",
+        "SOCSO: Employees' Social Security Act 1969 Section 7 — register within 30 days of first hire",
+        "LHDN e-Daftar: employers must register within 7 days of employing first staff; application cancelled if docs not received in 14 days",
+        "HRDF: PSMB Act 2001 Regulation 4(1) — compulsory from date employer becomes liable (10+ Malaysian employees in covered sectors)",
+        "Implement as scheduled Frappe job (daily check) with notification escalation pattern"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-157",
+      "title": "Implement 60-Day PCB Exemption Counter for Short-Term Non-Resident Workers",
+      "priority": "high",
+      "description": "Under LHDN tax rules, non-resident employees are fully exempt from income tax (and PCB) if their total employment period in Malaysia is 60 days or fewer within a calendar year. This exemption applies to all non-residents regardless of DTA coverage and is a distinct mechanism from the DTA 183-day tracker. When the 60-day threshold is exceeded mid-year, the employee retroactively becomes a taxable non-resident at 30% flat rate. Directors are explicitly excluded from this exemption. Employers must track cumulative working days in Malaysia per non-resident employee.",
+      "acceptanceCriteria": [
+        "Non-resident Employee records have a 'Days in Malaysia (YTD)' counter, auto-incremented from the number of payroll days covered in each submitted Salary Slip",
+        "When counter is ≤ 60 days, PCB is set to RM0 and payslip notes 'PCB Exempt — Short-Term Non-Resident (S.8(3) ITA 1967)'",
+        "When counter crosses 60 days, system flags the employee for PCB correction: generates a corrected CP39 row at 30% of total YTD gross income and deducts the shortfall from the next payroll run",
+        "Directors (where Employee Type = Director) are blocked from 60-day exemption regardless of day count",
+        "System raises a pre-emptive alert when a non-resident employee is projected to cross 60 days within the next 5 working days",
+        "Unit test: employee with 55 days in Malaysia has RM0 PCB; employee whose 61st working day is processed triggers 30% flat-rate PCB correction"
+      ],
+      "technicalNotes": [
+        "Section 8(3) of the Income Tax Act 1967 — employment income exempt if employment period in Malaysia is 60 days or less per calendar year",
+        "LHDN 'Tax Treatment Residents & Non-Residents' publication explicitly confirms 60-day rule; directors and public entertainers are excluded",
+        "Distinct from the DTA 183-day tracker: the 60-day rule is a domestic exemption; DTA exemptions require treaty-country residency certification",
+        "When threshold is crossed mid-year, employer must submit corrected CP39 rows for all prior months via e-PCB Plus amendment flow",
+        "Days straddling two calendar years are counted independently per year"
+      ],
+      "dependencies": [
+        "Add non-resident flat-rate 30% tax flag and handling",
+        "Implement DTA 183-Day Residency Tracker and Short-Term Assignee PCB Exemption Workflow",
+        "e-PCB Plus Prior Month PCB Amendment — Trigger Corrected CP39 Row on Salary Slip Resubmission"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-158",
+      "title": "Alert on EPF New Employee Registration 7-Day Statutory Deadline",
+      "priority": "high",
+      "description": "Employers must register every new employee with EPF within 7 working days from commencement of employment. Failure to comply attracts a fine of up to RM10,000 or imprisonment of up to 3 years. While the PRD covers SOCSO Borang 3 new employee notification, it does not address EPF's shorter 7-working-day registration window. A daily alert system should identify employees whose EPF Member Number has not been recorded within the statutory window and escalate to HR Manager.",
+      "acceptanceCriteria": [
+        "Employee DocType has an EPF Member Number field; if blank after 7 working days from Date of Joining, a desk notification and email alert is triggered to HR Manager",
+        "Alerts distinguish between 'Approaching Deadline' (day 5-6) and 'OVERDUE' (day 7+) with increasing urgency",
+        "Scheduled daily job scans all active employees with no EPF Member Number and hire date older than 5 working days",
+        "Alert email includes employee name, department, hire date, working days elapsed, and a direct link to the KWSP i-Akaun employer portal",
+        "Once EPF Member Number is entered on the Employee record, alert auto-resolves and logs the resolution date and user",
+        "Unit test confirms 7-day window is computed in working days, excluding Gazetted Public Holidays from the calendar"
+      ],
+      "technicalNotes": [
+        "Employees Provident Fund Act 1991 — employer must register each new employee within 7 working days from date employment commences",
+        "Penalty: fine not exceeding RM10,000 OR imprisonment not exceeding 3 years, or both",
+        "Registration via KWSP i-Akaun (employer portal) — employee's NRIC is required to generate EPF member number",
+        "Separate from SOCSO Borang 3 (30-day window); EPF has a stricter 7-working-day deadline",
+        "Implement as a scheduled Frappe job (daily) with the same notification pattern as other LHDN compliance alerts"
+      ],
+      "dependencies": [
+        "Implement SOCSO Borang 3 — New Employee Notification to PERKESO",
+        "Track Statutory Compliance Submission Calendar and Auto-Escalate Overdue Filings"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-159",
+      "title": "Track Flexible Work Arrangement Requests and 60-Day Employer Response Deadline",
+      "priority": "medium",
+      "description": "Employment Act 2022 Amendment (Sections 60P and 60Q, effective 1 January 2023) grants employees the right to apply in writing for flexible working arrangements (FWA) covering hours, days, or place of work. Employers must respond within 60 days in writing; rejections must state reasons. Approved FWA changes to hours or location affect ORP and overtime computations. Updated MOHR/TalentCorp FWA Implementation Guidelines were issued in December 2024. No existing PRD story addresses FWA request tracking or compliance.",
+      "acceptanceCriteria": [
+        "New DocType 'FWA Request' linked to Employee with fields: application date, FWA type (hours/days/place), current arrangement, requested arrangement, decision (Approved/Rejected), decision date, written rejection reason, and FWA duration (temporary/permanent/rotational)",
+        "System calculates 60-calendar-day response deadline from application date and sends HR Manager alerts at day 50 (upcoming) and day 61+ (overdue)",
+        "Approved FWA records update the employee's contracted hours/location fields used in ORP and overtime calculations",
+        "Rejection without a written reason is blocked at DocType level (rejection reason is mandatory when status = Rejected)",
+        "FWA request log is viewable per employee with full audit trail suitable for MOHR inspection",
+        "Unit test confirms that an approved FWA cannot reduce statutory leave entitlements or eliminate overtime eligibility"
+      ],
+      "technicalNotes": [
+        "Employment Act 1955 Section 60P — employee right to apply for FWA; Section 60Q — employer must respond within 60 days in writing",
+        "MOHR and TalentCorp launched updated FWA Implementation Guidelines in December 2024",
+        "Rejection must state specific grounds; employer cannot simply decline without documented reason under the amended Act",
+        "An approved FWA changes the employee's working pattern baseline used for ORP calculation — ensure ORP engine reads the approved FWA terms",
+        "Reference Act text: https://jtksm.mohr.gov.my/sites/default/files/2023-11/Akta%20Kerja%201955%20(Akta%20265)_0.pdf"
+      ],
+      "dependencies": [
+        "Implement Ordinary Rate of Pay (ORP) Calculator and Overtime Validation"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-160",
+      "title": "Support HRD Corp Voluntary Levy Registration for 5-9 Employee SMEs at 0.5% Rate",
+      "priority": "medium",
+      "description": "Employers with 5–9 Malaysian employees may voluntarily register with HRD Corp and contribute at 0.5% of monthly wages (versus the mandatory 1% for 10+ employees). Voluntary registration grants SMEs full access to training grants and HRD Corp eTRiS subsidies. The existing HRDF implementation in the PRD covers only the mandatory 1% threshold. A voluntary registration pathway with the lower 0.5% rate, SME eligibility prompts, and levy calculation differentiation is required.",
+      "acceptanceCriteria": [
+        "Company HRDF settings includes a 'Registration Type' field with options: Not Registered / Voluntary (5-9 employees, 0.5%) / Mandatory (10+ employees, 1%)",
+        "When Malaysian employee count is between 5 and 9 and Registration Type is Not Registered, system prompts HR Manager about optional HRD Corp voluntary registration with a training grant benefits note",
+        "HRDF levy calculation uses 0.5% rate when Registration Type is Voluntary and 1% when Mandatory",
+        "Levy base is identical for both tiers: basic salary + fixed allowances; excludes overtime, bonus, and commissions",
+        "When headcount crosses 10 Malaysian employees, system recommends upgrading Registration Type to Mandatory",
+        "Monthly Borang PSMB/6 payment file reflects the correct 0.5% or 1% rate based on Registration Type"
+      ],
+      "technicalNotes": [
+        "PSMB Act 2001 (Amended 2021): mandatory for 10+ Malaysian employees; voluntary for 5-9 employees at 0.5%",
+        "Payment deadline: 15th of following month for both voluntary and mandatory registrations",
+        "Voluntary registrants access the same HRD Corp eTRiS grant portal as mandatory contributors",
+        "Employers with fewer than 5 Malaysian employees are not eligible for any HRDF registration",
+        "Implement as additional enum option in existing HRDF configuration on Company DocType"
+      ],
+      "dependencies": [
+        "Fix HRDF Levy Rate — 1% Mandatory for All Employers with 10+ Employees",
+        "Implement HRDF Levy Contribution Base Classifier (Fixed Allowances vs. Variable Pay)"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-161",
+      "title": "Capture Concurrent Employment Secondary Income for PCB Aggregation",
+      "priority": "medium",
+      "description": "When an employee holds concurrent employment with two or more employers simultaneously (e.g., a director also employed elsewhere, or intra-group multi-company employment), each employer independently calculates PCB only on its own payroll. This causes systematic under-deduction because the combined income pushes the employee into higher tax brackets. LHDN guidance requires employers to consider declared additional income when computing MTD. The existing TP3 story covers sequential prior-employer income; this story addresses concurrent same-period income from another employer.",
+      "acceptanceCriteria": [
+        "Employee profile has a 'Concurrent Employment' section with fields: secondary employer name, monthly gross income from secondary employer, and monthly PCB deducted by secondary employer",
+        "When secondary income is declared, the primary employer's PCB calculator uses the aggregate monthly income (primary + secondary) to determine the applicable tax bracket and correct MTD amount",
+        "The additional PCB burden (from aggregation) is deducted from the primary employer's payslip and clearly labelled as 'Additional PCB — Concurrent Income'",
+        "System warns if the declared secondary employer PCB appears insufficient for the secondary income (below minimum rate for the income band)",
+        "EA Form and CP8D from primary employer reflect primary employer income only; a note indicates that employee has declared concurrent income",
+        "Unit test: employee with RM6,000 primary + RM2,000 declared secondary income computes PCB on RM8,000 aggregate monthly salary"
+      ],
+      "technicalNotes": [
+        "LHDN MTD guidelines — employer must base PCB on total remuneration including other employment income declared by the employee",
+        "Section 83(1) ITA 1967 places MTD responsibility on each employer for their own payments; concurrent aggregation requires voluntary employee declaration",
+        "Distinct from TP3 (prior employer YTD carry-forward): TP3 is for income earned earlier in the same year by a former employer; concurrent income is simultaneous",
+        "Employee declaration of secondary income can be captured via a TP1-style form, or a standalone Concurrent Income Declaration document",
+        "Reference: https://www.hasil.gov.my/en/employers/responsibility-of-employer/"
+      ],
+      "dependencies": [
+        "Implement TP1 Employee Relief Declaration DocType and PCB Integration",
+        "Implement TP3 Carry-Forward Declaration for New Hires (Prior Employer YTD)"
+      ],
+      "estimatedComplexity": "large",
+      "passes": false
+    },
+    {
+      "id": "US-162",
+      "title": "Track Employment Act S.60F Sick Leave Entitlement per Service Band on Payslip",
+      "priority": "medium",
+      "description": "Employment Act 1955 Section 60F mandates paid sick leave based on length of service: 14 days (under 2 years), 18 days (2–5 years), 22 days (over 5 years), plus 60 additional hospitalisation days annually. Sick leave is paid at the employee's ordinary rate of pay (ORP). Effective 1 January 2023, payslips must disclose leave entitlement and balance. The existing PRD tracks maternity/paternity leave but does not cover statutory sick leave entitlement computation, ORP-based sick pay validation, or the mandatory payslip disclosure requirement under the Employment Act.",
+      "acceptanceCriteria": [
+        "Employee record automatically computes sick leave entitlement from Date of Joining: 14 days (<2 years service), 18 days (2–5 years), 22 days (>5 years), plus 60 days hospitalisation entitlement",
+        "Payslip shows: Sick Leave Annual Entitlement, Days Taken YTD, Remaining Balance for both standard sick and hospitalisation categories",
+        "Sick leave taken within statutory entitlement is paid at ORP; sick leave days that exceed entitlement are automatically marked as unpaid with a flag on the Salary Slip",
+        "Service band entitlement upgrades automatically on the employee's service anniversary date (not calendar year-end)",
+        "System alerts HR Manager when an employee has exhausted sick leave entitlement and a new sick leave absence is recorded",
+        "Unit test: employee with 14 months service gets 14-day entitlement; employee with 27 months service gets 18-day entitlement after service anniversary upgrade"
+      ],
+      "technicalNotes": [
+        "Employment Act 1955 Section 60F — sick leave entitlement tiers based on continuous service period; resets annually on employment anniversary",
+        "Section 60F(1A) — additional 60 days hospitalisation leave per year (separate from standard sick leave)",
+        "Section 61 — employer must maintain a leave register for MOHR inspection; payslip must disclose leave balance (mandatory from 1 January 2023)",
+        "Sick leave pay must be at ORP per working day — same formula as other EA leave entitlements defined in the ORP calculator",
+        "Distinct from maternity (Section 37) and paternity (Section 37A) leave already in the PRD"
+      ],
+      "dependencies": [
+        "Implement Ordinary Rate of Pay (ORP) Calculator and Overtime Validation",
+        "Generate Employment Act S.61 Compliant Payslip with All Mandatory Fields",
+        "Track Maternity/Paternity Leave and Validate Maternity Pay Rate"
+      ],
+      "estimatedComplexity": "medium",
       "passes": false
     }
   ]

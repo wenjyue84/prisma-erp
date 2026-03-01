@@ -6263,3 +6263,23 @@ Completed: Track Statutory Compliance Submission Calendar and Auto-Escalate Over
 
 ### Gotchas
 - 2 pre-existing failures in test_pcb_calculator.py (TestValidatePcbAmount.test_non_resident_flag_triggers_flat_30_percent) — verified pre-existing via git stash/pop test; unrelated to US-118
+## Iteration 3 - Sun Mar  1 09:57:38 MPST 2026
+Incomplete: Generate PERKESO Borang 34 Accident Notification Within 48-Hour Statutory Deadline (ID: US-141) — attempt 1/3
+
+
+## Iteration — US-141: Generate PERKESO Borang 34 Accident Notification Within 48-Hour Statutory Deadline
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 39 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_borang34_us141`
+**Result:** PASS — 39/39 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/borang34_service.py` — Fixed import: `nowdatetime` → `from frappe.utils.data import now_datetime as nowdatetime`
+
+### Patterns discovered
+- `nowdatetime` does NOT exist in frappe.utils in this version — use `now_datetime` from `frappe.utils.data`; alias it as `nowdatetime` to keep test patches working
+- DocType `Workplace Accident`, custom fields `Employee-custom_socso_number` and `Company-custom_perkeso_employer_code`, hooks, and service were all pre-wired; only the import alias needed fixing
+
+### Gotchas
+- frappe.utils.now_datetime vs nowdatetime: always check `frappe.utils.data` for the canonical name when import errors occur
