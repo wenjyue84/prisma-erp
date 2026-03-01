@@ -1,3 +1,25 @@
+## Iteration N — US-176: Mid-Year Tax Residency Status Change Workflow
+
+**Type:** IMPL
+**TDD Phase:** GREEN (38/38 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_tax_residency_us176
+**Result:** PASS — 38 tests, 0 failures
+
+### Files created/modified
+- lhdn_payroll_integration/services/tax_residency_service.py — Core service: change_residency_status(), get_pcb_multiplier_for_residency(), suspend_tp1_reliefs_for_year(), reinstate_tp1_reliefs_for_year(), get_residency_change_warning()
+- lhdn_payroll_integration/tests/test_tax_residency_us176.py — 38 tests across 7 classes: constants, PCB multiplier, change workflow, audit log, TP1 suspend/reinstate, warnings, integration
+
+### Patterns discovered
+- Non-resident flat 30% rate (NON_RESIDENT_PCB_RATE = 0.30) applies from effective date month onward; boundary: payroll_month < effective_date = not yet effective (strict less-than)
+- TP1 suspension uses custom_reliefs_suspended Check field on Employee TP1 Relief DocType
+- PCB Change Log entry uses change_type=Residency Status Change with old/new_pcb_amount both 0.0 (rate change not amount change)
+- get_pcb_multiplier_for_residency() returns None for Resident and Pending Determination — caller uses standard progressive PCB
+
+### Gotchas
+- Implementation was pre-built in container; synced to local repo via docker cp
+
+---
+
 ## Iteration N — US-206: Employment Act S.60A Annual Leave Carry-Forward Cap and Cash-Out Enforcement
 
 **Type:** IMPL
@@ -7607,4 +7629,7 @@ Implementation was already complete. Verified all 28 tests pass green.
 - Module path for bench run-tests uses `lhdn_payroll_integration.tests.*` not `lhdn_payroll_integration.lhdn_payroll_integration.tests.*`
 ## Iteration 32 - Sun Mar  1 16:38:46 MPST 2026
 Completed: MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging (ID: US-210) in 6m
+
+## Iteration 37 - Sun, Mar  1, 2026  4:41:30 PM
+Completed: MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging (ID: US-210) in 8m
 
