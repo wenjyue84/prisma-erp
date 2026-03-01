@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Prisma ERP Test Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; font-weight: 700; }
+  .card { background: #1e293b; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  details summary::-webkit-details-marker { display: none; }
+</style>
+</head>
+<body>
+
+<div class="card" style="display:flex;justify-content:space-between;align-items:center">
+  <div>
+    <h1>🧪 Prisma ERP Test Report</h1>
+    <p style="color:#64748b;font-size:13px;margin-top:4px">Generated 2026-03-01T05:35:53.621558+00:00</p>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:32px;font-weight:800;color:#22c55e">94.1%</div>
+    <div style="color:#64748b;font-size:12px">pass rate</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#e2e8f0">17</div>
+    <div style="color:#64748b;font-size:12px">Total</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#22c55e">16</div>
+    <div style="color:#64748b;font-size:12px">Passed</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#ef4444">0</div>
+    <div style="color:#64748b;font-size:12px">Failed</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#f97316">0</div>
+    <div style="color:#64748b;font-size:12px">Errors</div>
+  </div>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr style="border-bottom:2px solid #334155">
+        <th style="padding:8px 12px;text-align:left;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:200px">Test ID</th>
+        <th style="padding:8px 12px;text-align:left;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase">Description</th>
+        <th style="padding:8px 12px;text-align:right;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:100px">Duration</th>
+        <th style="padding:8px 12px;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;width:80px">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr style="background:#1e293b;">
+          <td colspan="4" style="padding:8px 12px;font-weight:700;color:#94a3b8;font-size:12px;letter-spacing:.5px;text-transform:uppercase">
+            INTEGRATION &nbsp; (16/17 passed)
+          </td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int09_chat_with_erp_question</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int09_chat_with_erp_question</div>
+            <div style="color:#64748b;font-size:11px">INT-09: AI answers a business question about ERPNext.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">539.95 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int10_chat_preserves_conversation</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int10_chat_preserves_conversation</div>
+            <div style="color:#64748b;font-size:11px">INT-10: Second message with history receives context-aware reply.</div>
+            
+                <details style="margin-top:4px">
+                  <summary style="cursor:pointer;color:#f97316;font-size:11px">▶ Skip: AI provider unavailable/rate-limited — INT-10 skipped. Reply: {'error': 'ai request failed: http error 429: too many req</summary>
+                  <pre style="margin:6px 0 0;font-size:10px;color:#cbd5e1;white-space:pre-wrap"></pre>
+                </details>
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">0 ms</td>
+          <td style="padding:6px 12px"><span style="background:#94a3b8;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">SKIP</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int11_api_key_info_after_chat</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int11_api_key_info_after_chat</div>
+            <div style="color:#64748b;font-size:11px">INT-11: get_api_key_info works immediately after a send_message call.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">411.7 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int12_settings_persist_across_requests</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int12_settings_persist_across_requests</div>
+            <div style="color:#64748b;font-size:11px">INT-12: Prisma AI Settings are consistent across two reads.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">21.43 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int13_payload_builder_api_exists</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int13_payload_builder_api_exists</div>
+            <div style="color:#64748b;font-size:11px">INT-13: payload_builder module method is reachable via API.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">61.58 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int14_submission_with_invalid_doc_returns_error</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int14_submission_with_invalid_doc_returns_error</div>
+            <div style="color:#64748b;font-size:11px">INT-14: Submitting a non-existent Salary Slip returns structured error.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">92.79 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int15_connection_test_returns_structured_result</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int15_connection_test_returns_structured_result</div>
+            <div style="color:#64748b;font-size:11px">INT-15: LHDN connection test endpoint returns structured JSON.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">315.18 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int16_exemption_tester_endpoint_exists</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int16_exemption_tester_endpoint_exists</div>
+            <div style="color:#64748b;font-size:11px">INT-16: Exemption tester API endpoint is reachable.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">11.34 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int17_salary_slip_lhdn_fields_complete_for_submission</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int17_salary_slip_lhdn_fields_complete_for_submission</div>
+            <div style="color:#64748b;font-size:11px">INT-17: A Salary Slip has all required fields for LHDN XML generation.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">59.04 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int05_resubmit_api_exists</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int05_resubmit_api_exists</div>
+            <div style="color:#64748b;font-size:11px">INT-05: resubmit_to_lhdn whitelisted method is reachable.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">57.95 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int06_bulk_enqueue_api_exists</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int06_bulk_enqueue_api_exists</div>
+            <div style="color:#64748b;font-size:11px">INT-06: bulk_enqueue_lhdn_submission method is reachable.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">56.94 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int07_dev_tools_status_check</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int07_dev_tools_status_check</div>
+            <div style="color:#64748b;font-size:11px">INT-07: Dev tools system status endpoint returns data.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">96.03 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int08_resubmission_log_list</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int08_resubmission_log_list</div>
+            <div style="color:#64748b;font-size:11px">INT-08: LHDN Resubmission Log list is queryable.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">25.5 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int01_list_employees</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int01_list_employees</div>
+            <div style="color:#64748b;font-size:11px">INT-01: GET /api/resource/Employee returns a list (payroll foundation).</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">12.49 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int02_list_salary_slips</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int02_list_salary_slips</div>
+            <div style="color:#64748b;font-size:11px">INT-02: GET /api/resource/Salary Slip returns accessible records.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">9.28 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int03_company_has_lhdn_fields</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int03_company_has_lhdn_fields</div>
+            <div style="color:#64748b;font-size:11px">INT-03: Test company has LHDN custom fields populated.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">23.72 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #334155">
+          <td style="padding:6px 12px;font-size:12px;color:#64748b">test_int04_salary_slip_lhdn_status_field</td>
+          <td style="padding:6px 12px">
+            <div style="color:#e2e8f0;font-size:13px">test_int04_salary_slip_lhdn_status_field</div>
+            <div style="color:#64748b;font-size:11px">INT-04: Most recent Salary Slip has LHDN status field accessible.</div>
+            
+          </td>
+          <td style="padding:6px 12px;text-align:right;color:#94a3b8;font-size:12px">54.71 ms</td>
+          <td style="padding:6px 12px"><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">PASS</span></td>
+        </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="margin-top:12px;color:#475569;font-size:12px;text-align:center">
+  Prisma ERP Test Suite &mdash; Prisma ERP Test Suite
+</div>
+
+<script>
+  // Embed raw JSON for machine reading
+  window.testReport = {"suite": "Prisma ERP Test Suite", "generated_at": "2026-03-01T05:35:53.621558+00:00", "summary": {"total": 17, "passed": 16, "failed": 0, "errored": 0, "skipped": 1, "pass_rate": "94.1%"}, "categories": {"integration": {"total": 17, "passed": 16, "failed": 0, "tests": [{"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int09_chat_with_erp_question", "name": "test_int09_chat_with_erp_question", "description": "INT-09: AI answers a business question about ERPNext.", "category": "integration", "status": "PASS", "duration_ms": 539.95, "error": null}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int10_chat_preserves_conversation", "name": "test_int10_chat_preserves_conversation", "description": "INT-10: Second message with history receives context-aware reply.", "category": "integration", "status": "SKIP", "duration_ms": 0, "error": {"type": "Skip", "message": "AI provider unavailable/rate-limited \u2014 INT-10 skipped. Reply: {'error': 'ai request failed: http error 429: too many requests'}", "traceback": []}}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int11_api_key_info_after_chat", "name": "test_int11_api_key_info_after_chat", "description": "INT-11: get_api_key_info works immediately after a send_message call.", "category": "integration", "status": "PASS", "duration_ms": 411.7, "error": null}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int12_settings_persist_across_requests", "name": "test_int12_settings_persist_across_requests", "description": "INT-12: Prisma AI Settings are consistent across two reads.", "category": "integration", "status": "PASS", "duration_ms": 21.43, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int13_payload_builder_api_exists", "name": "test_int13_payload_builder_api_exists", "description": "INT-13: payload_builder module method is reachable via API.", "category": "integration", "status": "PASS", "duration_ms": 61.58, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int14_submission_with_invalid_doc_returns_error", "name": "test_int14_submission_with_invalid_doc_returns_error", "description": "INT-14: Submitting a non-existent Salary Slip returns structured error.", "category": "integration", "status": "PASS", "duration_ms": 92.79, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int15_connection_test_returns_structured_result", "name": "test_int15_connection_test_returns_structured_result", "description": "INT-15: LHDN connection test endpoint returns structured JSON.", "category": "integration", "status": "PASS", "duration_ms": 315.18, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int16_exemption_tester_endpoint_exists", "name": "test_int16_exemption_tester_endpoint_exists", "description": "INT-16: Exemption tester API endpoint is reachable.", "category": "integration", "status": "PASS", "duration_ms": 11.34, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int17_salary_slip_lhdn_fields_complete_for_submission", "name": "test_int17_salary_slip_lhdn_fields_complete_for_submission", "description": "INT-17: A Salary Slip has all required fields for LHDN XML generation.", "category": "integration", "status": "PASS", "duration_ms": 59.04, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int05_resubmit_api_exists", "name": "test_int05_resubmit_api_exists", "description": "INT-05: resubmit_to_lhdn whitelisted method is reachable.", "category": "integration", "status": "PASS", "duration_ms": 57.95, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int06_bulk_enqueue_api_exists", "name": "test_int06_bulk_enqueue_api_exists", "description": "INT-06: bulk_enqueue_lhdn_submission method is reachable.", "category": "integration", "status": "PASS", "duration_ms": 56.94, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int07_dev_tools_status_check", "name": "test_int07_dev_tools_status_check", "description": "INT-07: Dev tools system status endpoint returns data.", "category": "integration", "status": "PASS", "duration_ms": 96.03, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int08_resubmission_log_list", "name": "test_int08_resubmission_log_list", "description": "INT-08: LHDN Resubmission Log list is queryable.", "category": "integration", "status": "PASS", "duration_ms": 25.5, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int01_list_employees", "name": "test_int01_list_employees", "description": "INT-01: GET /api/resource/Employee returns a list (payroll foundation).", "category": "integration", "status": "PASS", "duration_ms": 12.49, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int02_list_salary_slips", "name": "test_int02_list_salary_slips", "description": "INT-02: GET /api/resource/Salary Slip returns accessible records.", "category": "integration", "status": "PASS", "duration_ms": 9.28, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int03_company_has_lhdn_fields", "name": "test_int03_company_has_lhdn_fields", "description": "INT-03: Test company has LHDN custom fields populated.", "category": "integration", "status": "PASS", "duration_ms": 23.72, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int04_salary_slip_lhdn_status_field", "name": "test_int04_salary_slip_lhdn_status_field", "description": "INT-04: Most recent Salary Slip has LHDN status field accessible.", "category": "integration", "status": "PASS", "duration_ms": 54.71, "error": null}]}}, "all_results": [{"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int09_chat_with_erp_question", "name": "test_int09_chat_with_erp_question", "description": "INT-09: AI answers a business question about ERPNext.", "category": "integration", "status": "PASS", "duration_ms": 539.95, "error": null}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int10_chat_preserves_conversation", "name": "test_int10_chat_preserves_conversation", "description": "INT-10: Second message with history receives context-aware reply.", "category": "integration", "status": "SKIP", "duration_ms": 0, "error": {"type": "Skip", "message": "AI provider unavailable/rate-limited \u2014 INT-10 skipped. Reply: {'error': 'ai request failed: http error 429: too many requests'}", "traceback": []}}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int11_api_key_info_after_chat", "name": "test_int11_api_key_info_after_chat", "description": "INT-11: get_api_key_info works immediately after a send_message call.", "category": "integration", "status": "PASS", "duration_ms": 411.7, "error": null}, {"id": "tests.integration.test_workflows.TestAIChatIntegration.test_int12_settings_persist_across_requests", "name": "test_int12_settings_persist_across_requests", "description": "INT-12: Prisma AI Settings are consistent across two reads.", "category": "integration", "status": "PASS", "duration_ms": 21.43, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int13_payload_builder_api_exists", "name": "test_int13_payload_builder_api_exists", "description": "INT-13: payload_builder module method is reachable via API.", "category": "integration", "status": "PASS", "duration_ms": 61.58, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int14_submission_with_invalid_doc_returns_error", "name": "test_int14_submission_with_invalid_doc_returns_error", "description": "INT-14: Submitting a non-existent Salary Slip returns structured error.", "category": "integration", "status": "PASS", "duration_ms": 92.79, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int15_connection_test_returns_structured_result", "name": "test_int15_connection_test_returns_structured_result", "description": "INT-15: LHDN connection test endpoint returns structured JSON.", "category": "integration", "status": "PASS", "duration_ms": 315.18, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int16_exemption_tester_endpoint_exists", "name": "test_int16_exemption_tester_endpoint_exists", "description": "INT-16: Exemption tester API endpoint is reachable.", "category": "integration", "status": "PASS", "duration_ms": 11.34, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int17_salary_slip_lhdn_fields_complete_for_submission", "name": "test_int17_salary_slip_lhdn_fields_complete_for_submission", "description": "INT-17: A Salary Slip has all required fields for LHDN XML generation.", "category": "integration", "status": "PASS", "duration_ms": 59.04, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int05_resubmit_api_exists", "name": "test_int05_resubmit_api_exists", "description": "INT-05: resubmit_to_lhdn whitelisted method is reachable.", "category": "integration", "status": "PASS", "duration_ms": 57.95, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int06_bulk_enqueue_api_exists", "name": "test_int06_bulk_enqueue_api_exists", "description": "INT-06: bulk_enqueue_lhdn_submission method is reachable.", "category": "integration", "status": "PASS", "duration_ms": 56.94, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int07_dev_tools_status_check", "name": "test_int07_dev_tools_status_check", "description": "INT-07: Dev tools system status endpoint returns data.", "category": "integration", "status": "PASS", "duration_ms": 96.03, "error": null}, {"id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int08_resubmission_log_list", "name": "test_int08_resubmission_log_list", "description": "INT-08: LHDN Resubmission Log list is queryable.", "category": "integration", "status": "PASS", "duration_ms": 25.5, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int01_list_employees", "name": "test_int01_list_employees", "description": "INT-01: GET /api/resource/Employee returns a list (payroll foundation).", "category": "integration", "status": "PASS", "duration_ms": 12.49, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int02_list_salary_slips", "name": "test_int02_list_salary_slips", "description": "INT-02: GET /api/resource/Salary Slip returns accessible records.", "category": "integration", "status": "PASS", "duration_ms": 9.28, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int03_company_has_lhdn_fields", "name": "test_int03_company_has_lhdn_fields", "description": "INT-03: Test company has LHDN custom fields populated.", "category": "integration", "status": "PASS", "duration_ms": 23.72, "error": null}, {"id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int04_salary_slip_lhdn_status_field", "name": "test_int04_salary_slip_lhdn_status_field", "description": "INT-04: Most recent Salary Slip has LHDN status field accessible.", "category": "integration", "status": "PASS", "duration_ms": 54.71, "error": null}]};
+</script>
+</body>
+</html>

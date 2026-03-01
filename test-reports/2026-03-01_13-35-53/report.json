@@ -1,0 +1,337 @@
+{
+  "suite": "Prisma ERP Test Suite",
+  "generated_at": "2026-03-01T05:35:53.621880+00:00",
+  "summary": {
+    "total": 17,
+    "passed": 16,
+    "failed": 0,
+    "errored": 0,
+    "skipped": 1,
+    "pass_rate": "94.1%"
+  },
+  "categories": {
+    "integration": {
+      "total": 17,
+      "passed": 16,
+      "failed": 0,
+      "tests": [
+        {
+          "id": "tests.integration.test_workflows.TestAIChatIntegration.test_int09_chat_with_erp_question",
+          "name": "test_int09_chat_with_erp_question",
+          "description": "INT-09: AI answers a business question about ERPNext.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 539.95,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestAIChatIntegration.test_int10_chat_preserves_conversation",
+          "name": "test_int10_chat_preserves_conversation",
+          "description": "INT-10: Second message with history receives context-aware reply.",
+          "category": "integration",
+          "status": "SKIP",
+          "duration_ms": 0,
+          "error": {
+            "type": "Skip",
+            "message": "AI provider unavailable/rate-limited \u2014 INT-10 skipped. Reply: {'error': 'ai request failed: http error 429: too many requests'}",
+            "traceback": []
+          }
+        },
+        {
+          "id": "tests.integration.test_workflows.TestAIChatIntegration.test_int11_api_key_info_after_chat",
+          "name": "test_int11_api_key_info_after_chat",
+          "description": "INT-11: get_api_key_info works immediately after a send_message call.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 411.7,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestAIChatIntegration.test_int12_settings_persist_across_requests",
+          "name": "test_int12_settings_persist_across_requests",
+          "description": "INT-12: Prisma AI Settings are consistent across two reads.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 21.43,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int13_payload_builder_api_exists",
+          "name": "test_int13_payload_builder_api_exists",
+          "description": "INT-13: payload_builder module method is reachable via API.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 61.58,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int14_submission_with_invalid_doc_returns_error",
+          "name": "test_int14_submission_with_invalid_doc_returns_error",
+          "description": "INT-14: Submitting a non-existent Salary Slip returns structured error.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 92.79,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int15_connection_test_returns_structured_result",
+          "name": "test_int15_connection_test_returns_structured_result",
+          "description": "INT-15: LHDN connection test endpoint returns structured JSON.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 315.18,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int16_exemption_tester_endpoint_exists",
+          "name": "test_int16_exemption_tester_endpoint_exists",
+          "description": "INT-16: Exemption tester API endpoint is reachable.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 11.34,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int17_salary_slip_lhdn_fields_complete_for_submission",
+          "name": "test_int17_salary_slip_lhdn_fields_complete_for_submission",
+          "description": "INT-17: A Salary Slip has all required fields for LHDN XML generation.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 59.04,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int05_resubmit_api_exists",
+          "name": "test_int05_resubmit_api_exists",
+          "description": "INT-05: resubmit_to_lhdn whitelisted method is reachable.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 57.95,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int06_bulk_enqueue_api_exists",
+          "name": "test_int06_bulk_enqueue_api_exists",
+          "description": "INT-06: bulk_enqueue_lhdn_submission method is reachable.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 56.94,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int07_dev_tools_status_check",
+          "name": "test_int07_dev_tools_status_check",
+          "description": "INT-07: Dev tools system status endpoint returns data.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 96.03,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int08_resubmission_log_list",
+          "name": "test_int08_resubmission_log_list",
+          "description": "INT-08: LHDN Resubmission Log list is queryable.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 25.5,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int01_list_employees",
+          "name": "test_int01_list_employees",
+          "description": "INT-01: GET /api/resource/Employee returns a list (payroll foundation).",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 12.49,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int02_list_salary_slips",
+          "name": "test_int02_list_salary_slips",
+          "description": "INT-02: GET /api/resource/Salary Slip returns accessible records.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 9.28,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int03_company_has_lhdn_fields",
+          "name": "test_int03_company_has_lhdn_fields",
+          "description": "INT-03: Test company has LHDN custom fields populated.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 23.72,
+          "error": null
+        },
+        {
+          "id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int04_salary_slip_lhdn_status_field",
+          "name": "test_int04_salary_slip_lhdn_status_field",
+          "description": "INT-04: Most recent Salary Slip has LHDN status field accessible.",
+          "category": "integration",
+          "status": "PASS",
+          "duration_ms": 54.71,
+          "error": null
+        }
+      ]
+    }
+  },
+  "all_results": [
+    {
+      "id": "tests.integration.test_workflows.TestAIChatIntegration.test_int09_chat_with_erp_question",
+      "name": "test_int09_chat_with_erp_question",
+      "description": "INT-09: AI answers a business question about ERPNext.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 539.95,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestAIChatIntegration.test_int10_chat_preserves_conversation",
+      "name": "test_int10_chat_preserves_conversation",
+      "description": "INT-10: Second message with history receives context-aware reply.",
+      "category": "integration",
+      "status": "SKIP",
+      "duration_ms": 0,
+      "error": {
+        "type": "Skip",
+        "message": "AI provider unavailable/rate-limited \u2014 INT-10 skipped. Reply: {'error': 'ai request failed: http error 429: too many requests'}",
+        "traceback": []
+      }
+    },
+    {
+      "id": "tests.integration.test_workflows.TestAIChatIntegration.test_int11_api_key_info_after_chat",
+      "name": "test_int11_api_key_info_after_chat",
+      "description": "INT-11: get_api_key_info works immediately after a send_message call.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 411.7,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestAIChatIntegration.test_int12_settings_persist_across_requests",
+      "name": "test_int12_settings_persist_across_requests",
+      "description": "INT-12: Prisma AI Settings are consistent across two reads.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 21.43,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int13_payload_builder_api_exists",
+      "name": "test_int13_payload_builder_api_exists",
+      "description": "INT-13: payload_builder module method is reachable via API.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 61.58,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int14_submission_with_invalid_doc_returns_error",
+      "name": "test_int14_submission_with_invalid_doc_returns_error",
+      "description": "INT-14: Submitting a non-existent Salary Slip returns structured error.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 92.79,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int15_connection_test_returns_structured_result",
+      "name": "test_int15_connection_test_returns_structured_result",
+      "description": "INT-15: LHDN connection test endpoint returns structured JSON.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 315.18,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int16_exemption_tester_endpoint_exists",
+      "name": "test_int16_exemption_tester_endpoint_exists",
+      "description": "INT-16: Exemption tester API endpoint is reachable.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 11.34,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestLHDNPayloadValidation.test_int17_salary_slip_lhdn_fields_complete_for_submission",
+      "name": "test_int17_salary_slip_lhdn_fields_complete_for_submission",
+      "description": "INT-17: A Salary Slip has all required fields for LHDN XML generation.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 59.04,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int05_resubmit_api_exists",
+      "name": "test_int05_resubmit_api_exists",
+      "description": "INT-05: resubmit_to_lhdn whitelisted method is reachable.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 57.95,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int06_bulk_enqueue_api_exists",
+      "name": "test_int06_bulk_enqueue_api_exists",
+      "description": "INT-06: bulk_enqueue_lhdn_submission method is reachable.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 56.94,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int07_dev_tools_status_check",
+      "name": "test_int07_dev_tools_status_check",
+      "description": "INT-07: Dev tools system status endpoint returns data.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 96.03,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestLHDNSubmissionWorkflow.test_int08_resubmission_log_list",
+      "name": "test_int08_resubmission_log_list",
+      "description": "INT-08: LHDN Resubmission Log list is queryable.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 25.5,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int01_list_employees",
+      "name": "test_int01_list_employees",
+      "description": "INT-01: GET /api/resource/Employee returns a list (payroll foundation).",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 12.49,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int02_list_salary_slips",
+      "name": "test_int02_list_salary_slips",
+      "description": "INT-02: GET /api/resource/Salary Slip returns accessible records.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 9.28,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int03_company_has_lhdn_fields",
+      "name": "test_int03_company_has_lhdn_fields",
+      "description": "INT-03: Test company has LHDN custom fields populated.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 23.72,
+      "error": null
+    },
+    {
+      "id": "tests.integration.test_workflows.TestPayrollWorkflow.test_int04_salary_slip_lhdn_status_field",
+      "name": "test_int04_salary_slip_lhdn_status_field",
+      "description": "INT-04: Most recent Salary Slip has LHDN status field accessible.",
+      "category": "integration",
+      "status": "PASS",
+      "duration_ms": 54.71,
+      "error": null
+    }
+  ]
+}
