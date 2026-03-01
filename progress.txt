@@ -7831,3 +7831,36 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 ## Iteration 42 - Sun, Mar  1, 2026  5:36:05 PM
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package (ID: US-211) — attempt 1/3
 
+## Iteration 38 - Sun Mar  1 17:37:48 MPST 2026
+Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package (ID: US-211) — attempt 2/3
+
+
+---
+
+## Iteration N — US-209: TP1(1/2026) — Capture New Domestic Tourism Attraction Expenses Relief (RM1,000) in Employee PCB Declaration
+
+**Type:** IMPL
+**TDD Phase:** GREEN (33/33 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_us209_domestic_tourism_relief
+**Result:** PASS — 33 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_us209_domestic_tourism_relief.py` — 33 tests across 7 classes: TestDomesticTourismCapConstants (6 tests), TestGetCapsForYearDomesticTourism (5 tests), TestDomesticTourismPreYA2026Zeroing (4 tests), TestDomesticTourismExpiry (6 tests), TestDomesticTourismCapEnforcement (5 tests), TestDomesticTourismPCBIntegration (4 tests), TestDomesticTourismCombinedScenarios (3 tests)
+
+### Implementation notes
+- Production code was ALREADY COMPLETE from prior stories — `domestic_tourism` field was added to `_CAPS_YA2026` (RM1,000), `_RELIEF_FIELDS`, `_DOMESTIC_TOURISM_EXPIRY_YEAR = 2027`, `_zero_ya2026_fields_for_pre_2026()`, and `_validate_domestic_tourism_expiry()` in employee_tp1_relief.py
+- This story adds comprehensive test coverage verifying all acceptance criteria:
+  - Cap table constants: domestic_tourism absent from pre-YA2026, present as RM1,000 in YA2026+
+  - Year-versioned caps: _get_caps_for_year returns correct values per year
+  - Pre-2026 zeroing: field cleared with warning for YA2025 and earlier records
+  - Post-2027 sunset: frappe.throw with descriptive message for YA2028+
+  - Cap enforcement: amounts above RM1,000 silently capped with user warning
+  - PCB integration: total_reliefs correctly includes/excludes domestic tourism per year
+  - Combined scenarios: domestic tourism independent of other relief cap pools
+
+### Patterns discovered
+- Cap table expiry enforcement vs field presence: _CAPS_YA2026 keeps domestic_tourism even for YA2028+, but _validate_domestic_tourism_expiry() throws at runtime — clean separation of concerns
+- Pre-2026 zeroing uses msgprint (warning), post-2027 uses throw (hard rejection) — different severity for past vs future violations
+
+### Gotchas
+- prd.json was truncated (1022 lines vs 7850) from a prior corrupted write — restored from git HEAD before updating
