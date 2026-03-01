@@ -1,0 +1,24 @@
+[
+  {
+    "doctype": "Leave Type",
+    "name": "Sick Leave (EA)",
+    "leave_type_name": "Sick Leave (EA)",
+    "is_lwp": 0,
+    "max_days_allowed": 22,
+    "allow_negative": 0,
+    "include_holiday": 0,
+    "is_carry_forward": 0,
+    "description": "Employment Act 1955 S.60F(1): Ordinary paid sick leave. 14 days (<2 years service), 18 days (2-5 years), 22 days (>5 years). Tracked separately from Hospitalization Leave (EA)."
+  },
+  {
+    "doctype": "Leave Type",
+    "name": "Hospitalization Leave (EA)",
+    "leave_type_name": "Hospitalization Leave (EA)",
+    "is_lwp": 0,
+    "max_days_allowed": 60,
+    "allow_negative": 0,
+    "include_holiday": 0,
+    "is_carry_forward": 0,
+    "description": "Employment Act 1955 S.60F(2): Additional paid leave for hospitalisation or post-hospitalisation as certified by a registered medical practitioner. Up to 60 days per year. Separate from ordinary sick leave entitlement."
+  }
+]

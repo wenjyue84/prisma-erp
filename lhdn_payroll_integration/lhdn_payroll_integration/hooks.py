@@ -60,6 +60,9 @@ doc_events = {
 	"Workplace Accident": {
 		"after_insert": "lhdn_payroll_integration.lhdn_payroll_integration.services.borang34_service.handle_accident_after_insert",
 	},
+	"Leave Application": {
+		"validate": "lhdn_payroll_integration.services.hospitalization_leave_service.validate_hospitalization_leave",
+	},
 }
 
 # Scheduled Tasks
@@ -98,4 +101,5 @@ fixtures = [
 	{"dt": "Salary Component", "filters": [["name", "in", ["Basic Salary", "Monthly Tax Deduction", "EPF Employee", "SOCSO Employee", "EPF - Employer", "SOCSO - Employer"]]]},
 	{"dt": "Workspace", "filters": [["name", "=", "LHDN Payroll"]]},
 	{"dt": "EP Salary Threshold"},
+	{"dt": "Leave Type", "filters": [["name", "in", ["Sick Leave (EA)", "Hospitalization Leave (EA)"]]]},
 ]

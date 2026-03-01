@@ -6701,3 +6701,6 @@ Completed: PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach No
 
 ### Gotchas
 - Nested path sync needed: `docker exec -u root cp` from outer to nested lhdn_payroll_integration path
+## Iteration 16 - Sun, Mar  1, 2026 12:34:55 PM
+Incomplete: Employment Act S.60F(2): Track 60-Day Hospitalization Leave Quota Separately from Ordinary Sick Leave (ID: US-201) — attempt 1/3
+

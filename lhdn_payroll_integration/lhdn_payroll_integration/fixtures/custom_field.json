@@ -1630,5 +1630,41 @@
     "description": "HRD Corp status (auto-updated daily). Required when 10+ Malaysian employees (PSMB Act 2001 Reg 4(1)). Portal: hrdcorp.gov.my",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_statutory_eis_status"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Leave Application-custom_lhdn_ea_leave_section",
+    "dt": "Leave Application",
+    "fieldname": "custom_lhdn_ea_leave_section",
+    "fieldtype": "Section Break",
+    "label": "LHDN Leave Details (EA)",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "reason",
+    "depends_on": "eval:doc.leave_type == 'Hospitalization Leave (EA)'"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Leave Application-custom_hospitalization_discharge_date",
+    "dt": "Leave Application",
+    "fieldname": "custom_hospitalization_discharge_date",
+    "fieldtype": "Date",
+    "label": "Hospital Discharge Date",
+    "description": "Date of discharge from hospital (EA S.60F(2) — required for Hospitalization Leave)",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_lhdn_ea_leave_section",
+    "depends_on": "eval:doc.leave_type == 'Hospitalization Leave (EA)'"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Leave Application-custom_medical_certificate_type",
+    "dt": "Leave Application",
+    "fieldname": "custom_medical_certificate_type",
+    "fieldtype": "Select",
+    "label": "Medical Certificate Type",
+    "options": "\nHospitalization Certificate\nPost-Hospitalization Medical Advice",
+    "description": "Type of medical certificate supporting this hospitalization leave (EA S.60F(2))",
+    "module": "LHDN Payroll Integration",
+    "insert_after": "custom_hospitalization_discharge_date",
+    "depends_on": "eval:doc.leave_type == 'Hospitalization Leave (EA)'"
   }
 ]
