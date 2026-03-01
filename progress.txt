@@ -6048,3 +6048,37 @@ Completed: Implement Multi-Tier Levy Model (MTLM) Rate Calculation for Foreign W
 - bench migrate may delete the LHDN Payroll workspace if fixture sync has issues; check workspace after migrate
 - fixture JSON added via root python3 in container (frappe user lacks write permission to apps dir)
 - Report not auto-installed by migrate for new report directories — use import_file_by_path as workaround
+## Iteration 1 - Sun, Mar  1, 2026  8:51:00 AM
+Completed: Auto-Submit CP22 via e-CP22 MyTax Within 30 Days of New Employee Hire (ID: US-114) in 15m
+
+
+## Iteration — US-115: Auto-Submit CP21/CP22A via e-SPC MyTax at Cessation or Departure
+
+**Type:** IMPL
+**TDD Phase:** GREEN (23/23 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_spc_cessation`
+**Result:** PASS — 23 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/spc_cessation_service.py` — New service
+- `lhdn_payroll_integration/tests/test_spc_cessation.py` — 23 tests across 4 classes
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — 6 new Employee fields
+- `lhdn_payroll_integration/hooks.py` + nested `hooks.py` — Added Employee on_update handler, Salary Slip before_submit block, daily scheduler
+
+### Custom fields added to Employee
+- `custom_cessation_section` (Section Break)
+- `custom_cessation_type` (Select: Resignation/Retirement/Termination/Departure from Malaysia/Death)
+- `custom_cessation_date` (Date)
+- `custom_spc_status` (Select: Pending/Submitted/Cleared/Not Required)
+- `custom_spc_reference_number` (Data)
+- `custom_spc_clearance_date` (Date)
+
+### Key logic implemented
+- `handle_employee_cessation_update` → auto-creates CP21 (departure/foreign worker) or CP22A (resign/retire/terminate)
+- `check_pending_spc_alerts` → daily scheduler alerts HR Manager 35 days before cessation if SPC still Pending
+- `block_salary_slip_if_spc_pending` → blocks Salary Slip before_submit if SPC not Cleared/Not Required
+
+### Patterns/Gotchas
+- sync_fixtures requires BOTH outer fixtures path AND nested path to be updated (docker cp to both)
+- After bench migrate deletes workspace, run sync_fixtures again to restore all fixtures
+- clear-cache before sync_fixtures is required for new fixture records to be detected
