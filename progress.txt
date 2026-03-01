@@ -7378,3 +7378,31 @@ Implementation was already complete. Verified all 28 tests pass green.
 - `import_employee_tin_csv(csv_data)` — Bulk TIN update with format validation, skip-if-unchanged, error tracking
 - TIN format: LHDN prefixes (SG, OG, D, C, IG, etc.) + 10-12 digits
 - Active employee filter: excludes Left employees with relieving_date > 12 months ago
+
+## Iteration N — US-145: e-PCB Plus Post-Submission Rejection Record Tracking and Targeted Resubmission Workflow
+
+**Type:** IMPL
+**TDD Phase:** GREEN (39/39 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_pcb_rejection_tracker`
+**Result:** PASS — 39/39 tests (32 + 7), 0 failures, 0 errors
+
+### Files created/modified
+- `services/rejection_tracker.py` — LHDN error code map, parse_and_store_rejections(), notify_hr_manager_of_rejections(), get_pending_rejections()
+- `services/resubmission_service.py` — resubmit_rejected_rows() whitelisted API, get_rejection_summary(), _build_amendment_row()
+- `doctype/pcb_submission_error_log/` — PCB Submission Error Log DocType (PCBERR-YYYY-MM-##### autoname)
+- `doctype/lhdn_resubmission_log/` — LHDN Resubmission Log DocType
+- `tests/test_pcb_rejection_tracker.py` — 32 tests covering error map, parse+store, notify, pending filter, DocType fields
+- `tests/test_resubmit_action.py` — 7 tests covering resubmit permission, status precondition, status reset, audit log
+
+### Key design decisions
+- PCB Submission Error Log links to LHDN CP39 Submission Log (cp39_submission_log FK)
+- Error code map covers 10 common LHDN rejection codes with plain-English + action guidance
+- Targeted resubmission: only corrected rows POSTed (not full batch)
+- Amendment payload includes amendment_reason: "Rejection Correction"
+- New LHDN CP39 Submission Log created per amendment batch (avoids duplicate rows)
+- frappe.db.set_value() used for status update to bypass Employee link re-validation on test data
+
+### Patterns confirmed
+- DocType autoname format:PCBERR-{YYYY}-{MM}-{#####} generates sortable audit-trail names
+- ignore_links=True in test _make_error_log() bypasses Employee FK validation safely
+- patch _get_mytax_access_token directly (not frappe.db.get_value) to avoid side effects in resubmission tests
