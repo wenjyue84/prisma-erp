@@ -8,7 +8,7 @@ import boto3
 
 INSTANCE_ID = os.environ["INSTANCE_ID"]  # i-0689ed2e9d9089d0d
 REGION      = os.environ["REGION"]       # ap-southeast-1
-SITE_URL    = os.environ.get("SITE_URL", "https://prismaerp.mywire.org")
+SITE_URL    = os.environ.get("SITE_URL", "https://prismaerp.click")
 
 ec2 = boto3.client("ec2", region_name=REGION)
 
@@ -78,23 +78,48 @@ WAKE_HTML = """<!DOCTYPE html>
     try {{
       const r = await fetch(API+'/wake',{{method:'POST'}});
       const d = await r.json();
-      if(d.state==='running'){{msg.textContent='Already running \u2014 redirecting\u2026';setTimeout(()=>location.reload(),3000);return;}}
-      msg.textContent='Start command sent \u2014 waiting\u2026';
-    }} catch(e) {{ msg.textContent='Retrying\u2026'; }}
+      if(d.state==='running'){{msg.textContent='Already running — checking site…';checkSite();return;}}
+      msg.textContent='Start command sent — waiting…';
+    }} catch(e) {{ msg.textContent='Retrying…'; }}
   }}
+
+  let ec2Running = false;
 
   const poll = setInterval(async () => {{
     try {{
       const r = await fetch(API+'/status');
       const d = await r.json();
-      msg.textContent='EC2 state: '+d.state+'\u2026';
-      if(d.state==='running'){{
-        msg.textContent='Server ready \u2014 loading ERPNext\u2026';
+      if(d.state==='running' && !ec2Running){{
+        ec2Running = true;
+        msg.textContent='EC2 running — waiting for ERPNext to boot…';
         clearInterval(poll);
-        setTimeout(()=>location.reload(), 25000);
+        checkSite();
+      }} else if(!ec2Running) {{
+        msg.textContent='EC2 state: '+d.state+'…';
       }}
     }} catch(e) {{}}
   }}, POLL_MS);
+
+  function checkSite() {{
+    const siteCheck = setInterval(async () => {{
+      try {{
+        const r = await fetch(window.location.origin+'/login',{{cache:'no-store'}});
+        if(r.ok){{
+          const t = await r.text();
+          if(t.includes('frappe') || t.includes('login_page')){{
+            clearInterval(siteCheck);
+            msg.textContent='ERPNext is ready — redirecting…';
+            bar.style.width='100%';
+            setTimeout(()=>window.location.href=window.location.origin,2000);
+            return;
+          }}
+        }}
+        msg.textContent='ERPNext booting (HTTP '+r.status+')…';
+      }} catch(e) {{
+        msg.textContent='Waiting for ERPNext to start…';
+      }}
+    }}, 8000);
+  }}
 
   wake();
 </script>
