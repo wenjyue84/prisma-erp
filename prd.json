@@ -4198,7 +4198,7 @@
         "Build Platform SOCSO Deduction Engine Skeleton for Gig Workers Act 2025 (Act 872)"
       ],
       "estimatedComplexity": "medium",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-181",

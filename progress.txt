@@ -1,3 +1,27 @@
+## Iteration N — US-180: Gig Workers Act 2025 — Mandatory Service Agreement Compliance Tracker for Platform Providers
+
+**Type:** IMPL
+**TDD Phase:** GREEN (53/53 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_gig_worker_agreement
+**Result:** PASS — 53 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/gig_worker_agreement_service.py` — Core service: validate_agreement_terms(), get_agreement_status(), check_payment_eligibility(), get_expiring_agreements(), generate_compliance_report(), check_retention_compliance(), check_grievance_window(), check_suspension_compliance()
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_gig_worker_agreement.py` — 53 tests across 9 classes covering constants, term validation, status determination, payment eligibility, expiry alerts, compliance report, MOHR retention, grievance window, suspension compliance
+
+### Patterns discovered
+- Gig Workers Act 2025 (Act 872) Section 30 requires 7 mandatory service agreement terms: parties, period, services_description, obligations, earnings_rate, payment_method, entitled_benefits
+- Payment processing blocked when: no agreement exists, agreement expired, or mandatory terms missing; pending renewal still allows payment
+- MOHR inspection requires 7-year retention (MOHR_RETENTION_YEARS = 7); computed as end_date + 7*365 days
+- 30-day grievance complaint window and 14-day max suspension before inquiry are Act 872 compliance requirements
+- Module import path: `lhdn_payroll_integration.services.*` (not double-nested `lhdn_payroll_integration.lhdn_payroll_integration.services.*`)
+
+### Gotchas
+- Test module path is `lhdn_payroll_integration.tests.test_gig_worker_agreement` (single prefix), not double-nested
+- Patch paths in @patch decorators must also use the single prefix to match Python module resolution
+
+---
+
 ## Iteration N — US-179: Section 107D ITA — WHT 2% Deduction, Monthly Remittance, and CP58 Integration for Agent/Dealer Payments
 
 **Type:** IMPL
@@ -7686,4 +7710,7 @@ Completed: MySIP Structured Internship Stipend Minimum Threshold Validation and 
 ## Iteration 33 - Sun Mar  1 16:43:55 MPST 2026
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package (ID: US-211) — attempt 1/3
 
+
+## Iteration 39 - Sun, Mar  1, 2026  4:59:12 PM
+Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package (ID: US-211) — attempt 1/3
 
