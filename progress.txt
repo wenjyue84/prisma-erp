@@ -6016,3 +6016,6 @@ Completed: Add Sabah/Sarawak Labour Jurisdiction Flag on Employee (ID: US-093) i
 - test_mtlm.py only existed in nested inner path; needed copy to outer path for bench discovery
 - Outer fixture (102 fields) was out of sync with local/inner fixture (104 fields) — local had MTLM fields
 - Outer report/foreign_worker_levy/ directory didn't exist — needed root to mkdir
+## Iteration 50 - Sat, Feb 28, 2026 10:35:40 PM
+Completed: Implement Multi-Tier Levy Model (MTLM) Rate Calculation for Foreign Workers (ID: US-095) in 5m
+
