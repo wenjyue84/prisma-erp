@@ -1,3 +1,27 @@
+## Iteration N — US-177: Add Life/Medical Insurance Relief Extension to Children on TP1 Form for YA2026
+
+**Type:** IMPL
+**TDD Phase:** GREEN (35/35 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_us177_child_insurance
+**Result:** PASS — 35 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_tp1_relief/employee_tp1_relief.py` — Added `children_life_medical_insurance` and `child_education_medical_insurance` fields to `_CAPS_YA2026`, `_RELIEF_FIELDS`; added `_apply_medical_education_combined_cap()` method; extended `_zero_ya2026_fields_for_pre_2026()` to clear new fields; updated `_apply_life_voluntary_epf_combined_cap()` to include children's life insurance in the RM3,000 combined pool
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_us177_child_insurance.py` — 35 tests across 6 classes covering field existence, combined life pool, combined medical pool, PCB reduction, year gating, and edge cases
+
+### Patterns discovered
+- Two new Budget 2026 relief sub-fields on TP1: `children_life_medical_insurance` (shares RM3,000 combined cap with `life_insurance`) and `child_education_medical_insurance` (shares RM4,000 combined cap with `medical_insurance`)
+- Year-gating via `_zero_ya2026_fields_for_pre_2026()` already handles these fields — no additional guard needed in tests
+- Combined pool trimming priority: child fields trimmed before parent (self/spouse) fields
+- `_MEDICAL_EDUCATION_COMBINED_CAP = 4_000` constant already exported from doctype module
+
+### Gotchas
+- Implementation was already present in container from prior spiral work
+- `_LIFE_VOLUNTARY_EPF_COMBINED_CAP` is the combined cap constant (RM3,000) for life + children_life + voluntary EPF
+- `_apply_medical_education_combined_cap()` is a no-op for pre-YA2026 records (early return if year < 2026)
+
+---
+
 ## Iteration N — US-176: Mid-Year Tax Residency Status Change Workflow
 
 **Type:** IMPL
@@ -7632,4 +7656,7 @@ Completed: MySIP Structured Internship Stipend Minimum Threshold Validation and 
 
 ## Iteration 37 - Sun, Mar  1, 2026  4:41:30 PM
 Completed: MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging (ID: US-210) in 8m
+
+## Iteration 33 - Sun Mar  1 16:43:55 MPST 2026
+Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package (ID: US-211) — attempt 1/3
 

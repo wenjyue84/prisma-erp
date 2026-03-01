@@ -34,15 +34,18 @@ Relief caps — version-controlled by Assessment Year (YA):
 
   YA2026 and later (TP1(1/2026) Budget 2026 changes):
     All YA2025 caps unchanged, plus:
-    children_life_medical_insurance : RM 3,000  (NEW — children life/medical ins.)
-    childcare_fees_extended         : RM 3,000  (NEW — ages 6–12 after-school care)
-    domestic_tourism                : RM 1,000  (NEW — tourism/cultural attraction,
-                                                  YA2026–2027 only, expires 31 Dec 2027)
-    vaccine_relief                  : no cap    (NEW — any NPRA-approved vaccine)
-    child_relief_autism_oku         : RM 10,000 (NEW — autism/learning disability child,
-                                                  raised from RM 6,000 per child)
+    children_life_medical_insurance   : RM 3,000  (NEW — children life/takaful ins.)
+    child_education_medical_insurance : RM 4,000  (NEW — children education/medical ins.)
+    childcare_fees_extended           : RM 3,000  (NEW — ages 6–12 after-school care)
+    domestic_tourism                  : RM 1,000  (NEW — tourism/cultural attraction,
+                                                    YA2026–2027 only, expires 31 Dec 2027)
+    vaccine_relief                    : no cap    (NEW — any NPRA-approved vaccine)
+    child_relief_autism_oku           : RM 10,000 (NEW — autism/learning disability child,
+                                                    raised from RM 6,000 per child)
     Note: children_life_medical_insurance shares the combined RM 3,000 cap with
-    life_insurance (both draw from the same ITA insurance relief pool).
+    life_insurance (both draw from the same ITA life insurance relief pool).
+    Note: child_education_medical_insurance shares a combined RM 4,000 cap with
+    medical_insurance (education & medical insurance pool, Budget 2026 expansion).
 
 EPF i-Topup Combined Relief Cap (US-117):
     voluntary_epf_itopup    : RM 3,000 individual cap
@@ -108,8 +111,11 @@ _CAPS_YA2025 = {
 # YA2026 caps — TP1(1/2026) Budget 2026 updates
 _CAPS_YA2026 = {
     **_CAPS_YA2025,
-    # Children's life/medical insurance (NEW — shares combined insurance pool)
+    # Children's life/takaful insurance (NEW — shares combined RM3,000 pool with life_insurance)
     "children_life_medical_insurance": 3_000,
+    # Children's education/medical insurance (NEW — shares combined RM4,000 pool with medical_insurance)
+    # Individual field cap equals the combined cap (medical_insurance + this <= RM4,000)
+    "child_education_medical_insurance": 4_000,
     # Extended childcare for ages 6-12 in Ministry of Education-registered
     # after-school care programmes (previously only age ≤6)
     "childcare_fees_extended": 3_000,
@@ -134,6 +140,10 @@ _CAPS = _CAPS_DEFAULT
 # Combined relief cap: life_insurance + children_life_medical_insurance (YA2026+)
 # + voluntary_epf_itopup <= this limit
 _LIFE_VOLUNTARY_EPF_COMBINED_CAP = 3_000
+
+# Combined cap: medical_insurance + child_education_medical_insurance (YA2026+)
+# Budget 2026 expanded education & medical insurance to cover children's premiums
+_MEDICAL_EDUCATION_COMBINED_CAP = 4_000
 
 # Domestic tourism sunset: may not be applied after 31 December 2027
 _DOMESTIC_TOURISM_EXPIRY_YEAR = 2027
@@ -169,8 +179,9 @@ _RELIEF_FIELDS = [
     "child_relief_disabled",
     "child_relief_autism_oku",       # YA2026+ — autism/learning disability child
     "life_insurance",
-    "children_life_medical_insurance", # YA2026+ — children's life/medical insurance
+    "children_life_medical_insurance",    # YA2026+ — children's life/takaful insurance
     "medical_insurance",
+    "child_education_medical_insurance",  # YA2026+ — children's education/medical insurance
     "education_fees_self",
     "sspn",
     "childcare_fees",
@@ -200,6 +211,7 @@ class EmployeeTP1Relief(Document):
         self._zero_ya2026_fields_for_pre_2026()
         self._apply_caps()
         self._apply_life_voluntary_epf_combined_cap()
+        self._apply_medical_education_combined_cap()
         self._validate_spa_date()
         self._validate_domestic_tourism_expiry()
         self._calculate_total()
@@ -230,6 +242,7 @@ class EmployeeTP1Relief(Document):
 
         ya2026_fields = [
             "children_life_medical_insurance",
+            "child_education_medical_insurance",
             "childcare_fees_extended",
             "domestic_tourism",
             "vaccine_relief",
@@ -312,6 +325,54 @@ class EmployeeTP1Relief(Document):
                 float(self.life_insurance or 0),
                 float(self.get("children_life_medical_insurance") or 0),
                 float(self.voluntary_epf_itopup or 0),
+            ),
+            indicator="orange",
+            alert=True,
+        )
+
+    def _apply_medical_education_combined_cap(self):
+        """Enforce RM 4,000 combined cap on medical_insurance + child_education_medical_insurance.
+
+        Budget 2026 expanded the Education and Medical Insurance relief to include
+        premiums on policies for children. The aggregate ceiling for self + spouse + children
+        combined is RM 4,000 per TP1(1/2026).
+
+        Trimming priority: child_education_medical_insurance is trimmed first (since the
+        self/spouse medical_insurance takes priority as the historically existing field).
+
+        This method only applies for YA2026+. For earlier years, child_education_medical_insurance
+        is already zeroed by _zero_ya2026_fields_for_pre_2026(), so no trimming is needed.
+        """
+        year = int(self.tax_year or 2024)
+        if year < _YA2026_EFFECTIVE_YEAR:
+            return
+
+        medical = float(self.get("medical_insurance") or 0)
+        child_medical = float(self.get("child_education_medical_insurance") or 0)
+        combined = medical + child_medical
+        if combined <= _MEDICAL_EDUCATION_COMBINED_CAP:
+            return
+
+        excess = combined - _MEDICAL_EDUCATION_COMBINED_CAP
+        # Trim child_education_medical_insurance first (lowest priority)
+        trim_child = min(excess, child_medical)
+        self.child_education_medical_insurance = max(0.0, child_medical - trim_child)
+        excess -= trim_child
+
+        if excess > 0:
+            # Trim medical_insurance if still over cap
+            self.medical_insurance = max(0.0, medical - excess)
+
+        frappe.msgprint(
+            _(
+                "Medical/Education Insurance + Child Education/Medical Insurance "
+                "combined relief capped at RM {0:,.0f} (declared: RM {1:,.2f}). "
+                "Adjusted: Medical/Education RM {2:,.2f}, Child Education/Medical RM {3:,.2f}."
+            ).format(
+                _MEDICAL_EDUCATION_COMBINED_CAP,
+                combined,
+                float(self.medical_insurance or 0),
+                float(self.get("child_education_medical_insurance") or 0),
             ),
             indicator="orange",
             alert=True,
