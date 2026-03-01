@@ -1,3 +1,31 @@
+## Iteration N — US-181: Gig Workers Act 2025 — Auto-Register Gig Workers Under PERKESO SKSPS via ASSIST Portal API
+
+**Type:** IMPL
+**TDD Phase:** GREEN (56/56 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_gig_worker_sksps_registration
+**Result:** PASS — 56 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/gig_worker_sksps_registration_service.py` — Core service: build_registration_payload(), validate_registration_payload(), get_registration_status(), update_registration_status(), is_sksps_deduction_allowed(), submit_sksps_registration(), _call_perkeso_assist_api(), _create_failed_registration_task(), bulk_register_gig_workers(), _get_unregistered_gig_workers(), check_sksps_age_eligibility()
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_gig_worker_sksps_registration.py` — 56 tests across 9 classes: TestSkspsConstants, TestBuildRegistrationPayload, TestValidateRegistrationPayload, TestGetRegistrationStatus, TestUpdateRegistrationStatus, TestIsSkspsDeductionAllowed, TestSubmitSkspsRegistration, TestCreateFailedRegistrationTask, TestBulkRegisterGigWorkers, TestCheckSkspsAgeEligibility
+
+### Patterns discovered
+- PERKESO ASSIST SKSPS registration requires 8 mandatory fields: ic_passport_number, full_name, date_of_birth, gender, nationality, address, contact_number, platform_provider_code
+- Registration status lifecycle: Not Registered → Pending → Active/Rejected
+- SKSPS deduction is strictly blocked until registration status is "Active" — Pending and Rejected also block
+- Bulk registration skips workers already Active or Pending to avoid duplicate API calls
+- Failed registrations auto-create a high-priority ToDo linked to the Employee with PERKESO error code and resolution steps
+- SKSPS age eligibility: 15–65 years per SEIA Act 789
+- 10+ PERKESO error codes mapped with human-readable resolution steps (ERR_DUPLICATE, ERR_INVALID_IC, ERR_UNDERAGE, etc.)
+
+### Gotchas
+- Test module path is `lhdn_payroll_integration.tests.test_gig_worker_sksps_registration` (single prefix), NOT double-nested
+- The @patch decorator paths must also use single prefix for mocking frappe within the service module
+- `_call_perkeso_assist_api()` uses `requests` library for HTTP POST — in tests, the function is mocked at the service module level
+- `update_registration_status()` auto-sets `custom_sksps_registration_date` to today when status becomes Active
+
+---
+
 ## Iteration N — US-180: Gig Workers Act 2025 — Mandatory Service Agreement Compliance Tracker for Platform Providers
 
 **Type:** IMPL
@@ -7716,4 +7744,5 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 
 ## Iteration 35 - Sun Mar  1 17:05:21 MPST 2026
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package (ID: US-211) — attempt 2/3
+
 
