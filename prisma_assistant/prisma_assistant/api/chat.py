@@ -77,10 +77,16 @@ def _get_settings() -> dict:
             "provider": doc.get("provider") or "",
             "api_key": doc.get_password("api_key") if doc.get("api_key") else "",
             "model": doc.get("model") or "",
-            "fallback_model": doc.get("fallback_model") or "",
-            "fallback_api_key": doc.get_password("fallback_api_key") if doc.get("fallback_api_key") else "",
             "base_url": doc.get("base_url") or "",
             "system_prompt": doc.get("system_prompt") or "",
+            "fallback_provider": doc.get("fallback_provider") or "",
+            "fallback_model": doc.get("fallback_model") or "",
+            "fallback_api_key": doc.get_password("fallback_api_key") if doc.get("fallback_api_key") else "",
+            "fallback_base_url": doc.get("fallback_base_url") or "",
+            "fallback2_provider": doc.get("fallback2_provider") or "",
+            "fallback2_model": doc.get("fallback2_model") or "",
+            "fallback2_api_key": doc.get_password("fallback2_api_key") if doc.get("fallback2_api_key") else "",
+            "fallback2_base_url": doc.get("fallback2_base_url") or "",
         }
     except Exception:  # noqa: BLE001
         pass  # DocType may not exist yet — use frappe.conf only
@@ -89,23 +95,93 @@ def _get_settings() -> dict:
         "provider": (doc_settings.get("provider") or frappe.conf.get("ai_chat_provider") or "anthropic").lower(),
         "api_key": doc_settings.get("api_key") or frappe.conf.get("ai_chat_api_key") or "",
         "model": doc_settings.get("model") or frappe.conf.get("ai_chat_model") or "",
-        "fallback_model": doc_settings.get("fallback_model") or "",
-        "fallback_api_key": doc_settings.get("fallback_api_key") or "",
         "base_url": doc_settings.get("base_url") or frappe.conf.get("ai_chat_base_url") or "",
         "system_prompt": doc_settings.get("system_prompt") or _DEFAULT_SYSTEM_PROMPT,
+        "fallback_provider": (doc_settings.get("fallback_provider") or "").lower(),
+        "fallback_model": doc_settings.get("fallback_model") or "",
+        "fallback_api_key": doc_settings.get("fallback_api_key") or "",
+        "fallback_base_url": doc_settings.get("fallback_base_url") or "",
+        "fallback2_provider": (doc_settings.get("fallback2_provider") or "").lower(),
+        "fallback2_model": doc_settings.get("fallback2_model") or "",
+        "fallback2_api_key": doc_settings.get("fallback2_api_key") or "",
+        "fallback2_base_url": doc_settings.get("fallback2_base_url") or "",
     }
+
+
+# ── PDF text extraction (US-PA-06) ────────────────────────────────────────────
+def _extract_pdf_content(file_dict: dict) -> dict:
+    """
+    Extract text from a PDF file. Returns:
+      {"type": "text", "content": str, "name": str, "page_count": int}  — digital PDF
+      {"type": "image", "data": str, "media_type": "image/jpeg", "name": str} — scanned/empty
+    """
+    import base64
+    import io
+
+    raw = base64.b64decode(file_dict["data"])
+    name = file_dict.get("name", "document.pdf")
+
+    try:
+        try:
+            import pypdf
+            PdfReader = pypdf.PdfReader
+        except ImportError:
+            import PyPDF2 as pypdf  # type: ignore[no-redef]
+            PdfReader = pypdf.PdfReader
+
+        reader = PdfReader(io.BytesIO(raw))
+        pages = reader.pages
+        text = "\n".join((page.extract_text() or "") for page in pages).strip()
+
+        if len(text) >= 100:
+            return {
+                "type": "text",
+                "content": text,
+                "name": name,
+                "page_count": len(pages),
+            }
+
+        # Fewer than 100 chars — likely scanned; fall through to image path
+        return {
+            "type": "image",
+            "data": file_dict["data"],  # raw PDF as "image" for vision model
+            "media_type": "image/jpeg",
+            "name": name,
+        }
+
+    except Exception:  # noqa: BLE001
+        # Cannot extract — return a safe error text so the message still goes through
+        return {
+            "type": "text",
+            "content": f"[Could not extract text from {name}]",
+            "name": name,
+            "page_count": 0,
+        }
+
+
+# ── Provider dispatch (shared by primary + all fallbacks) ─────────────────────
+def _do_dispatch(
+    prov: str, key: str, mdl: str, url: str,
+    msg: str, history: list, sys_prompt: str, fl: list
+) -> dict:
+    """Route to the correct provider implementation."""
+    if prov == "anthropic":
+        return _call_anthropic(key, mdl, msg, history, url, sys_prompt, fl)
+    elif prov == "gemini":
+        return _call_gemini(key, mdl, msg, history, url, sys_prompt, fl)
+    else:  # openai, ollama, or unknown — use OpenAI-compatible path
+        eff_url = url or _PROVIDER_DEFAULTS.get(prov, _PROVIDER_DEFAULTS["openai"])["url"]
+        return _call_openai_compatible_with_tools(key, mdl, msg, history, eff_url, sys_prompt, fl)
 
 
 # ── Main whitelisted function ─────────────────────────────────────────────────
 @frappe.whitelist()
-def send_message(message: str, history: str = "[]") -> dict:
-    """Send a user message to the configured LLM and return the reply."""
+def send_message(message: str, history: str = "[]", files: str = "[]") -> dict:
+    """Send a user message (with optional file attachments) to the configured LLM."""
     s = _get_settings()
     provider = s["provider"]
     api_key = s["api_key"]
     model = s["model"] or _PROVIDER_DEFAULTS.get(provider, {}).get("model", "")
-    fallback_model = s["fallback_model"]
-    fallback_api_key = s["fallback_api_key"] or api_key
     base_url = s["base_url"]
     system_prompt = s["system_prompt"]
 
@@ -126,41 +202,110 @@ def send_message(message: str, history: str = "[]") -> dict:
 
     parsed_history = parsed_history[-10:]
 
-    def _dispatch(mdl, key=None):
-        k = key or api_key
-        if provider == "anthropic":
-            return _call_anthropic(k, mdl, message, parsed_history, base_url, system_prompt)
-        elif provider in ("openai", "ollama"):
-            url = base_url or _PROVIDER_DEFAULTS[provider]["url"]
-            return _call_openai_compatible_with_tools(k, mdl, message, parsed_history, url, system_prompt)
-        elif provider == "gemini":
-            return _call_gemini(k, mdl, message, parsed_history, base_url, system_prompt)
-
+    # ── Process file attachments (US-PA-05 / US-PA-06) ─────────────────────
     try:
-        return _dispatch(model)
-    except Exception as exc:  # noqa: BLE001
-        if fallback_model:
-            try:
-                result = _dispatch(fallback_model, key=fallback_api_key)
-                # Prepend a soft notice so the user knows fallback was used
-                if result.get("reply"):
-                    result["reply"] = f"*(Using fallback model: {fallback_model})*\n\n" + result["reply"]
-                return result
-            except Exception as fallback_exc:  # noqa: BLE001
-                frappe.log_error(str(fallback_exc), "Prisma AI Chat Error (Fallback)")
-        frappe.log_error(str(exc), "Prisma AI Chat Error")
-        return {"error": _("AI request failed: {0}").format(str(exc)[:200])}
+        raw_file_list = json.loads(files) if files else []
+    except (ValueError, TypeError):
+        raw_file_list = []
+
+    processed_files = []   # image files for vision dispatch
+    text_context_parts = []  # extracted text from digital PDFs
+
+    for f in raw_file_list:
+        if f.get("type") == "application/pdf":
+            result = _extract_pdf_content(f)
+            if result["type"] == "text":
+                text_context_parts.append(
+                    f"[Attached PDF: {result['name']}]\n{result['content']}"
+                )
+            else:
+                # Scanned PDF — send as image to vision model
+                processed_files.append({
+                    "name": f["name"],
+                    "type": "image/jpeg",
+                    "data": result["data"],
+                })
+        else:
+            # Images pass through as-is
+            processed_files.append(f)
+
+    # Prepend any PDF text to the message so the LLM sees it
+    if text_context_parts:
+        message = "\n\n".join(text_context_parts) + "\n\n" + message
+
+    file_list = processed_files  # only image files remain for vision dispatch
+
+    # ── 3-tier fallback dispatch ─────────────────────────────────────────────
+    # Build attempt chain: [(prov, model, key, url, label), ...]
+    def _prov_default_url(p):
+        return _PROVIDER_DEFAULTS.get(p, _PROVIDER_DEFAULTS["openai"])["url"]
+
+    attempts = [
+        (provider, model, api_key, base_url, ""),
+    ]
+    if s["fallback_model"]:
+        fb1_prov = s["fallback_provider"] or provider
+        attempts.append((
+            fb1_prov,
+            s["fallback_model"],
+            s["fallback_api_key"] or api_key,
+            s["fallback_base_url"] or base_url or _prov_default_url(fb1_prov),
+            s["fallback_model"],
+        ))
+    if s["fallback2_model"]:
+        fb2_prov = s["fallback2_provider"] or provider
+        attempts.append((
+            fb2_prov,
+            s["fallback2_model"],
+            s["fallback2_api_key"] or api_key,
+            s["fallback2_base_url"] or base_url or _prov_default_url(fb2_prov),
+            s["fallback2_model"],
+        ))
+
+    last_exc = None
+    for prov, mdl, key, url, label in attempts:
+        try:
+            result = _do_dispatch(prov, key, mdl, url, message, parsed_history, system_prompt, file_list)
+            if label:
+                result["reply"] = f"*(Using fallback: {label})*\n\n" + result.get("reply", "")
+            return result
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            frappe.log_error(str(exc), f"Prisma AI Chat Error ({prov}:{mdl})")
+            continue
+
+    return {"error": _("All AI providers failed. Last error: {0}").format(str(last_exc)[:200] if last_exc else "unknown")}
 
 
 # ── Anthropic ─────────────────────────────────────────────────────────────────
 def _call_anthropic(
     api_key: str, model: str, message: str, history: list,
-    base_url: str = "", system_prompt: str = ""
+    base_url: str = "", system_prompt: str = "", file_list: list = None
 ) -> dict:
     import urllib.request
 
-    messages = _history_to_messages(history, message)
+    file_list = file_list or []
     url = base_url or _PROVIDER_DEFAULTS["anthropic"]["url"]
+
+    # Build message history (text-only for prior turns)
+    messages = _history_to_messages(history, None)  # no current message yet
+
+    # Build the user content: text + images
+    if file_list:
+        user_content = [{"type": "text", "text": message}]
+        for f in file_list:
+            if f.get("type", "").startswith("image/"):
+                user_content.append({
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": f["type"],
+                        "data": f["data"],
+                    },
+                })
+        messages.append({"role": "user", "content": user_content})
+    else:
+        messages.append({"role": "user", "content": message})
 
     payload = json.dumps({
         "model": model,
@@ -180,7 +325,9 @@ def _call_anthropic(
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=60) as resp:
+    # Vision requests need more time
+    timeout = 120 if file_list else 60
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
         data = json.loads(resp.read())
 
     reply = data["content"][0]["text"]
@@ -209,7 +356,7 @@ def _raw_openai_call(api_key: str, model: str, messages: list, url: str) -> dict
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=120) as resp:
+    with urllib.request.urlopen(req, timeout=20) as resp:
         return json.loads(resp.read())
 
 
@@ -258,17 +405,32 @@ def _execute_fac_tool(name: str, arguments: dict) -> str:
 
 def _call_openai_compatible_with_tools(
     api_key: str, model: str, message: str, history: list,
-    url: str, system_prompt: str = ""
+    url: str, system_prompt: str = "", file_list: list = None
 ) -> dict:
     """
     Agentic loop: attach FAC tools to each OpenAI call and handle tool_calls
     until the model returns a final text response (or 5 rounds exhausted).
+    Supports multimodal content blocks when file_list contains images.
     """
     import urllib.request
 
+    file_list = file_list or []
     tools = _get_fac_tools_openai()
     messages = [{"role": "system", "content": system_prompt or _DEFAULT_SYSTEM_PROMPT}]
-    messages += _history_to_messages(history, message)
+    messages += _history_to_messages(history, None)  # no current message yet
+
+    # Build user content: text + images
+    if file_list:
+        user_content = [{"type": "text", "text": message}]
+        for f in file_list:
+            if f.get("type", "").startswith("image/"):
+                user_content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:{f['type']};base64,{f['data']}"},
+                })
+        messages.append({"role": "user", "content": user_content})
+    else:
+        messages.append({"role": "user", "content": message})
 
     for _round in range(5):
         extra = {}
@@ -293,7 +455,8 @@ def _call_openai_compatible_with_tools(
             },
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        timeout = 90 if file_list else 20
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = json.loads(resp.read())
 
         choice = data["choices"][0]
@@ -348,15 +511,28 @@ def _call_openai_compatible(
 # ── Gemini ────────────────────────────────────────────────────────────────────
 def _call_gemini(
     api_key: str, model: str, message: str, history: list,
-    base_url: str = "", system_prompt: str = ""
+    base_url: str = "", system_prompt: str = "", file_list: list = None
 ) -> dict:
     import urllib.request
+
+    file_list = file_list or []
 
     contents = []
     for turn in history:
         role = "user" if turn.get("role") == "user" else "model"
         contents.append({"role": role, "parts": [{"text": turn.get("content", "")}]})
-    contents.append({"role": "user", "parts": [{"text": message}]})
+
+    # Build current user parts: text + inline images
+    user_parts = [{"text": message}]
+    for f in file_list:
+        if f.get("type", "").startswith("image/"):
+            user_parts.append({
+                "inline_data": {
+                    "mime_type": f["type"],
+                    "data": f["data"],
+                }
+            })
+    contents.append({"role": "user", "parts": user_parts})
 
     payload = json.dumps({
         "system_instruction": {"parts": [{"text": system_prompt or _DEFAULT_SYSTEM_PROMPT}]},
@@ -375,7 +551,8 @@ def _call_gemini(
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=60) as resp:
+    timeout = 120 if file_list else 60
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
         data = json.loads(resp.read())
 
     reply = data["candidates"][0]["content"]["parts"][0]["text"]
@@ -384,7 +561,7 @@ def _call_gemini(
 
 # ── Settings form helpers ─────────────────────────────────────────────────────
 
-_ALLOWED_KEY_FIELDS = {"api_key", "fallback_api_key"}
+_ALLOWED_KEY_FIELDS = {"api_key", "fallback_api_key", "fallback2_api_key"}
 
 
 def _mask_key(key: str) -> str:
@@ -432,13 +609,18 @@ def reveal_api_key(field_name: str = "api_key") -> dict:
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-def _history_to_messages(history: list, current_message: str) -> list:
-    """Convert stored history to OpenAI/Anthropic message format."""
+def _history_to_messages(history: list, current_message: str | None) -> list:
+    """
+    Convert stored history to OpenAI/Anthropic message format.
+    If current_message is None, only the history turns are returned
+    (caller appends the current message manually for multimodal support).
+    """
     messages = []
     for turn in history:
         role = turn.get("role", "user")
         content = turn.get("content", "")
         if role in ("user", "assistant") and content:
             messages.append({"role": role, "content": content})
-    messages.append({"role": "user", "content": current_message})
+    if current_message is not None:
+        messages.append({"role": "user", "content": current_message})
     return messages
