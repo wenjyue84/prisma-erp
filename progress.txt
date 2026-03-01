@@ -7243,3 +7243,34 @@ Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and
 ### Gotchas
 - `frappe.db.sql(..., as_dict=True)` returns list of plain dicts, not frappe._dict; always use row.get("field") not row.field_name
 - Both outer and nested container paths must be kept in sync (standard MEMORY.md pattern)
+## Iteration 27 - Sun, Mar  1, 2026  2:44:58 PM
+Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging (ID: US-210) — attempt 2/3
+
+
+## Iteration N — US-310: PERKESO LINDUNG 24/7 Employee Contribution Deduction Engine
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 46 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_lindung247`
+**Result:** PASS — 46/46 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/lindung247_service.py` — LINDUNG 24/7 deduction engine
+- `lhdn_payroll_integration/tests/test_lindung247.py` — 46 tests across 9 test classes
+
+### Key design decisions
+- Gazette gate: `is_lindung247_active()` requires BOTH gazette_status="Active" AND activation_date <= today
+- Pre-gazette: all functions return 0 amounts + compliance warning (not an error, expected state)
+- Configuration stored in `LHDN Payroll Settings` singleton (existing doctype, no migration needed)
+- PERKESO ASSIST CSV: `generate_eccaruman_lindung247_csv()` returns empty string if pre-gazette
+- HR alert: `alert_hr_gazette_rate_entered()` fires `frappe.publish_realtime` + `log_error` when rate entered
+- Both employer AND employee contributions (unlike SOCSO First Category employer-only Second Category)
+
+### Patterns confirmed
+- gazette-gate pattern from gig_worker_socso_service works well for pending-gazette schemes
+- `_mock_settings()` helper with a `.get()` lambda avoids MagicMock attribute auto-creation issues
+- Tests mock `frappe.get_single` + `frappe.db.sql` + `nowdate` for deterministic results
+- Both nested and outer service paths must be updated (docker cp to both locations)
+
+### Gotchas
+- prd.json must be read/written with encoding='utf-8' on Windows (default cp1252 fails on em-dashes)
