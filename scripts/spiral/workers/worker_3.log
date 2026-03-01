@@ -1,135 +1,132 @@
 [config] Loading project quality gates from ./ralph-config.sh
-  [config] Frappe/Docker quality gates loaded (15-min reporter started, PID=16417)
+  [config] Frappe/Docker quality gates loaded (15-min reporter started, PID=40565)
 
   ╔══════════════════════════════════════╗
   ║     Ralph Autonomous Agent Loop      ║
   ╠══════════════════════════════════════╣
   ║  Tool:       claude
   ║  PRD:        lhdn_payroll_integration
-  ║  Branch:     spiral-worker-3-1772347037
-  ║  Stories:    145/199 complete
-  ║  Remaining:  54 stories
+  ║  Branch:     spiral-worker-3-1772373116
+  ║  Stories:    177/226 complete
+  ║  Remaining:  49 stories
   ║  Max iters:  40
   ╚══════════════════════════════════════╝
 
 
   ╔══════════════════════════════════════╗
   ║  Iteration 1/40
-  Progress: [█████████████████████░░░░░░░░░] 145/199 (72%)
+  Progress: [███████████████████████░░░░░░░] 177/226 (78%)
   ╚══════════════════════════════════════╝
 
-  ┌─ Story ─────────────────────────────┐
-  │ ID:       US-211
-  │ Title:    Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package
-  │ Priority: low
-  │ Deps:     none
-  │ Attempt:  1/3
-  └─────────────────────────────────────┘
+  No actionable stories left (49 blocked or max-retried)
+    BLOCKED (deps unmet):  [US-158] Alert on EPF New Employee Registration 7-Day Statutory Deadline
+    BLOCKED (deps unmet):  [US-221] PCB Year-to-Date Arrears Recovery from Final Pay on Employee Termination
+    BLOCKED (deps unmet):  [US-230] Enforce ITA Section 82 7-Year Payroll Tax Record Retention (Separate from MOHR 6-Year)
+    BLOCKED (deps unmet):  [US-248] MyInvois Phase 4 (January 2026) â€” Set Mandatory e-Invoice Flag for Companies with RM1Mâ€“RM5M Annual Revenue
+    BLOCKED (deps unmet):  [US-251] LHDN AIS Employer Upload â€” Auto-Submit Employee Remuneration Data to MyTax by 25 February Deadline
+    BLOCKED (deps unmet):  [US-260] EPF Automatic Foreign Worker i-Akaun Registration (October 2025) â€” Suppress Manual Registration for EP/VP Holders
+    BLOCKED (deps unmet):  [US-263] SOCSO Foreign Worker Invalidity Scheme â€” Enforce 0.5% Employee Deduction on Payslip from July 2024
+    BLOCKED (deps unmet):  [US-274] Employment Pass Maximum Tenure Expiry Alert (Category III: 5 Years, Category II: 10 Years)
+    BLOCKED (deps unmet):  [US-280] PERKESO LINDUNG Scheme Rebranding â€” Update All System Labels from SKSPS/SKSSR to LINDUNG Family Names
+    BLOCKED (deps unmet):  [US-283] HRD Corp RM50,000 Levy Balance Threshold Tracker and 15% Auto-Deduction Ledger Reconciliation
+    BLOCKED (deps unmet):  [US-293] PERKESO ASSIST e-Caruman API Response Parsing and Contribution Correction Workflow
+    BLOCKED (deps unmet):  [US-304] TP3(1/2026) PCB Calculator Integration: Apply Prior Employer YTD Taxable Income, EPF, and PCB Paid to Reduce Current MTD
+    BLOCKED (deps unmet):  [US-313] Gig Workers Act 872 â€” Enforce PERKESO Deduction on Separate Ministerial Gazette Enforcement Date, Not Royal Assent
+    BLOCKED (deps unmet):  [US-318] Sabah/Sarawak Labour Ordinance 2025 (Acts A1753/A1754) â€” Extend Payroll Statutory Protections to All East Malaysia Employees Regardless of Salary
+    BLOCKED (deps unmet):  [US-113] Implement Zakat State Rate Table for Multi-State Employer Offices
+    BLOCKED (deps unmet):  [US-173] Alert on Stale TP1 Relief Declarations When New Assessment Year Begins Without Employee Re-Submission
+    BLOCKED (deps unmet):  [US-245] Progressive Wage Policy Government Incentive Subsidy Claim Tracking Workflow
+    BLOCKED (deps unmet):  [US-291] EIS Amendment 2025 S.45F â€” Moratorium Phase Suppression and Voluntary Job Vacancy Reporting Module
+    BLOCKED (deps unmet):  [US-108] Auto-Generate EIS Form IA New Employee Registration File for PERKESO ASSIST
+    BLOCKED (deps unmet):  [US-120] Implement Commission-as-Normal-Remuneration MTD Formula for Commission-Heavy Pay Structures
+    BLOCKED (deps unmet):  [US-124] HRD Corp Levy Monthly Payment File and HRDF Employer Portal Integration
+    BLOCKED (deps unmet):  [US-135] PRS Tax Relief Extension to YA2030 â€” Update PCB Calculator Eligibility Date Guard
+    BLOCKED (deps unmet):  [US-138] e-PCB Plus Prior Month PCB Amendment â€” Trigger Corrected CP39 Row on Salary Slip Resubmission
+    BLOCKED (deps unmet):  [US-147] Borang E Nil Return Submission Workflow for Dormant and Zero-Employee Companies
+    BLOCKED (deps unmet):  [US-151] CP39 Monthly PCB Payment Mode Recording and JomPay/FPX Reference Slip Generation
+    BLOCKED (deps unmet):  [US-161] Capture Concurrent Employment Secondary Income for PCB Aggregation
+    BLOCKED (deps unmet):  [US-169] Implement BIK Motor Vehicle 50% Prescribed Value Discount for Company Cars Over 5 Years Old
+    BLOCKED (deps unmet):  [US-172] Implement Year-End Payslip BIK-to-EA Form Reconciliation Check Before EA Form Generation
+    BLOCKED (deps unmet):  [US-186] e-PCB Plus Successful Submission â€” Store Acknowledgement Reference Number on Salary Slip for LHDN Audit Trail
+    BLOCKED (deps unmet):  [US-195] Implement Salary Sacrifice Arrangement PCB and EPF Contribution Base Reduction
+    BLOCKED (deps unmet):  [US-198] Handle PERKESO Temporary Disablement Benefit (TDB) Salary Offset During Work Injury Leave
+    BLOCKED (deps unmet):  [US-224] Budget 2026 TP1: Add Eco-Friendly Lifestyle Items to RM2,500 Lifestyle Relief (YA2026-YA2027)
+    BLOCKED (deps unmet):  [US-234] e-Lejar Employer Tax Account Ledger Reconciliation Link and PCB Payment Verification
+    BLOCKED (deps unmet):  [US-238] MTD Method 3 â€” PCB Computation for Weekly and Fortnightly Payroll Periods
+    BLOCKED (deps unmet):  [US-241] Retroactive Salary Arrears PCB Back-Period Spread Calculation
+    BLOCKED (deps unmet):  [US-244] Value of Living Accommodation (VOLA) Prescribed Value Calculation Module for EA Form Part C
+    BLOCKED (deps unmet):  [US-254] HRD Corp 2-Year Unclaimed Levy Forfeiture Alert â€” Pre-Warning Before Accumulated Levy Is Lost
+    BLOCKED (deps unmet):  [US-265] Domestic Servant Minimum Wage Exclusion Flag and Alternative Remuneration Tracker
+    BLOCKED (deps unmet):  [US-268] Budget 2026 â€” Civil Servant Voluntary EPF Contribution Tax Relief on TP1
+    BLOCKED (deps unmet):  [US-271] EIS Amendment 2025 â€” Enhanced Job Search Allowance and Training Benefits Display on Termination
+    BLOCKED (deps unmet):  [US-278] Form E e-Filing Conditional Deadline Engine: 30-Day Extension to 30 April for Electronic Filers
+    BLOCKED (deps unmet):  [US-287] Workplace Harassment Penal Code Amendment â€” Criminal Offense Escalation Flag on HR Cases (Effective July 2025)
+    BLOCKED (deps unmet):  [US-290] PDPA 2024 Payroll Data Retention Schedule â€” 7-Year LHDN Override vs. PDPA Data Minimization Conflict Resolution
+    BLOCKED (deps unmet):  [US-296] First Home Loan Interest Relief 3-Year Rolling Claim Window Tracker on TP1 (SPA Jan2025â€“Dec2027)
+    BLOCKED (deps unmet):  [US-299] HRD Corp eTRIS Grant Approval Status API Sync for Automatic Levy Utilisation Ledger Update
+    BLOCKED (deps unmet):  [US-306] TP1(1/2026): Update Child Care Centre Relief Age Eligibility Validator from 6 to 12 Years
+    BLOCKED (deps unmet):  [US-309] Foreign-Sourced Income Remittance PCB Exemption Treatment for Malaysian Tax Residents (Effective to YA2026)
+    BLOCKED (deps unmet):  [US-320] Sabah/Sarawak Labour Ordinance 2025 â€” Apply 45-Hour Weekly Working Hours Cap to East Malaysia Jurisdiction-Flagged Employees
+    BLOCKED (deps unmet):  [US-323] MyInvois Phase 4 Relaxation Period Expiry Engine â€” Alert and Auto-Transition to Individual Self-Billed e-Invoice from 1 January 2027
 
-  [baseline] Counting pre-story TS errors... 0 errors
+  ╔══════════════════════════════════════╗
+  ║     Ralph Session Summary            ║
+  ╠══════════════════════════════════════╣
+  ║  Duration:        0m
+  ║  Iterations:      1
+  ║  Completed:       177/226
+  ║  Skipped:         0 (exceeded 3 retries)
+  ║  Remaining:       49
+  ║  Status:          49 stories remaining
+  ╚══════════════════════════════════════╝
 
-  [spawn] Fresh claude instance for US-211...
-  ─────── Claude Output Start ──────────
-[2m[2:17][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/.s...[0m
-[2m[2:22][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/.s...[0m
-[2m[2:49][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/.s...[0m
-[2m[3:04][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/.s...[0m
-[2m[3:06][0m 💻 [36mBash[0m [2mdocker ps --format '{{.Names}}' | grep prisma-erp-backend-1[0m
-[2m[3:19][0m 💻 [36mBash[0m [2mcd /c/Users/Jyue/Documents/1-projects/Projects/prisma-erp/.s...[0m
-[2m[3:31][0m [37mGood - Docker is running and US-187 is the first eligible story. Let me explore the existing app str...[0m
-[2m[3:33][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[3:34][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[3:54][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[3:55][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[4:10][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[4:11][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[4:43][0m [37mNow let me check if there's already a test file for this story and look at a similar service for pat...[0m
-[2m[4:44][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[4:45][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[5:16][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[5:17][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[5:29][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[5:51][0m [37mNo existing senior citizen test. Now I'll implement the service and tests for US-187.[0m
-[2m[5:53][0m 🔨 [36mTodoWrite[0m [2m[0m
-[2m[6:40][0m ✏️ [36mWrite[0m [2msenior_citizen_tax_deduction_service.py[0m
-[2m[8:06][0m ✏️ [36mWrite[0m [2mtest_senior_citizen_tax_deduction.py[0m
-[2m[8:09][0m [37mNow copy both files to the container:[0m
-[2m[8:12][0m 💻 [36mBash[0m [2mdocker cp /c/Users/Jyue/Documents/1-projects/Projects/prisma...[0m
-[2m[8:20][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-[2m[8:35][0m 📖 [36mRead[0m [2mb96gi5k8r.txt[0m
-[2m[8:39][0m [37mModule not found - likely a `.pyc` cache issue. Let me check and clear it:[0m
-[2m[8:41][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[8:52][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m
-[2m[8:54][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "python3 -c \"impor...[0m
-[2m[9:07][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[9:09][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "python3 -c \"impor...[0m
-[2m[9:23][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "python3 -c \" impo...[0m
-[2m[9:33][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "python3 -c \" impo...[0m
-[2m[9:48][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "python3 -c \" impo...[0m
-[2m[10:06][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "python3 -c \" impo...[0m
-[2m[10:22][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "/home/frappe/frapp...[0m
-[2m[10:32][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls -la /home/frapp...[0m
-[2m[10:44][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls -la /home/frapp...[0m
-[2m[10:46][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "/home/frappe/frapp...[0m
-[2m[11:32][0m [37mLet me check if the file has a syntax issue in the container:[0m
-[2m[11:32][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "/home/frappe/frapp...[0m
-[2m[11:40][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls -la /home/frapp...[0m
-[2m[11:48][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "/home/frappe/frapp...[0m
-[2m[11:48][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "python3 --version"[0m
-[2m[11:52][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 sh -c "/home/frappe/frappe-...[0m
-[2m[12:01][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 /bin/bash -c "/home/frappe/...[0m
-[2m[12:09][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[12:15][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[12:44][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-[2m[13:00][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "which python3 && l...[0m
-[2m[13:08][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls -la /home/frapp...[0m
-[2m[13:18][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-[2m[13:36][0m [37mLet me check ownership and fix it:[0m
-[2m[13:37][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "chown frappe:frapp...[0m
-[2m[13:46][0m 💻 [36mBash[0m [2mdocker exec -u root prisma-erp-backend-1 bash -c "chown frap...[0m
-[2m[13:53][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-[2m[14:18][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-[2m[14:29][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-
-  ╔══════════════════════════════════════════╗
-  ║   📊 15-MIN PROGRESS REPORT — 14:52  ║
-  ╠══════════════════════════════════════════╣
-  ║  Completed:  145 / 199 stories
-  ║  Remaining:  54 stories
-  ║
-  ║  Recently done:
-  ║    ✓ [US-215] PCB Under-Deduction Employer Liability Alert (Section 107A ITA 1967)
-  ║    ✓ [US-228] Enforce RM1,700 Minimum Wage for ALL Employers Effective 1 August 2025
-  ║    ✓ [US-247] EIS Amendment 2025 — Payroll Validation: Prohibit Employer EIS Contribution Recovery from Employee Wages
-  ║
-  ║  Up next:
-  ║    → [US-227] Store Employee TIN on Employee DocType and Validate for e-PCB Plus Upload
-  ║    → [US-181] Gig Workers Act 2025 — Auto-Register Gig Workers Under PERKESO SKSPS via ASSIST Portal API
-  ║    → [US-184] Enforce Part-Time Employee Minimum Hourly Rate Against RM1,700 Monthly Wage Floor Proration
-  ╚══════════════════════════════════════════╝
-
-[2m[14:54][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'def get_m...[0m
-[2m[15:00][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "sed -n '817,840p' ...[0m
-[2m[15:15][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "rm -f /home/frappe...[0m
-[2m[15:22][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-[2m[15:38][0m [37mLet me look at a recently-working test for comparison:[0m
-[2m[15:39][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "head -30 /home/fra...[0m
-[2m[15:41][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls -la /home/frapp...[0m
-[2m[15:54][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "ls /home/frappe/fr...[0m
-[2m[16:24][0m [37mLet me create a diagnostic script to understand the import issue:[0m
-[2m[16:24][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-[2m[16:25][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[16:52][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
-[2m[16:53][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'sys.path'...[0m
-[2m[17:04][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -rn 'sys.path...[0m
-[2m[17:10][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[17:18][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'run.test\...[0m
-[2m[17:25][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m
-[2m[17:42][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "grep -n 'sys.path\...[0m
-[2m[17:49][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m
-[2m[18:00][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[18:01][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "find /home/frappe/...[0m
-[2m[18:19][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[18:37][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[18:45][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cat /home/frappe/f...[0m
-[2m[18:56][0m 💻 [36mBash[0m [2mdocker exec prisma-erp-backend-1 bash -c "cd /home/frappe/fr...[0m
+  Remaining stories:
+    [US-158] Alert on EPF New Employee Registration 7-Day Statutory Deadline
+    [US-221] PCB Year-to-Date Arrears Recovery from Final Pay on Employee Termination
+    [US-230] Enforce ITA Section 82 7-Year Payroll Tax Record Retention (Separate from MOHR 6-Year)
+    [US-248] MyInvois Phase 4 (January 2026) â€” Set Mandatory e-Invoice Flag for Companies with RM1Mâ€“RM5M Annual Revenue
+    [US-251] LHDN AIS Employer Upload â€” Auto-Submit Employee Remuneration Data to MyTax by 25 February Deadline
+    [US-260] EPF Automatic Foreign Worker i-Akaun Registration (October 2025) â€” Suppress Manual Registration for EP/VP Holders
+    [US-263] SOCSO Foreign Worker Invalidity Scheme â€” Enforce 0.5% Employee Deduction on Payslip from July 2024
+    [US-274] Employment Pass Maximum Tenure Expiry Alert (Category III: 5 Years, Category II: 10 Years)
+    [US-280] PERKESO LINDUNG Scheme Rebranding â€” Update All System Labels from SKSPS/SKSSR to LINDUNG Family Names
+    [US-283] HRD Corp RM50,000 Levy Balance Threshold Tracker and 15% Auto-Deduction Ledger Reconciliation
+    [US-293] PERKESO ASSIST e-Caruman API Response Parsing and Contribution Correction Workflow
+    [US-304] TP3(1/2026) PCB Calculator Integration: Apply Prior Employer YTD Taxable Income, EPF, and PCB Paid to Reduce Current MTD
+    [US-313] Gig Workers Act 872 â€” Enforce PERKESO Deduction on Separate Ministerial Gazette Enforcement Date, Not Royal Assent
+    [US-318] Sabah/Sarawak Labour Ordinance 2025 (Acts A1753/A1754) â€” Extend Payroll Statutory Protections to All East Malaysia Employees Regardless of Salary
+    [US-108] Auto-Generate EIS Form IA New Employee Registration File for PERKESO ASSIST
+    [US-120] Implement Commission-as-Normal-Remuneration MTD Formula for Commission-Heavy Pay Structures
+    [US-124] HRD Corp Levy Monthly Payment File and HRDF Employer Portal Integration
+    [US-135] PRS Tax Relief Extension to YA2030 â€” Update PCB Calculator Eligibility Date Guard
+    [US-138] e-PCB Plus Prior Month PCB Amendment â€” Trigger Corrected CP39 Row on Salary Slip Resubmission
+    [US-147] Borang E Nil Return Submission Workflow for Dormant and Zero-Employee Companies
+    [US-151] CP39 Monthly PCB Payment Mode Recording and JomPay/FPX Reference Slip Generation
+    [US-161] Capture Concurrent Employment Secondary Income for PCB Aggregation
+    [US-169] Implement BIK Motor Vehicle 50% Prescribed Value Discount for Company Cars Over 5 Years Old
+    [US-172] Implement Year-End Payslip BIK-to-EA Form Reconciliation Check Before EA Form Generation
+    [US-186] e-PCB Plus Successful Submission â€” Store Acknowledgement Reference Number on Salary Slip for LHDN Audit Trail
+    [US-195] Implement Salary Sacrifice Arrangement PCB and EPF Contribution Base Reduction
+    [US-198] Handle PERKESO Temporary Disablement Benefit (TDB) Salary Offset During Work Injury Leave
+    [US-224] Budget 2026 TP1: Add Eco-Friendly Lifestyle Items to RM2,500 Lifestyle Relief (YA2026-YA2027)
+    [US-234] e-Lejar Employer Tax Account Ledger Reconciliation Link and PCB Payment Verification
+    [US-238] MTD Method 3 â€” PCB Computation for Weekly and Fortnightly Payroll Periods
+    [US-241] Retroactive Salary Arrears PCB Back-Period Spread Calculation
+    [US-244] Value of Living Accommodation (VOLA) Prescribed Value Calculation Module for EA Form Part C
+    [US-254] HRD Corp 2-Year Unclaimed Levy Forfeiture Alert â€” Pre-Warning Before Accumulated Levy Is Lost
+    [US-265] Domestic Servant Minimum Wage Exclusion Flag and Alternative Remuneration Tracker
+    [US-268] Budget 2026 â€” Civil Servant Voluntary EPF Contribution Tax Relief on TP1
+    [US-271] EIS Amendment 2025 â€” Enhanced Job Search Allowance and Training Benefits Display on Termination
+    [US-278] Form E e-Filing Conditional Deadline Engine: 30-Day Extension to 30 April for Electronic Filers
+    [US-287] Workplace Harassment Penal Code Amendment â€” Criminal Offense Escalation Flag on HR Cases (Effective July 2025)
+    [US-290] PDPA 2024 Payroll Data Retention Schedule â€” 7-Year LHDN Override vs. PDPA Data Minimization Conflict Resolution
+    [US-296] First Home Loan Interest Relief 3-Year Rolling Claim Window Tracker on TP1 (SPA Jan2025â€“Dec2027)
+    [US-299] HRD Corp eTRIS Grant Approval Status API Sync for Automatic Levy Utilisation Ledger Update
+    [US-306] TP1(1/2026): Update Child Care Centre Relief Age Eligibility Validator from 6 to 12 Years
+    [US-309] Foreign-Sourced Income Remittance PCB Exemption Treatment for Malaysian Tax Residents (Effective to YA2026)
+    [US-320] Sabah/Sarawak Labour Ordinance 2025 â€” Apply 45-Hour Weekly Working Hours Cap to East Malaysia Jurisdiction-Flagged Employees
+    [US-323] MyInvois Phase 4 Relaxation Period Expiry Engine â€” Alert and Auto-Transition to Individual Self-Billed e-Invoice from 1 January 2027
+    [US-113] Implement Zakat State Rate Table for Multi-State Employer Offices
+    [US-173] Alert on Stale TP1 Relief Declarations When New Assessment Year Begins Without Employee Re-Submission
+    [US-245] Progressive Wage Policy Government Incentive Subsidy Claim Tracking Workflow
+    [US-291] EIS Amendment 2025 S.45F â€” Moratorium Phase Suppression and Voluntary Job Vacancy Reporting Module
