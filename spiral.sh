@@ -334,6 +334,7 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
         echo ""
 
         RALPH_RAN=1
+        PRE_RALPH_PRD_JSON=$(cat "$PRD_FILE")
         DONE_BEFORE=$("$JQ" '[.userStories[] | select(.passes == true)] | length' "$PRD_FILE")
 
         if [[ "$RALPH_WORKERS" -gt 1 ]]; then
@@ -365,15 +366,62 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
             # run_parallel_ralph.sh already committed prd.json + per-worker code patches
             echo "  [I] Git: parallel mode — commits already applied by run_parallel_ralph.sh"
           else
-            # Sequential mode: auto-commit with story-ID commit message
-            NEW_STORY_IDS=$("$JQ" -r '[.userStories[] | select(.passes == true)] | .[-'"$RALPH_PROGRESS"':] | .[].id // empty' "$PRD_FILE" 2>/dev/null | tr '\n' ' ' | xargs) || true
-            COMMIT_MSG="feat(spiral): complete $RALPH_PROGRESS stories iter-$SPIRAL_ITER"
-            [[ -n "$NEW_STORY_IDS" ]] && COMMIT_MSG="feat(spiral): $NEW_STORY_IDS (spiral iter $SPIRAL_ITER)"
-            if git -C "$REPO_ROOT" add -A 2>/dev/null && \
-               git -C "$REPO_ROOT" commit -m "$COMMIT_MSG" 2>/dev/null; then
-              echo "  [I] Git: auto-committed progress — $RALPH_PROGRESS stories"
+            # Sequential mode: atomic commit per completed story
+            POST_RALPH_PRD="$SPIRAL_DIR/_prd_post_ralph.json"
+            cp "$PRD_FILE" "$POST_RALPH_PRD"
+
+            # Identify newly completed stories vs pre-ralph baseline
+            mapfile -t NEW_STORY_RECORDS < <(
+              "$JQ" -r --argjson before "$PRE_RALPH_PRD_JSON" \
+                '[.userStories[] | . as $s |
+                  select(.passes == true) |
+                  select(($before.userStories | map(select(.id == $s.id and (.passes // false) == true)) | length) == 0)
+                ] | .[] | "\(.id)|\(.title)"' "$PRD_FILE" 2>/dev/null
+            ) || true
+
+            if [[ ${#NEW_STORY_RECORDS[@]} -eq 0 ]]; then
+              # Fallback: no story breakdown available — single bulk commit
+              if git -C "$REPO_ROOT" add -A 2>/dev/null && \
+                 git -C "$REPO_ROOT" commit -m "feat(spiral): complete $RALPH_PROGRESS stories (iter $SPIRAL_ITER)" 2>/dev/null; then
+                echo "  [I] Git: committed $RALPH_PROGRESS stories (fallback single commit)"
+              else
+                echo "  [I] Git: commit skipped (nothing staged or git unavailable)"
+              fi
             else
-              echo "  [I] Git: commit skipped (nothing staged or git unavailable)"
+              # Restore prd.json to pre-ralph state; code changes remain as unstaged diffs
+              echo "$PRE_RALPH_PRD_JSON" > "$PRD_FILE"
+
+              # Stage all code changes except prd.json (goes into first story's commit)
+              git -C "$REPO_ROOT" add -A 2>/dev/null || true
+              git -C "$REPO_ROOT" restore --staged "$PRD_FILE" 2>/dev/null || \
+                git -C "$REPO_ROOT" reset HEAD "$PRD_FILE" 2>/dev/null || true
+
+              ATOMIC_COUNT=0
+              for record in "${NEW_STORY_RECORDS[@]}"; do
+                STORY_ID="${record%%|*}"
+                STORY_TITLE="${record#*|}"
+
+                # Merge this story's final record from post-ralph into current prd.json
+                UPDATED=$("$JQ" --arg id "$STORY_ID" \
+                  --slurpfile full "$POST_RALPH_PRD" \
+                  '(.userStories[] | select(.id == $id)) |= ([$full[0].userStories[] | select(.id == $id)] | .[0] // .)' \
+                  "$PRD_FILE" 2>/dev/null) || true
+                [[ -n "$UPDATED" ]] && echo "$UPDATED" > "$PRD_FILE"
+
+                git -C "$REPO_ROOT" add "$PRD_FILE" 2>/dev/null || true
+                if git -C "$REPO_ROOT" commit -m "feat: $STORY_ID - $STORY_TITLE" 2>/dev/null; then
+                  echo "  [I] Git: feat: $STORY_ID - $STORY_TITLE"
+                  ATOMIC_COUNT=$((ATOMIC_COUNT + 1))
+                fi
+              done
+
+              # Ensure prd.json is fully synced to post-ralph final state
+              cp "$POST_RALPH_PRD" "$PRD_FILE"
+              git -C "$REPO_ROOT" add "$PRD_FILE" 2>/dev/null || true
+              git -C "$REPO_ROOT" diff --cached --quiet 2>/dev/null || \
+                git -C "$REPO_ROOT" commit -m "chore: sync prd.json final state (spiral iter $SPIRAL_ITER)" 2>/dev/null || true
+
+              echo "  [I] Git: $ATOMIC_COUNT atomic commits created"
             fi
           fi
           ZERO_PROGRESS_COUNT=0
@@ -442,6 +490,15 @@ PYEOF
     fi
 
     write_checkpoint "$SPIRAL_ITER" "V"
+  fi
+
+  # ── Phase P: PUSH ─────────────────────────────────────────────────────────
+  echo ""
+  echo "  [Phase P] PUSH — pushing commits to origin/main..."
+  if git -C "$REPO_ROOT" push origin main 2>&1; then
+    echo "  [P] Pushed to origin/main successfully"
+  else
+    echo "  [P] WARNING: Push to origin/main failed (check remote/connectivity)"
   fi
 
   # ── Phase C: CHECK DONE ───────────────────────────────────────────────────
