@@ -68,6 +68,7 @@ scheduler_events = {
 		"lhdn_payroll_integration.services.age_checker_service.check_approaching_age_60",
 		"lhdn_payroll_integration.lhdn_payroll_integration.utils.wage_payment_compliance.send_wage_payment_alerts",
 		"lhdn_payroll_integration.services.spc_cessation_service.check_pending_spc_alerts",
+		"lhdn_payroll_integration.services.senior_citizen_service.check_senior_citizen_contract_expiry_alerts",
 	],
 	"monthly": [
 		"lhdn_payroll_integration.services.consolidation_service.run_monthly_consolidation",

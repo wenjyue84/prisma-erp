@@ -1,3 +1,24 @@
+## Iteration N — US-187: Budget 2026 — Track Senior Citizen Employee Hiring Tax Deduction Eligibility Extended to YA2030
+
+**Type:** IMPL
+**TDD Phase:** GREEN (33/33 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_senior_citizen_us187
+**Result:** PASS - 33 tests, 0 failures
+
+### Files created/modified
+- lhdn_payroll_integration/services/senior_citizen_service.py - Core service: is_senior_citizen(), get_age_as_of(), get_senior_citizens_for_company(), check_senior_citizen_contract_expiry_alerts(), get_eligible_ya_range()
+- lhdn_payroll_integration/report/senior_citizen_deduction/ - Script report with YA filter (2026-2030), department breakdown, total wages per employee
+- lhdn_payroll_integration/tests/test_senior_citizen_us187.py - 33 tests across 5 test classes covering all 6 acceptance criteria
+- lhdn_payroll_integration/hooks.py - Added daily scheduler senior_citizen_service.check_senior_citizen_contract_expiry_alerts
+
+### Patterns discovered
+- Two levels of tests/ in container: level2 (apps/app/app/tests/) and level3 (apps/app/app/app/tests/). Frappe imports from level2. Always copy test files to level2.
+- When frappe.db is AsyncMock in tests, patching frappe.db.sql still produces AsyncMock. Patch the private helper function directly instead.
+- After copying test files, always clear pycache to prevent stale bytecode execution.
+- docker cp to both level2 AND level3 needed for services; only level2 for tests.
+
+---
+
 ## Iteration N — US-227: Store Employee TIN on Employee DocType and Validate for e-PCB Plus Upload
 
 **Type:** IMPL
@@ -7406,3 +7427,4 @@ Implementation was already complete. Verified all 28 tests pass green.
 - DocType autoname format:PCBERR-{YYYY}-{MM}-{#####} generates sortable audit-trail names
 - ignore_links=True in test _make_error_log() bypasses Employee FK validation safely
 - patch _get_mytax_access_token directly (not frappe.db.get_value) to avoid side effects in resubmission tests
+
