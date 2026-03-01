@@ -1,3 +1,27 @@
+## Iteration N — US-204: Track EP Category Internship Obligation per 1:3 Internship Policy (TalentCorp/MOHR)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (37/37 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_ep_internship_policy
+**Result:** PASS — 37 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/services/ep_internship_service.py` — Core service: `compute_internship_quota()`, `validate_intern_stipend()`, `get_compliance_summary()`, `check_ep_renewal_alerts()` with constants `QUOTA_PER_EP_CAT`, `HEADCOUNT_CAP_RATE`, `STIPEND_MIN`, `EP_RENEWAL_ALERT_DAYS`
+- `lhdn_payroll_integration/doctype/internship_placement/` — New DocType with fields: company, linked_employee, intern_name, qualification_level, talentcorp_reference, status, start_date, end_date, monthly_stipend; permissions for HR Manager/HR User
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added Employee fields: `custom_ep_category` (Select: Cat I/Cat II/Cat III), `custom_ep_number` (Data), `custom_ep_expiry_date` (Date)
+- `lhdn_payroll_integration/tests/test_ep_internship_policy.py` — 37 tests across 5 classes covering all 6 acceptance criteria
+
+### Patterns discovered
+- Container may already have pre-built implementations from partial sessions; run tests first before reimplementing.
+- Internship Placement DocType uses autoname `format:INT-{YYYY}-{#####}` for readable naming.
+- Quota formula: Cat I × 3 + Cat II × 2 + Cat III × 1, capped at 2% of headcount. Effective = min(raw, cap).
+
+### Gotchas
+- When syncing container → local repo, check both `services/` and `doctype/` directories — container often has more than local.
+- Tests were already passing in container (implementation pre-built); task was to sync to local repo and commit.
+
+---
+
 ## Iteration N — US-231: Generate LHDN PCB 2026 Specification Annual Update Checklist and Version Flag
 
 **Type:** IMPL
@@ -7478,6 +7502,7 @@ Implementation was already complete. Verified all 28 tests pass green.
 - DocType autoname format:PCBERR-{YYYY}-{MM}-{#####} generates sortable audit-trail names
 - ignore_links=True in test _make_error_log() bypasses Employee FK validation safely
 - patch _get_mytax_access_token directly (not frappe.db.get_value) to avoid side effects in resubmission tests
+
 
 
 
