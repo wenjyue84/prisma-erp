@@ -1,3 +1,26 @@
+## Iteration N — US-220: Worker Classification Flag: Contract-of-Service vs Contract-for-Service for PCB/WHT Routing
+
+**Type:** IMPL
+**TDD Phase:** GREEN (73/73 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_us220_worker_classification
+**Result:** PASS — 73 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/worker_classification_service.py` — Core service: CONTRACT_OF_SERVICE/CONTRACT_FOR_SERVICE constants, is_valid_contract_type(), get_contract_type_or_default(), is_pcb_applicable(), is_wht_applicable(), get_statutory_scheme() (PCB vs WHT routing), validate_salary_slip_worker() (blocks CfS from payroll), validate_payroll_batch() (batch validation with warnings), create_audit_entry() (classification change logging), validate_audit_entry(), classify_workforce() (summary with percentages), generate_classification_report() (per-employee statutory scheme detail)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_us220_worker_classification.py` — 73 tests across 12 classes: TestWorkerClassificationConstants, TestIsValidContractType, TestGetContractTypeOrDefault, TestIsPcbApplicable, TestIsWhtApplicable, TestPcbWhtMutualExclusion, TestGetStatutoryScheme, TestValidateSalarySlipWorker, TestValidatePayrollBatch, TestCreateAuditEntry, TestValidateAuditEntry, TestClassifyWorkforce, TestGenerateClassificationReport
+
+### Patterns discovered
+- LHDN Public Ruling 3/2019 distinguishes Contract of Service (employee → PCB) from Contract for Service (contractor → WHT)
+- PCB under Section 107A ITA 1967 for employees; WHT under Section 107D ITA 1967 for contractors
+- Default classification is Contract of Service (employees); Contract for Service workers should use Supplier/Purchase Invoice, not Salary Slip
+- Audit trail captures old/new classification, changed-by, reason, timestamp, and statutory impact description
+- Pure Python service with no Frappe imports — all functions stateless and testable
+
+### Gotchas
+- None — clean implementation building on existing WHT 107D service pattern
+
+---
+
 ## Iteration N — US-219: TP3 30-Day Collection Deadline Compliance Alert for Mid-Year New Hires
 
 **Type:** IMPL
@@ -8076,4 +8099,7 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 
 ## Iteration 49 - Sun, Mar  1, 2026  6:41:36 PM
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 1/3
+
+## Iteration 50 - Sun, Mar  1, 2026  6:51:29 PM
+Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 2/3
 

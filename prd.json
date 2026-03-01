@@ -5191,7 +5191,7 @@
         "Section 107D ITA â€” WHT 2% Deduction, Monthly Remittance, and CP58 Integration for Agent/Dealer Payments"
       ],
       "estimatedComplexity": "medium",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-221",
