@@ -4,6 +4,8 @@ Covers:
 - Minimum Wages Order (Amendment) 2025 — effective 1 Feb 2025
   RM1,700/month for companies with 5+ employees
   RM8.17/hour for part-time workers
+- Micro-Employer Minimum Wage Grace Period (US-144)
+  Aug 2025 gazette extension: micro-employers (1-4 employees) exempted until 2025-08-01
 - Ordinary Rate of Pay (ORP) and Overtime Validation — Employment Act S.60A(3)
   OT multipliers: 1.5x Normal, 2.0x Rest Day, 3.0x Public Holiday
   Applies to EA-covered employees earning <= RM4,000/month
@@ -1187,3 +1189,180 @@ def is_malaysia_public_holiday(date_value, state=None):
             "date": str(date_value),
             "note": "Invalid date provided.",
         }
+
+
+# ---------------------------------------------------------------------------
+# US-144: Micro-Employer Minimum Wage Schedule (August 2025 Grace Period Extension)
+# ---------------------------------------------------------------------------
+
+# Minimum Wage Schedule per Minimum Wages Order 2022 + August 2025 Gazette Extension
+# headcount_threshold: minimum active-employee count for this entry to apply.
+# None = applies to ALL employers regardless of headcount.
+MINIMUM_WAGE_SCHEDULE = [
+    {
+        "effective_date": "2025-02-01",
+        "min_wage": 1700.0,
+        "headcount_threshold": 5,   # employers with >= 5 active employees
+    },
+    {
+        "effective_date": "2025-08-01",
+        "min_wage": 1700.0,
+        "headcount_threshold": None,  # all employers (micro-employers included)
+    },
+]
+
+
+def get_applicable_minimum_wage(period_end_date, employer_headcount):
+    """Return the minimum monthly wage applicable for a payroll period and employer size.
+
+    Per Minimum Wages Order 2022 and August 2025 gazette extension:
+    - 2025-02-01 onwards: RM1,700 for employers with >= 5 active employees.
+    - 2025-08-01 onwards: RM1,700 for ALL employers (micro-employers included).
+
+    Args:
+        period_end_date: str ('YYYY-MM-DD') or datetime.date — payroll period end.
+        employer_headcount: int — number of active employees on the Company.
+
+    Returns:
+        float or None:
+            float — the applicable minimum monthly wage in RM.
+            None  — no minimum wage applies (grace period for this employer size).
+    """
+    from datetime import date
+
+    if isinstance(period_end_date, str):
+        try:
+            period_end_date = date.fromisoformat(period_end_date)
+        except (ValueError, TypeError):
+            return None
+
+    applicable_wage = None
+    for entry in sorted(MINIMUM_WAGE_SCHEDULE, key=lambda e: e["effective_date"]):
+        eff_date = date.fromisoformat(entry["effective_date"])
+        if period_end_date < eff_date:
+            continue  # Not yet effective
+        threshold = entry["headcount_threshold"]
+        if threshold is None or int(employer_headcount) >= threshold:
+            applicable_wage = entry["min_wage"]
+        # If headcount below threshold, this entry doesn't apply; later entries may override.
+    return applicable_wage
+
+
+def check_minimum_wage_with_headcount(
+    monthly_salary,
+    period_end_date,
+    employer_headcount,
+    employment_type=None,
+    contracted_hours=None,
+    mohr_exemption_ref=None,
+):
+    """Check minimum wage compliance including micro-employer grace period (US-144).
+
+    Extends check_minimum_wage() with employer-headcount-sensitive schedule logic.
+    Micro-employers (1-4 employees) are exempt from RM1,700 until 2025-08-01.
+
+    Args:
+        monthly_salary: Basic monthly salary in RM.
+        period_end_date: Payroll period end date (str 'YYYY-MM-DD' or datetime.date).
+        employer_headcount: Number of active employees on the Company.
+        employment_type: 'Full-time', 'Part-time', or 'Contract'.
+        contracted_hours: Total contracted hours per month (for part-time hourly check).
+        mohr_exemption_ref: MOHR exemption reference — if set, validation is skipped.
+
+    Returns:
+        dict with keys:
+            'compliant':        bool
+            'warning':          str or None
+            'employment_type':  str
+            'minimum':          float or None (applicable minimum; None if grace period)
+            'actual':           float
+            'grace_period':     bool (True if micro-employer grace period applies)
+            'mohr_exempt':      bool (True if MOHR exemption reference bypassed check)
+    """
+    employment_type = employment_type or "Full-time"
+
+    # MOHR exemption overrides all validation
+    if mohr_exemption_ref and str(mohr_exemption_ref).strip():
+        return {
+            "compliant": True,
+            "warning": None,
+            "employment_type": employment_type,
+            "minimum": None,
+            "actual": float(monthly_salary),
+            "grace_period": False,
+            "mohr_exempt": True,
+        }
+
+    applicable_minimum = get_applicable_minimum_wage(period_end_date, employer_headcount)
+
+    # Grace period: no minimum wage enforcement for this employer size + period
+    if applicable_minimum is None:
+        return {
+            "compliant": True,
+            "warning": None,
+            "employment_type": employment_type,
+            "minimum": None,
+            "actual": float(monthly_salary),
+            "grace_period": True,
+            "mohr_exempt": False,
+        }
+
+    # Part-time: compare hourly rate
+    if employment_type == "Part-time" and contracted_hours:
+        try:
+            contracted_hours_float = float(contracted_hours)
+        except (TypeError, ValueError):
+            contracted_hours_float = 0.0
+
+        if contracted_hours_float > 0:
+            hourly_rate = float(monthly_salary) / contracted_hours_float
+            if hourly_rate < MINIMUM_WAGE_HOURLY:
+                return {
+                    "compliant": False,
+                    "warning": (
+                        f"Part-time hourly rate RM{hourly_rate:.2f} is below the minimum "
+                        f"wage of RM{MINIMUM_WAGE_HOURLY}/hour (Minimum Wages Order 2022)."
+                    ),
+                    "employment_type": employment_type,
+                    "minimum": MINIMUM_WAGE_HOURLY,
+                    "actual": hourly_rate,
+                    "grace_period": False,
+                    "mohr_exempt": False,
+                }
+            return {
+                "compliant": True,
+                "warning": None,
+                "employment_type": employment_type,
+                "minimum": MINIMUM_WAGE_HOURLY,
+                "actual": hourly_rate,
+                "grace_period": False,
+                "mohr_exempt": False,
+            }
+
+    # Full-time / Contract: compare monthly salary
+    basic_pay = float(monthly_salary)
+    if basic_pay < applicable_minimum:
+        return {
+            "compliant": False,
+            "warning": (
+                f"Monthly salary RM{basic_pay:.2f} is below the national minimum wage "
+                f"of RM{applicable_minimum:.2f}/month (Minimum Wages Order 2022). "
+                f"Applies to all employers from 1 Aug 2025. Non-compliance is an offence "
+                "under Employment Act Section 99J (fine up to RM10,000 per contravention)."
+            ),
+            "employment_type": employment_type,
+            "minimum": applicable_minimum,
+            "actual": basic_pay,
+            "grace_period": False,
+            "mohr_exempt": False,
+        }
+
+    return {
+        "compliant": True,
+        "warning": None,
+        "employment_type": employment_type,
+        "minimum": applicable_minimum,
+        "actual": basic_pay,
+        "grace_period": False,
+        "mohr_exempt": False,
+    }

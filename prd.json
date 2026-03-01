@@ -3291,7 +3291,7 @@
         "Update Minimum Wage Validation to RM1,700 (Feb 2025 Amendment)"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-145",

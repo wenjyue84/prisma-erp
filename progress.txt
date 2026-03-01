@@ -6652,3 +6652,52 @@ Incomplete: PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach N
 ### Gotchas
 - bench migrate fails with (1118, 'Row size too large') — pre-existing issue; PDPA doctypes still function correctly
 - docker mkdir as non-root fails; use `-u root` then chown
+## Iteration 15 - Sun, Mar  1, 2026 12:26:40 PM
+Completed: PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach Notification Workflow (ID: US-200) in 7m
+
+
+## Iteration — US-200: PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach Notification Workflow
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 29 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pdpa_breach_incident`
+**Result:** PASS — 29/29, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/pdpa_breach_incident/pdpa_breach_incident.json`
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/pdpa_breach_incident/pdpa_breach_incident.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/pdpa_dpo_registry/pdpa_dpo_registry.json`
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/pdpa_dpo_registry/pdpa_dpo_registry.py`
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_pdpa_breach_incident.py`
+
+### Patterns discovered
+- PDPA DPO Registry: single-registry-per-company enforced via is_new() check; 21-day deadline computed via date_diff
+- PDPA Breach Incident: 72-hour countdown computed via time_diff_in_hours; naming_series used for PDPA-BREACH-NNN autoname
+- Both DocTypes have track_changes=1 for audit logging
+- Both DocTypes migrated successfully even though bench migrate also returned a Row size error for another (non-LHDN) table
+
+### Gotchas
+- bench migrate prints Row size error from a different app/table; lhdn_payroll_integration DocTypes completed 100%
+- DocTypes were already created in a previous session — tests confirmed GREEN from the start
+
+## Iteration N — US-144: Extend Minimum Wage Validation to Cover Micro-Employers from August 1, 2025
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 29 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_micro_employer_wage_us144`
+**Result:** PASS — 29/29 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/utils/employment_compliance.py` — Added `MINIMUM_WAGE_SCHEDULE`, `get_applicable_minimum_wage()`, `check_minimum_wage_with_headcount()`
+- `lhdn_payroll_integration/utils/validation.py` — Updated `_validate_salary_slip_minimum_wage()` to use headcount-aware check with MOHR exemption ref support
+- `lhdn_payroll_integration/tests/test_micro_employer_wage_us144.py` — 29 tests across 4 classes
+
+### Patterns discovered
+- `MINIMUM_WAGE_SCHEDULE` list sorted by effective_date; last matching entry wins per date+headcount combo
+- Grace period logic: headcount_threshold=5 for Feb 2025, threshold=None (all) for Aug 2025
+- `frappe.db.count("Employee", filters={"company": ..., "status": "Active", "date_of_joining": ["<=", period_end]})` counts active employees as of period end
+- MOHR exemption ref on Salary Slip (custom_mohr_exemption_ref) bypasses all validation
+- Integration tests mock `frappe.db.count` to return headcount without DB access
+
+### Gotchas
+- Nested path sync needed: `docker exec -u root cp` from outer to nested lhdn_payroll_integration path

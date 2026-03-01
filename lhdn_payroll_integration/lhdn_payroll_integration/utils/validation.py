@@ -197,10 +197,16 @@ def _validate_salary_slip_minimum_wage(doc):
     Issues a frappe.msgprint warning (non-blocking) if salary is below
     RM1,700/month or RM8.17/hour for part-time employees.
 
+    US-144: Applies headcount-sensitive grace period — micro-employers (1-4 active
+    employees) are exempt from the RM1,700 minimum until 2025-08-01.
+    A MOHR exemption reference on the Salary Slip suppresses the warning entirely.
+
     Args:
         doc: Salary Slip document.
     """
-    from lhdn_payroll_integration.utils.employment_compliance import check_minimum_wage
+    from lhdn_payroll_integration.utils.employment_compliance import (
+        check_minimum_wage_with_headcount,
+    )
 
     basic_pay = float(doc.get("base_gross_pay") or doc.get("gross_pay") or 0)
 
@@ -214,10 +220,25 @@ def _validate_salary_slip_minimum_wage(doc):
             employment_type = emp.get("custom_employment_type") or "Full-time"
             contracted_hours = emp.get("custom_contracted_hours_per_month")
 
-    result = check_minimum_wage(
+    # US-144: determine employer headcount and payroll period end date
+    period_end = doc.get("period_end") or doc.get("end_date")
+    company = doc.get("company")
+    employer_headcount = 0
+    if company and period_end:
+        employer_headcount = frappe.db.count(
+            "Employee",
+            filters={"company": company, "status": "Active", "date_of_joining": ["<=", period_end]},
+        ) or 0
+
+    mohr_exemption_ref = doc.get("custom_mohr_exemption_ref")
+
+    result = check_minimum_wage_with_headcount(
         monthly_salary=basic_pay,
+        period_end_date=period_end or "2025-08-01",
+        employer_headcount=int(employer_headcount),
         employment_type=employment_type,
         contracted_hours=contracted_hours,
+        mohr_exemption_ref=mohr_exemption_ref,
     )
 
     if not result["compliant"] and result.get("warning"):
