@@ -33,6 +33,7 @@ RALPH_MAX_ITERS=120
 SKIP_RESEARCH=0        # 1 = skip Phase R (Claude web research); T and M still run
 RALPH_WORKERS=1        # >1 = parallel mode (git worktrees + docker lock)
 CAPACITY_LIMIT=50      # Phase R is skipped when PENDING exceeds this threshold
+MONITOR_TERMINALS=1    # 1 = open a terminal window per worker to tail logs (default on; use --no-monitor to disable)
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -46,6 +47,10 @@ while [[ $# -gt 0 ]]; do
       RALPH_WORKERS="$2"; shift 2 ;;
     --capacity-limit)
       CAPACITY_LIMIT="$2"; shift 2 ;;
+    --monitor)
+      MONITOR_TERMINALS=1; shift ;;
+    --no-monitor)
+      MONITOR_TERMINALS=0; shift ;;
     --*)
       echo "[spiral] Unknown flag: $1"; exit 1 ;;
     *)
@@ -163,6 +168,7 @@ echo "  ║  Max iters:   $MAX_SPIRAL_ITERS"
 echo "  ║  Ralph iters: $RALPH_MAX_ITERS per phase"
 [[ "$RALPH_WORKERS" -gt 1 ]] && echo "  ║  Workers:     $RALPH_WORKERS parallel (git worktrees)"
 [[ "$SKIP_RESEARCH" -eq 1 ]] && echo "  ║  Mode:        --skip-research (Phase R skipped)"
+[[ "$MONITOR_TERMINALS" -eq 1 ]] && echo "  ║  Monitor:     terminal per worker (--monitor)"
 echo "  ║  Capacity:    Phase R skipped when pending > $CAPACITY_LIMIT"
 echo "  ╚══════════════════════════════════════════════╝"
 echo ""
@@ -218,7 +224,37 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
     echo '{"stories":[]}' > "$RESEARCH_OUTPUT"
     write_checkpoint "$SPIRAL_ITER" "R"
   else
+    # ── Gemini web research (paid tier, -y web search) saves claude browsing turns ──
+    GEMINI_RESEARCH=""
+    if command -v gemini &>/dev/null; then
+      echo "  [R] Running Gemini 2.5 Pro web research (-y web search enabled)..."
+      GEMINI_RESEARCH=$(gemini \
+        -m gemini-2.5-pro \
+        -p "Research the latest Malaysian LHDN payroll compliance requirements for 2025-2026. Focus on: PCB/MTD calculation rules and formula updates, EPF contribution rates by income bracket, SOCSO/EIS contribution thresholds, EA form (Borang EA) field requirements and updates, TP1/TP3 form rules for employee declarations, employer monthly submission deadlines. Return a structured markdown summary with specific figures, rates, and thresholds." \
+        -y --output-format text 2>/dev/null || true)
+      if [[ -n "$GEMINI_RESEARCH" ]]; then
+        echo "  [R] Gemini web research complete ($(echo "$GEMINI_RESEARCH" | wc -l) lines)"
+      else
+        echo "  [R] Gemini web research returned empty — Claude will browse URLs directly"
+      fi
+    fi
+
     INJECTED_PROMPT=$(build_research_prompt "$SPIRAL_ITER" "$RESEARCH_OUTPUT")
+    # Prepend Gemini research context so Claude skips URL browsing and writes JSON faster
+    if [[ -n "$GEMINI_RESEARCH" ]]; then
+      INJECTED_PROMPT="## Pre-Research Context (Gemini 2.5 Pro — web search enabled)
+
+The following compliance research was pre-fetched. Use this as your primary source.
+You do NOT need to browse URLs already covered below. Focus on synthesizing this
+into the required story JSON format as quickly as possible.
+
+$GEMINI_RESEARCH
+
+---
+
+$INJECTED_PROMPT"
+    fi
+
     echo "  [R] Spawning Claude research agent (max 30 turns)..."
     echo "  ─────── Research Agent Start ─────────────────────────"
 
@@ -411,7 +447,8 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
 
               bash "$SPIRAL_DIR/run_parallel_ralph.sh" \
                 "$WAVE_WORKERS" "$RALPH_MAX_ITERS" "$REPO_ROOT" "$PRD_FILE" \
-                "$SPIRAL_DIR" "$RALPH_SKILL" "$JQ" "$PYTHON" || true
+                "$SPIRAL_DIR" "$RALPH_SKILL" "$JQ" "$PYTHON" \
+                "$MONITOR_TERMINALS" || true
             fi
 
             WAVE=$((WAVE + 1))

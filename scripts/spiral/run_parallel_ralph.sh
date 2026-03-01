@@ -24,6 +24,7 @@ SPIRAL_DIR="$5"
 RALPH_SKILL="$6"
 JQ="$7"
 PYTHON="$8"
+MONITOR_TERMINALS="${9:-0}"
 
 WORKER_DIR="$SPIRAL_DIR/workers"
 WORKTREE_BASE="$REPO_ROOT/.spiral-workers"
@@ -39,6 +40,38 @@ echo "  [parallel]  PARALLEL RALPH — $RALPH_WORKERS workers"
 echo "  [parallel]  Iters/worker:  $ITER_PER_WORKER (total budget: $RALPH_MAX_ITERS)"
 echo "  [parallel]  Docker lock:   $LOCK_DIR"
 echo "  [parallel] ═══════════════════════════════════════════════════"
+
+# ── Step 0: Gemini filesTouch pre-annotation (paid tier, deep reasoning) ───────
+# Pre-populates filesTouch so partition_prd.py can co-locate related stories,
+# reducing merge conflicts across parallel workers.
+if command -v gemini &>/dev/null; then
+  echo "  [parallel] Step 0: Gemini 2.5 Pro filesTouch pre-annotation..."
+  PENDING_IDS=$("$JQ" -r '.userStories[] | select(.passes != true) | .id' "$PRD_FILE" | tr -d '\r')
+  ANNOTATION_COUNT=0
+  for story_id in $PENDING_IDS; do
+    # Skip stories that already have filesTouch populated
+    EXISTING_FILES=$("$JQ" -r ".userStories[] | select(.id == \"$story_id\") | .filesTouch // [] | length" "$PRD_FILE" 2>/dev/null || echo "0")
+    if [[ "$EXISTING_FILES" -gt 0 ]]; then
+      continue
+    fi
+    STORY_TITLE=$("$JQ" -r ".userStories[] | select(.id == \"$story_id\") | .title" "$PRD_FILE" | tr -d '\r')
+    # Ask gemini which files this story touches; extract first JSON array from response
+    FILES=$(gemini \
+      -m gemini-2.0-flash \
+      -p "Which Python files in lhdn_payroll_integration/ would implement this story? Return a JSON array only, no explanation. Example: [\"payroll/api.py\",\"payroll/utils.py\"]. Story: $STORY_TITLE" \
+      --output-format text 2>/dev/null | grep -o '\[.*\]' | head -1 || echo "[]")
+    if [[ "$FILES" != "[]" && -n "$FILES" ]]; then
+      UPDATED=$("$JQ" --arg id "$story_id" --argjson files "$FILES" \
+        '(.userStories[] | select(.id == $id) | .filesTouch) = $files' "$PRD_FILE" 2>/dev/null) || true
+      [[ -n "$UPDATED" ]] && echo "$UPDATED" > "$PRD_FILE"
+      ANNOTATION_COUNT=$((ANNOTATION_COUNT + 1))
+    fi
+  done
+  echo "  [parallel] Gemini annotated $ANNOTATION_COUNT stories with filesTouch hints"
+else
+  echo "  [parallel] Step 0: gemini not found — skipping filesTouch pre-annotation"
+fi
+echo ""
 
 # ── Step 1: Partition pending stories into worker prd files ───────────────────
 mkdir -p "$WORKER_DIR"
@@ -111,12 +144,38 @@ WRAPPER_SCRIPT
   WORKER_BRANCHES+=("$BRANCH")
 done
 
+# ── Step 2.5: Spawn live monitor terminal per worker (if --monitor) ───────────
+if [[ "$MONITOR_TERMINALS" -eq 1 ]]; then
+  WT_EXE="/c/Users/Jyue/AppData/Local/Microsoft/WindowsApps/wt.exe"
+
+  for i in $(seq 1 "$RALPH_WORKERS"); do
+    LOG="$WORKER_DIR/worker_${i}.log"
+    touch "$LOG"   # ensure file exists before tail -f attaches
+
+    TITLE="SPIRAL Worker $i"
+    INNER="echo '=== $TITLE — live log (ANSI colors ON) ==='; echo; tail -f '$LOG'"
+
+    if [[ -f "$WT_EXE" ]]; then
+      "$WT_EXE" --window 0 new-tab --title "$TITLE" -- bash.exe -c "$INNER" &
+    elif command -v mintty &>/dev/null; then
+      mintty --title "$TITLE" /bin/bash -c "$INNER" &
+    else
+      echo "  [parallel] WARNING: no terminal emulator found for --monitor"
+      break
+    fi
+
+    echo "  [parallel] Monitor terminal opened for worker $i"
+    sleep 0.3   # brief stagger so wt.exe doesn't race when opening multiple tabs
+  done
+fi
+
 # ── Step 3: Launch all workers in background ──────────────────────────────────
 declare -a WORKER_PIDS=()
 
 for i in $(seq 1 "$RALPH_WORKERS"); do
   WTREE="${WORKER_DIRS[$((i-1))]}"
   LOG="$WORKER_DIR/worker_${i}.log"
+  touch "$LOG"   # pre-create so tail -f attaches even if worker is slow to start
 
   echo "  [parallel] Launching worker $i → log: $LOG"
   (
