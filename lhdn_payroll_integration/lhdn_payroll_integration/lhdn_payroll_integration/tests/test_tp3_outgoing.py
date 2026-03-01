@@ -160,8 +160,8 @@ class TestGenerateOutgoingTP3(FrappeTestCase):
 	@patch("lhdn_payroll_integration.services.tp3_outgoing_service.frappe")
 	def test_creates_outgoing_tp3_document(self, mock_frappe):
 		"""generate_outgoing_tp3 creates and inserts an Employee Outgoing TP3."""
+		# last_working_date provided → no relieving_date query; 2 get_value calls only
 		mock_frappe.db.get_value.side_effect = [
-			None,  # relieving_date query (no relieving_date provided)
 			self._make_emp_doc(),  # employee fields
 			self._make_company_doc(),  # company fields
 		]
@@ -180,7 +180,6 @@ class TestGenerateOutgoingTP3(FrappeTestCase):
 	def test_ytd_totals_populated_on_document(self, mock_frappe):
 		"""generate_outgoing_tp3 sets ytd fields from aggregated slip data."""
 		mock_frappe.db.get_value.side_effect = [
-			None,
 			self._make_emp_doc(),
 			self._make_company_doc(),
 		]
@@ -214,7 +213,6 @@ class TestGenerateOutgoingTP3(FrappeTestCase):
 	def test_employer_details_populated_from_company(self, mock_frappe):
 		"""generate_outgoing_tp3 fills employer_name and employer_tin from Company."""
 		mock_frappe.db.get_value.side_effect = [
-			None,
 			self._make_emp_doc(),
 			self._make_company_doc(),
 		]
@@ -232,7 +230,6 @@ class TestGenerateOutgoingTP3(FrappeTestCase):
 	def test_notes_include_retention_warning(self, mock_frappe):
 		"""Generated TP3 document includes 7-year retention and 'do not submit' note."""
 		mock_frappe.db.get_value.side_effect = [
-			None,
 			self._make_emp_doc(),
 			self._make_company_doc(),
 		]

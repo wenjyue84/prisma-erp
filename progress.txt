@@ -6568,3 +6568,59 @@ Also fixed US-175 backward-compat tests:
 - MEMORY.md documents the double-nested path issue — always deploy to BOTH paths
 - US-175 tests were failing (5 errors) due to `is_stamping_overdue` not accepting `stamp_reference` and `stamping_date` kwargs — fixed in this iteration
 - `get_contracts_pending_stamping` needed to return `is_overdue` and `penalty_est` keys to match test expectations
+## Iteration 13 - Sun, Mar  1, 2026 11:51:53 AM
+Completed: Track Employment Contract Stamp Duty Compliance via e-Duti Setem MyTax (Mandatory from 2026) (ID: US-175) in 13m
+
+
+## Iteration N — US-143: Auto-Generate TP3 YTD Income Statement for Departing Employees
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_tp3_outgoing`
+**Result:** PASS — 16/16 tests pass, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/employee_outgoing_tp3/` — New DocType (JSON + Python controller)
+- `lhdn_payroll_integration/services/tp3_outgoing_service.py` — Service: generate_outgoing_tp3(), get_ytd_payroll_totals(), handle_employee_left_tp3() hook
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/tp3_outgoing_service.py` — Nested copy (CRITICAL pattern)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_tp3_outgoing.py` — 16 tests across 4 test classes
+- `lhdn_payroll_integration/hooks.py` — Added tp3_outgoing_service.handle_employee_left_tp3 to Employee on_update hooks
+
+### Patterns discovered
+- `bench migrate` 1118 error (Row size too large) is a PRE-EXISTING issue after 100% DocType update — does NOT prevent DocType table creation or test execution
+- When `last_working_date` is explicitly provided to generate_outgoing_tp3(), the relieving_date get_value call is skipped — mock side_effect list must account for this (2 calls not 3)
+- generate_outgoing_tp3() uses frappe.db.get_value with as_dict=True for Employee fields (returns MagicMock) and a second call for Company fields
+
+### Gotchas
+- Mock side_effect list must match actual call count precisely; when last_working_date is provided, relieving_date query is skipped so only 2 get_value side_effects needed for generate_outgoing_tp3()
+## Iteration 11 - Sun Mar  1 11:59:59 MPST 2026
+Incomplete: LHDN STAMPS Employment Contract Digital Stamp Status Tracker (ID: US-150) — attempt 1/3
+
+## Iteration 12 - Sun Mar  1 12:16:12 MPST 2026
+Incomplete: PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach Notification Workflow (ID: US-200) — attempt 1/3
+
+## Iteration 14 - Sun, Mar  1, 2026 12:18:37 PM
+Incomplete: LHDN STAMPS Employment Contract Digital Stamp Status Tracker (ID: US-150) — attempt 2/3
+
+
+## Iteration — US-202: PCB 2026 Specification: Enforce Truncation-then-5-Cent-Ceiling Rounding Rule in MTD Calculation Engine
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 24 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_pcb_2026_rounding`
+**Result:** PASS — 24/24 tests, 0 failures, 0 errors (0.009s)
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/utils/pcb_utils.py` — New: `round_pcb(amount)` — implements LHDN PCB 2026 two-step rounding (truncate to 2dp then ceiling to nearest 5 cents)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_pcb_2026_rounding.py` — New: `TestPCB2026Rounding` — 24 tests covering all edge cases per LHDN spec
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/pcb_calculator.py` — Modified: imports `round_pcb` from `pcb_utils`; all 7 calculation paths (Method 1, Method 2, director fee, non-resident variants) now pass through `round_pcb`
+
+### Patterns discovered
+- All PCB calculation paths were already updated to use `round_pcb` in a previous session (files were untracked but present both locally and in container)
+- Python `Decimal(str(amount)).quantize(Decimal('0.01'), rounding=ROUND_DOWN)` is the correct truncation approach; avoids float precision issues
+- Integer cents arithmetic (`int(truncated * 100)`) cleanly handles the 5-cent ceiling without float drift
+
+### Test coverage
+- 24 tests including all spec examples (123.023→123.05, 123.061→123.10)
+- Edge cases: 0.00, negative, boundaries at 0.05, 0.10
+- Integration tests: calculate_pcb (Method 1, non-resident), calculate_pcb_method2, calculate_director_fee_pcb all verified 5-cent aligned

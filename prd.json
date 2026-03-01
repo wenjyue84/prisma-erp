@@ -3265,7 +3265,7 @@
         "Implement TP3 Carry-Forward Declaration for New Hires (Prior Employer YTD)"
       ],
       "estimatedComplexity": "medium",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-144",
@@ -4698,6 +4698,651 @@
         "FWCMS Foreign Worker Levy: 10th-of-Month Payment Deadline Alert Separate from EPF/SOCSO"
       ],
       "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-200",
+      "title": "PDPA 2024 DPO Appointment Registry and 72-Hour Payroll Data Breach Notification Workflow",
+      "priority": "high",
+      "description": "The Personal Data Protection (Amendment) Act 2024, effective 1 June 2025, requires employers processing large-scale employee payroll data to (a) appoint a Data Protection Officer (DPO), (b) notify the Commissioner of the DPO appointment within 21 days, (c) upon detecting a payroll data breach, notify the Commissioner within 72 hours and affected employees within 7 days. These are materially different obligations from general PDPA compliance — the existing module covers data portability and access rights, but not the DPO appointment record-keeping or breach incident management workflows mandated by the February 2025 Commissioner Guidelines.",
+      "acceptanceCriteria": [
+        "Company record stores DPO name, contact email, phone number, appointment date, and Commissioner registration date",
+        "System alerts HR Admin if 21-day DPO Commissioner notification deadline not recorded after DPO appointment date",
+        "New 'Payroll Data Breach Incident' DocType with fields: discovery_datetime, breach_type, affected_records_count, data_categories_affected, risk_assessment, commissioner_notified_datetime, employee_notification_datetime",
+        "72-hour countdown alert activates upon incident creation; red critical alert displayed if commissioner_notified_datetime is blank and 72 hours have elapsed since discovery_datetime",
+        "System generates a pre-filled Commissioner Notification Letter (PDF) with breach details, number of affected employees, and risk assessment summary",
+        "System generates pre-filled Employee Breach Notification email template once Commissioner has been notified (7-day deadline from Commissioner notification)",
+        "Audit log records all breach incident updates with user and timestamp"
+      ],
+      "technicalNotes": [
+        "New DocType `PDPA Breach Incident` linked to Company; status flow: Draft → Commissioner Notified → Employees Notified → Resolved",
+        "DPO fields on Company doctype in `PDPA Compliance` tab via custom field fixture",
+        "Commissioner notification required within 72 hours of breach awareness (not breach occurrence) per Guideline on Data Breach Notification (Feb 2025)",
+        "Employee notification required within 7 days of Commissioner notification — only required if breach poses significant harm to data subjects",
+        "Guideline published: https://www.pdp.gov.my/ppdpv1/en/ — Guideline on Data Breach Notification and DPO Appointment"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-201",
+      "title": "Employment Act S.60F(2): Track 60-Day Hospitalization Leave Quota Separately from Ordinary Sick Leave",
+      "priority": "high",
+      "description": "The Employment Act 1955 S.60F provides two distinct sick leave entitlements: (1) ordinary paid sick leave of 14-22 days based on service years, and (2) additional hospital/in-patient leave of up to 60 days per year when an employee is hospitalized or requires leave following hospitalization as certified by a registered medical practitioner. These must be tracked separately — hospitalization leave does not reduce ordinary sick leave entitlement. The existing 'Track Employment Act S.60F Sick Leave Entitlement per Service Band' story covers ordinary sick leave; this story addresses the distinct 60-day hospitalization leave quota.",
+      "acceptanceCriteria": [
+        "Two distinct Leave Types: 'Sick Leave (EA)' for ordinary sick leave (14-22 days by service band) and 'Hospitalization Leave (EA)' for in-patient/post-hospitalization (60 days annual)",
+        "Hospitalization Leave allocation of 60 days auto-created for all EA-covered employees at each leave year start",
+        "Hospitalization Leave application requires: `hospitalization_discharge_date` (Date) and `medical_certificate_type` (Select: Hospitalization Certificate | Post-Hospitalization Medical Advice)",
+        "Leave balance summary on payslip shows both balances separately: 'Sick Leave (EA): X days' and 'Hospitalization Leave (EA): Y days'",
+        "System validates Hospitalization Leave applications are processed against the 60-day quota, not the ordinary sick leave quota",
+        "Alert to HR if employee Hospitalization Leave balance reaches zero — no further hospitalization leave available for the year"
+      ],
+      "technicalNotes": [
+        "EA S.60F(2): Up to 60 days paid hospitalization leave when certified by registered medical practitioner that in-patient care is necessary",
+        "EA S.60F(1): Ordinary sick leave: 14 days (<2 years service), 18 days (2-5 years), 22 days (>5 years)",
+        "Both entitlements paid at ordinary rate of pay",
+        "Employee may use both entitlements in same year — they are separate pools",
+        "Reference: Employment Act 1955 S.60F — https://jtksm.mohr.gov.my/sites/default/files/2023-11/Akta%20Kerja%201955%20(Akta%20265).pdf"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-202",
+      "title": "PCB 2026 Specification: Enforce Truncation-then-5-Cent-Ceiling Rounding Rule in MTD Calculation Engine",
+      "priority": "high",
+      "description": "The official LHDN PCB 2026 Computerised Calculation Specification mandates a specific two-step rounding rule that is different from standard mathematical rounding: Step 1 — truncate the raw PCB amount to exactly 2 decimal places (dropping subsequent digits without rounding); Step 2 — apply ceiling rounding up to the nearest 5 cents. For example: 123.023 → truncated to 123.02 → rounded to 123.05; and 123.061 → truncated to 123.06 → rounded to 123.10. If the current MTD engine uses standard banker's rounding or simple 2dp rounding, it will produce incorrect PCB values that diverge from LHDN's expected amounts, potentially causing CP39 submission mismatches.",
+      "acceptanceCriteria": [
+        "MTD calculation engine applies two-step rounding as final step: truncated = floor(raw_pcb * 100) / 100; final_pcb = ceil(truncated / 0.05) * 0.05",
+        "Unit tests verify: 123.023 → 123.05, 123.061 → 123.10, 123.000 → 123.00, 123.049 → 123.05, 100.001 → 100.05, 0.00 → 0.00",
+        "All PCB calculation paths (Method 1 regular salary and Method 2 YTD recalculation) pass through the same rounding function",
+        "CP39 CSV output values are in 2dp format matching the 5-cent rounded amounts",
+        "Dedicated unit test class `TestPCB2026Rounding` covers at least 15 representative scenarios including edge cases at 0.00, 0.01, 0.05, 0.06 fractional values",
+        "Rounding function is extracted into a shared utility `pcb_utils.round_pcb(amount)` callable from all calculation paths"
+      ],
+      "technicalNotes": [
+        "From LHDN PCB 2026 Spec: 'Pengiraan berkomputer PCB hendaklah dalam dua titik perpuluhan dan mesti mengabaikan sebarang angka berikutnya (cth: 123.023 ≈ 123.02). Dari situ, amaun perlu dibundarkan kepada 5 sen yang paling hampir ke atas; cth: 123.02 ≈ 123.05 manakala 123.06 ≈ 123.10'",
+        "Use Python Decimal module to avoid floating-point precision errors: from decimal import Decimal, ROUND_DOWN",
+        "Step 1: truncated = Decimal(str(raw)).quantize(Decimal('0.01'), rounding=ROUND_DOWN)",
+        "Step 2: import math; final = math.ceil(float(truncated) / 0.05) * 0.05; final = Decimal(str(final)).quantize(Decimal('0.01'))",
+        "Reference: https://www.hasil.gov.my/media/arvlrzh5/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2026.pdf"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": true
+    },
+    {
+      "id": "US-203",
+      "title": "Enforce e-CP22 Online-Only Mandatory Submission and MyTax Employer Representative Authorization Check",
+      "priority": "high",
+      "description": "From 1 September 2024, LHDN mandated that all CP22 new employee notifications must be submitted exclusively through the e-CP22 system on MyTax Portal — manual paper submissions to LHDN offices are no longer accepted. Critically, the submission can only be made by the company director (with MyTax Employer role) or a registered Employer Representative (Wakil Majikan). The existing 'Auto-Submit CP22 via e-CP22 MyTax Within 30 Days' story focuses on the 30-day deadline tracking; this story enforces the online-only mandate, validates Employer Representative setup, and blocks paper CP22 generation.",
+      "acceptanceCriteria": [
+        "CP22 data generation produces only a digital summary for manual MyTax upload — no PDF formatted for paper/postal submission to LHDN office",
+        "Company record stores MyTax Employer Representative (Wakil Majikan): name, MyTax login ID, authorization date — required field before e-CP22 workflow is accessible",
+        "Alert displayed: 'e-CP22 must be submitted by company director or registered Wakil Majikan via mytax.hasil.gov.my — system cannot auto-submit'",
+        "After manual submission, HR records LHDN acknowledgement reference number on the Employee record (this reference is visible in MyTax after submission)",
+        "System blocks new employee onboarding finalization if CP22 status = 'Pending' and 30 days have elapsed since hire date",
+        "System shows penalty notice when 30-day deadline at risk: 'Offence under ITA 1967 S.83(2) — Fine RM200 to RM20,000 or 6 months imprisonment or both'"
+      ],
+      "technicalNotes": [
+        "Mandatory online-only e-CP22 submission effective: 1 September 2024",
+        "Authorized submitters: Company Director (MyTax Employer role) OR registered Wakil Majikan — not HR staff without MyTax authorization",
+        "LHDN issues acknowledgement reference upon successful e-CP22 submission — must be stored on Employee record for audit",
+        "Manual CP22 paper form no longer valid after September 2024 — LHDN offices will not accept them",
+        "Reference: https://landco.my/social/cp22-online/ and https://www.hasil.gov.my/en/employers/notifications-of-new-employee/"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-204",
+      "title": "Track EP Category Internship Obligation per 1:3 Internship Policy (TalentCorp/MOHR)",
+      "priority": "medium",
+      "description": "Malaysia's Ministry of Human Resources (MOHR) and TalentCorp mandated that companies employing foreign nationals via Employment Pass (EP) must offer structured paid internships to Malaysian students: 3 placements per EP Cat I, 2 per Cat II, 1 per Cat III. Full enforcement begins 1 January 2026 (pilot extended to March 2026). Payroll must track EP category per expatriate, calculate the total internship quota, and record fulfilled placements (minimum 10 weeks, RM500–RM600/month stipend) to produce the annual evidence package supporting future EP renewal applications.",
+      "acceptanceCriteria": [
+        "Employee record stores Employment Pass category (Cat I / Cat II / Cat III) with EP approval reference number and approval date",
+        "Company dashboard calculates total internship slots required = sum(EP Cat I × 3 + EP Cat II × 2 + EP Cat III × 1), capped at 2% of total employee headcount",
+        "Intern Placement doctype records: intern name, qualification level, TalentCorp programme reference, start/end date, stipend amount, fulfilment status",
+        "System validates intern stipend meets minimum: RM600/month for degree/master/DLKM level, RM500/month for diploma/SKM/certificate level",
+        "Compliance summary report shows total quota vs. fulfilled placements, with gap count highlighted in red when unfulfilled quota > 0",
+        "Alert triggered 60 days before EP renewal date if internship quota not fully met for the current 12-month period"
+      ],
+      "technicalNotes": [
+        "Add `employment_pass_category` (Select: Cat I / Cat II / Cat III) and `ep_approval_reference` fields to Employee fixture",
+        "New DocType `Internship Placement` linked to Company with fields: intern_name, qualification_level, talentcorp_reference, start_date, end_date, monthly_stipend, status",
+        "Dashboard card on LHDN Payroll workspace showing quota compliance ratio",
+        "Pilot phase extended to 31 March 2026; mandatory from 1 January 2026",
+        "Non-compliance does not cancel existing EPs but adversely impacts future EP renewal assessment"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-205",
+      "title": "HRD Corp SBL-KHAS Grant Pre-Approval Compliance and 6-Month Post-Training Claim Deadline Alert",
+      "priority": "medium",
+      "description": "HRD Corp requires employers to submit a training grant application via eTRiS at least 1 working day before training begins — applications submitted after training starts are automatically rejected. After training completes, claims must be submitted within 30 days (preferred) and no later than 6 months (hard deadline). The existing 'HRD Corp eTRIS Training Claim Recording and Levy Utilization Dashboard' story records claims already submitted; this story covers the pre-approval compliance workflow and deadline alert system to prevent rejected or expired claims.",
+      "acceptanceCriteria": [
+        "Training Event doctype has fields: training_start_date, training_end_date, etris_application_date, etris_approval_number, etris_claim_submission_date, grant_amount_approved, grant_amount_claimed",
+        "System alerts HR Manager if training_start_date is reached and etris_application_date is blank (pre-approval not submitted)",
+        "System flags training as non-HRD-claimable if etris_application_date >= training_start_date (post-training application — auto-rejected by HRD Corp)",
+        "Alert at 20 days and 28 days after training_end_date if etris_claim_submission_date is blank (30-day deadline approaching)",
+        "Critical alert escalated to HR Director at 5 months and 5.5 months after training_end_date if claim still not submitted (6-month absolute deadline)",
+        "Dashboard shows: trainings needing pre-approval, expiring claim windows (within 30 days), expired claim windows (failed to claim), and rejected grants with reason codes"
+      ],
+      "technicalNotes": [
+        "HRD Corp eTRiS portal: hrdcorp.gov.my",
+        "Grant approval takes 10-14 working days — apply well before training start",
+        "SBL-KHAS is the main grant scheme requiring application at least 1 day before training",
+        "6-month claim deadline is absolute — late submissions cannot be appealed or recovered",
+        "This extends the existing levy utilization dashboard by adding pre-training compliance tracking"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-206",
+      "title": "Employment Act S.60A: Annual Leave Carry-Forward Cap and Cash-Out Enforcement at Year-End",
+      "priority": "medium",
+      "description": "Under Employment Act 1955 S.60A, unused annual leave that is not taken within the leave year must either be carried forward (by agreement) or paid out at the basic rate. The EA 2022 Amendment strengthened employee protections — employers cannot unilaterally forfeit unused leave without the employee's agreement. ERPNext's standard leave module does not enforce Malaysian EA-specific carry-forward rules or the mandatory cash-out offer before forfeiture. Payroll must enforce that expiring leave is either carried forward or paid out, with documented employee consent for any forfeiture.",
+      "acceptanceCriteria": [
+        "Annual Leave (EA) carry-forward is configurable with maximum carry-forward days (default: 1x annual entitlement, e.g., max 22 days)",
+        "At leave year-end, system generates 'Leave Expiry Notice' per employee showing: days expiring, cash-out amount at basic daily rate, carry-forward option",
+        "HR Manager must record employee's decision (Carry Forward | Cash Out | Mutual Forfeiture Agreement) before closing leave year for that employee",
+        "Cash-out of unused annual leave = (Monthly Basic Salary / 26) × leave days, recorded as non-statutory pay component on Salary Slip",
+        "System blocks leave year close-off for any employee without a recorded leave expiry decision",
+        "Audit log records all leave carry-forward and cash-out decisions with HR manager approval and employee acknowledgement timestamp"
+      ],
+      "technicalNotes": [
+        "EA S.60A(3): Employer must pay employee for unused annual leave on termination at basic rate",
+        "EA S.60A(4): Leave should be utilized within 12 months of entitlement year",
+        "Cash-out rate: Basic Rate of Pay per day = Monthly Basic Salary / 26 (or number of working days per month per contract)",
+        "EA 2022 Amendment added protections against unilateral forfeiture",
+        "Reference: Employment Act 1955 S.60A"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-207",
+      "title": "FWCMS Foreign Worker Annual Levy Renewal Expiry Date Tracking and Advance Alert per Employee",
+      "priority": "medium",
+      "description": "Foreign worker levies in Malaysia are paid annually via the FWCMS portal, with the expiry date tied to each individual worker's PLKS/permit period (not a fixed calendar date). The existing 'FWCMS Foreign Worker Levy: 10th-of-Month Payment Deadline Alert' story covers monthly payment monitoring; this story covers the annual renewal cycle per individual worker. Employers with many foreign workers at different renewal dates face compliance risk if individual levy expiry dates are not tracked — an expired levy can result in immediate non-compliance and worker removal orders.",
+      "acceptanceCriteria": [
+        "Employee record (foreign worker) stores: `fwcms_levy_payment_date`, `fwcms_levy_expiry_date`, `fwcms_receipt_reference`, `fwcms_levy_sector` (Select: Manufacturing | Construction | Plantation | Agriculture | Services)",
+        "Levy sector rate table: Manufacturing/Construction/Services = RM1,850/year; Plantation/Agriculture = RM640/year (configurable for future rate changes)",
+        "Alerts sent to HR Admin at 90, 60, and 30 days before each worker's individual levy expiry date",
+        "Critical alert escalated at 14 days before expiry if renewal receipt not yet recorded",
+        "Non-compliant workers dashboard widget: shows workers with levy expiring in <30 days, <60 days, and already expired",
+        "Upon recording renewal, system validates receipt reference is provided and auto-calculates next expiry = payment date + 365 days (or per PLKS duration if different)"
+      ],
+      "technicalNotes": [
+        "FWCMS levy is annual, not monthly — renewal date is per worker based on PLKS expiry",
+        "Manufacturing, Construction, Services: RM1,850/year per worker",
+        "Plantation, Agriculture: RM640/year per worker",
+        "Multi-tier levy increase of RM300-500 under deliberation — rate table must be configurable",
+        "FWCMS portal: https://www.fwcms.gov.my — levy paid online, employer receives electronic receipt",
+        "Levy paid by employer — cannot deduct from employee salary"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-208",
+      "title": "PDPA 2024: Data Processor Agreement Compliance Checklist for External Payroll Service Vendors",
+      "priority": "medium",
+      "description": "The Personal Data Protection (Amendment) Act 2024, effective June 2025, introduces direct legal obligations on data processors — including third-party payroll bureaus, statutory submission agents, and HRMS vendors who process employee salary, PCB, EPF, and statutory data. Employers using external payroll services must ensure a valid Data Processing Agreement (DPA) is in place with each processor. This is distinct from the existing DPO appointment and breach notification stories — it specifically addresses the contractual compliance layer between the employer (data controller) and any external party handling payroll data.",
+      "acceptanceCriteria": [
+        "New 'Data Processor Registry' section on Company record listing all third-party data processors with: processor_name, services_provided, dpa_signed_date, dpa_expiry_date, dpa_document_attachment, last_security_audit_date",
+        "Alert to HR/Legal when any DPA expires within 30 days or has expired",
+        "Export of employee personal data (salary, IC number, TIN, bank account) triggers an audit log entry showing: user, data category, downstream processor, timestamp",
+        "Compliance checklist report confirms: DPA on file (Yes/No), DPA current (Yes/No), DPO notified of processor (Yes/No) per each registered processor",
+        "System warns if bulk payroll data export is attempted without any active DPA on file for the receiving processor"
+      ],
+      "technicalNotes": [
+        "PDPA 2024 S.XX: Data processors now have direct liability for security principle breaches — fine up to RM1,000,000 or 3 years imprisonment",
+        "DPA must specify: purpose of processing, data categories, retention period, security measures, data subject rights handling",
+        "Effective date of data processor direct obligations: 1 June 2025",
+        "Processors typically include: HRD Corp submission agents, LHDN e-PCB Plus submission bureaus, bank payroll disbursement services, EPF/SOCSO e-filing vendors",
+        "Reference: https://www.pdp.gov.my/ppdpv1/wp-content/uploads/2024/11/Act-A1727.pdf"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-209",
+      "title": "TP1(1/2026): Capture New Domestic Tourism Attraction Expenses Relief (RM1,000) in Employee PCB Declaration",
+      "priority": "medium",
+      "description": "Malaysia Budget 2026 introduced a brand-new individual income tax relief category in the TP1(1/2026) form: expenses for entrance fees to local tourist attractions and art/cultural programmes conducted within Malaysia, capped at RM1,000 per year of assessment. This category has never appeared in any prior TP1 form. The PCB engine must add this as a new deductible item when employees declare it on their TP1(1/2026) relief form. While the generic 'Update TP1(1/2026) Relief Categories' story addresses the budget's general TP1 changes, domestic tourism is an entirely new relief code with no prior-year equivalent requiring discrete field mapping, validation, and PCB computation integration.",
+      "acceptanceCriteria": [
+        "TP1 Declaration form adds field: `domestic_tourism_expenses` (Currency, label: 'Entrance fees to local tourist attractions / art & cultural programmes in Malaysia')",
+        "PCB calculation deducts declared `domestic_tourism_expenses` (capped at RM1,000) from chargeable income when computing monthly MTD",
+        "Field only available in TP1(1/2026) form — not retroactively applied to prior-year TP1 records",
+        "Validation: amount cannot exceed RM1,000; system shows 'Maximum RM1,000 for YA2026 domestic tourism relief' if exceeded",
+        "Year-end PCB reconciliation report shows domestic tourism relief declared per employee",
+        "This field is absent from TP3(1/2026) — domestic tourism is a current-employer TP1 item, not a prior-employer YTD income item"
+      ],
+      "technicalNotes": [
+        "From LHDN TP1(1/2026) explanatory notes: new relief for 'Entrance fees to local tourist attractions and art/cultural programmes within Malaysia'",
+        "Maximum: RM1,000 per year of assessment (YA2026 only — no retroactive application)",
+        "Source form: https://www.hasil.gov.my/media/gjuhcbc2/bi-tp1-form-2026.pdf",
+        "Explanatory notes: https://www.hasil.gov.my/media/i1lcd0wn/bi-explanatory-notes-for-from-tp1-2026.pdf",
+        "Confirmed also by briohr.com YA2026 update: 'New Reliefs: Domestic Tourism Expenses — Entrance fees to local tourist attractions — Relief cap: RM1,000'"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-210",
+      "title": "MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging",
+      "priority": "low",
+      "description": "Employers participating in TalentCorp's National Structured Internship Programme (MySIP) are entitled to a double corporate tax deduction on internship-related expenses (stipends, training costs) from YA 2017 to YA 2025, with potential extension. Payroll must identify intern employees, validate their monthly stipend meets the MySIP minimum threshold, track the TalentCorp Endorsement Letter reference, and produce a year-end summary of MySIP-qualifying expenses per intern for the corporate tax claim. This is a corporate tax benefit tracking feature, not a statutory payroll deduction.",
+      "acceptanceCriteria": [
+        "Employee record has flag `is_mysip_intern` (Check) and fields: `mysip_qualification_level` (Select: Master/Degree/DLKM | Diploma/SKM/Certificate), `talentcorp_endorsement_reference` (Data)",
+        "On payroll run, if `is_mysip_intern` = true, system validates stipend >= RM600 for degree-level and >= RM500 for diploma-level interns; warning displayed if below threshold",
+        "Year-end MySIP Summary Report shows: intern name, qualification level, endorsement reference, total stipend paid, total qualifying expenses for double deduction claim",
+        "Report includes total claimable double deduction amount = 2x (total stipend + training costs)",
+        "Each qualifying Salary Slip is tagged with `mysip_eligible: true` for audit trail"
+      ],
+      "technicalNotes": [
+        "Minimum stipends: RM600/month for Master, Degree, DLKM, Professional Certificate; RM500/month for Diploma, DKM, SKM Level 1-3",
+        "Double deduction applies to: intern allowances, training materials, accommodation/transport",
+        "TalentCorp issues Endorsement Letter based on annual internship placements submitted",
+        "MySIP double deduction covered YA2017-YA2025; check Budget 2026 for extension status",
+        "Reference: https://www.talentcorp.com.my/mysip-incentives/"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-211",
+      "title": "Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) — Payroll Evidence Package",
+      "priority": "low",
+      "description": "Malaysia Budget 2026 expanded the existing double tax deduction for sponsoring OKU training to also cover employers who sponsor training costs for care workers who support OKU (Orang Kurang Upaya) individuals, effective YA2026 and YA2027 only. This is a new category distinct from the existing OKU employee double deduction and the general HRD Corp levy claims. Payroll must distinguish care worker training from regular training, apply the YA2026-2027 date gate, and generate the annual evidence schedule for corporate tax submission.",
+      "acceptanceCriteria": [
+        "Training Event doctype has `deduction_category` field (Select: Standard | HRD Corp | OKU Employee Training | OKU Care Worker Training [Budget 2026])",
+        "When `deduction_category` = 'OKU Care Worker Training', system flags the record as qualifying for Budget 2026 double deduction",
+        "Date gate: OKU Care Worker Training double deduction only valid for training completed between 1 January 2026 and 31 December 2027; system blocks this category for training outside this range",
+        "Year-end Summary Report shows separate line: 'Budget 2026 OKU Care Worker Training Double Deduction — Qualifying Expenses: RM X, Claimable Deduction: RM 2X'",
+        "Alert if 'OKU Care Worker Training' is selected for training outside YA2026-2027 range"
+      ],
+      "technicalNotes": [
+        "From Budget 2026: 'The double deduction for sponsoring training for persons with disabilities is expanded to include sponsoring training for care workers for YA2026-YA2027'",
+        "Care worker = workers providing direct care/support services to OKU individuals (not the OKU employee themselves)",
+        "Qualifying expenses: course fees, training materials, trainer fees — same rules as standard OKU training deduction",
+        "This is a corporate income tax deduction claimed in the company's annual return — not a payroll withholding deduction",
+        "Source: Crowe Malaysia Budget 2026 Highlights — https://www.crowe.com/my/-/media/crowe/firms/asia-pacific/my/crowemy/news/key-highlights-of-malaysias-budget-2026--for-individuals-and-businesses-newsletter.pdf"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-212",
+      "title": "Fix failing test: BrowserUIRegressions — reg14 lhdn dev tools getpage returns script",
+      "priority": "high",
+      "description": "Automated test `test_reg14_lhdn_dev_tools_getpage_returns_script` is failing with status FAIL. This indicates a regression or missing implementation in the regression suite. REG-14: LHDN Dev Tools page getpage response includes page script.\n\nRegression: Page was blank because triple-nested directory structure\nprevented Frappe from finding lhdn_dev_tools.js.",
+      "acceptanceCriteria": [
+        "Test `tests.regression.test_regression.TestBrowserUIRegressions.test_reg14_lhdn_dev_tools_getpage_returns_script` passes without error.",
+        "Root cause resolved: 0 not greater than 50 : Dev Tools page has no/empty script — check module path in container. Script length: 0"
+      ],
+      "technicalNotes": [
+        "Test category: regression",
+        "Test ID: tests.regression.test_regression.TestBrowserUIRegressions.test_reg14_lhdn_dev_tools_getpage_returns_script",
+        "Error type: AssertionError",
+        "Test description: REG-14: LHDN Dev Tools page getpage response includes page script.\n\nRegression: Page was blank because triple-nested directory structure\nprevented Frappe from finding lhdn_dev_tools.js."
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "_source": "test-synthesis:tests.regression.test_regression.TestBrowserUIRegressions.test_reg14_lhdn_dev_tools_getpage_returns_script"
+    },
+    {
+      "id": "US-213",
+      "title": "Fix failing test: BrowserUIRegressions — reg15 lhdn workspace exists in database",
+      "priority": "high",
+      "description": "Automated test `test_reg15_lhdn_workspace_exists_in_database` is failing with status FAIL. This indicates a regression or missing implementation in the regression suite. REG-15: LHDN Payroll workspace exists in the Workspace table.\n\nRegression: Workspace was deleted/missing from DB. The desk home page\nshowed an LHDN Payroll tile from cache, but clicking it showed\n'Icon is not correctly configured'. The workspace record needs to\nbe recreated via sync_fixtures or bench migrate.",
+      "acceptanceCriteria": [
+        "Test `tests.regression.test_regression.TestBrowserUIRegressions.test_reg15_lhdn_workspace_exists_in_database` passes without error.",
+        "Root cause resolved: 0 not greater than 0 : LHDN Payroll workspace not in database — run: bench --site frontend sync_fixtures"
+      ],
+      "technicalNotes": [
+        "Test category: regression",
+        "Test ID: tests.regression.test_regression.TestBrowserUIRegressions.test_reg15_lhdn_workspace_exists_in_database",
+        "Error type: AssertionError",
+        "Test description: REG-15: LHDN Payroll workspace exists in the Workspace table.\n\nRegression: Workspace was deleted/missing from DB. The desk home page\nshowed an LHDN Payroll tile from cache, but clicking it showed\n'Icon is not correctly configured'. The workspace record needs to\nbe recreated via sync_fixtures or bench migrate."
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "_source": "test-synthesis:tests.regression.test_regression.TestBrowserUIRegressions.test_reg15_lhdn_workspace_exists_in_database"
+    },
+    {
+      "id": "US-214",
+      "title": "Fix failing test: AIChatIntegration — int10 chat preserves conversation",
+      "priority": "high",
+      "description": "Automated test `test_int10_chat_preserves_conversation` is failing with status FAIL. This indicates a regression or missing implementation in the integration suite. INT-10: Second message with history receives context-aware reply.",
+      "acceptanceCriteria": [
+        "Test `tests.integration.test_workflows.TestAIChatIntegration.test_int10_chat_preserves_conversation` passes without error.",
+        "Root cause resolved: 'ultraviolet' not found in \"{'error': 'ai request failed: http error 429: too many requests'}\" : AI did not use conversation history. Reply: {'error': 'ai request failed: http error 429: too many requ"
+      ],
+      "technicalNotes": [
+        "Test category: integration",
+        "Test ID: tests.integration.test_workflows.TestAIChatIntegration.test_int10_chat_preserves_conversation",
+        "Error type: AssertionError",
+        "Test description: INT-10: Second message with history receives context-aware reply."
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false,
+      "_source": "test-synthesis:tests.integration.test_workflows.TestAIChatIntegration.test_int10_chat_preserves_conversation"
+    },
+    {
+      "id": "US-215",
+      "title": "PCB Under-Deduction Employer Liability Alert (Section 107A ITA 1967)",
+      "priority": "critical",
+      "description": "Under Section 107A of the Income Tax Act 1967, employers are personally liable for any shortfall in monthly PCB deductions — if an employee's PCB is under-deducted, LHDN can assess the employer for the full uncollected tax plus penalties. The payroll system must detect anomalous PCB under-deduction patterns before Salary Slips are finalised and require mandatory payroll admin acknowledgement with documented justification before the slip can proceed.",
+      "acceptanceCriteria": [
+        "System flags a Salary Slip where PCB drops more than 50% vs. the prior month without a corresponding documented change in income or declared relief values",
+        "Alert raised when an employee's computed PCB is zero but their chargeable income (after EPF and declared reliefs) exceeds the applicable zero-tax threshold",
+        "Alert is displayed as a mandatory acknowledgement dialog that must be completed before the Salary Slip can be submitted",
+        "Payroll admin acknowledgement reason is captured and stored in the PCB Change Audit Trail DocType with timestamp and user",
+        "Monthly compliance report summarises all flagged and acknowledged under-deduction cases for LHDN audit readiness"
+      ],
+      "technicalNotes": [
+        "Section 107A ITA 1967: employer personally liable for uncollected PCB if employee later cannot pay",
+        "Zero-tax threshold for single monthly-salaried employee: chargeable income ≤ RM2,851/month after EPF and standard RM9,000 individual relief annualised and monthly-ised",
+        "Threshold: flag if PCB drops >50% month-over-month without matching income/relief change event",
+        "Complements existing 'Implement PCB Change Audit Trail DocType' story",
+        "LHDN MTD Payment Guidelines: https://www.hasil.gov.my/en/employers/mtd-payment/"
+      ],
+      "dependencies": [
+        "Implement PCB Change Audit Trail DocType",
+        "Implement MTD Method 2 (Year-to-Date Recalculation Formula)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-216",
+      "title": "Budget 2026 TP1: Permanent RM3,000 Childcare Relief for JKM-Registered Transit Centres",
+      "priority": "high",
+      "description": "Budget 2026 merged the time-bound RM1,000 childcare relief with the existing RM2,000 relief into a permanent RM3,000 combined relief, and expanded eligible premises to include daily care and after-school transit centres registered with the Department of Social Welfare (JKM) for children up to 12 years. The TP1(1/2026) form and PCB computation engine must reflect this permanent change effective YA2026.",
+      "acceptanceCriteria": [
+        "TP1(1/2026) childcare relief field accepts up to RM3,000 (removing the old RM2,000 regular + RM1,000 time-bound split structure)",
+        "System does not apply any year-based expiry restriction to the combined RM3,000 amount for YA2026 onward",
+        "TP1 help text and eligibility description updated to include JKM-registered after-school transit centres for children aged ≤12",
+        "PCB calculation applies the correct RM3,000 ceiling for this relief line item in the MTD engine",
+        "Historical TP1 records for YA2025 and prior retain the old RM2,000 ceiling (no retrospective change)"
+      ],
+      "technicalNotes": [
+        "Update TP1 DocType relief item field: `childcare_relief_amount` max validation from 2000 to 3000",
+        "Remove time-bound relief year guard that previously expired the RM1,000 component",
+        "Effective: YA2026 per Finance Bill 2025, gazetted December 2025",
+        "Reference: LHDN TP1(1/2026) form, PCB 2026 Specification Amendment"
+      ],
+      "dependencies": [
+        "Update TP1(1/2026) Relief Categories and PCB Computation Engine for YA2026 Budget Changes"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-217",
+      "title": "Budget 2026 TP1: Increase Children's Learning Disability Diagnostic Relief to RM10,000",
+      "priority": "high",
+      "description": "Budget 2026 increased the individual income tax relief for diagnostic, early intervention, and rehabilitation treatment expenses for children under 18 with learning disabilities (autism, ADHD, global developmental delay, intellectual disability, Down syndrome, specific learning disabilities) from RM6,000 to RM10,000. The TP1 form ceiling and PCB engine must be updated for YA2026 onward.",
+      "acceptanceCriteria": [
+        "TP1(1/2026) learning disability relief field maximum updated from RM6,000 to RM10,000",
+        "PCB computation engine caps this relief at RM10,000 for assessment years >= 2026",
+        "EA Form Section A correctly reflects the RM10,000 maximum when generating for YA2026",
+        "Historical TP1 records for YA2025 and prior retain the RM6,000 cap with no retrospective change",
+        "Validation error message updated: 'Maximum RM10,000 for YA2026 children learning disability relief'"
+      ],
+      "technicalNotes": [
+        "Update TP1 DocType: `learning_disability_relief_amount` max validation from 6000 to 10000",
+        "Add assessment year guard: RM10,000 cap only applies for assessment_year >= 2026",
+        "Budget 2026 / Finance Bill 2025, effective YA2026",
+        "Eligible conditions: autism, ADHD, global developmental delay (GDD), intellectual disability, Down syndrome, specific learning disabilities (dyslexia, dyspraxia, dyscalculia)"
+      ],
+      "dependencies": [
+        "Update TP1(1/2026) Relief Categories and PCB Computation Engine for YA2026 Budget Changes"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-218",
+      "title": "Process TP3(1/2026) Updated Form Format with Budget 2026 Relief Line Items",
+      "priority": "high",
+      "description": "LHDN released the updated TP3(1/2026) form as part of the PCB 2026 specification amendments to accommodate Budget 2026 relief changes. When new employees join mid-year and declare income from a prior employer, the TP3 declaration must use the 2026 form structure which includes updated YA2026 relief line items (e.g., childcare RM3,000, learning disability RM10,000, expanded vaccination, eco-friendly lifestyle items). The payroll system must ingest and process the TP3(1/2026) format correctly so that prior-employer relief values flow into the new employer's PCB computation.",
+      "acceptanceCriteria": [
+        "New hire TP3 entry UI displays all TP3(1/2026) form fields including the Budget 2026 relief items from the prior employer",
+        "System selects TP3 form version based on employee join year: joiners in 2026 use TP3(1/2026); prior joiners use the applicable year form",
+        "Prior-employer relief values from TP3(1/2026) (gross income, EPF/SOCSO/EIS contributions, PCB paid, Zakat, all YA2026 reliefs) flow into the new employer's MTD Method 1 or Method 2 calculation",
+        "TP3 record stores form version (`tp3_form_version` = '1/2026') alongside the declaration data",
+        "PCB computed for the first month at new employer correctly incorporates TP3(1/2026) carry-forward amounts"
+      ],
+      "technicalNotes": [
+        "Form: PCB TP3 (1/2026) — Previous Employer Employment Information in Current Year For MTD Purpose",
+        "LHDN PCB 2026 specification amendment includes TP3(1/2026) format update alongside TP1(1/2026)",
+        "Carry-forward values feed into MTD computation engine: prior_gross_income, prior_epf, prior_pcb_paid, prior_reliefs_declared",
+        "Official spec: https://www.hasil.gov.my/en/employers/employer-payroll-data-specification/"
+      ],
+      "dependencies": [
+        "Implement TP3 Carry-Forward Declaration for New Hires (Prior Employer YTD)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-219",
+      "title": "TP3 30-Day Collection Deadline Compliance Alert for Mid-Year New Hires",
+      "priority": "high",
+      "description": "LHDN regulations require employees with prior-year income to submit the TP3 form to their new employer within 30 days of joining, and the employer must process it before computing the first monthly PCB. Without TP3, PCB is computed as if the employee has no prior income, systematically under-deducting tax and creating employer audit liability. The system must automatically alert HR when a mid-year new hire is approaching or has exceeded the 30-day TP3 collection deadline.",
+      "acceptanceCriteria": [
+        "System generates a task and email notification 14 days after a new hire's join date when no TP3 record exists and join date is after 1 January of the current year",
+        "Red warning banner displayed on first Salary Slip generation for any employee joined after January 1 who has no TP3 record on file",
+        "HR dashboard shows a list of employees with outstanding TP3 submissions beyond 30 days from their join date",
+        "Alert is automatically cleared once a TP3 record is saved and linked to the employee",
+        "January joiners (join date = 1 January to 31 January, first full month) are excluded from the alert — they have no prior-employer income in the current year"
+      ],
+      "technicalNotes": [
+        "Scheduled daily background job: iterate Employee records where date_of_joining > current year Jan 1 AND no TP3 DocType entry linked",
+        "Notification sent via Frappe notification system to HR Manager role",
+        "LHDN TP3 guidance: employee should submit TP3 within 30 days of joining; employer should process before first payroll",
+        "Penalty for employer non-compliance with incorrect PCB: Section 107A ITA 1967 employer liability"
+      ],
+      "dependencies": [
+        "Implement TP3 Carry-Forward Declaration for New Hires (Prior Employer YTD)"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-220",
+      "title": "Worker Classification Flag: Contract-of-Service vs Contract-for-Service for PCB/WHT Routing",
+      "priority": "high",
+      "description": "Employees under a Contract of Service (employment contract) are subject to monthly PCB deduction under Section 107A ITA 1967. Workers engaged under a Contract for Service (independent contractors, freelancers, agents) are instead subject to Withholding Tax under Section 107D ITA 1967 and CP58 reporting — not PCB. Misclassification leads to incorrect statutory deductions, potential penalties, and LHDN audit findings. The system needs an explicit classification flag at the worker record level that automatically routes deductions to the correct statutory scheme.",
+      "acceptanceCriteria": [
+        "Employee DocType has `custom_contract_type` field (Select: 'Contract of Service' [default] | 'Contract for Service')",
+        "PCB/MTD deductions on Salary Slip apply only for 'Contract of Service' workers",
+        "System raises a warning when a 'Contract for Service' worker is added to a Salary Slip payroll run (incorrect workflow — contractor payments use Supplier/Purchase Invoice)",
+        "WHT deduction (Section 107D, 2%) and CP58 reporting trigger for 'Contract for Service' workers",
+        "Classification changes are logged in an audit trail with timestamp, changed-by user, and reason"
+      ],
+      "technicalNotes": [
+        "LHDN Public Ruling 3/2019: guidelines to distinguish employment (contract of service) from self-employment (contract for service)",
+        "PCB applies under Section 107A ITA 1967 (employer withholding for employees)",
+        "WHT applies under Section 107D ITA 1967 (payer deduction for agents/dealers/distributors)",
+        "Complements and gates the existing 'Section 107D ITA — WHT 2% Deduction, Monthly Remittance, and CP58 Integration' story"
+      ],
+      "dependencies": [
+        "Section 107D ITA — WHT 2% Deduction, Monthly Remittance, and CP58 Integration for Agent/Dealer Payments"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-221",
+      "title": "PCB Year-to-Date Arrears Recovery from Final Pay on Employee Termination",
+      "priority": "high",
+      "description": "When an employee terminates mid-year, any accumulated PCB shortfall (from under-deduction in prior months due to relief changes or calculation errors) must be recovered from the final salary payment as LHDN holds the employer liable for the full year-to-date MTD. The system should automatically compute the YTD PCB liability versus YTD PCB actually deducted, and add any shortfall as a 'PCB Arrears Recovery' deduction on the final Salary Slip before the employee exits.",
+      "acceptanceCriteria": [
+        "On generating the final-month Salary Slip for a terminating employee, system computes: (total MTD required YTD) minus (total PCB deducted YTD from all prior submitted Salary Slips)",
+        "Positive shortfall (under-deduction) added as a 'PCB Arrears Recovery' deduction line on the final Salary Slip with clear labelling",
+        "If the shortfall exceeds the available final net pay, system alerts HR with the outstanding unrecoverable amount and links to the CP21/CP22A workflow for LHDN notification",
+        "Zero or negative difference (over-deduction) displayed as a refund advisory note for the employee's self-filing",
+        "Final EA Form total PCB includes the arrears recovery amount deducted in the final month"
+      ],
+      "technicalNotes": [
+        "Query all submitted Salary Slips for the employee in the current assessment year to sum `custom_pcb_amount` deducted",
+        "Recompute total annual MTD required using MTD Method 2 year-to-date formula at the annualised rate for the months worked",
+        "Difference = Required YTD MTD − Actual YTD MTD deducted; positive value = shortfall to recover",
+        "Links to: CP21 workflow (departure clearance), CP22A (retirement/resignation notification)",
+        "LHDN: Termination of Service / Employment obligations — https://www.hasil.gov.my/en/individual/others/termination-of-service-employment/"
+      ],
+      "dependencies": [
+        "Implement MTD Method 2 (Year-to-Date Recalculation Formula)",
+        "Add CP21 workflow for employee cessation and departure from Malaysia"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-222",
+      "title": "HRD Corp eTRIS Monthly Levy Payment Deadline Alert and Payment Reference Tracking",
+      "priority": "high",
+      "description": "HRD Corp requires employers to pay the monthly Human Resource Development levy via the eTRIS portal by the 15th of the following month, with late payment incurring a 10% penalty plus RM2/day. While existing stories cover levy calculation and payment file generation, there is no mechanism to track whether the actual eTRIS payment has been made, record the FPX/JomPay payment reference number, and alert payroll admin when the 15th deadline is approaching with an unpaid balance.",
+      "acceptanceCriteria": [
+        "System generates an automated reminder task/notification to HR Admin on the 10th of each month for the prior month's outstanding HRD Corp levy payment",
+        "Payroll admin can record eTRIS payment confirmation: payment_date, payment_method (FPX | JomPay), payment_reference_number per monthly period",
+        "Compliance dashboard flags any levy period where payment has not been recorded after the 15th of the month as 'Overdue'",
+        "Monthly levy payment summary report shows: period, levy amount, payment status (Paid / Unpaid / Overdue), payment date, eTRIS reference number",
+        "Escalation notification sent to HR Manager and Finance Manager when levy remains unpaid after the 20th of the month (5-day late buffer)"
+      ],
+      "technicalNotes": [
+        "Create 'HRD Corp Levy Payment' DocType: period_month, levy_amount, payment_date, payment_method, payment_reference, status (Unpaid/Paid/Overdue)",
+        "Scheduled daily job: set status = 'Overdue' where payment_date is null and today > 15th of the following month",
+        "Distinct from: 'HRD Corp eTRIS Training Claim Recording and Levy Utilization Dashboard' (training claim tracking) and 'HRD Corp Levy Monthly Payment File' (file generation)",
+        "HRD Corp late penalty: 10% of outstanding levy + RM2/day; cumulative until paid",
+        "eTRIS portal: portal.etris.hrdcorp.gov.my; accepted payment methods: FPX, JomPay"
+      ],
+      "dependencies": [
+        "HRD Corp Levy Monthly Payment File and HRDF Employer Portal Integration",
+        "Implement HRDF Levy Contribution Base Classifier (Fixed Allowances vs. Variable Pay)"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-223",
+      "title": "Budget 2026 TP1: Expand Vaccination Relief Scope to All NPRA-Approved Vaccines",
+      "priority": "medium",
+      "description": "Budget 2026 expanded the RM1,000 vaccination relief (claimable for self, spouse, and children) from a restricted list of named vaccines to all vaccines registered and approved by the National Pharmaceutical Regulatory Agency (NPRA), Ministry of Health. The TP1 form eligibility description must be updated to remove the previously named vaccine restriction so employees can claim any NPRA-registered vaccine expense.",
+      "acceptanceCriteria": [
+        "TP1(1/2026) vaccination relief field description updated to read 'All vaccines registered and approved by NPRA, Ministry of Health' (removing specific vaccine names)",
+        "System applies RM1,000 ceiling based on amount only; no vaccine-type restriction or NPRA lookup required",
+        "PCB computation includes vaccination relief up to RM1,000 per assessment year for eligible employees",
+        "TP1 audit trail and EA Form reflect the updated description for YA2026 declarations",
+        "Historical TP1 records for YA2025 retain old description (no retroactive change to prior-year records)"
+      ],
+      "technicalNotes": [
+        "Update is description/help text only — the relief ceiling of RM1,000 is unchanged",
+        "No external NPRA API lookup required; amount-based validation only",
+        "Effective YA2026 per Finance Bill 2025",
+        "NPRA: National Pharmaceutical Regulatory Agency, Ministry of Health Malaysia"
+      ],
+      "dependencies": [
+        "Update TP1(1/2026) Relief Categories and PCB Computation Engine for YA2026 Budget Changes"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-224",
+      "title": "Budget 2026 TP1: Add Eco-Friendly Lifestyle Items to RM2,500 Lifestyle Relief (YA2026-YA2027)",
+      "priority": "medium",
+      "description": "Budget 2026 added food waste disposers and home CCTV systems to the existing RM2,500 lifestyle tax relief, claimable once across YA2026 and YA2027 combined. The TP1 form must capture this new eco-friendly subcategory with a two-year one-time claim flag, sharing the overall RM2,500 lifestyle relief ceiling with other qualifying items.",
+      "acceptanceCriteria": [
+        "TP1(1/2026) lifestyle relief section includes an 'Eco-Friendly Lifestyle Items' sub-category (food waste disposers, home CCTV systems)",
+        "System enforces one-time claim restriction: if claimed in YA2026, the sub-category is blocked for YA2027 for the same employee",
+        "Eco-friendly items share the combined RM2,500 lifestyle ceiling; combined total cannot exceed RM2,500",
+        "PCB computation incorporates eco-friendly items within the overall RM2,500 lifestyle ceiling",
+        "Assessment year claim flag stored per employee: `custom_eco_lifestyle_claimed_ya` to enforce the two-year window"
+      ],
+      "technicalNotes": [
+        "Add `custom_eco_lifestyle_claimed_ya` (Int) field on Employee DocType to track the claim year",
+        "Block eco-friendly sub-category if `custom_eco_lifestyle_claimed_ya` is already set for a prior year within YA2026-YA2027",
+        "Overall lifestyle relief ceiling remains RM2,500; eco-friendly subcategory shares this pool",
+        "Finance Bill 2025 / Budget 2026, effective YA2026-YA2027 only — auto-disable after YA2027"
+      ],
+      "dependencies": [
+        "Update TP1(1/2026) Relief Categories and PCB Computation Engine for YA2026 Budget Changes"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-225",
+      "title": "Annual Leave Cash-Out PCB Computation and EA Form Income Classification",
+      "priority": "medium",
+      "description": "When employees cash out accumulated annual leave under Employment Act S.60A, the cash-out payment is additional employment income in the month of disbursement and is fully subject to PCB. The system must aggregate the cash-out amount with the employee's regular monthly salary for PCB computation purposes, and classify the payment correctly on the EA Form as gross employment income, not as a separate allowance or exempted item.",
+      "acceptanceCriteria": [
+        "Annual leave cash-out Salary Component is flagged as PCB-taxable income (not exempt)",
+        "PCB for the payment month is computed on the aggregate of regular gross salary plus the leave cash-out amount",
+        "Cash-out amount appears on the EA Form under gross employment income (basic salary/wages line in Section A), not in other income categories",
+        "Salary Slip labels the cash-out line item clearly and separately from regular salary for employee transparency",
+        "Year-end EA Form reconciliation correctly includes the cash-out amount in total employment income per employee"
+      ],
+      "technicalNotes": [
+        "Employment Act S.60A(3): employer must pay employee for unused leave at basic rate of pay",
+        "Cash-out treated as additional salary in the payment month for PCB purposes (not the irregular/bonus PCB formula unless employer specifically elects that method)",
+        "Cash-out rate: Monthly Basic Salary ÷ 26 × number of leave days cashed out",
+        "Link to 'Employment Act S.60A: Annual Leave Carry-Forward Cap and Cash-Out Enforcement at Year-End' story for leave quantum determination"
+      ],
+      "dependencies": [
+        "Employment Act S.60A: Annual Leave Carry-Forward Cap and Cash-Out Enforcement at Year-End",
+        "Add bonus/irregular payment classification for PCB differentiation"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-226",
+      "title": "Gross-Up PCB Calculation for Net Pay Guarantee Employment Agreements",
+      "priority": "medium",
+      "description": "Some employment contracts — especially for expatriates and senior executives — guarantee the employee a specific net pay, with the employer bearing all PCB costs. In these cases, the employer-borne PCB is itself a taxable benefit-in-kind, creating a circular gross-up calculation that requires an iterative formula. The system must implement the gross-up computation to derive the correct gross salary and PCB amount, and reflect the employer-borne PCB as a BIK on the EA Form.",
+      "acceptanceCriteria": [
+        "Employee record has a boolean field `custom_net_pay_guarantee` indicating the employer bears PCB on the employee's behalf",
+        "When enabled, Salary Slip applies iterative gross-up: compute gross such that PCB(gross) + net = gross (converge within 5 iterations, accuracy RM0.10)",
+        "Employer-borne PCB amount is shown as a BIK line on the EA Form Section C",
+        "Salary Slip notes section shows the gross-up computation breakdown: guaranteed net, computed gross, PCB on gross",
+        "PCB is computed on the grossed-up gross salary using the standard MTD formula",
+        "Gross-up applies only to base salary; EPF and other deductions computed before gross-up"
+      ],
+      "technicalNotes": [
+        "Gross-up formula (iterative): Gross_n+1 = Net + PCB(Gross_n); converge when |Gross_n+1 - Gross_n| < 0.10",
+        "Use Python Decimal module to avoid floating-point errors in convergence loop",
+        "Employer-borne PCB is a BIK per LHDN guidelines — must be included on EA Form as taxable benefit",
+        "Common in C-suite contracts and expatriate relocation packages",
+        "Complements 'Implement Expatriate Gross-Up Calculator and DTA Country Table' (which focuses on DTA/non-resident; this covers net pay guarantee for any employee)"
+      ],
+      "dependencies": [
+        "Implement PCB/MTD monthly calculation validation",
+        "Implement Benefits-in-Kind (BIK) Prescribed Value Calculation Module"
+      ],
+      "estimatedComplexity": "large",
       "passes": false
     }
   ]

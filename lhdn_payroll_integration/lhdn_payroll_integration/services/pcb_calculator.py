@@ -47,6 +47,7 @@ import datetime
 import frappe
 
 from lhdn_payroll_integration.services.pcb_tax_brackets import get_tax_bands
+from lhdn_payroll_integration.utils.pcb_utils import round_pcb
 
 # BIK integration (US-060) — lazy import to avoid circular dependency
 def _get_bik_for_employee(employee: str, slip_date) -> float:
@@ -302,7 +303,7 @@ def calculate_pcb(
         # Apply Zakat offset (ringgit-for-ringgit, floored at 0)
         if monthly_zakat > 0:
             gross_monthly = max(0.0, gross_monthly - monthly_zakat)
-        return round(gross_monthly, 2)
+        return round_pcb(gross_monthly)
 
     # Resident: apply personal reliefs before tax computation.
     # Resolve spouse/single-parent relief from category or legacy married flag.
@@ -358,7 +359,7 @@ def calculate_pcb(
     if monthly_zakat > 0:
         gross_monthly = max(0.0, gross_monthly - monthly_zakat)
 
-    return round(gross_monthly, 2)
+    return round_pcb(gross_monthly)
 
 
 
@@ -570,7 +571,7 @@ def calculate_pcb_method2(
             annual_tax = max(0.0, annual_tax - float(annual_zakat))
         remaining_months = 13 - month_number
         pcb = max(0.0, (annual_tax - combined_ytd_pcb) / remaining_months)
-        return round(pcb, 2)
+        return round_pcb(pcb)
 
     # Resident: compute total reliefs (same logic as Method 1)
     total_relief = _SELF_RELIEF
@@ -596,7 +597,7 @@ def calculate_pcb_method2(
     # Spread remaining tax liability over remaining months (including current month)
     remaining_months = 13 - month_number
     pcb = max(0.0, (annual_tax - combined_ytd_pcb) / remaining_months)
-    return round(pcb, 2)
+    return round_pcb(pcb)
 
 
 def populate_ytd_pcb_fields(doc, method=None):
@@ -718,7 +719,7 @@ def calculate_director_fee_pcb(
         if annual_zakat:
             zakat_for_period = (float(annual_zakat) / 12) * months_covered
             gross_mtd = max(0.0, gross_mtd - zakat_for_period)
-        return round(gross_mtd, 2)
+        return round_pcb(gross_mtd)
 
     # Resident: annualise the monthly equivalent then compute tax
     annual_equivalent = monthly_equivalent * 12
@@ -747,4 +748,4 @@ def calculate_director_fee_pcb(
         zakat_for_period = (float(annual_zakat) / 12) * months_covered
         gross_mtd = max(0.0, gross_mtd - zakat_for_period)
 
-    return round(gross_mtd, 2)
+    return round_pcb(gross_mtd)
