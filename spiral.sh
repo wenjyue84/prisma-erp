@@ -17,6 +17,10 @@
 #   bash spiral.sh 1 --gate proceed     # auto-proceed at every gate
 #   bash spiral.sh 1 --gate skip        # research+merge only, skip ralph
 #   bash spiral.sh 3 --gate proceed --ralph-iters 60
+#
+# Crash recovery:
+#   If SPIRAL is interrupted mid-iteration, re-running resumes from the
+#   last completed phase of the interrupted iteration (via _checkpoint.json).
 
 set -euo pipefail
 
@@ -45,6 +49,7 @@ STREAM_FMT="$HOME/.ai/Skills/ralph/stream-formatter.mjs"
 PYTHON="$REPO_ROOT/.venv-tests/Scripts/python.exe"
 SPIRAL_DIR="$REPO_ROOT/scripts/spiral"
 PRD_FILE="$REPO_ROOT/prd.json"
+CHECKPOINT_FILE="$SPIRAL_DIR/_checkpoint.json"
 
 # ── jq resolution (reuse ralph.sh pattern) ───────────────────────────────────
 RALPH_JQ_DIR="$HOME/.ai/Skills/ralph"
@@ -78,6 +83,27 @@ prd_stats() {
   TOTAL=$("$JQ" '[.userStories | length] | .[0]' "$PRD_FILE")
   DONE=$("$JQ" '[.userStories[] | select(.passes == true)] | length' "$PRD_FILE")
   PENDING=$((TOTAL - DONE))
+}
+
+# ── Helper: write checkpoint ─────────────────────────────────────────────────
+write_checkpoint() {
+  local iter="$1" phase="$2"
+  printf '{"iter":%d,"phase":"%s","ts":"%s"}\n' \
+    "$iter" "$phase" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    > "$CHECKPOINT_FILE"
+}
+
+# ── Helper: returns 0 if current iter already completed this phase ────────────
+checkpoint_phase_done() {
+  local phase="$1"
+  [[ -f "$CHECKPOINT_FILE" ]] || return 1
+  local ckpt_iter ckpt_phase
+  ckpt_iter=$("$JQ" -r '.iter // 0' "$CHECKPOINT_FILE")
+  ckpt_phase=$("$JQ" -r '.phase // ""' "$CHECKPOINT_FILE")
+  [[ "$ckpt_iter" -eq "$SPIRAL_ITER" ]] || return 1
+  # Phase order: R T M G I V C
+  local -A PHASE_ORDER=([R]=1 [T]=2 [M]=3 [G]=4 [I]=5 [V]=6 [C]=7)
+  [[ "${PHASE_ORDER[$ckpt_phase]:-0}" -ge "${PHASE_ORDER[$phase]:-0}" ]]
 }
 
 # ── Helper: inject placeholders into research prompt ─────────────────────────
@@ -116,9 +142,19 @@ echo "  ║  Ralph iters: $RALPH_MAX_ITERS per phase"
 echo "  ╚══════════════════════════════════════════════╝"
 echo ""
 
-# ── Main SPIRAL loop ──────────────────────────────────────────────────────────
+# ── Startup: initialize counters and resume from checkpoint if available ──────
+ZERO_PROGRESS_COUNT=0
 SPIRAL_ITER=0
 
+if [[ -f "$CHECKPOINT_FILE" ]]; then
+  CKPT_ITER=$("$JQ" -r '.iter // 0' "$CHECKPOINT_FILE")
+  CKPT_PHASE=$("$JQ" -r '.phase // ""' "$CHECKPOINT_FILE")
+  echo "  [checkpoint] Resuming from iter=$CKPT_ITER phase=$CKPT_PHASE"
+  SPIRAL_ITER=$((CKPT_ITER - 1))  # loop will increment to CKPT_ITER on first pass
+  echo ""
+fi
+
+# ── Main SPIRAL loop ──────────────────────────────────────────────────────────
 while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
   SPIRAL_ITER=$((SPIRAL_ITER + 1))
 
@@ -134,34 +170,40 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
   echo "  [Phase R] RESEARCH — searching LHDN sources..."
   RESEARCH_OUTPUT="$SPIRAL_DIR/_research_output.json"
 
-  INJECTED_PROMPT=$(build_research_prompt "$SPIRAL_ITER" "$RESEARCH_OUTPUT")
-  echo "  [R] Spawning Claude research agent (max 30 turns)..."
-  echo "  ─────── Research Agent Start ─────────────────────────"
-
-  if command -v node &>/dev/null && [[ -f "$STREAM_FMT" ]]; then
-    (unset CLAUDECODE; claude -p "$INJECTED_PROMPT" \
-      --allowedTools "WebSearch,WebFetch,Write,Read" \
-      --max-turns 30 \
-      --verbose \
-      --output-format stream-json \
-      --dangerously-skip-permissions \
-      </dev/null 2>&1 | node "$STREAM_FMT") || true
+  if checkpoint_phase_done "R"; then
+    echo "  [R] Skipping (checkpoint: already done this iter)"
   else
-    (unset CLAUDECODE; claude -p "$INJECTED_PROMPT" \
-      --allowedTools "WebSearch,WebFetch,Write,Read" \
-      --max-turns 30 \
-      --dangerously-skip-permissions \
-      </dev/null 2>&1) || true
-  fi
+    INJECTED_PROMPT=$(build_research_prompt "$SPIRAL_ITER" "$RESEARCH_OUTPUT")
+    echo "  [R] Spawning Claude research agent (max 30 turns)..."
+    echo "  ─────── Research Agent Start ─────────────────────────"
 
-  echo "  ─────── Research Agent End ───────────────────────────"
+    if command -v node &>/dev/null && [[ -f "$STREAM_FMT" ]]; then
+      (unset CLAUDECODE; claude -p "$INJECTED_PROMPT" \
+        --allowedTools "WebSearch,WebFetch,Write,Read" \
+        --max-turns 30 \
+        --verbose \
+        --output-format stream-json \
+        --dangerously-skip-permissions \
+        </dev/null 2>&1 | node "$STREAM_FMT") || true
+    else
+      (unset CLAUDECODE; claude -p "$INJECTED_PROMPT" \
+        --allowedTools "WebSearch,WebFetch,Write,Read" \
+        --max-turns 30 \
+        --dangerously-skip-permissions \
+        </dev/null 2>&1) || true
+    fi
 
-  if [[ ! -f "$RESEARCH_OUTPUT" ]]; then
-    echo "  [R] WARNING: Research agent did not write $RESEARCH_OUTPUT — using empty"
-    echo '{"stories":[]}' > "$RESEARCH_OUTPUT"
-  else
-    RESEARCH_COUNT=$("$JQ" '.stories | length' "$RESEARCH_OUTPUT" 2>/dev/null || echo "?")
-    echo "  [R] Research complete — $RESEARCH_COUNT story candidates found"
+    echo "  ─────── Research Agent End ───────────────────────────"
+
+    if [[ ! -f "$RESEARCH_OUTPUT" ]]; then
+      echo "  [R] WARNING: Research agent did not write $RESEARCH_OUTPUT — using empty"
+      echo '{"stories":[]}' > "$RESEARCH_OUTPUT"
+    else
+      RESEARCH_COUNT=$("$JQ" '.stories | length' "$RESEARCH_OUTPUT" 2>/dev/null || echo "?")
+      echo "  [R] Research complete — $RESEARCH_COUNT story candidates found"
+    fi
+
+    write_checkpoint "$SPIRAL_ITER" "R"
   fi
 
   # ── Phase T: TEST SYNTHESIS ───────────────────────────────────────────────
@@ -169,103 +211,158 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
   echo "  [Phase T] TEST SYNTHESIS — scanning test failures..."
   TEST_OUTPUT="$SPIRAL_DIR/_test_stories_output.json"
 
-  "$PYTHON" "$SPIRAL_DIR/synthesize_tests.py" \
-    --prd "$PRD_FILE" \
-    --reports-dir "$REPO_ROOT/test-reports" \
-    --output "$TEST_OUTPUT" || true
+  if checkpoint_phase_done "T"; then
+    echo "  [T] Skipping (checkpoint: already done this iter)"
+  else
+    "$PYTHON" "$SPIRAL_DIR/synthesize_tests.py" \
+      --prd "$PRD_FILE" \
+      --reports-dir "$REPO_ROOT/test-reports" \
+      --output "$TEST_OUTPUT" || true
 
-  TEST_COUNT=$("$JQ" '.stories | length' "$TEST_OUTPUT" 2>/dev/null || echo "0")
-  echo "  [T] Test synthesis complete — $TEST_COUNT story candidates from failures"
+    TEST_COUNT=$("$JQ" '.stories | length' "$TEST_OUTPUT" 2>/dev/null || echo "0")
+    echo "  [T] Test synthesis complete — $TEST_COUNT story candidates from failures"
+
+    write_checkpoint "$SPIRAL_ITER" "T"
+  fi
 
   # ── Phase M: MERGE ────────────────────────────────────────────────────────
   echo ""
   echo "  [Phase M] MERGE — deduplicating and patching prd.json..."
 
-  BEFORE_TOTAL=$("$JQ" '[.userStories | length] | .[0]' "$PRD_FILE")
-  "$PYTHON" "$SPIRAL_DIR/merge_stories.py" \
-    --prd "$PRD_FILE" \
-    --research "$RESEARCH_OUTPUT" \
-    --test-stories "$TEST_OUTPUT" \
-    --max-new 50 || true
-  AFTER_TOTAL=$("$JQ" '[.userStories | length] | .[0]' "$PRD_FILE")
-  ADDED=$((AFTER_TOTAL - BEFORE_TOTAL))
-  echo "  [M] Merge complete — $ADDED new stories added (total: $AFTER_TOTAL)"
-
-  # ── Phase G: HUMAN GATE ───────────────────────────────────────────────────
-  prd_stats
-  echo ""
-  echo "  ╔══════════════════════════════════════════════════════╗"
-  echo "  ║  [Phase G] HUMAN GATE — Iteration $SPIRAL_ITER"
-  echo "  ╠══════════════════════════════════════════════════════╣"
-  echo "  ║  New stories added:  $ADDED"
-  echo "  ║  Total pending:      $PENDING"
-  echo "  ║  Total stories:      $TOTAL ($DONE complete)"
-  echo "  ╠══════════════════════════════════════════════════════╣"
-  echo "  ║  Options:"
-  echo "  ║    proceed — run ralph to implement pending stories"
-  echo "  ║    skip    — skip ralph, advance to check-done"
-  echo "  ║    quit    — halt SPIRAL"
-  echo "  ╚══════════════════════════════════════════════════════╝"
-  echo ""
-  if [[ -n "$GATE_DEFAULT" ]]; then
-    GATE_INPUT="$GATE_DEFAULT"
-    echo "  [G] Auto-gate: $GATE_INPUT"
+  if checkpoint_phase_done "M"; then
+    echo "  [M] Skipping (checkpoint: already done this iter)"
   else
-    printf "  Enter choice: "
-    # Read from /dev/tty if available (handles piped stdin), else fall back to normal stdin
-    if [[ -t 0 ]]; then
-      read -r GATE_INPUT || GATE_INPUT="quit"
-    else
-      read -r GATE_INPUT </dev/tty 2>/dev/null || read -r GATE_INPUT || GATE_INPUT="quit"
-    fi
+    BEFORE_TOTAL=$("$JQ" '[.userStories | length] | .[0]' "$PRD_FILE")
+    "$PYTHON" "$SPIRAL_DIR/merge_stories.py" \
+      --prd "$PRD_FILE" \
+      --research "$RESEARCH_OUTPUT" \
+      --test-stories "$TEST_OUTPUT" \
+      --max-new 50 || true
+    AFTER_TOTAL=$("$JQ" '[.userStories | length] | .[0]' "$PRD_FILE")
+    ADDED=$((AFTER_TOTAL - BEFORE_TOTAL))
+    echo "  [M] Merge complete — $ADDED new stories added (total: $AFTER_TOTAL)"
+
+    write_checkpoint "$SPIRAL_ITER" "M"
   fi
 
-  GATE_INPUT=$(echo "$GATE_INPUT" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')
-
-  case "$GATE_INPUT" in
-    quit|q|exit)
-      echo "  [G] User quit — SPIRAL halted at iteration $SPIRAL_ITER"
-      exit 0
-      ;;
-    skip|s)
-      echo "  [G] Skipping ralph — advancing to check-done"
-      ;;
-    proceed|p|"")
-      # ── Phase I: IMPLEMENT (Ralph) ──────────────────────────────────────
-      echo ""
-      echo "  [Phase I] IMPLEMENT — running ralph ($RALPH_MAX_ITERS inner iterations)..."
-
-      DONE_BEFORE=$("$JQ" '[.userStories[] | select(.passes == true)] | length' "$PRD_FILE")
-
-      bash "$RALPH_SKILL" "$RALPH_MAX_ITERS" || true
-
-      DONE_AFTER=$("$JQ" '[.userStories[] | select(.passes == true)] | length' "$PRD_FILE")
-      RALPH_PROGRESS=$((DONE_AFTER - DONE_BEFORE))
-
-      if [[ "$RALPH_PROGRESS" -eq 0 ]]; then
-        echo ""
-        echo "  [I] WARNING: Ralph made zero progress this iteration."
-        echo "  [I] This may indicate all remaining stories are blocked or max-retried."
-        echo "  [I] Continuing to check-done phase..."
+  # ── Phase G: HUMAN GATE + Phase I: IMPLEMENT ─────────────────────────────
+  if checkpoint_phase_done "I"; then
+    echo "  [G+I] Skipping (checkpoint: gate and ralph already done this iter)"
+  else
+    prd_stats
+    echo ""
+    echo "  ╔══════════════════════════════════════════════════════╗"
+    echo "  ║  [Phase G] HUMAN GATE — Iteration $SPIRAL_ITER"
+    echo "  ╠══════════════════════════════════════════════════════╣"
+    echo "  ║  New stories added:  $ADDED"
+    echo "  ║  Total pending:      $PENDING"
+    echo "  ║  Total stories:      $TOTAL ($DONE complete)"
+    echo "  ╠══════════════════════════════════════════════════════╣"
+    echo "  ║  Options:"
+    echo "  ║    proceed — run ralph to implement pending stories"
+    echo "  ║    skip    — skip ralph, advance to check-done"
+    echo "  ║    quit    — halt SPIRAL"
+    echo "  ╚══════════════════════════════════════════════════════╝"
+    echo ""
+    if [[ -n "$GATE_DEFAULT" ]]; then
+      GATE_INPUT="$GATE_DEFAULT"
+      echo "  [G] Auto-gate: $GATE_INPUT"
+    else
+      printf "  Enter choice: "
+      # Read from /dev/tty if available (handles piped stdin), else fall back to normal stdin
+      if [[ -t 0 ]]; then
+        read -r GATE_INPUT || GATE_INPUT="quit"
       else
-        echo "  [I] Ralph completed $RALPH_PROGRESS new stories"
+        read -r GATE_INPUT </dev/tty 2>/dev/null || read -r GATE_INPUT || GATE_INPUT="quit"
       fi
-      ;;
-    *)
-      echo "  [G] Unrecognized input '$GATE_INPUT' — treating as skip"
-      ;;
-  esac
+    fi
+
+    GATE_INPUT=$(echo "$GATE_INPUT" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')
+
+    case "$GATE_INPUT" in
+      quit|q|exit)
+        echo "  [G] User quit — SPIRAL halted at iteration $SPIRAL_ITER"
+        rm -f "$CHECKPOINT_FILE"
+        exit 0
+        ;;
+      skip|s)
+        echo "  [G] Skipping ralph — advancing to check-done"
+        ;;
+      proceed|p|"")
+        # ── Phase I: IMPLEMENT (Ralph) ──────────────────────────────────
+        echo ""
+        echo "  [Phase I] IMPLEMENT — running ralph ($RALPH_MAX_ITERS inner iterations)..."
+
+        DONE_BEFORE=$("$JQ" '[.userStories[] | select(.passes == true)] | length' "$PRD_FILE")
+
+        RALPH_TIMEOUT=3600  # 1 hour
+        if command -v timeout &>/dev/null; then
+          timeout "$RALPH_TIMEOUT" bash "$RALPH_SKILL" "$RALPH_MAX_ITERS" || {
+            RC=$?
+            if [[ "$RC" -eq 124 ]]; then
+              echo "  [I] WARNING: Ralph timed out after ${RALPH_TIMEOUT}s — partial progress saved"
+            fi
+          }
+        else
+          bash "$RALPH_SKILL" "$RALPH_MAX_ITERS" || true
+        fi
+
+        DONE_AFTER=$("$JQ" '[.userStories[] | select(.passes == true)] | length' "$PRD_FILE")
+        RALPH_PROGRESS=$((DONE_AFTER - DONE_BEFORE))
+
+        if [[ "$RALPH_PROGRESS" -gt 0 ]]; then
+          # Auto git commit when ralph makes progress
+          NEW_STORY_IDS=$("$JQ" -r '[.userStories[] | select(.passes == true)] | .[-'"$RALPH_PROGRESS"':] | .[].id // empty' "$PRD_FILE" 2>/dev/null | tr '\n' ' ' | xargs) || true
+          COMMIT_MSG="feat(spiral): complete $RALPH_PROGRESS stories iter-$SPIRAL_ITER"
+          [[ -n "$NEW_STORY_IDS" ]] && COMMIT_MSG="feat(spiral): $NEW_STORY_IDS (spiral iter $SPIRAL_ITER)"
+          if git -C "$REPO_ROOT" add -A 2>/dev/null && \
+             git -C "$REPO_ROOT" commit -m "$COMMIT_MSG" 2>/dev/null; then
+            echo "  [I] Git: auto-committed progress — $RALPH_PROGRESS stories"
+          else
+            echo "  [I] Git: commit skipped (nothing staged or git unavailable)"
+          fi
+          ZERO_PROGRESS_COUNT=0
+          echo "  [I] Ralph completed $RALPH_PROGRESS new stories"
+        else
+          ZERO_PROGRESS_COUNT=$((ZERO_PROGRESS_COUNT + 1))
+          echo "  [I] WARNING: Ralph made zero progress (streak: $ZERO_PROGRESS_COUNT)"
+          if [[ "$ZERO_PROGRESS_COUNT" -ge 2 ]]; then
+            echo ""
+            echo "  ╔══════════════════════════════════════════════════════╗"
+            echo "  ║  SPIRAL HALTED — 2 consecutive zero-progress iters  ║"
+            echo "  ║  Pending stories may be blocked or require manual   ║"
+            echo "  ║  intervention. Review prd.json and re-run.          ║"
+            echo "  ╚══════════════════════════════════════════════════════╝"
+            prd_stats
+            echo ""
+            "$JQ" -r '.userStories[] | select(.passes != true) | "  [PENDING] [\(.id)] \(.title)"' "$PRD_FILE"
+            rm -f "$CHECKPOINT_FILE"
+            exit 2
+          fi
+          echo "  [I] Continuing to check-done phase..."
+        fi
+        ;;
+      *)
+        echo "  [G] Unrecognized input '$GATE_INPUT' — treating as skip"
+        ;;
+    esac
+
+    write_checkpoint "$SPIRAL_ITER" "I"
+  fi
 
   # ── Phase V: VALIDATE (HTTP test suite) ──────────────────────────────────
   echo ""
   echo "  [Phase V] VALIDATE — running .venv-tests HTTP suite..."
 
-  if [[ -f "$PYTHON" ]]; then
-    (cd "$REPO_ROOT" && "$PYTHON" tests/run_tests.py \
-      --report-dir "test-reports" 2>&1) || true
+  if checkpoint_phase_done "V"; then
+    echo "  [V] Skipping (checkpoint: already done this iter)"
+  else
+    if [[ -f "$PYTHON" ]]; then
+      (cd "$REPO_ROOT" && "$PYTHON" tests/run_tests.py \
+        --report-dir "test-reports" 2>&1) || true
 
-    # Print summary from the freshest report
-    "$PYTHON" - <<'PYEOF'
+      # Print summary from the freshest report
+      "$PYTHON" - <<'PYEOF'
 import os, json, sys
 d = 'test-reports'
 if not os.path.isdir(d):
@@ -281,8 +378,11 @@ for s in subdirs:
         sys.exit(0)
 print("  [V] No report found")
 PYEOF
-  else
-    echo "  [V] WARNING: Python venv not found — skipping HTTP test suite"
+    else
+      echo "  [V] WARNING: Python venv not found — skipping HTTP test suite"
+    fi
+
+    write_checkpoint "$SPIRAL_ITER" "V"
   fi
 
   # ── Phase C: CHECK DONE ───────────────────────────────────────────────────
@@ -292,6 +392,7 @@ PYEOF
   if "$PYTHON" "$SPIRAL_DIR/check_done.py" \
     --prd "$PRD_FILE" \
     --reports-dir "$REPO_ROOT/test-reports"; then
+    rm -f "$CHECKPOINT_FILE"
     echo ""
     echo "  ╔══════════════════════════════════════════════════════╗"
     echo "  ║   *** SPIRAL COMPLETE! ***                           ║"
@@ -301,6 +402,8 @@ PYEOF
     exit 0
   fi
 
+  # Clear checkpoint before next iteration (crash in next iter starts that iter fresh)
+  rm -f "$CHECKPOINT_FILE"
   echo "  [C] Not done yet — looping back to Phase R"
   echo ""
 done

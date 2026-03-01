@@ -1,3 +1,40 @@
 {
-  "stories": []
+  "stories": [
+    {
+      "title": "Fix failing test: SalarySlipCustomFields — lp07 custom lhdn status field exists",
+      "priority": "medium",
+      "description": "Automated test `test_lp07_custom_lhdn_status_field_exists` is failing with status FAIL. This indicates a regression or missing implementation in the unit:lhdn_payroll suite. LP-07: custom_lhdn_status field exists on Salary Slip.",
+      "acceptanceCriteria": [
+        "Test `tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp07_custom_lhdn_status_field_exists` passes without error.",
+        "Root cause resolved: 'custom_lhdn_status' not found in ['employee_and_payroll_tab', 'section_break_6', 'employee', 'employee_name', 'company', 'department', 'designation', 'branch', 'column_break_obdl', 'posting_date', 'l"
+      ],
+      "technicalNotes": [
+        "Test category: unit:lhdn_payroll",
+        "Test ID: tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp07_custom_lhdn_status_field_exists",
+        "Error type: AssertionError",
+        "Test description: LP-07: custom_lhdn_status field exists on Salary Slip."
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "_source": "test-synthesis:tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp07_custom_lhdn_status_field_exists"
+    },
+    {
+      "title": "Fix failing test: SalarySlipCustomFields — lp09 epf fields exist",
+      "priority": "medium",
+      "description": "Automated test `test_lp09_epf_fields_exist` is failing with status FAIL. This indicates a regression or missing implementation in the unit:lhdn_payroll suite. LP-09: EPF employee/employer fields exist on Salary Slip.",
+      "acceptanceCriteria": [
+        "Test `tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp09_epf_fields_exist` passes without error.",
+        "Root cause resolved: False is not true : Expected at least 2 EPF fields, got: []"
+      ],
+      "technicalNotes": [
+        "Test category: unit:lhdn_payroll",
+        "Test ID: tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp09_epf_fields_exist",
+        "Error type: AssertionError",
+        "Test description: LP-09: EPF employee/employer fields exist on Salary Slip."
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "_source": "test-synthesis:tests.unit.lhdn_payroll.test_payroll_doctypes.TestSalarySlipCustomFields.test_lp09_epf_fields_exist"
+    }
+  ]
 }
