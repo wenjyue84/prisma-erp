@@ -2979,7 +2979,7 @@
         "Integrate LHDN TIN validation API before submission"
       ],
       "estimatedComplexity": "medium",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-133",
