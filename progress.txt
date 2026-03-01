@@ -1,3 +1,29 @@
+## Iteration N — US-219: TP3 30-Day Collection Deadline Compliance Alert for Mid-Year New Hires
+
+**Type:** IMPL
+**TDD Phase:** GREEN (89/89 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_us219_tp3_deadline_alert
+**Result:** PASS — 89 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/tp3_deadline_alert_service.py` — Core service: is_mid_year_hire() (January exclusion), compute_tp3_deadline() (join+30 days), compute_first_alert_date() (join+14 days), get_days_since_join(), get_days_until_deadline(), is_deadline_overdue(), should_send_first_alert(), check_employee_tp3_status() (single employee assessment with severity/bucket/warning), get_salary_slip_tp3_warning(), get_outstanding_tp3_employees() (batch overdue), get_pending_tp3_alerts() (batch 14+ day alerts), generate_tp3_dashboard_summary() (bucket counts + compliance rate), build_notification() / build_batch_notifications() (HR Manager alerts), is_alert_cleared() (auto-clear on TP3 receipt), generate_compliance_report() (Section 107A risk + action required)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_us219_tp3_deadline_alert.py` — 89 tests across 17 classes: TestTP3DeadlineAlertConstants, TestIsMidYearHire, TestComputeTP3Deadline, TestComputeFirstAlertDate, TestDaysSinceJoin, TestDaysUntilDeadline, TestIsDeadlineOverdue, TestShouldSendFirstAlert, TestCheckEmployeeTP3Status, TestGetSalarySlipTP3Warning, TestGetOutstandingTP3Employees, TestGetPendingTP3Alerts, TestGenerateTP3DashboardSummary, TestBuildNotification, TestBuildBatchNotifications, TestIsAlertCleared, TestGenerateComplianceReport
+
+### Patterns discovered
+- TP3 30-day regulatory deadline from Section 107A ITA 1967: employer liable for incorrect PCB if TP3 not collected
+- January joiners (1–31 Jan) excluded — no prior-employer income in current assessment year
+- First alert at 14 days, overdue at 30+ days from join date
+- Dashboard grouped by severity buckets: overdue → alert_sent → within_window → received → exempt
+- Compliance rate = (TP3 received / mid-year hires) × 100
+- Alert auto-clears when has_tp3 flag becomes True (TP3 record saved)
+- Old SPIRAL-generated test file `test_us219_tp3_deadline.py` conflicted in container — had to remove before running new tests
+
+### Gotchas
+- Git Bash on Windows mangles `/home/` paths passed to `docker exec` — must wrap in `bash -c "..."` to prevent path translation
+- Old SPIRAL test file existed in container from prior iteration; needed explicit removal before bench could discover new test module
+
+---
+
 ## Iteration N — US-218: Process TP3(1/2026) Updated Form Format with Budget 2026 Relief Line Items
 
 **Type:** IMPL
@@ -8047,4 +8073,7 @@ Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Wor
 ## Iteration 47 - Sun, Mar  1, 2026  6:20:43 PM
 Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 2/3
 
+
+## Iteration 49 - Sun, Mar  1, 2026  6:41:36 PM
+Incomplete: Budget 2026 Expanded Double Deduction for Training Disabled Care Workers (YA2026-2027) â€” Payroll Evidence Package (ID: US-211) — attempt 1/3
 
