@@ -429,48 +429,88 @@ def step_fix_print_format():
         print(f"✓ [pre] Custom Print Format '{CUSTOM_PRINT_FORMAT}' created ({len(html_content)} chars)")
 
 
-def step_download_pdf(slip_name):
-    """Download the payslip as PDF (or HTML fallback) to the Desktop."""
-    print(f"  [9/9] Requesting payslip PDF for {slip_name} ...")
+def _find_browser() -> str | None:
+    """Return path to Chrome or Edge executable on Windows, or None."""
+    candidates = [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return None
 
-    params = {
-        "doctype":       "Salary Slip",
-        "name":          slip_name,
-        "format":        CUSTOM_PRINT_FORMAT,
-        "no_letterhead": 1,
-        "_lang":         "en",
-    }
+
+def step_download_pdf(slip_name):
+    """Download the payslip as PDF to the Desktop.
+
+    Strategy:
+    1. Get the rendered HTML from /printview (always works)
+    2. Try to convert to PDF using Chrome/Edge headless (local, has full CSS access)
+    3. Fall back to saving as HTML with instructions
+    """
+    print(f"  [9/9] Requesting payslip HTML for {slip_name} ...")
+
     r = ses.get(
-        f"{BASE}/api/method/frappe.utils.print_format.download_pdf",
-        params=params,
+        f"{BASE}/printview",
+        params={
+            "doctype":       "Salary Slip",
+            "name":          slip_name,
+            "format":        CUSTOM_PRINT_FORMAT,
+            "no_letterhead": 1,
+            "_lang":         "en",
+        },
         timeout=60,
     )
+    r.raise_for_status()
 
     os.makedirs(DESKTOP, exist_ok=True)
-    safe = slip_name.replace("/", "_").replace(" ", "_")
-    out_pdf  = os.path.join(DESKTOP, f"Payslip_{safe}_Mar2026.pdf")
-    out_html = out_pdf.replace(".pdf", ".html")
+    safe     = slip_name.replace("/", "_").replace(" ", "_")
+    out_html = os.path.join(DESKTOP, f"Payslip_{safe}_Mar2026.html")
+    out_pdf  = out_html.replace(".html", ".pdf")
 
-    ct = r.headers.get("Content-Type", "")
+    # Add <base> tag so browser resolves relative CSS/JS from localhost:8080
+    html = r.text
+    if "<head>" in html and 'name="base"' not in html:
+        html = html.replace("<head>", f'<head>\n<base href="{BASE}/">', 1)
 
-    if r.status_code == 200 and "application/pdf" in ct:
-        with open(out_pdf, "wb") as f:
-            f.write(r.content)
-        print(f"✓ [9/9] PDF saved →  {out_pdf}")
-        return out_pdf
+    with open(out_html, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"  HTML saved → {out_html}")
 
-    if r.status_code == 200:
-        # Server returned HTML (wkhtmltopdf / weasyprint not installed)
-        with open(out_html, "wb") as f:
-            f.write(r.content)
-        print(f"✓ [9/9] HTML saved →  {out_html}")
-        print(f"     (PDF engine not available on this server — "
-              f"open the HTML file in a browser and use File → Print → Save as PDF)")
-        return out_html
+    # Try Chrome/Edge headless for PDF conversion
+    browser = _find_browser()
+    if browser:
+        import subprocess
+        file_url = "file:///" + out_html.replace("\\", "/")
+        cmd = [
+            browser,
+            "--headless",
+            "--disable-gpu",
+            "--no-sandbox",
+            "--run-all-compositor-stages-before-draw",
+            f"--print-to-pdf={out_pdf}",
+            file_url,
+        ]
+        try:
+            result = subprocess.run(cmd, capture_output=True, timeout=60)
+            if result.returncode == 0 and os.path.exists(out_pdf) and os.path.getsize(out_pdf) > 1000:
+                os.remove(out_html)   # clean up temp HTML
+                print(f"✓ [9/9] PDF saved →  {out_pdf}")
+                return out_pdf
+            else:
+                print(f"  ⚠ Browser PDF conversion failed (rc={result.returncode}) — "
+                      f"keeping HTML fallback")
+        except Exception as e:
+            print(f"  ⚠ Browser launch failed: {e} — keeping HTML fallback")
+    else:
+        print(f"  ⚠ Chrome/Edge not found — saving HTML only")
 
-    raise RuntimeError(
-        f"PDF download failed  HTTP {r.status_code}:\n{r.text[:400]}"
-    )
+    print(f"✓ [9/9] HTML saved →  {out_html}")
+    print(f"     Open in browser → Ctrl+P → Save as PDF")
+    return out_html
 
 
 # ── Entry point ────────────────────────────────────────────────────────────────

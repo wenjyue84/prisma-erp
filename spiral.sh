@@ -17,7 +17,8 @@
 #   bash spiral.sh 1 --gate proceed          # auto-proceed at every gate
 #   bash spiral.sh 1 --gate skip             # research+merge only, skip ralph
 #   bash spiral.sh 3 --gate proceed --ralph-iters 60
-#   bash spiral.sh 5 --gate proceed --skip-research  # impl-only (no web research)
+#   bash spiral.sh 5 --gate proceed --skip-research          # impl-only (no web research)
+#   bash spiral.sh 5 --gate proceed --ralph-workers 3        # 3 parallel worktree workers
 #
 # Crash recovery:
 #   If SPIRAL is interrupted mid-iteration, re-running resumes from the
@@ -30,6 +31,7 @@ MAX_SPIRAL_ITERS=20
 GATE_DEFAULT=""        # empty = interactive; "proceed"|"skip"|"quit" = auto
 RALPH_MAX_ITERS=120
 SKIP_RESEARCH=0        # 1 = skip Phase R (Claude web research); T and M still run
+RALPH_WORKERS=1        # >1 = parallel mode (git worktrees + docker lock)
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -39,6 +41,8 @@ while [[ $# -gt 0 ]]; do
       RALPH_MAX_ITERS="$2"; shift 2 ;;
     --skip-research)
       SKIP_RESEARCH=1; shift ;;
+    --ralph-workers)
+      RALPH_WORKERS="$2"; shift 2 ;;
     --*)
       echo "[spiral] Unknown flag: $1"; exit 1 ;;
     *)
@@ -154,6 +158,7 @@ echo "  ║  PRD:         $PRD_FILE"
 echo "  ║  Stories:     $DONE/$TOTAL complete ($PENDING pending)"
 echo "  ║  Max iters:   $MAX_SPIRAL_ITERS"
 echo "  ║  Ralph iters: $RALPH_MAX_ITERS per phase"
+[[ "$RALPH_WORKERS" -gt 1 ]] && echo "  ║  Workers:     $RALPH_WORKERS parallel (git worktrees)"
 [[ "$SKIP_RESEARCH" -eq 1 ]] && echo "  ║  Mode:        --skip-research (Phase R skipped)"
 echo "  ╚══════════════════════════════════════════════╝"
 echo ""
@@ -175,8 +180,9 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
   SPIRAL_ITER=$((SPIRAL_ITER + 1))
 
   prd_stats
-  ADDED=0      # new stories added this iter (set in Phase M; default 0 if skipped)
-  RALPH_RAN=0  # set to 1 if ralph actually executed this iter (controls Phase V)
+  ADDED=0           # new stories added this iter (set in Phase M; default 0 if skipped)
+  RALPH_RAN=0       # set to 1 if ralph actually executed this iter (controls Phase V)
+  RALPH_PROGRESS=0  # stories completed this iter; reset each iter for accurate velocity
   echo ""
   echo "  ┌─────────────────────────────────────────────────────┐"
   echo "  │  SPIRAL Iteration $SPIRAL_ITER / $MAX_SPIRAL_ITERS"
@@ -330,31 +336,45 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
         RALPH_RAN=1
         DONE_BEFORE=$("$JQ" '[.userStories[] | select(.passes == true)] | length' "$PRD_FILE")
 
-        RALPH_TIMEOUT=3600  # 1 hour
-        if command -v timeout &>/dev/null; then
-          timeout "$RALPH_TIMEOUT" bash "$RALPH_SKILL" "$RALPH_MAX_ITERS" || {
-            RC=$?
-            if [[ "$RC" -eq 124 ]]; then
-              echo "  [I] WARNING: Ralph timed out after ${RALPH_TIMEOUT}s — partial progress saved"
-            fi
-          }
+        if [[ "$RALPH_WORKERS" -gt 1 ]]; then
+          # ── Parallel mode: N git worktrees with docker lock ──────────────
+          echo "  [I] Parallel mode: $RALPH_WORKERS workers ($(( (RALPH_MAX_ITERS + RALPH_WORKERS - 1) / RALPH_WORKERS )) iters each)"
+          bash "$SPIRAL_DIR/run_parallel_ralph.sh" \
+            "$RALPH_WORKERS" "$RALPH_MAX_ITERS" "$REPO_ROOT" "$PRD_FILE" \
+            "$SPIRAL_DIR" "$RALPH_SKILL" "$JQ" "$PYTHON" || true
         else
-          bash "$RALPH_SKILL" "$RALPH_MAX_ITERS" || true
+          # ── Sequential mode (default) ────────────────────────────────────
+          RALPH_TIMEOUT=3600  # 1 hour
+          if command -v timeout &>/dev/null; then
+            timeout "$RALPH_TIMEOUT" bash "$RALPH_SKILL" "$RALPH_MAX_ITERS" || {
+              RC=$?
+              if [[ "$RC" -eq 124 ]]; then
+                echo "  [I] WARNING: Ralph timed out after ${RALPH_TIMEOUT}s — partial progress saved"
+              fi
+            }
+          else
+            bash "$RALPH_SKILL" "$RALPH_MAX_ITERS" || true
+          fi
         fi
 
         DONE_AFTER=$("$JQ" '[.userStories[] | select(.passes == true)] | length' "$PRD_FILE")
         RALPH_PROGRESS=$((DONE_AFTER - DONE_BEFORE))
 
         if [[ "$RALPH_PROGRESS" -gt 0 ]]; then
-          # Auto git commit when ralph makes progress
-          NEW_STORY_IDS=$("$JQ" -r '[.userStories[] | select(.passes == true)] | .[-'"$RALPH_PROGRESS"':] | .[].id // empty' "$PRD_FILE" 2>/dev/null | tr '\n' ' ' | xargs) || true
-          COMMIT_MSG="feat(spiral): complete $RALPH_PROGRESS stories iter-$SPIRAL_ITER"
-          [[ -n "$NEW_STORY_IDS" ]] && COMMIT_MSG="feat(spiral): $NEW_STORY_IDS (spiral iter $SPIRAL_ITER)"
-          if git -C "$REPO_ROOT" add -A 2>/dev/null && \
-             git -C "$REPO_ROOT" commit -m "$COMMIT_MSG" 2>/dev/null; then
-            echo "  [I] Git: auto-committed progress — $RALPH_PROGRESS stories"
+          if [[ "$RALPH_WORKERS" -gt 1 ]]; then
+            # run_parallel_ralph.sh already committed prd.json + per-worker code patches
+            echo "  [I] Git: parallel mode — commits already applied by run_parallel_ralph.sh"
           else
-            echo "  [I] Git: commit skipped (nothing staged or git unavailable)"
+            # Sequential mode: auto-commit with story-ID commit message
+            NEW_STORY_IDS=$("$JQ" -r '[.userStories[] | select(.passes == true)] | .[-'"$RALPH_PROGRESS"':] | .[].id // empty' "$PRD_FILE" 2>/dev/null | tr '\n' ' ' | xargs) || true
+            COMMIT_MSG="feat(spiral): complete $RALPH_PROGRESS stories iter-$SPIRAL_ITER"
+            [[ -n "$NEW_STORY_IDS" ]] && COMMIT_MSG="feat(spiral): $NEW_STORY_IDS (spiral iter $SPIRAL_ITER)"
+            if git -C "$REPO_ROOT" add -A 2>/dev/null && \
+               git -C "$REPO_ROOT" commit -m "$COMMIT_MSG" 2>/dev/null; then
+              echo "  [I] Git: auto-committed progress — $RALPH_PROGRESS stories"
+            else
+              echo "  [I] Git: commit skipped (nothing staged or git unavailable)"
+            fi
           fi
           ZERO_PROGRESS_COUNT=0
           echo "  [I] Ralph completed $RALPH_PROGRESS new stories"
