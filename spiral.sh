@@ -359,11 +359,63 @@ while [[ $SPIRAL_ITER -lt $MAX_SPIRAL_ITERS ]]; do
         DONE_BEFORE=$("$JQ" '[.userStories[] | select(.passes == true)] | length' "$PRD_FILE")
 
         if [[ "$RALPH_WORKERS" -gt 1 ]]; then
-          # ── Parallel mode: N git worktrees with docker lock ──────────────
-          echo "  [I] Parallel mode: $RALPH_WORKERS workers ($(( (RALPH_MAX_ITERS + RALPH_WORKERS - 1) / RALPH_WORKERS )) iters each)"
-          bash "$SPIRAL_DIR/run_parallel_ralph.sh" \
-            "$RALPH_WORKERS" "$RALPH_MAX_ITERS" "$REPO_ROOT" "$PRD_FILE" \
-            "$SPIRAL_DIR" "$RALPH_SKILL" "$JQ" "$PYTHON" || true
+          # ── Parallel mode with wave dispatch ───────────────────────────────
+          # Pre-populate filesTouch hints from git history (best-effort)
+          "$PYTHON" "$SPIRAL_DIR/populate_hints.py" \
+            --prd "$PRD_FILE" --repo-root "$REPO_ROOT" 2>/dev/null || true
+
+          TOTAL_WAVES=$("$PYTHON" "$SPIRAL_DIR/partition_prd.py" \
+            --prd "$PRD_FILE" --list-waves 2>/dev/null || echo "1")
+          echo "  [I] Parallel mode: $RALPH_WORKERS workers, $TOTAL_WAVES wave(s)"
+
+          WAVE=0
+          while true; do
+            # Get story count for this wave level (recomputed from current prd.json)
+            WAVE_STORY_COUNT=$("$PYTHON" "$SPIRAL_DIR/partition_prd.py" \
+              --prd "$PRD_FILE" --wave-count "$WAVE" 2>/dev/null || echo "0")
+
+            # No stories at this level — check if higher levels exist
+            if [[ "$WAVE_STORY_COUNT" -eq 0 ]]; then
+              REMAINING=$("$PYTHON" "$SPIRAL_DIR/partition_prd.py" \
+                --prd "$PRD_FILE" --list-waves 2>/dev/null || echo "0")
+              if [[ "$WAVE" -ge "$REMAINING" ]]; then
+                echo "  [I] All waves processed — no more actionable stories"
+                break
+              fi
+              echo "  [I] Wave $((WAVE+1)): 0 stories — skipping"
+              WAVE=$((WAVE + 1))
+              continue
+            fi
+
+            echo "  [I] ── Wave $((WAVE+1)): $WAVE_STORY_COUNT stories ──"
+
+            if [[ "$WAVE_STORY_COUNT" -eq 1 ]]; then
+              # Single story — sequential fallback, skip worktree overhead entirely
+              echo "  [I] Wave $((WAVE+1)): 1 story — sequential fallback (no worktrees)"
+              RALPH_TIMEOUT=3600
+              if command -v timeout &>/dev/null; then
+                timeout "$RALPH_TIMEOUT" bash "$RALPH_SKILL" "$RALPH_MAX_ITERS" || {
+                  RC=$?
+                  [[ "$RC" -eq 124 ]] && echo "  [I] WARNING: Ralph timed out after ${RALPH_TIMEOUT}s"
+                }
+              else
+                bash "$RALPH_SKILL" "$RALPH_MAX_ITERS" || true
+              fi
+            else
+              # Cap workers to story count so no worker sits idle
+              WAVE_WORKERS="$RALPH_WORKERS"
+              if [[ "$WAVE_STORY_COUNT" -lt "$RALPH_WORKERS" ]]; then
+                WAVE_WORKERS="$WAVE_STORY_COUNT"
+                echo "  [I] Wave $((WAVE+1)): capping to $WAVE_WORKERS workers (only $WAVE_STORY_COUNT stories)"
+              fi
+
+              bash "$SPIRAL_DIR/run_parallel_ralph.sh" \
+                "$WAVE_WORKERS" "$RALPH_MAX_ITERS" "$REPO_ROOT" "$PRD_FILE" \
+                "$SPIRAL_DIR" "$RALPH_SKILL" "$JQ" "$PYTHON" || true
+            fi
+
+            WAVE=$((WAVE + 1))
+          done
         else
           # ── Sequential mode (default) ────────────────────────────────────
           RALPH_TIMEOUT=3600  # 1 hour
