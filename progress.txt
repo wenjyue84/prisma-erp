@@ -7106,3 +7106,28 @@ Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and
 - Container nested path MUST be updated (tests import from `lhdn_payroll_integration.lhdn_payroll_integration.report.epf_borang_a`)
 - Test file goes in OUTER path (`lhdn_payroll_integration/tests/`) — bench runs from there
 - Patching `get_data` in tests with mock rows requires all six split fields pre-populated
+
+
+## Iteration N — US-150: LHDN STAMPS Employment Contract Digital Stamp Status Tracker
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 32 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_stamps_employment_contract`
+**Result:** PASS — 32/32, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_stamps_employment_contract/lhdn_stamps_employment_contract.json` — DocType definition
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/lhdn_stamps_employment_contract/lhdn_stamps_employment_contract.py` — Controller with status auto-compute and ToDo task creation
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/stamps_employment_contract_service.py` — Service helpers (get_unstamped_contracts, days calc, legacy detection)
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/unstamped_employment_contracts/unstamped_employment_contracts.py` — Script Report
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/unstamped_employment_contracts/unstamped_employment_contracts.json` — Report DocType fixture
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_stamps_employment_contract.py` — 32 tests
+
+### Patterns discovered
+- bench migrate may fail on tabCompany row size issue (pre-existing from too many custom Company fields added by other stories) — but the new DocType table is created before that failure point
+- Fix: check table exists after migrate; run tests directly; both work fine
+
+### Gotchas
+- tabCompany row size error (1118) is a pre-existing constraint — unrelated to this story
+- LHDN STAMPS Employment Contract table created successfully despite migrate error
+
