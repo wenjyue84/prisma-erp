@@ -7203,3 +7203,43 @@ Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and
 ### Gotchas
 - Employee table is at MySQL row size limit (65535 bytes) — sync_fixtures/migrate fails with OperationalError 1118. Tests use JSON fixture check, not DB. This is a pre-existing constraint.
 - CRITICAL pattern: must copy to BOTH outer path AND nested path (`lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/services/`) for bench tests to find the module
+## Iteration 24 - Sun Mar  1 14:42:11 MPST 2026
+Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and Double Tax Deduction Payroll Tagging (ID: US-210) — attempt 1/3
+
+
+## Iteration N — US-167: Build Platform SOCSO Deduction Engine Skeleton for Gig Workers Act 2025 (Act 872)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (42/42 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.lhdn_payroll_integration.tests.test_gig_worker_socso`
+**Result:** PASS — 42 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/gig_worker_socso_service.py` — SEIA deduction engine (constants, compute_seia_contribution, is_seia_active, is_gig_worker, is_domestic_gig_exempt, get_eligible_gig_workers, generate_seia_remittance_file)
+- `lhdn_payroll_integration/lhdn_payroll_integration/tests/test_gig_worker_socso.py` — 42 tests across 6 classes
+
+### What was implemented
+1. `SEIA_WORKER_RATE = 0.02` (2%), `SEIA_EARNINGS_CEILING = 5000`, `SEIA_MIN_CONTRIBUTION = 5.00`, `SEIA_EMPLOYER_RATE = 0.00` — all per SEIA Act 789
+2. `compute_seia_contribution(monthly_earnings)` — applies ceiling cap, 2% rate, RM5 floor; employer always RM0
+3. `is_seia_active(as_of_date)` — reads `seia_commencement_date` from LHDN Payroll Settings; deductions dormant until gazette date set
+4. `is_gig_worker(employee_doc)` — checks custom_employment_type="Gig / Platform Worker" AND custom_is_seia_worker=1
+5. `is_domestic_gig_exempt(employee_doc)` — checks custom_is_domestic_gig_exempt flag
+6. `get_eligible_gig_workers(company)` — frappe.get_all query for SEIA-eligible workers
+7. `generate_seia_remittance_file(company, year, month)` — CSV for PERKESO ASSIST SEIA upload; separate from standard SOCSO Borang 8A
+
+### Test classes (42 tests)
+- `TestSeiaConstants` — 5 constant verification tests
+- `TestComputeSeiaContribution` — 12 computation tests (floor, ceiling, zero, employer=0)
+- `TestSeiaCommencement` — 5 date guard tests (blank, before, on, after, exception)
+- `TestGigWorkerEligibility` — 7 is_gig_worker + is_domestic_gig_exempt tests
+- `TestGetEligibleGigWorkers` — 6 DB query filter tests (mocked)
+- `TestGenerateSeiaRemittanceFile` — 7 CSV output tests (mocked)
+
+### Patterns discovered
+- SEIA is worker-funded only (no employer share) — distinct from standard employer SOCSO
+- Commencement date guard pattern: read from Settings singleton, return False if blank/exception
+- db.sql with as_dict=True returns plain dicts — use .get() not attribute access
+
+### Gotchas
+- `frappe.db.sql(..., as_dict=True)` returns list of plain dicts, not frappe._dict; always use row.get("field") not row.field_name
+- Both outer and nested container paths must be kept in sync (standard MEMORY.md pattern)
