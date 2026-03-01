@@ -158,6 +158,28 @@ done
 echo ""
 
 # ── Step 6: Merge prd.json pass results into main prd.json ───────────────────
+# Re-encode all worker prd.json files to clean UTF-8 first.
+# jq on Windows can write cp1252 bytes instead of UTF-8 when story titles
+# contain Unicode characters (em-dashes etc.), corrupting the JSON.
+for wtree in "${WORKER_DIRS[@]}"; do
+  WPRD="$wtree/prd.json"
+  [[ -f "$WPRD" ]] || continue
+  "$PYTHON" - "$WPRD" << 'PYEOF'
+import json, sys
+path = sys.argv[1]
+with open(path, encoding='utf-8', errors='replace') as f:
+    content = f.read()
+try:
+    d = json.loads(content)
+except Exception:
+    with open(path, encoding='cp1252', errors='replace') as f:
+        d = json.load(f)
+with open(path, 'w', encoding='utf-8') as f:
+    json.dump(d, f, indent=2, ensure_ascii=False)
+    f.write('\n')
+PYEOF
+done
+
 WORKER_PRDS=()
 for wtree in "${WORKER_DIRS[@]}"; do
   WORKER_PRDS+=("$wtree/prd.json")
@@ -167,25 +189,36 @@ done
   --main "$PRD_FILE" \
   --workers "${WORKER_PRDS[@]}"
 
+# Re-encode main prd.json to clean UTF-8 after merge (same jq cp1252 guard)
+"$PYTHON" - "$PRD_FILE" << 'PYEOF'
+import json, sys
+path = sys.argv[1]
+with open(path, encoding='utf-8', errors='replace') as f:
+    content = f.read()
+try:
+    d = json.loads(content)
+except Exception:
+    with open(path, encoding='cp1252', errors='replace') as f:
+        d = json.load(f)
+with open(path, 'w', encoding='utf-8') as f:
+    json.dump(d, f, indent=2, ensure_ascii=False)
+    f.write('\n')
+PYEOF
+
 # Commit the merged prd.json as a stable base before code patches
 git -C "$REPO_ROOT" add "$PRD_FILE" 2>/dev/null
 git -C "$REPO_ROOT" commit -m "chore(spiral): merge prd.json from $RALPH_WORKERS parallel workers" \
   2>/dev/null || true
 
-# ── Step 7: Apply code changes from each worker as a patch ───────────────────
-# We diff only lhdn_payroll_integration/ (app code), excluding:
-#   - prd.json (already merged above)
-#   - progress.txt / retry-counts.json (per-worker transient files)
-#   - .spiral-bin/ (lock wrapper, not real code)
-PATCHES_APPLIED=0
-PATCHES_CONFLICTED=0
+# ── Step 6.5: Extract patches + pre-detect conflicts via dry-run ─────────────
+echo "  [parallel] Extracting and pre-checking patches for conflicts..."
+declare -a CLEAN_WORKERS=()
+declare -a CONFLICT_WORKERS=()
 
 for i in $(seq 1 "$RALPH_WORKERS"); do
   BRANCH="${WORKER_BRANCHES[$((i-1))]}"
   PATCH_FILE="$WORKER_DIR/worker_${i}.patch"
 
-  echo "  [parallel] Extracting code diff for worker $i (branch: $BRANCH)..."
-  # Scope to app code only
   git -C "$REPO_ROOT" diff "HEAD..$BRANCH" -- \
     "lhdn_payroll_integration/" \
     "prisma_assistant/" \
@@ -193,12 +226,40 @@ for i in $(seq 1 "$RALPH_WORKERS"); do
     > "$PATCH_FILE" 2>/dev/null || true
 
   if [[ ! -s "$PATCH_FILE" ]]; then
-    echo "  [parallel] Worker $i: no code changes to apply"
+    echo "  [parallel] Worker $i: no code changes (skipping)"
     continue
   fi
 
+  if git -C "$REPO_ROOT" apply --check "$PATCH_FILE" 2>/dev/null; then
+    CLEAN_WORKERS+=($i)
+  else
+    CONFLICT_WORKERS+=($i)
+    echo "  [parallel] WARNING: Worker $i patch will conflict"
+  fi
+done
+echo "  [parallel] Pre-check: ${#CLEAN_WORKERS[@]} clean, ${#CONFLICT_WORKERS[@]} conflicting"
+
+# ── Step 7: Apply code changes — clean patches first, largest-first within each group ──
+# Largest patch first establishes the biggest base, reducing subsequent conflicts.
+PATCHES_APPLIED=0
+PATCHES_CONFLICTED=0
+
+sort_by_patch_size() {
+  # Emit "size index" lines sorted descending, then print just the index
+  for i in "$@"; do
+    SIZE=$(wc -c < "$WORKER_DIR/worker_${i}.patch" 2>/dev/null || echo 0)
+    echo "$SIZE $i"
+  done | sort -rn | awk '{print $2}'
+}
+
+SORTED_CLEAN=$(sort_by_patch_size "${CLEAN_WORKERS[@]}")
+SORTED_CONFLICT=$(sort_by_patch_size "${CONFLICT_WORKERS[@]}")
+
+for i in $SORTED_CLEAN $SORTED_CONFLICT; do
+  PATCH_FILE="$WORKER_DIR/worker_${i}.patch"
   LINES=$(wc -l < "$PATCH_FILE")
-  echo "  [parallel] Worker $i: applying $LINES-line patch..."
+  SIZE=$(wc -c < "$PATCH_FILE" 2>/dev/null || echo 0)
+  echo "  [parallel] Worker $i: applying $LINES-line patch (${SIZE} bytes)..."
 
   if git -C "$REPO_ROOT" apply --3way "$PATCH_FILE" 2>/dev/null; then
     git -C "$REPO_ROOT" add -A 2>/dev/null
