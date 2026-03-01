@@ -5071,7 +5071,7 @@
         "Implement MTD Method 2 (Year-to-Date Recalculation Formula)"
       ],
       "estimatedComplexity": "medium",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-216",
@@ -5812,6 +5812,281 @@
         "Progressive Wage Policy (PWP) Eligibility Flag and Wage Escalation Compliance Report"
       ],
       "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-246",
+      "title": "SOCSO Act Amendment 2025 — Remove Working-Hours Restriction from Employment Injury Claims and Borang 34",
+      "priority": "high",
+      "description": "The Employees' Social Security Act (Amendment) Bill 2025 (Act 4) was passed by Parliament on 2 December 2025 and gazetted in December 2025, extending SOCSO employment injury coverage to 24 hours per day regardless of when or where an accident occurs. The previous working-hours restriction caused 12,306 valid claims (2023–Oct 2025) to be rejected as non-work-related. Payroll and HR systems must remove any working-hours gate from Borang 34 accident notification workflows and update SOCSO coverage scope labels on employee records.",
+      "acceptanceCriteria": [
+        "Borang 34 accident notification form no longer restricts 'time of accident' to standard working hours or requires a work-location checkbox to proceed",
+        "Employee SOCSO record displays '24-Hour Employment Injury Coverage (effective Dec 2025)' as the coverage scope label",
+        "Existing Borang 34 records created before the amendment retain their original data; no automated backfill migration runs",
+        "An HR dashboard banner notifies users of the coverage expansion with the effective date and a link to the PERKESO official announcement"
+      ],
+      "technicalNotes": [
+        "Act 4 removes the 'during working hours' restriction from the definition of 'employment injury' in the Employees' Social Security Act 1969 (Act 4)",
+        "No change to SOCSO contribution rates or contribution table — this is a coverage-scope change only",
+        "Affects the Borang 34 (48-hour accident notification) workflow field validation: time_of_accident must accept any hour of the day",
+        "PERKESO press release and Act 4 gazette reference from businesstoday.com.my Dec 2025"
+      ],
+      "dependencies": [
+        "Generate PERKESO Borang 34 Accident Notification Within 48-Hour Statutory Deadline"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-247",
+      "title": "EIS Amendment 2025 — Payroll Validation: Prohibit Employer EIS Contribution Recovery from Employee Wages",
+      "priority": "high",
+      "description": "The EIS (Amendment) Bill 2025 explicitly prohibits employers from recovering their share of EIS contributions from employee wages, clarifying that only the employee's share (0.2% capped at RM6,000 wage ceiling) may appear as a deduction on payslips. Some employers had been improperly charging the employer's 0.4% EIS share to employees. The payroll engine must enforce a validation rule that rejects any salary deduction component tagged as employer-side EIS recovery.",
+      "acceptanceCriteria": [
+        "Payroll validation raises a blocking error if any salary deduction component has both custom_is_eis_component = 1 and is_employer_contribution = 1",
+        "The LHDN Payroll Compliance Report shows separate rows for employer EIS (0.4%) and employee EIS (0.2%) with column 'Recoverable from Employee?' = No / Yes respectively",
+        "Existing salary structures containing employer EIS deduction components are flagged in a pre-migration report for HR review",
+        "Unit test asserts that a Salary Slip with an incorrectly added employer EIS deduction component raises a validation exception before submission"
+      ],
+      "technicalNotes": [
+        "EIS rates: employer 0.4%, employee 0.2% — both capped at RM6,000 wage ceiling (effective Oct 2024)",
+        "EIS (Amendment) Bill 2025 reinforces that only the employee share may be deducted from salary — employer share is a company cost",
+        "Salary Component doctype: check the combination of custom_is_eis_component and is_employer_contribution to detect illegal cross-recovery",
+        "This rule applies equally to the SOCSO employer contribution share (already prohibited under SOCSO Act)"
+      ],
+      "dependencies": [
+        "Generate SOCSO and EIS e-Caruman Upload File (PERKESO ASSIST Portal)"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-248",
+      "title": "MyInvois Phase 4 (January 2026) — Set Mandatory e-Invoice Flag for Companies with RM1M–RM5M Annual Revenue",
+      "priority": "high",
+      "description": "Effective 1 January 2026, Phase 4 of Malaysia's MyInvois mandate requires all businesses with annual turnover between RM1 million and RM5 million to comply with mandatory e-invoicing, including self-billed salary slip e-invoices where payroll qualifies as a self-billing scenario. The Company DocType needs a revenue band field so the system can conditionally enable mandatory self-billed e-invoice generation for salary slips and alert HR if MyInvois credentials are not configured.",
+      "acceptanceCriteria": [
+        "Company DocType has custom_annual_revenue_band (Select: <RM1M | RM1M-RM5M | RM5M-RM25M | RM25M-RM100M | >RM100M) and computed custom_einvoice_mandatory_phase (Exempt | Phase4 | Phase3 | Phase2 | Phase1)",
+        "When custom_annual_revenue_band = 'RM1M-RM5M', the system enables mandatory self-billed e-invoice generation for applicable payroll documents from 2026-01-01",
+        "If custom_einvoice_mandatory_phase is not 'Exempt' and MyInvois API credentials (custom_client_id / custom_client_secret) are blank, a warning banner is displayed on Company page",
+        "An e-Invoice Readiness Report lists all companies with their mandate phase and compliance status (Configured / Credentials Missing / Exempt / Voluntary)"
+      ],
+      "technicalNotes": [
+        "Phase 4 effective: 1 January 2026 for RM1M–RM5M turnover; relaxation period ends 30 June 2026",
+        "Phase 5 (previously RM500K–RM1M, due July 2026) is cancelled — threshold raised to RM1M (Cabinet decision 6 Dec 2025)",
+        "This story extends the existing 'e-Invoice Mandatory Phase Readiness Check' with the specific Phase 4 revenue band and conditional payroll enforcement logic",
+        "LHDN e-Invoice Implementation FAQ: https://www.hasil.gov.my/media/0xqitc2t/lhdnm-e-invoice-general-faqs.pdf"
+      ],
+      "dependencies": [
+        "e-Invoice Mandatory Phase Readiness Check for Employer Company Records",
+        "MyInvois SDK v2.1 Compliance Validation for Payroll Self-Billed Invoice Submissions"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-249",
+      "title": "MyInvois RM1M Exemption Threshold Update — Revoke Mandatory Flag for Sub-RM1M Companies and Cancel Phase 5",
+      "priority": "high",
+      "description": "On 6 December 2025, the Malaysian Cabinet approved raising the e-invoice exemption threshold from RM500,000 to RM1,000,000 in annual turnover and cancelled the previously planned Phase 5 rollout (which was due July 2026 for RM500K–RM1M businesses). Any Company records previously configured as Phase 5 mandatory must be reclassified as Voluntarily Exempt to prevent these employers from being incorrectly required to generate self-billed e-invoices for salary slips.",
+      "acceptanceCriteria": [
+        "A one-time data migration sets custom_einvoice_mandatory_phase = 'Exempt' for all companies with custom_annual_revenue_band = '<RM1M'",
+        "The migration log captures how many company records were reclassified and notifies the system administrator",
+        "LHDN Payroll Compliance Report no longer shows a Phase 5 deadline row for sub-RM1M companies",
+        "A notice in the LHDN Payroll Workspace informs users that Phase 5 has been cancelled as of December 2025 and sub-RM1M companies are voluntarily exempt"
+      ],
+      "technicalNotes": [
+        "Cabinet decision date: 6 December 2025 (confirmed by Comarch, VATupdate, Sovos)",
+        "Around 200,000 additional micro and small businesses now fall under this voluntary exemption",
+        "Phase 5 previously covered: RM500K–RM1M turnover, mandatory from 1 July 2026 — this phase is now cancelled",
+        "Businesses below RM1M may still adopt e-invoicing voluntarily but face no penalties for not doing so"
+      ],
+      "dependencies": [
+        "MyInvois Phase 4 (January 2026) — Set Mandatory e-Invoice Flag for Companies with RM1M–RM5M Annual Revenue"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-250",
+      "title": "PCB 2026 MTD Specification — Automated Test Suite Validating Calculator Against LHDN Amendment Spec PDF",
+      "priority": "high",
+      "description": "LHDN published the 'Amendment to: Specification for Computerised Calculation Method of MTD 2026' in 2025, detailing updated TP1 deduction items and any formula cross-checks specific to YA2026. While the existing 'Generate LHDN PCB 2026 Specification Annual Update Checklist' tracks what changed, no automated test suite validates that the PCB calculator's actual numeric output matches the LHDN specification's own worked examples. LHDN-approved software registration requires compliance with the specification — bit-exact test coverage is the auditable proof.",
+      "acceptanceCriteria": [
+        "A test module test_mtd_spec_2026.py contains at least 10 test cases extracted from the LHDN 2026 MTD specification PDF, covering Method 1 (annual projection), Method 2 (YTD), and the new TP1(1/2026) relief items",
+        "Each test asserts the PCB calculator output matches the LHDN reference value within RM0.01 (rounding tolerance per the 5-cent-ceiling rule already implemented)",
+        "Tests cover edge cases: employees claiming new YA2026 life insurance (children extension), EV charging relief, and the Budget 2026 TP1 changes",
+        "CI pipeline runs test_mtd_spec_2026.py on every PR that touches the PCB calculation module; failures block the PR merge",
+        "A version field custom_mtd_spec_version ('2026') on LHDN Payroll Settings records which specification the calculator was last certified against"
+      ],
+      "technicalNotes": [
+        "LHDN 2026 MTD Spec PDF: https://www.hasil.gov.my/media/arvlrzh5/spesifikasi-kaedah-pengiraan-berkomputer-pcb-2026.pdf",
+        "Key 2026 changes: TP1 life insurance extended to children; Budget 2026 new TP1 items; truncation-then-5-cent-ceiling rounding (already in PRD as US-202)",
+        "LHDN approved software provider list (updated 22 Sep 2025): compliance with current spec is a prerequisite for vendor listing at hasil.gov.my/en/employers/list-of-software-provider-or-employer/",
+        "Extract worked examples from the PDF as test fixtures — use parameterized pytest for each example row"
+      ],
+      "dependencies": [
+        "PCB 2026 Specification: Enforce Truncation-then-5-Cent-Ceiling Rounding Rule in MTD Calculation Engine",
+        "Generate LHDN PCB 2026 Specification Annual Update Checklist and Version Flag"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-251",
+      "title": "LHDN AIS Employer Upload — Auto-Submit Employee Remuneration Data to MyTax by 25 February Deadline",
+      "priority": "high",
+      "description": "LHDN's Auto Income Submission (AIS) system requires employers to upload employee remuneration data to the MyTax employer portal by 25 February each year so that employees' ITRF e-Filing forms can be pre-populated automatically. This is distinct from Form E (deadline 31 March) and EA Form distribution (deadline 28 February). Non-submission of AIS data means employees cannot use the LHDN pre-filled e-Filing service and must enter all income data manually. The payroll system should generate the AIS upload file and track submission status.",
+      "acceptanceCriteria": [
+        "A report 'LHDN AIS Employee Remuneration Export' generates the AIS data file for all active employees for the selected tax year, covering: employee income tax number, IC/passport, total gross employment income, EPF deduction, PCB deducted, bonus, allowances, and BIK",
+        "The compliance calendar displays AIS submission deadline as 25 February, listed separately from Form E (31 March) and EA Form distribution (28 February)",
+        "After submission, HR can mark 'AIS Submitted' with a submission reference number; the system records this and clears the pre-deadline alert",
+        "An alert email is sent to HR Admin on 20 February (5-day warning) if AIS submission status is 'Not Submitted' for any company",
+        "The export file format matches the LHDN employer data specification for AIS — field order and data types as specified by LHDN MyTax portal guidance"
+      ],
+      "technicalNotes": [
+        "LHDN AIS portal: accessible via MyTax employer login; employers encouraged to upload by 25 February for employee ITRF pre-fill",
+        "AIS data is a superset of EA Form data — reuse the EA Form data extraction logic with additional fields required by AIS format",
+        "AIS is separate from e-Data PCB (monthly MTD), Form E/CP8D (annual return), and EA Form (individual employee distribution)",
+        "Source: LHDN employer guides at hasil.gov.my/en/employers/ and QuickHR LHDN compliance guide"
+      ],
+      "dependencies": [
+        "Generate EA Form (Borang EA) for Employees",
+        "Generate Borang E (Form E) Employer Annual Return"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-252",
+      "title": "EIS Amendment 2025 (S.45F) — Employer Job Vacancy Pre-Notification and 7-Day Post-Filling PERKESO Alert",
+      "priority": "medium",
+      "description": "The Employment Insurance System (Amendment) Bill 2025, tabled in Parliament on 4 November 2025, introduces Section 45F requiring employers to notify PERKESO in writing about a job vacancy before hiring and again within 7 days after the position is filled. Non-compliance carries a fine of up to RM10,000 per conviction. A 2-year moratorium will precede enforcement and SMEs are under consultation for a possible exemption, but large employers should begin preparing the workflow now.",
+      "acceptanceCriteria": [
+        "The New Employee onboarding checklist includes a 'Notify PERKESO of filled vacancy (S.45F)' step with due_date = date_of_joining + 7 days",
+        "A compliance alert fires if the PERKESO notification step is skipped and more than 7 days have elapsed since the employee's date_of_joining",
+        "Company Settings has a flag custom_eis_s45f_applicable (default ON for non-SME; shows a 'SME exemption pending' warning when toggled OFF)",
+        "When the flag is ON, the system generates a pre-formatted PERKESO Vacancy Filled Notification letter PDF with employee details, vacancy title, and filling date"
+      ],
+      "technicalNotes": [
+        "EIS (Amendment) Bill 2025 — Dewan Rakyat first reading 4 November 2025; Section 45F is the new job vacancy notification provision",
+        "Two-year moratorium before enforcement penalties apply; SME exemption under stakeholder consultation with PERKESO",
+        "Penalty for non-compliance: fine not exceeding RM10,000 on conviction",
+        "The Malay Mail (6 Dec 2025) reported that SOCSO plans to exempt SMEs from mandatory vacancy reporting"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-253",
+      "title": "EIS Amendment 2025 — Display Updated Statutory EIS Benefit Rates on Employee Termination Workflow",
+      "priority": "medium",
+      "description": "The EIS (Amendment) Bill 2025 proposes increasing the maximum training fee claimable from RM4,000 to RM7,000 and raising the re-employment placement allowance from 25% to 50% of the employee's last drawn salary. When processing employee termination in payroll, the system currently shows outdated EIS benefit rates. These must be updated to help HR accurately communicate the enhanced EIS entitlements available to retrenched employees, supporting their reemployment journey.",
+      "acceptanceCriteria": [
+        "Employee termination form displays an EIS Benefit Reference panel showing: job search allowance rate, re-employment allowance (50% of last salary), training allowance (up to RM30/day), and maximum training fee (RM7,000)",
+        "Panel shows an 'Effective Date' label tied to the EIS Amendment 2025 gazette date (to be updated when gazetted)",
+        "EIS Benefit rates are stored in a configurable EIS Benefit Rate Settings DocType (not hardcoded) so they can be updated via fixture when the Amendment is formally gazetted",
+        "A banner on the Termination form links to the PERKESO ASSIST portal for the employee to initiate their EIS claim"
+      ],
+      "technicalNotes": [
+        "EIS (Amendment) Bill 2025 tabled 4 November 2025 — rates are proposed, not yet gazetted as of research date; implement with a 'pending gazette' flag",
+        "Current (pre-amendment) rates: training fee max RM4,000; re-employment allowance 25% of salary; training allowance unspecified",
+        "Proposed new rates: training fee max RM7,000; re-employment allowance 50% of salary; training allowance RM30/day",
+        "Job search allowance is a percentage of last salary paid over a sliding time window based on months of EIS contribution — display the rate table"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-254",
+      "title": "HRD Corp 2-Year Unclaimed Levy Forfeiture Alert — Pre-Warning Before Accumulated Levy Is Lost",
+      "priority": "medium",
+      "description": "HRD Corp's policy states that if an employer makes no training claims for 2 years from initial registration or from the date of the last approved claim, the levy accumulated during that 2-year period is forfeited (HRD Corp retains up to RM10,000 from the remaining balance). The system currently alerts on the 15% under-utilisation penalty but does not separately track the 2-year forfeiture deadline. An 18-month inactivity warning allows HR to take action — submit a claim, arrange training, or flag the situation to management — before the forfeiture date.",
+      "acceptanceCriteria": [
+        "LHDN Payroll Compliance Report includes a 'HRD Corp Levy Forfeiture Risk' row showing: last claim date, months since last claim, and projected forfeiture date (24 months after last approved claim or HRD Corp registration date)",
+        "A monthly scheduled job creates a High Priority Notification if months_since_last_claim >= 18, alerting HR Manager with the message: 'HRD Corp levy accrued since [date] is at forfeiture risk on [date]. Submit a training claim before this date to avoid loss of levy funds.'",
+        "Company HRDF Settings stores hrd_last_claim_date that HR can update manually when a claim is submitted externally",
+        "The alert is separate from the 15% under-utilisation alert — both can be active simultaneously"
+      ],
+      "technicalNotes": [
+        "HRD Corp forfeiture rule: no training claim in 2 years from registration or last financial assistance → levy for those 2 years is forfeited; HRD Corp retains up to RM10,000 from balance",
+        "This is distinct from the 15% under-utilisation penalty (which applies to annual unclaimed levy as a percentage of total levy paid)",
+        "Source: HRD Corp FAQ at https://hrdcorp.gov.my/faq",
+        "Enforce alert threshold at 18 months to give HR a 6-month window before the 24-month forfeiture triggers"
+      ],
+      "dependencies": [
+        "Track HRD Corp Levy Utilization Rate and Alert on 15% Under-Utilisation Penalty"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-255",
+      "title": "CP500 Erroneous Issuance Warning — Alert HR When a Pure-Salary Employee Has Received CP500",
+      "priority": "medium",
+      "description": "In December 2025 and January 2026, LHDN issued CP500 (bi-monthly advance tax installment) notices to thousands of salaried employees who had no non-employment income, due to incorrect income classification in their ITRF filings. LHDN confirmed no penalties for 2026 but employees must submit CP502 to cancel or amend the erroneous notice. Payroll systems can assist by detecting employees with 100% employment income (all PCB-deducted) who have been flagged as CP500 recipients, and by generating a corrective CP502 letter template.",
+      "acceptanceCriteria": [
+        "Employee DocType has fields custom_cp500_received (Checkbox) and a computed read-only field custom_cp500_applicable (True only if employee has declared non-employment income on TP1/TP2)",
+        "When custom_cp500_received is ticked for an employee where custom_cp500_applicable = False, the system displays a warning: 'This employee appears to have only employment income (PCB deducted). CP500 may be erroneous. Generate CP502 amendment letter for the employee.'",
+        "A 'Generate CP502 Amendment Letter' button on the employee record produces a PDF pre-filled with: employee name, income tax reference number, and a declaration that income is solely from employment subject to monthly PCB deduction",
+        "A Payroll Report 'CP500 Status Check' lists all employees with cp500_received = True and highlights those where cp500_applicable = False as requiring follow-up"
+      ],
+      "technicalNotes": [
+        "CP500 is issued to taxpayers with business, rental, royalty, or dividend income; pure-salaried employees should not receive it",
+        "LHDN clarification (Dec 2025 / Jan 2026): the CP500 issuance was due to incorrect ITRF income classification by the employee — not an LHDN system error",
+        "CP502 form: Application for Amendment of Instalment Payments — deadline for first revision: 30 June; second revision: 31 October",
+        "LHDN confirmed no penalties for CP500 non-compliance in 2026 due to the erroneous issuance — source: Malay Mail 5 Jan 2026"
+      ],
+      "dependencies": [
+        "CP500 Bi-Monthly Advance Tax Installment Awareness Panel for Directors with Non-Salary Income"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-256",
+      "title": "Employment Act Amendment 2025 — Sexual Harassment Mandatory 30-Day Investigation Tracker with RM50,000 Penalty Alert",
+      "priority": "medium",
+      "description": "Amendments to the Employment Act (effective 2023 with 2025 penalty increase) and the Penal Code (effective July 2025, criminalising workplace bullying) require employers to investigate every sexual harassment complaint within 30 days and inform the complainant of findings in writing. Failure to investigate now carries a penalty of up to RM50,000 (increased from RM10,000). A complaint-to-outcome tracker in the payroll/HR system ensures HR Managers are alerted before the 30-day deadline lapses.",
+      "acceptanceCriteria": [
+        "A new DocType 'Workplace Harassment Complaint' captures: complaint_date, complainant (link: Employee), respondent (link: Employee), investigation_due_date (auto: complaint_date + 30 calendar days), outcome_date, status (Open | Under Investigation | Completed | Referred to Tribunal)",
+        "A daily scheduled job creates a High Priority ToDo for HR Manager when status = 'Under Investigation' and today > investigation_due_date, including the RM50,000 penalty warning",
+        "When the complainant or respondent is placed on paid suspension during investigation, a Salary Slip remark 'Investigation Suspension Pay' is appended automatically",
+        "An HR report 'Open Harassment Complaints' lists all active complaints with days elapsed, days remaining, and the responsible HR Manager"
+      ],
+      "technicalNotes": [
+        "Legal basis: Employment Act 1955 Sections 81H (display notice) and 81I (mandatory investigation), amended 2022 in force Jan 2023; penalty increased to RM50,000 by 2025 amendment",
+        "Penal Code amendment effective 11 July 2025 adds workplace bullying as a criminal offense under amended Section 509",
+        "Anti-Sexual Harassment Act 2022 (ASHA) creates a separate tribunal avenue independent of EA internal investigation",
+        "Employment Act Section 81H requires employers to display an awareness notice — system can generate and track the notice posting date as a compliance record"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-257",
+      "title": "Budget 2026 TP1 — EV Charging Facility Relief (RM2,500) as a Distinct Line Item Extended to YA2027",
+      "priority": "low",
+      "description": "The RM2,500 individual tax relief for EV charging facility expenses (installation, rental, hire-purchase, or subscription fees) is extended through YA2027. This is a distinct relief from the general RM2,500 lifestyle relief (which covers computers, phones, CCTV, and food waste disposers). Employees who declare EV charging costs must have a separate TP1 field to prevent double-counting against the lifestyle relief cap. The LHDN TP1(1/2026) form lists EV charging as a separate claimable item.",
+      "acceptanceCriteria": [
+        "TP1 Declaration DocType has a field custom_ev_charging_relief (Currency, max RM2,500) that is distinct from the custom_lifestyle_relief field",
+        "PCB calculation applies EV charging relief as a deductible item independent of the lifestyle relief cap — an employee can claim both RM2,500 lifestyle AND RM2,500 EV charging in the same year",
+        "EA Form Part C shows EV charging relief under its correct LHDN section code matching the TP1(1/2026) layout",
+        "Unit test: employee claiming full RM2,500 lifestyle + full RM2,500 EV charging = RM5,000 total deductible, applied correctly in MTD calculation"
+      ],
+      "technicalNotes": [
+        "Budget 2026 extended EV charging facility relief: YA2022–YA2027",
+        "Eligible: installation cost, rental fee, hire-purchase equipment cost, subscription fees for EV charging",
+        "LHDN TP1(1/2026) specification PDF at https://www.hasil.gov.my — verify exact section placement for EV charging vs lifestyle relief",
+        "This is separate from the RM2,500 eco-friendly lifestyle items (CCTV, food waste disposer) added in Budget 2026"
+      ],
+      "dependencies": [
+        "Implement TP1 Employee Relief Declaration DocType and PCB Integration"
+      ],
+      "estimatedComplexity": "small",
       "passes": false
     }
   ]

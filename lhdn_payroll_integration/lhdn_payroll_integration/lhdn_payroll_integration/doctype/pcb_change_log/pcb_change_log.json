@@ -78,7 +78,7 @@
    "fieldname": "change_type",
    "fieldtype": "Select",
    "label": "Change Type",
-   "options": "\nTP1 Update\nCP38 Applied\nCategory Change\nManual Override\nRecalculation",
+   "options": "\nTP1 Update\nCP38 Applied\nCategory Change\nManual Override\nRecalculation\nUnder-Deduction Acknowledged",
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1

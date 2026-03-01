@@ -6773,3 +6773,38 @@ Completed: Employment Act S.60F(2): Track 60-Day Hospitalization Leave Quota Sep
 3. YA2026 caps inherit the field (permanent — no sunset)
 4. `PCB_SPEC_VERSION = "2025 Spec Compliant"` in pcb_calculator.py for audit reference
 5. No regressions: 33 YA2025 tests + 44 YA2026 tests still passing
+## Iteration 15 - Sun Mar  1 12:46:33 MPST 2026
+Completed: Employment Act S.60F(2): Track 60-Day Hospitalization Leave Quota Separately from Ordinary Sick Leave (ID: US-201) in 11m
+
+
+## Iteration N — US-215: PCB Under-Deduction Employer Liability Alert (Section 107A ITA 1967)
+
+**Type:** IMPL
+**TDD Phase:** GREEN (all 29 tests pass, 1 skipped)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_pcb_under_deduction`
+**Result:** PASS — 29 passed, 0 failures, 0 errors, 1 skipped (no DB records)
+
+### Files created/modified
+- `lhdn_payroll_integration/services/pcb_under_deduction_service.py` — Detection logic, before_submit hook, whitelist API
+- `lhdn_payroll_integration/tests/test_pcb_under_deduction.py` — 29 tests covering all rules
+- `lhdn_payroll_integration/lhdn_payroll_integration/report/pcb_under_deduction_report/` — Monthly compliance report (JSON + Python)
+- `lhdn_payroll_integration/hooks.py` — Added `check_under_deduction_before_submit` to Salary Slip before_submit
+- `lhdn_payroll_integration/lhdn_payroll_integration/doctype/pcb_change_log/pcb_change_log.json` — Added "Under-Deduction Acknowledged" to change_type options
+
+### Detection rules
+1. **PCB_DROP_50_PCT**: PCB drops >50% vs prior month without documented income/relief change event in PCB Change Log
+2. **ZERO_PCB_ABOVE_THRESHOLD**: PCB is 0 but estimated chargeable income (gross - EPF - RM750 relief) > RM2,851/month
+
+### Acknowledgement flow
+- `before_submit` hook detects issues → throws ValidationError with instructions
+- `acknowledge_pcb_under_deduction(salary_slip, reason)` whitelisted API creates PCB Change Log (change_type="Under-Deduction Acknowledged")
+- Re-submit allowed after acknowledgement
+
+### Patterns discovered
+- stamps_employment_contract_service.py existed only in outer services/ path but test imports from nested path — had to cp to nested path to unblock test runner
+- Frappe test runner loads ALL test files when discovering modules, so any missing import in any test file blocks the entire run
+
+### Gotchas
+- bench migrate fails with InnoDB row size error (pre-existing, not caused by our change)
+- Select field options are metadata-only — no DB migration needed for adding options
+- bench clear-cache is sufficient for DocType metadata updates (JSON changes)
