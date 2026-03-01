@@ -3849,7 +3849,7 @@
         "Implement Foreign Worker EPF Mandatory Contribution (Effective October 2025)"
       ],
       "estimatedComplexity": "small",
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-167",
@@ -7432,6 +7432,189 @@
       "dependencies": [
         "Implement DTA 183-Day Residency Tracker and Short-Term Assignee PCB Exemption Workflow",
         "Implement Expatriate Gross-Up Calculator and DTA Country Table"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-310",
+      "title": "PERKESO LINDUNG 24/7 — Implement Employee Second-Category Contribution Deduction Engine and Gazette-Rate Activation Workflow",
+      "priority": "critical",
+      "description": "The Employees' Social Security (Amendment) Bill 2025 was passed by Parliament on 2 December 2025, introducing the LINDUNG 24/7 Non-Occupational Accident Scheme. A fundamental structural change is that BOTH employers AND employees must now contribute under Second Category — previously only employers contributed to Second Category (Invalidity Scheme). Contribution rates and effective date are pending PERKESO gazette announcement expected Q1/Q2 2026. All payroll systems must add the new employee-side Second Category deduction and update PERKESO ASSIST submission data once rates are officially gazetted.",
+      "acceptanceCriteria": [
+        "New 'LINDUNG 24/7 Employee Contribution Rate' configuration field on PERKESO/SOCSO Settings with a 'Pending Gazette' status flag and activation date",
+        "When rate is entered and activation date reached, payroll engine automatically computes and deducts employee LINDUNG 24/7 contribution from gross pay per the gazette rate",
+        "Payslip displays new line item 'LINDUNG 24/7 (Employee)' as a separate deduction, distinct from existing First Category employee contribution",
+        "Employer LINDUNG 24/7 contribution amount added to employer cost calculation",
+        "PERKESO ASSIST e-Caruman submission updated to include new LINDUNG 24/7 contribution amounts for both employer and employee per employee",
+        "System alert sent to HR Manager when gazette rate is entered, prompting payroll recalculation from the gazette effective date",
+        "Pre-gazette payroll runs display a compliance warning: 'LINDUNG 24/7 rates not yet gazetted — deduction not applied'"
+      ],
+      "technicalNotes": [
+        "Parliament passed amendment on 2 December 2025; contribution rates TBD via separate gazette announcement",
+        "Currently Second Category is employer-only (Invalidity Scheme); new LINDUNG 24/7 requires both employer+employee contribution — materially different from the label-only rebranding covered in existing LINDUNG story",
+        "PERKESO ASSIST e-Caruman CSV/API may need new contribution code/column for LINDUNG 24/7 scheme — monitor perkeso.gov.my/en/rate-of-contribution.html",
+        "Expected implementation Q1 or at latest Q2 2026 per PERKESO announcement",
+        "Related: existing 'PERKESO LINDUNG Scheme Rebranding' story covers UI labels only; this story covers actual contribution computation and payslip deduction"
+      ],
+      "dependencies": [],
+      "estimatedComplexity": "large",
+      "passes": false
+    },
+    {
+      "id": "US-311",
+      "title": "PERKESO LINDUNG 24/7 — Update e-Caruman Submission File with New Third-Scheme Contribution Code",
+      "priority": "high",
+      "description": "The PERKESO LINDUNG 24/7 amendment introduces a new protection scheme distinct from First Category (Employment Injury) and Second Category (Invalidity). When rates are gazetted, the PERKESO ASSIST e-Caruman electronic submission file will require a new contribution code for LINDUNG 24/7 amounts from both employer and employee. The existing e-Caruman generator handles only First and Second Category codes and must be extended for the new scheme without breaking existing submissions.",
+      "acceptanceCriteria": [
+        "e-Caruman CSV/upload generator updated to include new LINDUNG 24/7 contribution code column for both employer and employee portions",
+        "Pre-gazette: LINDUNG 24/7 column exists but outputs zero / is flagged 'Pending Gazette' — file still passes PERKESO ASSIST validation",
+        "Post-gazette activation: LINDUNG 24/7 employer and employee contribution amounts correctly populated and accepted by PERKESO ASSIST upload",
+        "Historical e-Caruman files for periods before gazette effective date do not include LINDUNG 24/7 values, maintaining backward compatibility",
+        "Contribution receipt from PERKESO displays LINDUNG 24/7 amounts as a separate line in the system audit record",
+        "PERKESO ASSIST API upload response parsed to confirm new scheme fields accepted without rejection error"
+      ],
+      "technicalNotes": [
+        "Monitor PERKESO ASSIST developer portal for updated file format specification once LINDUNG 24/7 is gazetted",
+        "May require new column in e-Caruman CSV (e.g., Third_Category_Employer, Third_Category_Employee) or new XML element",
+        "Existing e-Caruman generation code lives in lhdn_payroll_integration/lhdn_payroll_integration/services/ — extend without breaking current First/Second Category columns",
+        "Rate announcement expected Q1/Q2 2026 at https://perkeso.gov.my/en/our-services/employer-employee/kadar-caruman.html"
+      ],
+      "dependencies": [
+        "PERKESO LINDUNG 24/7 — Implement Employee Second-Category Contribution Deduction Engine and Gazette-Rate Activation Workflow",
+        "Generate SOCSO and EIS e-Caruman Upload File (PERKESO ASSIST Portal)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-312",
+      "title": "MyInvois RM10,000 Non-Consolidatable Transaction Rule — Route Large Payroll Expense Reimbursements to Individual Self-Billed e-Invoice",
+      "priority": "high",
+      "description": "Effective 1 January 2026, LHDN MyInvois rules prohibit consolidating any single transaction exceeding RM10,000 into a consolidated e-invoice. Payroll self-billed e-invoices for large employee expense reimbursements, relocation allowances, one-off perquisites, or BIK items exceeding RM10,000 per transaction must be issued as individual (non-consolidated) self-billed e-invoices with real-time MyInvois validation. The existing self-billed expense claim story does not address this amount-based routing split between consolidated and individual e-invoice workflows.",
+      "acceptanceCriteria": [
+        "On Expense Claim or payroll perquisite generation, system checks if the individual transaction amount exceeds RM10,000",
+        "Transactions > RM10,000 are routed exclusively to individual self-billed e-invoice workflow, excluded from consolidated monthly batch",
+        "Transactions ≤ RM10,000 remain eligible for monthly consolidated self-billed e-invoice as before",
+        "HR/payroll user receives a clear warning when a claim exceeds the RM10,000 threshold before batch consolidation is executed",
+        "Audit log records the routing decision (individual vs consolidated) and reason (RM10,000 amount threshold) for each payroll expense transaction",
+        "Individual self-billed e-invoices for large amounts submitted to MyInvois API with all required invoice-level fields and receive an individual UUID from MyInvois"
+      ],
+      "technicalNotes": [
+        "RM10,000 threshold applies per single transaction, not per aggregate employee per month",
+        "Most affected payroll items: large travel reimbursements, relocation packages, one-off medical claims, ex-gratia payments classified as perquisites",
+        "The consolidated e-invoice limit for sub-RM10,000 items is unaffected — only the routing logic changes above the threshold",
+        "LHDN clarified effective date is 1 January 2026; Phase 4 companies have a grace period until 31 December 2026 for penalties",
+        "Reference: MyInvois SDK v2.1 for individual invoice vs consolidated invoice schema differences"
+      ],
+      "dependencies": [
+        "Self-Billed e-Invoice for Employee Expense Claims and Perquisite Reimbursements (MyInvois Phase 4)"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-313",
+      "title": "Gig Workers Act 872 — Enforce PERKESO Deduction on Separate Ministerial Gazette Enforcement Date, Not Royal Assent",
+      "priority": "high",
+      "description": "The Gig Workers Act 2025 (Act 872) received Royal Assent on 16 December 2025 and was gazetted on 31 December 2025. However, the Act explicitly states enforcement commences on a date separately determined by the Minister via gazette notification. As of March 2026, stakeholder engagement is still intensifying and enforcement has not started. The existing PRD story activates PERKESO deductions 'on Royal Assent', which is technically premature. A configurable enforcement-date gate must control when the 1.25% PERKESO deduction begins, preventing incorrect premature deductions from gig worker earnings.",
+      "acceptanceCriteria": [
+        "Company-level configuration field 'Gig Workers Act 872 Enforcement Date' — initially empty/disabled",
+        "PERKESO LINDUNG KENDIRI deductions (1.25% per transaction) are NOT triggered until the enforcement date field is populated and the date is reached",
+        "System status panel shows: 'Act 872: Gazetted 31 Dec 2025 | Enforcement Date: PENDING MINISTERIAL GAZETTE'",
+        "When HR Admin enters the official ministerial enforcement date, system schedules deduction activation from that date",
+        "Alert sent to HR Admin 30 days and 7 days before enforcement date once entered",
+        "All platform-provider gig worker payment processing displays 'Pre-Enforcement — No PERKESO Deduction' until activation",
+        "If enforcement date is entered retroactively, system flags affected prior payroll periods for retroactive review"
+      ],
+      "technicalNotes": [
+        "Act 872 Section 1(2): 'This Act comes into operation on a date to be appointed by the Minister by notification in the Gazette'",
+        "Existing story 'Gig Workers Act 2025 — Platform Provider Registration as PERKESO Contributing Entity with Mandatory 1.25% LINDUNG KENDIRI Deduction on Royal Assent' has incorrect activation trigger — this gate must be applied",
+        "SOCSO target contribution rate: 1.25% of earnings per ride/delivery transaction",
+        "Monitor kesuma.gov.my and perkeso.gov.my for ministerial enforcement gazette notification",
+        "As of March 2026 gig worker talks are intensifying — enforcement date still unannounced per theedgemalaysia.com"
+      ],
+      "dependencies": [
+        "Gig Workers Act 2025 — Platform Provider Registration as PERKESO Contributing Entity with Mandatory 1.25% LINDUNG KENDIRI Deduction on Royal Assent"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-314",
+      "title": "Malaysia Minimum Wage NWCC Biannual Review — Configurable Rate Registry with Gazette History and Bulk Below-Minimum Alert",
+      "priority": "high",
+      "description": "The National Wages Consultative Council (NWCC) reviews minimum wage every two years. The current RM1,700 rate (universal from August 2025) will be reviewed again in 2026/2027. The system currently treats RM1,700 as a hardcoded constant. A configurable minimum wage rate parameter with gazette history, effective-date versioning, and a bulk below-minimum alert ensures the system adapts to future NWCC gazette announcements without code changes — preventing any pay period where employees are underpaid against the new minimum.",
+      "acceptanceCriteria": [
+        "Minimum Wage configuration DocType with fields: Rate (RM/month), Effective Date, Gazette Number, Gazette Date, Status (Active / Superseded)",
+        "Rate change history log: all previous minimum wage rates and their effective dates preserved and non-deletable for audit",
+        "On minimum wage rate creation/update, system scans all active employee salary records and flags any basic salary below the new rate",
+        "Bulk action: 'Apply Minimum Wage Update' to set all flagged employees to the new minimum with confirmation and audit log",
+        "HR dashboard shows: current active rate, gazette date, and an 'NWCC Review Advisory' when within 6 months of the 2-year anniversary of the current rate",
+        "Payroll pre-validation check blocks salary slip submission if any employee's computed gross is below current minimum wage rate",
+        "Penalty calculator auto-updates fine quantum calculations when the rate is changed in the registry"
+      ],
+      "technicalNotes": [
+        "Current active rate: RM1,700/month, effective universally from 1 August 2025 (small employers), 1 February 2025 (5+ employees)",
+        "Previous rate: RM1,500 effective 1 May 2022",
+        "NWCC statutory review cycle: at minimum every 2 years under Minimum Wages Order framework — next review expected 2026/2027",
+        "Monitor mohr.gov.my gazette page for NWCC announcement",
+        "Existing stories 'Enforce RM1,700 Minimum Wage for ALL Employers' cover enforcement rules; this story adds the configurable rate infrastructure layer"
+      ],
+      "dependencies": [
+        "Enforce RM1,700 Minimum Wage for ALL Employers Effective 1 August 2025",
+        "Minimum Wage Enforcement — Penalty Quantum Awareness Panel and Ongoing Violation Daily Fine Tracker"
+      ],
+      "estimatedComplexity": "medium",
+      "passes": false
+    },
+    {
+      "id": "US-315",
+      "title": "TP1(1/2026) Domestic Tourism and Cultural Attraction Relief — YA2026-Only Expiry Guard and Auto-Deactivation",
+      "priority": "medium",
+      "description": "Budget 2026 introduces a RM1,000 tax relief for entrance fees to domestic tourist attractions and cultural programs — explicitly for Year of Assessment 2026 only. Without a hard expiry guard, this temporary relief may be incorrectly applied in YA2027 payroll runs, causing over-deduction of PCB and potential LHDN audit exposure. A time-bounded eligibility flag with automatic deactivation from January 2027 prevents carry-forward errors and ensures PCB is compliant for both YA2026 and YA2027 simultaneously.",
+      "acceptanceCriteria": [
+        "Domestic tourism/cultural attraction relief line item on TP1 form is active only for payroll PCB periods January 2026 – December 2026",
+        "System automatically disables the relief input field from 1 January 2027 with expiry notice: 'Domestic Tourism Relief (YA2026 only) — Expired'",
+        "Existing employee TP1 declarations with this relief generate a HR alert when YA transitions to 2027: 'YA2026 temporary relief has expired — PCB will increase from January 2027'",
+        "EA Form template for YA2026 correctly includes the relief; YA2027 EA Form template excludes it",
+        "PCB recalculation for retroactive YA2026 adjustments correctly applies the time-bound eligibility; YA2027 recalculations ignore this relief item",
+        "Audit log shows 'Domestic Tourism Relief: Applied (YA2026 only)' or 'Not Applied (outside YA boundary)' per PCB computation"
+      ],
+      "technicalNotes": [
+        "Budget 2026 announcement specifies 'YA 2026' only — this is a time-limited relief, not permanent",
+        "Similar time-bound pattern to EV Charging relief (once per 2-YA biennial restriction) and PRS relief extension to YA2030",
+        "LHDN official TP1(1/2026) explanatory notes: https://www.hasil.gov.my/media/i1lcd0wn/bi-explanatory-notes-for-from-tp1-2026.pdf",
+        "The existing story 'TP1(1/2026): Capture New Domestic Tourism Attraction Expenses Relief (RM1,000)' adds the field — this story adds the YA-expiry enforcement layer"
+      ],
+      "dependencies": [
+        "TP1(1/2026): Capture New Domestic Tourism Attraction Expenses Relief (RM1,000) in Employee PCB Declaration"
+      ],
+      "estimatedComplexity": "small",
+      "passes": false
+    },
+    {
+      "id": "US-316",
+      "title": "EIS S.45F MYFutureJobs Job Vacancy Notification — Pre-Build Portal API Integration for Post-Moratorium Readiness",
+      "priority": "medium",
+      "description": "The EIS (Amendment) Bill 2025 Section 45F requires employers to notify PERKESO via the MYFutureJobs portal when a vacancy is filled, within 7 days — penalty up to RM10,000 per violation. A 2-year moratorium is in effect from December 2025. The existing PRD story covers moratorium suppression only. This story builds the actual MYFutureJobs API submission workflow, notification reference number storage, and 7-day deadline tracker so the system is immediately compliant the moment the moratorium expires — with zero deployment lag.",
+      "acceptanceCriteria": [
+        "Job Opening DocType gains new fields: 'S.45F MYFutureJobs Notification Status' (Draft/Suppressed-Moratorium/Submitted/Overdue) and 'PERKESO Notification Reference Number'",
+        "When a Job Opening is marked Filled (Employee record linked), system creates a pending S.45F notification task",
+        "During active moratorium: task status is set to 'Suppressed — Moratorium Active' and not submitted to MYFutureJobs",
+        "Moratorium end-date configuration field; once moratorium expires, newly filled jobs auto-trigger with 7-day submission deadline",
+        "Overdue alert fires if a filled vacancy exceeds 7 days without a PERKESO reference number after moratorium ends",
+        "HR compliance report shows all filled jobs in the past 30 days with moratorium/submission status, reference numbers, and overdue count"
+      ],
+      "technicalNotes": [
+        "MYFutureJobs portal: myfuturejobs.gov.my — verify if employer API or digital form submission is available for S.45F notifications",
+        "S.45F notification must be 'in writing' to SOCSO — may be satisfied by MYFutureJobs portal digital submission",
+        "Moratorium duration: up to 2 years from Bill passage (December 2025) — estimated moratorium end: December 2027",
+        "Fine: not exceeding RM10,000 per violation on conviction",
+        "SMEs were given extra time per PERKESO December 2025 announcement — moratorium phase is indefinitely in effect until gazette"
+      ],
+      "dependencies": [
+        "EIS Amendment 2025 S.45F — Moratorium Phase Suppression and Voluntary Job Vacancy Reporting Module"
       ],
       "estimatedComplexity": "medium",
       "passes": false

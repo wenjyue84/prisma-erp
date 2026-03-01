@@ -1461,7 +1461,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_statutory_deductions_section",
-    "description": "Potongan Cukai Bulanan \u00e2\u20ac\u201d auto-calculated from PCB salary component on payroll processing."
+    "description": "Potongan Cukai Bulanan â€” auto-calculated from PCB salary component on payroll processing."
   },
   {
     "doctype": "Custom Field",
@@ -1473,7 +1473,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_pcb_amount",
-    "description": "Employee EPF (KWSP) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
+    "description": "Employee EPF (KWSP) contribution amount â€” auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1485,7 +1485,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_epf_employee",
-    "description": "Employer EPF (KWSP) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
+    "description": "Employer EPF (KWSP) contribution amount â€” auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1497,7 +1497,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_epf_employer",
-    "description": "Employee SOCSO (PERKESO) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
+    "description": "Employee SOCSO (PERKESO) contribution amount â€” auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1509,7 +1509,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_socso_employee",
-    "description": "Employer SOCSO (PERKESO) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
+    "description": "Employer SOCSO (PERKESO) contribution amount â€” auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1521,7 +1521,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_socso_employer",
-    "description": "Employee EIS (SIP) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
+    "description": "Employee EIS (SIP) contribution amount â€” auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1533,7 +1533,7 @@
     "read_only": 1,
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_eis_employee",
-    "description": "Employer EIS (SIP) contribution amount \u00e2\u20ac\u201d auto-calculated from salary component."
+    "description": "Employer EIS (SIP) contribution amount â€” auto-calculated from salary component."
   },
   {
     "doctype": "Custom Field",
@@ -1682,7 +1682,7 @@
     "fieldname": "custom_hospitalization_discharge_date",
     "fieldtype": "Date",
     "label": "Hospital Discharge Date",
-    "description": "Date of discharge from hospital (EA S.60F(2) \u00e2\u20ac\u201d required for Hospitalization Leave)",
+    "description": "Date of discharge from hospital (EA S.60F(2) â€” required for Hospitalization Leave)",
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_lhdn_ea_leave_section",
     "depends_on": "eval:doc.leave_type == 'Hospitalization Leave (EA)'"
@@ -1699,5 +1699,29 @@
     "module": "LHDN Payroll Integration",
     "insert_after": "custom_hospitalization_discharge_date",
     "depends_on": "eval:doc.leave_type == 'Hospitalization Leave (EA)'"
+  },
+  {
+    "doctype": "Custom Field",
+    "dt": "Employee",
+    "fieldname": "custom_epf_iakaun_registration_confirmed",
+    "fieldtype": "Check",
+    "label": "EPF i-Akaun Registration Confirmed",
+    "insert_after": "custom_is_domestic_servant",
+    "description": "Tick when foreign worker EPF i-Akaun registration is confirmed in the i-Akaun Employer portal (mandatory within 30 days for foreign workers from Oct 2025).",
+    "default": "0",
+    "module": "LHDN Payroll Integration",
+    "name": "Employee-custom_epf_iakaun_registration_confirmed"
+  },
+  {
+    "doctype": "Custom Field",
+    "dt": "Employee",
+    "fieldname": "custom_epf_iakaun_registration_date",
+    "fieldtype": "Date",
+    "label": "EPF i-Akaun Registration Date",
+    "insert_after": "custom_epf_iakaun_registration_confirmed",
+    "description": "Date when EPF i-Akaun registration was confirmed for this foreign worker.",
+    "depends_on": "eval:doc.custom_epf_iakaun_registration_confirmed == 1",
+    "module": "LHDN Payroll Integration",
+    "name": "Employee-custom_epf_iakaun_registration_date"
   }
 ]

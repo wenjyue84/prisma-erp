@@ -7179,3 +7179,27 @@ Incomplete: MySIP Structured Internship Stipend Minimum Threshold Validation and
 ### Gotchas
 - Both outer and nested container paths must be kept in sync (use -u root cp)
 - test_epf_borang_a.py imported `validate_account_split` which didn't exist yet (US-165 test was written before impl synced)
+
+
+## Iteration — US-166: Enforce 30-Day EPF i-Akaun Registration Deadline Alert for Newly Eligible Foreign Workers
+
+**Type:** IMPL
+**TDD Phase:** GREEN (45/45 tests pass)
+**Bench command:** `bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_epf_iakaun_registration_us166`
+**Result:** PASS — 45 tests, 0 failures, 0 errors
+
+### Files created/modified
+- `lhdn_payroll_integration/services/epf_iakaun_registration_service.py` — New service: EPF_FW_MANDATORY_DATE, LEGACY_REGISTRATION_DEADLINE, is_legacy_foreign_worker(), get_registration_deadline(), is_registration_overdue(), get_employees_needing_registration(), check_foreign_worker_iakaun_deadlines()
+- `lhdn_payroll_integration/tests/test_epf_iakaun_registration_us166.py` — 45 tests across 8 test classes
+- `lhdn_payroll_integration/fixtures/custom_field.json` — Added custom_epf_iakaun_registration_confirmed (Check) and custom_epf_iakaun_registration_date (Date) for Employee
+
+### Key implementation decisions
+- Legacy workers (hired before Oct 1, 2025): fixed deadline Nov 14, 2025 per EPF announcement
+- New hires (Oct 2025 onwards): rolling 30-day deadline from Date of Joining
+- Domestic servants (custom_is_domestic_servant=1) are fully excluded — no false positives
+- Company-grouped alerts: one email per company with all overdue employees listed
+- Fixture tests check JSON directly (not DB) — safe even with Employee table row size limit
+
+### Gotchas
+- Employee table is at MySQL row size limit (65535 bytes) — sync_fixtures/migrate fails with OperationalError 1118. Tests use JSON fixture check, not DB. This is a pre-existing constraint.
+- CRITICAL pattern: must copy to BOTH outer path AND nested path (`lhdn_payroll_integration/lhdn_payroll_integration/lhdn_payroll_integration/services/`) for bench tests to find the module
