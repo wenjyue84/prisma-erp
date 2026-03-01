@@ -6403,3 +6403,48 @@ Completed: Employment Pass Minimum Salary Threshold Validator (June 2026 Revised
 ### Gotchas
 - The patched `statutory_rates.py` and `epf_borang_a.py` patches must be deployed to BOTH outer and nested paths — tests import from nested (`lhdn_payroll_integration.lhdn_payroll_integration.utils.*`) but `frappe.get_app_path` resolves to outer path for fixture loading.
 - Warning hook is advisory (non-blocking) — uses `frappe.msgprint` with `indicator="orange"`, not `frappe.throw`.
+## Iteration 6 - Sun Mar  1 10:42:43 MPST 2026
+Completed: Employer Statutory Registration Onboarding Checklist with Deadline Alerts (ID: US-156) in 19m
+
+
+## Iteration N — US-156: Employer Statutory Registration Onboarding Checklist with Deadline Alerts
+
+**Type:** IMPL
+**TDD Phase:** GREEN (service executes without error)
+**Bench command:** `bench --site frontend execute lhdn_payroll_integration.services.statutory_registration_service.check_statutory_registration_deadlines`
+**Result:** PASS — service runs, migrate succeeded, 118/178 stories complete
+
+### Files created/modified
+- `lhdn_payroll_integration/services/statutory_registration_service.py` — new daily job
+- `lhdn_payroll_integration/lhdn_payroll_integration/services/statutory_registration_service.py` — new daily job (nested copy)
+- `lhdn_payroll_integration/lhdn_payroll_integration/hooks.py` — added daily scheduler event
+- `lhdn_payroll_integration/lhdn_payroll_integration/fixtures/custom_field.json` — 11 new Company fields
+
+### Custom fields added (Company DocType)
+- `custom_statutory_reg_tab` (Tab Break) — Statutory Registration tab
+- `custom_statutory_reg_numbers_section` (Section Break)
+- `custom_eis_employer_number` (Small Text) — EIS Registration Number
+- `custom_hrdf_corp_registration_number` (Small Text) — HRD Corp Registration Number
+- `custom_first_employee_hire_date` (Date) — auto-populated
+- `custom_statutory_status_section` (Section Break) — Registration Checklist
+- `custom_statutory_epf_status` (Small Text, read_only) — EPF status
+- `custom_statutory_socso_status` (Small Text, read_only) — SOCSO status
+- `custom_statutory_lhdn_e_number_status` (Small Text, read_only) — LHDN E-Number status
+- `custom_statutory_eis_status` (Small Text, read_only) — EIS status
+- `custom_statutory_hrdf_status` (Small Text, read_only) — HRD Corp status
+
+### Patterns discovered
+- Company table varchar bytes were at 64,960 / 65,535 limit BEFORE this story
+- Adding any more VARCHAR(140)/Select fields breaks migrate with OperationalError 1118
+- Solution: Use Small Text (maps to TEXT in MariaDB) for all new string fields
+- First migrate run partially adds columns then fails — check DB state before re-running
+- When partial migrate adds columns as wrong type, manually ALTER TABLE to fix them
+- Then directly UPDATE tabCustom Field records to match the DB column types (fieldtype='Small Text')
+- sync_fixtures itself triggers schema sync → also fails if table is at limit
+- After manual SQL fixes, bench migrate succeeds
+
+### Gotchas
+- CRITICAL: tabCompany is at the varchar row size limit (~65k bytes). Any future story adding Data/Select/Link fields to Company will fail. Must use Small Text, Text, or a child DocType.
+- sync_fixtures cannot be used if schema sync would overflow row size
+- Must manually UPDATE tabCustom Field after manually ALTERing actual table
+- `bench --site frontend execute <function>` requires no imports or side effects in the function signature
