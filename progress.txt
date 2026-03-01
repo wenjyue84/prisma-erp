@@ -1,3 +1,24 @@
+## Iteration N — US-205: HRD Corp SBL-KHAS Grant Pre-Approval Compliance and 6-Month Post-Training Claim Deadline Alert
+
+**Type:** IMPL
+**TDD Phase:** GREEN (17/17 tests pass)
+**Bench command:** bench --site frontend run-tests --module lhdn_payroll_integration.tests.test_hrd_training_grant
+**Result:** PASS — 17 tests, 0 failures
+
+### Files created/modified
+- `lhdn_payroll_integration/services/hrd_training_grant_service.py` — Core service: `check_pre_approval_compliance()`, `check_claim_deadline_compliance()`, `get_hrd_dashboard_summary()`
+- `lhdn_payroll_integration/tests/test_hrd_training_grant.py` — 17 tests across 3 classes covering pre-approval, claim deadline, and dashboard summary
+
+### Patterns discovered
+- Pre-approval check: `etris_application_date >= training_start_date` → non-claimable (same-day counts as late per HRD Corp rules)
+- Claim deadline: 6-month = 183 days; 5.5 months = 165 days; 5 months = 153 days; alert at days 20 and 28
+- Dashboard summary uses rejected status check first, then pre-approval, then claim expiry/expiring windows
+
+### Gotchas
+- Container already had implementation pre-built; task was to run tests (confirmed pass) then sync to local repo
+
+---
+
 ## Iteration N — US-232: Implement Employment Act S.25A Digital Payslip Mandatory Fields Compliance Validator
 
 **Type:** IMPL
@@ -7524,6 +7545,7 @@ Implementation was already complete. Verified all 28 tests pass green.
 - DocType autoname format:PCBERR-{YYYY}-{MM}-{#####} generates sortable audit-trail names
 - ignore_links=True in test _make_error_log() bypasses Employee FK validation safely
 - patch _get_mytax_access_token directly (not frappe.db.get_value) to avoid side effects in resubmission tests
+
 
 
 
