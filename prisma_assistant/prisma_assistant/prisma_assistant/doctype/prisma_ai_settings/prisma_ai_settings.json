@@ -13,6 +13,10 @@
     "fallback_model",
     "fallback_base_url",
     "fallback_api_key",
+    "fallback2_provider",
+    "fallback2_model",
+    "fallback2_base_url",
+    "fallback2_api_key",
     "section_prompt",
     "system_prompt"
   ],
@@ -73,6 +77,32 @@
       "fieldtype": "Password",
       "label": "Fallback Model API Key",
       "description": "API key for the fallback model if it uses a different provider or key. Leave blank to reuse the main API Key."
+    },
+    {
+      "fieldname": "fallback2_provider",
+      "fieldtype": "Select",
+      "label": "Second Fallback Provider",
+      "options": "anthropic\nopenai\ngemini\nollama",
+      "in_list_view": 0,
+      "allow_bulk_edit": 0
+    },
+    {
+      "fieldname": "fallback2_model",
+      "fieldtype": "Data",
+      "label": "Second Fallback Model",
+      "description": "Model for second fallback (e.g. qwen2.5 for Ollama)."
+    },
+    {
+      "fieldname": "fallback2_base_url",
+      "fieldtype": "Data",
+      "label": "Second Fallback Base URL",
+      "description": "API endpoint for second fallback (e.g. http://100.88.116.94:11434/v1/chat/completions for Ollama via Tailscale)."
+    },
+    {
+      "fieldname": "fallback2_api_key",
+      "fieldtype": "Password",
+      "label": "Second Fallback API Key",
+      "description": "Leave blank to reuse the main API key."
     },
     {
       "fieldname": "section_prompt",

@@ -121,6 +121,14 @@ docker exec "$BACKEND" bash -c "
 "
 ok "Cache cleared"
 
+# ─── 6b. Re-apply 3-tier AI settings (Gemini → OpenAI → Ollama) ──────────────
+info "Applying 3-tier AI settings..."
+docker exec "$BACKEND" bash -c "
+    cd /home/frappe/frappe-bench && \
+    bench --site $SITE execute prisma_assistant.configure_ai_settings.run 2>&1 | tail -3
+" && ok "AI settings applied (Gemini → OpenAI → Ollama via Tailscale)" \
+  || warn "AI settings script failed — check DB manually"
+
 # ─── 7. Restart workers (picks up new Python code) ───────────────────────────
 info "Restarting backend workers..."
 docker compose -f "$COMPOSE_FILE" restart backend websocket scheduler queue-long queue-short
