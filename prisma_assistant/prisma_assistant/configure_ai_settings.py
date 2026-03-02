@@ -39,6 +39,7 @@ def run():
         "model": "gemini-2.0-flash",
         "base_url": "",
         # ── Fallback 1: OpenAI ─────────────────────────────────────────────
+        "fallback_provider": "openai",
         "fallback_model": "gpt-4o-mini",
         "fallback_base_url": "https://api.openai.com/v1/chat/completions",
         # ── Fallback 2: Ollama on PC via Tailscale ─────────────────────────

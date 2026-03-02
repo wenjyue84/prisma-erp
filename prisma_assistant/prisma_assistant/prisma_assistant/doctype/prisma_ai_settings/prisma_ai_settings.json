@@ -10,6 +10,7 @@
     "base_url",
     "section_models",
     "model",
+    "fallback_provider",
     "fallback_model",
     "fallback_base_url",
     "fallback_api_key",
@@ -56,6 +57,14 @@
       "fieldtype": "Data",
       "label": "Default Model",
       "description": "e.g. gpt-4o-mini, claude-haiku-4-5-20251001, gemini-2.0-flash-lite, qwen2.5. Leave blank to use the provider default."
+    },
+    {
+      "fieldname": "fallback_provider",
+      "fieldtype": "Select",
+      "label": "Fallback Provider",
+      "options": "anthropic\nopenai\ngemini\nollama",
+      "description": "Provider for the first fallback. Defaults to the primary provider if blank.",
+      "in_list_view": 0
     },
     {
       "fieldname": "fallback_model",
