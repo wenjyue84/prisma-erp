@@ -44,7 +44,7 @@ def run():
         "fallback_base_url": "https://api.openai.com/v1/chat/completions",
         # ── Fallback 2: Ollama on PC via Tailscale ─────────────────────────
         "fallback2_provider": "openai",   # openai-compatible endpoint
-        "fallback2_model": "gemma3:12b",
+        "fallback2_model": "gemma3:4b",
         "fallback2_base_url": "http://100.88.116.94:11434/v1/chat/completions",
     }
 
