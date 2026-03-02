@@ -85,6 +85,18 @@ ok "lhdn_payroll_integration deployed"
 info "Deploying prisma_assistant → backend..."
 docker cp prisma_assistant/. "$BACKEND:$APPS/prisma_assistant/"
 
+# pip install (idempotent -e reinstall)
+docker exec "$BACKEND" bash -c \
+    "/home/frappe/frappe-bench/env/bin/pip install --quiet --no-deps -e /home/frappe/frappe-bench/apps/prisma_assistant"
+
+# Register in bench apps registry (sites/apps.txt) if not already there
+docker exec "$BACKEND" bash -c \
+    "grep -qxF prisma_assistant /home/frappe/frappe-bench/sites/apps.txt || echo prisma_assistant >> /home/frappe/frappe-bench/sites/apps.txt"
+
+# Install into Frappe site (--force skips duplicate Module Def error)
+docker exec "$BACKEND" bash -c \
+    "cd /home/frappe/frappe-bench && bench --site $SITE install-app prisma_assistant --force 2>&1 | tail -5"
+
 info "Deploying prisma_assistant assets → frontend..."
 docker exec "$FRONTEND" mkdir -p "$ASSETS/prisma_assistant/js" "$ASSETS/prisma_assistant/css"
 docker cp prisma_assistant/prisma_assistant/public/js/.  "$FRONTEND:$ASSETS/prisma_assistant/js/"
