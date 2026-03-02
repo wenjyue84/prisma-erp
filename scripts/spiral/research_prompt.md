@@ -116,8 +116,15 @@ Write the following JSON to `__OUTPUT_PATH__` using the Write tool:
 | medium | Useful but optional for basic compliance |
 | low | Edge case; niche scenarios |
 
+## Scraping Strategy
+
+When fetching specific government portal URLs:
+- **Prefer `mcp__firecrawl__scrape`** if available — it returns clean markdown from JS-rendered government pages (hasil.gov.my, perkeso.gov.my, kwsp.gov.my often require this)
+- Fall back to `WebFetch` if Firecrawl is not configured
+- Use `mcp__firecrawl__search` for domain-focused searches (e.g., site:hasil.gov.my PCB 2025)
+
 ## Action
 
-Now research the sources above using WebSearch and WebFetch. Then write your findings to `__OUTPUT_PATH__`.
+Now research the sources above. Scrape specific URLs using Firecrawl MCP (`mcp__firecrawl__scrape`) if available, otherwise use WebFetch. Use WebSearch for discovery. Then write your findings to `__OUTPUT_PATH__`.
 
 Start with the focus areas listed above, then broaden to general LHDN payroll compliance for 2025/2026.
