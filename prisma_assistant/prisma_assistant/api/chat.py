@@ -169,7 +169,11 @@ def _do_dispatch(
         return _call_anthropic(key, mdl, msg, history, url, sys_prompt, fl)
     elif prov == "gemini":
         return _call_gemini(key, mdl, msg, history, url, sys_prompt, fl)
-    else:  # openai, ollama, or unknown — use OpenAI-compatible path
+    elif prov == "ollama":
+        # Ollama models don't support OpenAI function calling — skip tools
+        eff_url = url or _PROVIDER_DEFAULTS["ollama"]["url"]
+        return _call_openai_compatible_with_tools(key, mdl, msg, history, eff_url, sys_prompt, fl, use_tools=False)
+    else:  # openai or unknown — use OpenAI-compatible path with tools
         eff_url = url or _PROVIDER_DEFAULTS.get(prov, _PROVIDER_DEFAULTS["openai"])["url"]
         return _call_openai_compatible_with_tools(key, mdl, msg, history, eff_url, sys_prompt, fl)
 
@@ -405,17 +409,19 @@ def _execute_fac_tool(name: str, arguments: dict) -> str:
 
 def _call_openai_compatible_with_tools(
     api_key: str, model: str, message: str, history: list,
-    url: str, system_prompt: str = "", file_list: list = None
+    url: str, system_prompt: str = "", file_list: list = None,
+    use_tools: bool = True
 ) -> dict:
     """
     Agentic loop: attach FAC tools to each OpenAI call and handle tool_calls
     until the model returns a final text response (or 5 rounds exhausted).
     Supports multimodal content blocks when file_list contains images.
+    Pass use_tools=False for providers that don't support function calling (e.g. Ollama).
     """
     import urllib.request
 
     file_list = file_list or []
-    tools = _get_fac_tools_openai()
+    tools = _get_fac_tools_openai() if use_tools else []
     messages = [{"role": "system", "content": system_prompt or _DEFAULT_SYSTEM_PROMPT}]
     messages += _history_to_messages(history, None)  # no current message yet
 
@@ -455,7 +461,7 @@ def _call_openai_compatible_with_tools(
             },
             method="POST",
         )
-        timeout = 90 if file_list else 20
+        timeout = 90 if file_list else 60
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = json.loads(resp.read())
 
