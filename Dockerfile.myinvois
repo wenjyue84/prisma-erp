@@ -50,5 +50,21 @@ COPY frappe_patches/login.js apps/frappe/frappe/templates/includes/login/login.j
 COPY frappe_patches/login.py apps/frappe/frappe/www/login.py
 COPY setup_test_data.py apps/frappe/frappe/setup_test_data.py
 
+# E-Invoice desktop icon: put prisma_einvoice.svg in the Frappe desktop_icons folder
+# so get_desktop_icon() finds it for both the home grid and workspace sidebar.
+# File name must match frappe.scrub(Desktop Icon label) = "e_invoice".
+RUN mkdir -p apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/solid \
+ && mkdir -p apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/subtle \
+ && cp apps/myinvois_erpgulf/myinvois_erpgulf/public/images/prisma_einvoice.svg \
+       apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/solid/e_invoice.svg \
+ && cp apps/myinvois_erpgulf/myinvois_erpgulf/public/images/prisma_einvoice.svg \
+       apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/subtle/e_invoice.svg
+
+# Tabler Icons FILLED: solid/filled icons replacing Frappe's Lucide outline sprite.
+# IDs renamed tabler-filled-NAME -> icon-NAME; inline fill styles bypass Frappe's fill:transparent CSS.
+# Regenerate with: uv run python replace_frappe_icons.py filled   (or 'outline' for thin strokes)
+COPY frappe_patches/tabler_lucide_icons.svg apps/frappe/frappe/public/icons/lucide/icons.svg
+COPY frappe_patches/tabler_lucide_icons.svg apps/frappe/frappe/public/icons/lucide.svg
+
 # Prisma logo — placed at /tmp so setup_test_data.setup_prisma_branding() can find it
 COPY prisma_logo.png /tmp/prisma_logo.png

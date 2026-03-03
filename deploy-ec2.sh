@@ -103,6 +103,70 @@ docker cp prisma_assistant/prisma_assistant/public/js/.  "$FRONTEND:$ASSETS/pris
 docker cp prisma_assistant/prisma_assistant/public/css/. "$FRONTEND:$ASSETS/prisma_assistant/css/"
 ok "prisma_assistant deployed"
 
+# ─── 4b. Tabler Icons: keep patched sprite in sync with frontend container ────
+if [ -f "frappe_patches/tabler_lucide_icons.svg" ]; then
+    info "Deploying Tabler icons -> frontend..."
+    docker cp frappe_patches/tabler_lucide_icons.svg \
+        "$FRONTEND:/home/frappe/frappe-bench/apps/frappe/frappe/public/icons/lucide/icons.svg"
+    docker cp frappe_patches/tabler_lucide_icons.svg \
+        "$FRONTEND:/home/frappe/frappe-bench/apps/frappe/frappe/public/icons/lucide.svg"
+    ok "Tabler icons deployed"
+else
+    warn "frappe_patches/tabler_lucide_icons.svg not found — skipping icon deploy (run replace_frappe_icons.py to regenerate)"
+fi
+
+# ─── 4c. Custom desktop icons (ESS Mobile, E-Invoice, LHDN Payroll) ──────────
+# These apps are baked in the Docker image; files must be recreated after restart.
+# frappe.scrub(label) → filename: "ESS Mobile"→ess_mobile, "E-Invoice"→e_invoice, "LHDN Payroll"→lhdn_payroll
+info "Deploying custom desktop icons..."
+
+# ESS Mobile (hrms app): black phone icon
+for CTR in "$BACKEND" "$FRONTEND"; do
+    docker exec "$CTR" bash -c "
+        mkdir -p /home/frappe/frappe-bench/apps/hrms/hrms/public/icons/desktop_icons/solid
+        mkdir -p /home/frappe/frappe-bench/apps/hrms/hrms/public/icons/desktop_icons/subtle
+        cp /home/frappe/frappe-bench/apps/hrms/hrms/public/images/ess_mobile.svg \
+           /home/frappe/frappe-bench/apps/hrms/hrms/public/icons/desktop_icons/solid/ess_mobile.svg
+        cp /home/frappe/frappe-bench/apps/hrms/hrms/public/images/ess_mobile.svg \
+           /home/frappe/frappe-bench/apps/hrms/hrms/public/icons/desktop_icons/subtle/ess_mobile.svg
+    "
+done
+
+# E-Invoice (myinvois_erpgulf): blue document icon
+for CTR in "$BACKEND" "$FRONTEND"; do
+    docker exec "$CTR" bash -c "
+        mkdir -p /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/solid
+        mkdir -p /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/subtle
+        cp /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/images/prisma_einvoice.svg \
+           /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/solid/e_invoice.svg
+        cp /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/images/prisma_einvoice.svg \
+           /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/subtle/e_invoice.svg
+    "
+done
+
+# Update Desktop Icon records in DB (idempotent)
+docker exec "$BACKEND" bash -c "
+cd /home/frappe/frappe-bench && bench --site $SITE execute update_einvoice_icon.run
+" && ok "E-Invoice Desktop Icon updated" || warn "E-Invoice icon script failed (non-fatal)"
+
+# ESS Mobile: set app=hrms and logo_url so both desktop grid and sidebar show it
+docker exec "$BACKEND" bash -c "
+cd /home/frappe/frappe-bench
+bench --site $SITE execute frappe.db.set_value --args \"['Desktop Icon', {'label': 'ESS Mobile'}, 'app', 'hrms']\"
+bench --site $SITE execute frappe.db.set_value --args \"['Desktop Icon', {'label': 'ESS Mobile'}, 'logo_url', '/assets/hrms/images/ess_mobile.svg']\"
+bench --site $SITE execute frappe.db.commit
+" && ok "ESS Mobile icon updated" || warn "ESS Mobile icon update failed (non-fatal)"
+
+# LHDN Payroll: set app=lhdn_payroll_integration and logo_url
+docker exec "$BACKEND" bash -c "
+cd /home/frappe/frappe-bench
+bench --site $SITE execute frappe.db.set_value --args \"['Desktop Icon', {'label': 'LHDN Payroll'}, 'app', 'lhdn_payroll_integration']\"
+bench --site $SITE execute frappe.db.set_value --args \"['Desktop Icon', {'label': 'LHDN Payroll'}, 'logo_url', '/assets/lhdn_payroll_integration/images/lhdn_payroll.svg']\"
+bench --site $SITE execute frappe.db.commit
+" && ok "LHDN Payroll icon updated" || warn "LHDN Payroll icon update failed (non-fatal)"
+
+ok "Custom desktop icons deployed"
+
 # ─── 5. Sync fixtures (workspace, custom fields, etc.) ───────────────────────
 info "Syncing lhdn_payroll_integration fixtures..."
 docker exec "$BACKEND" bash -c "
