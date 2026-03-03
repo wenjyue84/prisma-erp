@@ -136,6 +136,8 @@ for CTR in "$BACKEND" "$FRONTEND"; do
 done
 
 # E-Invoice (myinvois_erpgulf): blue document icon
+# Workspace Sidebar is named "Malaysia Compliance" → frappe.scrub("Malaysia Compliance")
+# = malaysia_compliance → icon file must be malaysia_compliance.svg (not e_invoice.svg)
 for CTR in "$BACKEND" "$FRONTEND"; do
     docker cp prisma_einvoice.svg \
         "$CTR:/home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/images/prisma_einvoice.svg"
@@ -143,18 +145,15 @@ for CTR in "$BACKEND" "$FRONTEND"; do
         mkdir -p /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/solid
         mkdir -p /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/subtle
         cp /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/images/prisma_einvoice.svg \
-           /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/solid/e_invoice.svg
+           /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/solid/malaysia_compliance.svg
         cp /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/images/prisma_einvoice.svg \
-           /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/subtle/e_invoice.svg
+           /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/subtle/malaysia_compliance.svg
     "
 done
 
-# Update Desktop Icon DB records (idempotent inline — update_einvoice_icon.py is
-# not on the bench Python path, so use set_value directly)
+# Update Desktop Icon DB records (label must match Workspace Sidebar name for is_permitted)
 docker exec "$BACKEND" bash -c "
 cd /home/frappe/frappe-bench
-bench --site $SITE execute frappe.db.set_value --args \"['Desktop Icon', 'Malaysia Compliance', 'label', 'E-Invoice']\" 2>/dev/null || true
-bench --site $SITE execute frappe.db.set_value --args \"['Desktop Icon', 'Malaysia Compliance', 'logo_url', '/assets/myinvois_erpgulf/images/prisma_einvoice.svg']\" 2>/dev/null || true
 bench --site $SITE execute frappe.db.set_value --args \"['Desktop Icon', 'Malaysia Compliance', 'app', 'myinvois_erpgulf']\" 2>/dev/null || true
 bench --site $SITE execute frappe.db.commit
 " && ok "E-Invoice Desktop Icon updated" || warn "E-Invoice icon update failed (non-fatal)"
