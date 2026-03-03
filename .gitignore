@@ -28,3 +28,8 @@ venv
 
 # NodeJS
 node_modules
+
+# SPIRAL runtime scratch
+.spiral/
+_specialist_context.md
+.gitnexus

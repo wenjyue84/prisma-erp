@@ -9,6 +9,8 @@ Docker images and orchestration for Frappe applications.
 
 This repository handles the containerization of the Frappe stack, including the application server, database, Redis, and supporting services. It provides quick disposable demo setups, a development environment, production-ready Docker images and compose configurations for deploying Frappe applications including ERPNext.
 
+For this fork, the local Desk at `http://localhost:8080/desk` also includes curated workspace labels. The current visible home tiles are `E-Invoice`, `ESS Mobile`, `Framework`, `LHDN Payroll`, `Accounting`, `Assets`, `Buying`, `Manufacturing`, `Projects`, `Quality`, `Selling`, `Stock`, `Subcontracting`, `ERP Settings`, and `HR`.
+
 ## Repository Structure
 
 ```

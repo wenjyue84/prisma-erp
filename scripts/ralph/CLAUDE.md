@@ -36,6 +36,8 @@ Your job is to implement **ONE SINGLE USER STORY** from `prd.json`, then exit.
 ### Step 1 — Read Context
 ```bash
 head -60 progress.txt                     # codebase patterns, previous learnings
+[[ -f _specialist_context.md ]] && echo "--- Frappe Developer Specialist (file map) ---" && cat _specialist_context.md
+[[ -f _retry_context.md ]] && echo "--- Qwen Failure Diagnosis (previous attempt) ---" && cat _retry_context.md
 cat prd.json | jq '.userStories[] | select(.passes == false) | {id, title, priority, type, dependencies}' | head -40
 ```
 
