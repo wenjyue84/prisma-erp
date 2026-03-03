@@ -84,6 +84,20 @@ class ERPNextSession:
             path += f"/{name}"
         return self.get(path, params=params)
 
+    def create_resource(self, doctype: str, data: dict) -> requests.Response:
+        """POST /api/resource/<doctype> — create a new document."""
+        return self.post(f"/api/resource/{doctype}", json=data)
+
+    def delete_resource(self, doctype: str, name: str) -> requests.Response:
+        """DELETE /api/resource/<doctype>/<name> — delete a draft document."""
+        import urllib.parse
+        path = f"/api/resource/{doctype}/{urllib.parse.quote(name, safe='')}"
+        return self.session.delete(
+            f"{self.base_url}{path}",
+            headers=self._headers({"Accept": "application/json"}),
+            timeout=TIMEOUT,
+        )
+
     # ── Timing ─────────────────────────────────────────────────────────────────
     def timed_get(self, path: str, **kwargs) -> tuple[requests.Response, float]:
         t0 = time.perf_counter()

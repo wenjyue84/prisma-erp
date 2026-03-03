@@ -61,6 +61,7 @@ SUITES = {
     "performance": "tests.performance.test_performance",
     "api_contract": "tests.api_contract.test_api_contract",
     "regression": "tests.regression.test_regression",
+    "browser": "tests.browser.test_browser",
 }
 
 SUITE_ORDER = [
@@ -75,6 +76,7 @@ SUITE_ORDER = [
     "security",
     "security:rbac",
     "performance",
+    "browser",
 ]
 
 SUITE_DESCRIPTIONS = {
@@ -89,6 +91,7 @@ SUITE_DESCRIPTIONS = {
     "security": "Auth enforcement, CSRF, injection attack prevention",
     "security:rbac": "Role-based access control & data isolation",
     "performance": "Response time SLAs & concurrent load testing",
+    "browser": "Browser smoke tests — page rendering, no JS errors (agent-browser CLI)",
 }
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
