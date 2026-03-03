@@ -178,6 +178,7 @@
       {"id":"api_contract","name":"API Contract","desc":"Response schema validation","color":"var(--cyan)"},
       {"id":"regression","name":"Regression","desc":"Guard against past bugs","color":"var(--orange)"},
       {"id":"integration","name":"Integration","desc":"End-to-end workflows","color":"var(--yellow)"},
+      {"id":"e2e_payroll","name":"E2E Payroll","desc":"Create payslip, verify fields, cleanup","color":"#10b981"},
       {"id":"edge_cases","name":"Edge Cases","desc":"Boundary & unusual inputs","color":"var(--muted)"},
       {"id":"security","name":"Security","desc":"Auth, CSRF, injections","color":"var(--red)"},
       {"id":"performance","name":"Performance","desc":"Response times & concurrency","color":"var(--text)"}
@@ -272,6 +273,37 @@ async function frappeGET(path, params = {}) {
   return { status: resp.status, body, ms };
 }
 
+async function frappePost(path, data = {}) {
+  const t0 = performance.now();
+  const resp = await fetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Frappe-CSRF-Token': CSRF,
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(data),
+    credentials: 'same-origin',
+  });
+  const ms = performance.now() - t0;
+  let body = null;
+  try { body = await resp.json(); } catch(e) {}
+  return { status: resp.status, body, ms };
+}
+
+async function frappeDelete(path) {
+  const t0 = performance.now();
+  const resp = await fetch(path, {
+    method: 'DELETE',
+    headers: { 'X-Frappe-CSRF-Token': CSRF, 'Accept': 'application/json' },
+    credentials: 'same-origin',
+  });
+  const ms = performance.now() - t0;
+  let body = null;
+  try { body = await resp.json(); } catch(e) {}
+  return { status: resp.status, body, ms };
+}
+
 // ── SMOKE TESTS ────────────────────────────────────────────────────────────────
 addTest('smoke','SMK-01','HTTP Root','GET / returns 200 or redirect', async () => {
   const r = await frappeGET('/');
@@ -310,7 +342,7 @@ addTest('smoke','SMK-07','desk_widget.js','Chat widget JS asset served', async (
   const ok = [200,304].includes(r.status);
   return { pass: ok, ms: r.ms, msg: ok ? 'Served ✓' : `Status: ${r.status}` };
 });
-addTest('smoke','SMK-08','LHDN Workspace','LHDN Payroll workspace exists', async () => {
+addTest('smoke','SMK-08','LHDN Payroll Workspace','LHDN Payroll workspace exists on Desk', async () => {
   const r = await frappeGET('/api/resource/Workspace', {filters: '[["name","like","LHDN%"]]', limit: 1});
   const ok = r.status === 200 && (r.body?.data?.length || 0) > 0;
   return { pass: ok, ms: r.ms, msg: ok ? 'Found ✓' : 'Workspace not found' };
@@ -497,7 +529,7 @@ addTest('edge_cases','EC-02','SQL injection in filter','SQL payload safe in filt
 });
 addTest('edge_cases','EC-03','XSS in chat','XSS payload no 500', async () => {
   const r = await frappeAPI('prisma_assistant.api.chat.send_message',
-    { message: "<script>alert('xss')</script>" });
+    { message: "<script>alert('xss')<\/script>" });
   return { pass: r.status !== 500, ms: r.ms, msg: r.status !== 500 ? 'Safe ✓' : '500!' };
 });
 addTest('edge_cases','EC-04','Unicode message','Arabic/CJK/emoji message no 500', async () => {
@@ -662,12 +694,102 @@ addTest('regression','REG-06','MSIC fixtures loaded','Fixture data present', asy
   const ok = r.status === 200 && (r.body?.data?.length || 0) > 0;
   return { pass: ok, ms: r.ms, msg: ok ? 'Loaded ✓' : 'Empty — run sync_fixtures' };
 });
-addTest('regression','REG-07','LHDN Workspace exists','Workspace fixture deployed', async () => {
+addTest('regression','REG-07','LHDN Payroll workspace exists','Workspace fixture deployed', async () => {
   const r = await frappeGET('/api/resource/Workspace', {
     filters: '[["name","like","LHDN%"]]', limit: 1
   });
   const ok = r.status === 200 && (r.body?.data?.length || 0) > 0;
   return { pass: ok, ms: r.ms, msg: ok ? 'Workspace found ✓' : 'Missing — deploy workspace fixture' };
+});
+
+// ── E2E PAYROLL ────────────────────────────────────────────────────────────────
+// Shared state — set by EP-01/EP-02, consumed by EP-03..EP-06
+let _e2eEmp = null;       // { name, company }
+let _e2eSlipName = null;  // created slip name for cleanup
+
+addTest('e2e_payroll','EP-01','Employee exists','At least one Employee with submitted Salary Structure Assignment', async () => {
+  const empR = await frappeGET('/api/resource/Employee', {
+    limit: 1, fields: '["name","employee_name","company"]'
+  });
+  const emp = empR.body?.data?.[0];
+  if (!emp) return { pass: false, ms: empR.ms, msg: 'No Employee records — create one first' };
+
+  const ssaR = await frappeGET('/api/resource/Salary Structure Assignment', {
+    filters: `[["employee","=","${emp.name}"],["docstatus","=","1"]]`, limit: 1
+  });
+  const hasSSA = ssaR.status === 200 && (ssaR.body?.data?.length || 0) > 0;
+  if (!hasSSA) {
+    return { pass: false, ms: ssaR.ms, msg: `No submitted Salary Structure Assignment for ${emp.name} — assign a salary structure first` };
+  }
+  _e2eEmp = emp;
+  return { pass: true, ms: ssaR.ms, msg: `${emp.employee_name || emp.name} (${emp.company}) ready ✓` };
+});
+
+addTest('e2e_payroll','EP-02','Create Salary Slip','POST /api/resource/Salary Slip → draft created', async () => {
+  if (!_e2eEmp) return { pass: null, ms: 0, msg: 'Skip: EP-01 prerequisites not met' };
+  const r = await frappePost('/api/resource/Salary Slip', {
+    employee: _e2eEmp.name,
+    company: _e2eEmp.company,
+    start_date: '2025-01-01',
+    end_date: '2025-01-31',
+    posting_date: '2025-01-31',
+  });
+  if (r.status === 200 || r.status === 201) {
+    _e2eSlipName = r.body?.data?.name;
+    return { pass: !!_e2eSlipName, ms: r.ms, msg: _e2eSlipName ? `Created: ${_e2eSlipName} ✓` : 'No name in response' };
+  }
+  // 409 = duplicate (slip for this period already exists) — skip downstream cleanup tests
+  const exc = r.body?.exc_type || r.body?.exception || '';
+  if (r.status === 409 || exc.includes('DuplicateEntry') || exc.includes('Duplicate')) {
+    return { pass: null, ms: r.ms, msg: `Skip: Salary Slip for ${_e2eEmp.name} 2025-01 already exists` };
+  }
+  return { pass: false, ms: r.ms, msg: `HTTP ${r.status}: ${(r.body?.message || exc || '').slice(0,120)}` };
+});
+
+addTest('e2e_payroll','EP-03','LHDN statutory fields','custom_pcb, custom_epf, custom_socso, custom_eis present', async () => {
+  if (!_e2eSlipName) return { pass: null, ms: 0, msg: 'Skip: no slip created by EP-02' };
+  const r = await frappeGET(`/api/resource/Salary Slip/${encodeURIComponent(_e2eSlipName)}`);
+  if (r.status !== 200) return { pass: false, ms: r.ms, msg: `Could not fetch slip: HTTP ${r.status}` };
+  const slip = r.body?.data || {};
+  const required = ['custom_lhdn_status','custom_pcb_amount','custom_epf_employee','custom_epf_employer',
+                    'custom_socso_employee','custom_socso_employer','custom_eis_employee','custom_eis_employer'];
+  const missing = required.filter(f => !(f in slip));
+  const ok = missing.length === 0;
+  return { pass: ok, ms: r.ms, msg: ok ? `All ${required.length} fields present ✓` : `Missing: ${missing.join(', ')}` };
+});
+
+addTest('e2e_payroll','EP-04','Earnings populated','Salary Slip has earnings rows and gross_pay > 0', async () => {
+  if (!_e2eSlipName) return { pass: null, ms: 0, msg: 'Skip: no slip created by EP-02' };
+  const r = await frappeGET(`/api/resource/Salary Slip/${encodeURIComponent(_e2eSlipName)}`);
+  if (r.status !== 200) return { pass: false, ms: r.ms, msg: `HTTP ${r.status}` };
+  const slip = r.body?.data || {};
+  const earningsCount = (slip.earnings || []).length;
+  const grossPay = parseFloat(slip.gross_pay || 0);
+  const ok = earningsCount > 0 && grossPay > 0;
+  return {
+    pass: ok, ms: r.ms,
+    msg: ok ? `${earningsCount} earning rows, gross RM ${grossPay.toFixed(2)} ✓`
+            : `earnings=${earningsCount}, gross_pay=${grossPay} — check Salary Structure`
+  };
+});
+
+addTest('e2e_payroll','EP-05','Employee link valid','Slip.employee resolves to a real Employee record', async () => {
+  if (!_e2eSlipName) return { pass: null, ms: 0, msg: 'Skip: no slip created by EP-02' };
+  const slipR = await frappeGET(`/api/resource/Salary Slip/${encodeURIComponent(_e2eSlipName)}`);
+  const employee = slipR.body?.data?.employee;
+  if (!employee) return { pass: false, ms: slipR.ms, msg: 'Slip has no employee field' };
+  const empR = await frappeGET(`/api/resource/Employee/${encodeURIComponent(employee)}`);
+  const ok = empR.status === 200;
+  return { pass: ok, ms: empR.ms, msg: ok ? `${employee} ✓` : `Employee ${employee} not found (${empR.status})` };
+});
+
+addTest('e2e_payroll','EP-06','Cleanup: delete draft','DELETE test slip to avoid polluting payroll data', async () => {
+  if (!_e2eSlipName) return { pass: null, ms: 0, msg: 'Skip: no slip to delete' };
+  const r = await frappeDelete(`/api/resource/Salary Slip/${encodeURIComponent(_e2eSlipName)}`);
+  const ok = r.status === 202 || r.body?.message === 'ok';
+  const name = _e2eSlipName;
+  if (ok) _e2eSlipName = null;
+  return { pass: ok, ms: r.ms, msg: ok ? `${name} deleted ✓` : `DELETE returned ${r.status}: ${(r.body?.message||'').slice(0,80)}` };
 });
 
 // ── State ──────────────────────────────────────────────────────────────────────
@@ -683,6 +805,7 @@ const SUITE_MAP = {
   api_contract: TESTS.filter(t=>t.suite==='api_contract'),
   regression: TESTS.filter(t=>t.suite==='regression'),
   integration: TESTS.filter(t=>t.suite==='integration'),
+  e2e_payroll: TESTS.filter(t=>t.suite==='e2e_payroll'),
   edge_cases: TESTS.filter(t=>t.suite==='edge_cases'),
   security: TESTS.filter(t=>t.suite==='security'),
   performance: TESTS.filter(t=>t.suite==='performance'),
