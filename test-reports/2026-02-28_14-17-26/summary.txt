@@ -1,7 +1,0 @@
-Prisma ERP Test Report — 2026-02-28_14-17-26
-URL: http://localhost:8080
-============================================================
-Total: 16  Pass: 16  Fail: 0  Error: 0  Skip: 0
-Pass rate: 100.0%
-
-FAILURES & ERRORS:
