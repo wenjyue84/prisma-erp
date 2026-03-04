@@ -122,6 +122,18 @@ def create_workspaces():
         doc.insert(ignore_if_duplicate=True)
         # Set label to E-Invoice after insert (name stays "Malaysia Compliance")
         frappe.db.set_value("Workspace", "Malaysia Compliance", "label", "E-Invoice")
+        # Set content JSON so workspace page renders cards/shortcuts
+        _MC_CONTENT = (
+            '[{"id":"zbqk_ugEBj","type":"header","data":{"text":"<span class=\\"h4\\">Malaysia Compliance</span>","col":12}},'
+            '{"id":"MdfVTQpbYN","type":"shortcut","data":{"shortcut_name":"LHDN Detailed Dashboard ","col":4}},'
+            '{"id":"_BbQEzQPjh","type":"card","data":{"card_name":"LHDN setup","col":4}},'
+            '{"id":"Yud7Xdaykc","type":"card","data":{"card_name":"VAT Report","col":4}},'
+            '{"id":"mF0ZRKynXL","type":"card","data":{"card_name":"LHDN Status Reports","col":4}},'
+            '{"id":"e-GdBqydJB","type":"header","data":{"text":"<span class=\\"h4\\"><b></b></span>","col":12}},'
+            '{"id":"Whuda70tL6","type":"quick_list","data":{"quick_list_name":"New Sales Invoices","col":4}},'
+            '{"id":"YspTisQzkE","type":"quick_list","data":{"quick_list_name":"New Purchase Invoices","col":4}}]'
+        )
+        frappe.db.set_value("Workspace", "Malaysia Compliance", "content", _MC_CONTENT)
         created.append("Malaysia Compliance (label=E-Invoice)")
     else:
         cur = frappe.db.get_value("Workspace", "Malaysia Compliance", "label")
@@ -130,6 +142,29 @@ def create_workspaces():
             created.append(f"Malaysia Compliance label: {cur} → E-Invoice")
         else:
             print("Malaysia Compliance OK")
+
+    # 1b. E-Invoice Workspace Sidebar (required for desktop icon click)
+    if not frappe.db.exists("Workspace Sidebar", "E-Invoice"):
+        print("Creating: E-Invoice Workspace Sidebar ...")
+        sidebar = frappe.get_doc(
+            {
+                "doctype": "Workspace Sidebar",
+                "title": "E-Invoice",
+                "module": "Myinvois Erpgulf",
+                "app": "myinvois_erpgulf",
+                "items": [
+                    {"label": "Home", "link_to": "Malaysia Compliance", "link_type": "Workspace"},
+                    {"label": "LHDN Detailed Dashboard", "link_to": "lhdn-dashboard", "link_type": "Page"},
+                ],
+            }
+        )
+        sidebar.flags.ignore_permissions = True
+        sidebar.flags.ignore_links = True
+        sidebar.flags.ignore_mandatory = True
+        sidebar.insert(ignore_if_duplicate=True)
+        created.append("E-Invoice Workspace Sidebar")
+    else:
+        print("E-Invoice Workspace Sidebar OK")
 
     # 2. HR
     if not frappe.db.exists("Workspace", "HR"):
