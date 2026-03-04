@@ -2,7 +2,7 @@
 name = "prisma_assistant"
 authors = [{ name = "Prisma Technology", email = "admin@prismatechnology.com" }]
 description = "Prisma AI Assistant — general-purpose AI chat for ERPNext"
-requires-python = ">=3.14"
+requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = []

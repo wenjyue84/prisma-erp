@@ -482,35 +482,6 @@
 	text-decoration: underline;
 }
 
-/* ── Tabler Icons: global style overrides ─────────────────── */
-/* Subtle size bump + crisp rendering for Tabler's thinner strokes */
-svg.icon {
-	shape-rendering: geometricPrecision;
-}
-
-/* Sidebar icons: slightly more prominent */
-.desk-sidebar svg.icon,
-.standard-sidebar-item svg.icon {
-	width: 18px;
-	height: 18px;
-	opacity: 0.85;
-	transition: opacity 0.15s ease;
-}
-.standard-sidebar-item:hover svg.icon {
-	opacity: 1;
-}
-.standard-sidebar-item.selected svg.icon {
-	opacity: 1;
-	color: var(--primary, #4f46e5);
-}
-
-/* Navbar icons: modern rounded feel */
-.navbar svg.icon,
-#navbar-breadcrumbs svg.icon {
-	width: 18px;
-	height: 18px;
-}
-
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 480px) {
 	#lhdn-chat-panel {
