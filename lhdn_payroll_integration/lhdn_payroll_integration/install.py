@@ -117,6 +117,39 @@ def _ensure_cloud_workspaces():
 			doc.insert(ignore_if_duplicate=True)
 			# Label → "E-Invoice" to match cloud (name stays "Malaysia Compliance")
 			frappe.db.set_value("Workspace", "Malaysia Compliance", "label", "E-Invoice")
+			# Set content JSON so the workspace page renders cards/shortcuts
+			_MC_CONTENT = (
+				'[{"id":"zbqk_ugEBj","type":"header","data":{"text":"<span class=\\"h4\\">Malaysia Compliance</span>","col":12}},'
+				'{"id":"MdfVTQpbYN","type":"shortcut","data":{"shortcut_name":"LHDN Detailed Dashboard ","col":4}},'
+				'{"id":"_BbQEzQPjh","type":"card","data":{"card_name":"LHDN setup","col":4}},'
+				'{"id":"Yud7Xdaykc","type":"card","data":{"card_name":"VAT Report","col":4}},'
+				'{"id":"mF0ZRKynXL","type":"card","data":{"card_name":"LHDN Status Reports","col":4}},'
+				'{"id":"e-GdBqydJB","type":"header","data":{"text":"<span class=\\"h4\\"><b></b></span>","col":12}},'
+				'{"id":"Whuda70tL6","type":"quick_list","data":{"quick_list_name":"New Sales Invoices","col":4}},'
+				'{"id":"YspTisQzkE","type":"quick_list","data":{"quick_list_name":"New Purchase Invoices","col":4}}]'
+			)
+			frappe.db.set_value("Workspace", "Malaysia Compliance", "content", _MC_CONTENT)
+
+	# E-Invoice Workspace Sidebar (required for desktop icon click to work)
+	# desktop.js looks up workspace_sidebar_item[icon.label.toLowerCase()]
+	# so the Workspace Sidebar name must match the Desktop Icon label exactly.
+	if not frappe.db.exists("Workspace Sidebar", "E-Invoice"):
+		sidebar = frappe.get_doc(
+			{
+				"doctype": "Workspace Sidebar",
+				"title": "E-Invoice",
+				"module": "Myinvois Erpgulf",
+				"app": "myinvois_erpgulf",
+				"items": [
+					{"label": "Home", "link_to": "Malaysia Compliance", "link_type": "Workspace"},
+					{"label": "LHDN Detailed Dashboard", "link_to": "lhdn-dashboard", "link_type": "Page"},
+				],
+			}
+		)
+		sidebar.flags.ignore_permissions = True
+		sidebar.flags.ignore_links = True
+		sidebar.flags.ignore_mandatory = True
+		sidebar.insert(ignore_if_duplicate=True)
 
 	# HR (top-level workspace for the hrms module)
 	if not frappe.db.exists("Workspace", "HR"):
