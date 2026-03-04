@@ -23,7 +23,7 @@ WAKE_HTML = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Prisma ERP &mdash; Starting</title>
+  <title>ERPNext &mdash; Starting</title>
   <style>
     *{{box-sizing:border-box;margin:0;padding:0}}
     body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
@@ -50,7 +50,7 @@ WAKE_HTML = """<!DOCTYPE html>
 <body>
 <div class="card">
   <div class="icon">&#9889;</div>
-  <h1>Prisma ERP is waking up</h1>
+  <h1>ERPNext is waking up</h1>
   <p>The server was idle and shut down to save costs.<br>
      It will be ready in about <strong>3 minutes</strong>.</p>
   <div class="spinner"></div>
@@ -91,7 +91,7 @@ WAKE_HTML = """<!DOCTYPE html>
       const d = await r.json();
       if(d.state==='running' && !ec2Running){{
         ec2Running = true;
-        msg.textContent='EC2 running — waiting for Prisma ERP to boot…';
+        msg.textContent='EC2 running — waiting for ERPNext to boot…';
         clearInterval(poll);
         checkSite();
       }} else if(!ec2Running) {{
@@ -108,15 +108,15 @@ WAKE_HTML = """<!DOCTYPE html>
           const t = await r.text();
           if(t.includes('frappe') || t.includes('login_page')){{
             clearInterval(siteCheck);
-            msg.textContent='Prisma ERP is ready — redirecting…';
+            msg.textContent='ERPNext is ready — redirecting…';
             bar.style.width='100%';
             setTimeout(()=>window.location.href=window.location.origin,2000);
             return;
           }}
         }}
-        msg.textContent='Prisma ERP booting (HTTP '+r.status+')…';
+        msg.textContent='ERPNext booting (HTTP '+r.status+')…';
       }} catch(e) {{
-        msg.textContent='Waiting for Prisma ERP to start…';
+        msg.textContent='Waiting for ERPNext to start…';
       }}
     }}, 8000);
   }}
