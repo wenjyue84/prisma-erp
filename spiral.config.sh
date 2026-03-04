@@ -17,10 +17,7 @@ SPIRAL_GEMINI_PROMPT="Research the latest Malaysian LHDN payroll compliance requ
 SPIRAL_GEMINI_ANNOTATE_PROMPT='Which Python files in lhdn_payroll_integration/ would implement this story? Return a JSON array only, no explanation. Example: ["payroll/api.py","payroll/utils.py"]. Story: __STORY_TITLE__'
 
 # Validation command
-# Add --suite browser to include browser smoke tests (~25-30s overhead, requires agent-browser CLI).
-# Browser tests skip gracefully if agent-browser is not installed.
 SPIRAL_VALIDATE_CMD="$SPIRAL_PYTHON tests/run_tests.py --report-dir test-reports"
-# SPIRAL_VALIDATE_CMD="$SPIRAL_PYTHON tests/run_tests.py --report-dir test-reports --suite browser"
 
 # Test reports directory
 SPIRAL_REPORTS_DIR="test-reports"
@@ -45,16 +42,3 @@ SPIRAL_MODEL_ROUTING="auto"
 
 # Research model: sonnet for Phase R (good reasoning for compliance research)
 SPIRAL_RESEARCH_MODEL="sonnet"
-
-# Specialist agents — pre-context injection before main agents
-# Phase R: runs ONLY as Gemini fallback (when Gemini returns empty)
-SPIRAL_RESEARCH_SPECIALIST_PROMPT="$PWD/scripts/spiral/specialists/malaysia-payroll-specialist.md"
-# Phase I: always runs alongside Gemini (codebase search layer Gemini can't do)
-SPIRAL_IMPLEMENT_SPECIALIST_PROMPT="$PWD/scripts/spiral/specialists/frappe-developer-specialist.md"
-# Models: haiku for research fallback (static knowledge), sonnet for impl (codebase reasoning)
-SPIRAL_RESEARCH_SPECIALIST_MODEL="haiku"
-SPIRAL_IMPLEMENT_SPECIALIST_MODEL="sonnet"
-
-# GitNexus knowledge graph — fills filesTouch for stories with no git history
-# (US-200+ that were added after the baseline commit range)
-SPIRAL_GITNEXUS_REPO="prisma-erp"

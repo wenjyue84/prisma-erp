@@ -116,15 +116,12 @@ else
 fi
 
 # ─── 4c. Custom desktop icons (ESS Mobile, E-Invoice, LHDN Payroll) ──────────
-# hrms and myinvois_erpgulf are baked in the Docker image; SVGs must be copied
-# from this repo into the containers on every deploy (not in the image layers).
-# frappe.scrub(label) → filename: "ESS Mobile"→ess_mobile, "E-Invoice"→e_invoice
+# These apps are baked in the Docker image; files must be recreated after restart.
+# frappe.scrub(label) → filename: "ESS Mobile"→ess_mobile, "E-Invoice"→e_invoice, "LHDN Payroll"→lhdn_payroll
 info "Deploying custom desktop icons..."
 
 # ESS Mobile (hrms app): black phone icon
 for CTR in "$BACKEND" "$FRONTEND"; do
-    docker cp ess_mobile.svg \
-        "$CTR:/home/frappe/frappe-bench/apps/hrms/hrms/public/images/ess_mobile.svg"
     docker exec "$CTR" bash -c "
         mkdir -p /home/frappe/frappe-bench/apps/hrms/hrms/public/icons/desktop_icons/solid
         mkdir -p /home/frappe/frappe-bench/apps/hrms/hrms/public/icons/desktop_icons/subtle
@@ -136,27 +133,21 @@ for CTR in "$BACKEND" "$FRONTEND"; do
 done
 
 # E-Invoice (myinvois_erpgulf): blue document icon
-# Workspace Sidebar is named "Malaysia Compliance" → frappe.scrub("Malaysia Compliance")
-# = malaysia_compliance → icon file must be malaysia_compliance.svg (not e_invoice.svg)
 for CTR in "$BACKEND" "$FRONTEND"; do
-    docker cp prisma_einvoice.svg \
-        "$CTR:/home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/images/prisma_einvoice.svg"
     docker exec "$CTR" bash -c "
         mkdir -p /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/solid
         mkdir -p /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/subtle
         cp /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/images/prisma_einvoice.svg \
-           /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/solid/malaysia_compliance.svg
+           /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/solid/e_invoice.svg
         cp /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/images/prisma_einvoice.svg \
-           /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/subtle/malaysia_compliance.svg
+           /home/frappe/frappe-bench/apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/subtle/e_invoice.svg
     "
 done
 
-# Update Desktop Icon DB records (label must match Workspace Sidebar name for is_permitted)
+# Update Desktop Icon records in DB (idempotent)
 docker exec "$BACKEND" bash -c "
-cd /home/frappe/frappe-bench
-bench --site $SITE execute frappe.db.set_value --args \"['Desktop Icon', 'Malaysia Compliance', 'app', 'myinvois_erpgulf']\" 2>/dev/null || true
-bench --site $SITE execute frappe.db.commit
-" && ok "E-Invoice Desktop Icon updated" || warn "E-Invoice icon update failed (non-fatal)"
+cd /home/frappe/frappe-bench && bench --site $SITE execute update_einvoice_icon.run
+" && ok "E-Invoice Desktop Icon updated" || warn "E-Invoice icon script failed (non-fatal)"
 
 # ESS Mobile: set app=hrms and logo_url so both desktop grid and sidebar show it
 docker exec "$BACKEND" bash -c "
