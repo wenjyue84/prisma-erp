@@ -68,6 +68,7 @@ COPY frappe_patches/tabler_lucide_icons.svg apps/frappe/frappe/public/icons/luci
 
 # Desktop icon logo SVGs — referenced by tabDesktop Icon.logo_url
 COPY desktop_icons/ess_mobile.svg apps/hrms/hrms/public/images/ess_mobile.svg
+COPY desktop_icons/hr.svg apps/hrms/hrms/public/images/hr.svg
 COPY desktop_icons/framework.svg apps/frappe/frappe/public/images/framework.svg
 COPY desktop_icons/home.svg apps/erpnext/erpnext/public/images/home.svg
 COPY desktop_icons/erp_settings.svg apps/erpnext/erpnext/public/images/erp_settings.svg
