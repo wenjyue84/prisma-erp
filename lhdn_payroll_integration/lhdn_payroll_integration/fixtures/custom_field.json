@@ -738,7 +738,7 @@
   "name": "Company-custom_mytax_employer_rep_login_id",
   "dt": "Company",
   "fieldname": "custom_mytax_employer_rep_login_id",
-  "fieldtype": "Data",
+  "fieldtype": "Small Text",
   "label": "MyTax Employer Representative Login ID",
   "description": "MyTax portal login ID (email/NRIC) of the Wakil Majikan authorized to submit e-CP22.",
   "module": "LHDN Payroll Integration",
