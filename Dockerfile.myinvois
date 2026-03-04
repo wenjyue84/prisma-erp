@@ -66,5 +66,12 @@ RUN mkdir -p apps/myinvois_erpgulf/myinvois_erpgulf/public/icons/desktop_icons/s
 COPY frappe_patches/tabler_lucide_icons.svg apps/frappe/frappe/public/icons/lucide/icons.svg
 COPY frappe_patches/tabler_lucide_icons.svg apps/frappe/frappe/public/icons/lucide.svg
 
+# Desktop icon logo SVGs — referenced by tabDesktop Icon.logo_url
+COPY desktop_icons/ess_mobile.svg apps/hrms/hrms/public/images/ess_mobile.svg
+COPY desktop_icons/framework.svg apps/frappe/frappe/public/images/framework.svg
+COPY desktop_icons/home.svg apps/erpnext/erpnext/public/images/home.svg
+COPY desktop_icons/erp_settings.svg apps/erpnext/erpnext/public/images/erp_settings.svg
+COPY desktop_icons/lhdn_payroll.svg apps/lhdn_payroll_integration/lhdn_payroll_integration/public/images/lhdn_payroll.svg
+
 # Prisma logo — placed at /tmp so setup_test_data.setup_prisma_branding() can find it
 COPY prisma_logo.png /tmp/prisma_logo.png
