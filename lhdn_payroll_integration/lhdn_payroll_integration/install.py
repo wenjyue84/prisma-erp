@@ -16,6 +16,7 @@ def after_migrate():
 	created by an app fixture, so we re-create them here.
 	"""
 	_fix_myinvois_module_name()
+	_cleanup_myinvois_legacy()
 	_ensure_cloud_workspaces()
 
 
@@ -60,6 +61,27 @@ def _fix_myinvois_module_name():
 			"UPDATE `tabModule Def` SET app_name = 'myinvois_erpgulf' WHERE name = 'Myinvois Erpgulf'"
 		)
 		frappe.db.commit()
+
+
+def _cleanup_myinvois_legacy():
+	"""Remove stale 'Myinvois Erpgulf' workspace entries from the desk.
+
+	The myinvois_erpgulf app may have created workspace/sidebar records with
+	the module name as label. These are superseded by the 'E-Invoice' entries.
+	This is idempotent — safe to run if records don't exist.
+	"""
+	for name in frappe.db.get_all("Workspace Sidebar", filters={"name": "Myinvois Erpgulf"}, pluck="name"):
+		frappe.delete_doc("Workspace Sidebar", name, ignore_permissions=True, force=True)
+
+	stale = frappe.db.get_all(
+		"Workspace",
+		filters=[["label", "=", "Myinvois Erpgulf"]],
+		pluck="name",
+	)
+	for name in stale:
+		frappe.delete_doc("Workspace", name, ignore_permissions=True, force=True)
+
+	frappe.db.commit()
 
 
 def _ensure_cloud_workspaces():
