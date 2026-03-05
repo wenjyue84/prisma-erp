@@ -23,5 +23,10 @@ def run():
         frappe.delete_doc("Workspace", name, ignore_permissions=True, force=True)
         print(f"Deleted Workspace: {name}")
 
+    # Delete stale Desktop Icon
+    for name in frappe.db.get_all("Desktop Icon", filters={"name": "Myinvois Erpgulf"}, pluck="name"):
+        frappe.delete_doc("Desktop Icon", name, ignore_permissions=True, force=True)
+        print(f"Deleted Desktop Icon: {name}")
+
     frappe.db.commit()
     print("Done. Cache clear recommended: bench --site frontend clear-cache")

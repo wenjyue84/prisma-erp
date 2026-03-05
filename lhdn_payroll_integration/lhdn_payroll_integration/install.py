@@ -81,6 +81,10 @@ def _cleanup_myinvois_legacy():
 	for name in stale:
 		frappe.delete_doc("Workspace", name, ignore_permissions=True, force=True)
 
+	# Delete the stale Desktop Icon (app-type icon, superseded by Malaysia Compliance)
+	for name in frappe.db.get_all("Desktop Icon", filters={"name": "Myinvois Erpgulf"}, pluck="name"):
+		frappe.delete_doc("Desktop Icon", name, ignore_permissions=True, force=True)
+
 	frappe.db.commit()
 
 
