@@ -1,5 +1,7 @@
 name: Bench
 
+# Disabled scheduled runs — prisma-erp is no longer actively updated.
+# Still runs on PRs touching bench files, and can be triggered manually.
 on:
   pull_request:
     branches:
@@ -8,10 +10,6 @@ on:
       - images/bench/**
       - docker-bake.hcl
       - .github/workflows/build_bench.yml
-
-  schedule:
-    # Every day at 12:00 pm
-    - cron: 0 0 * * *
 
   workflow_dispatch:
 
